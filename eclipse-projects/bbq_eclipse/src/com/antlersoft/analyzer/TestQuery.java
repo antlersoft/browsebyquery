@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.Enumeration;
 
+import analyzer.query.QueryParser;
+import analyzer.query.ParseException;
+
 public class TestQuery
 {
     public static void main( String argv[])
@@ -35,7 +38,7 @@ public class TestQuery
 			System.out.println( e.nextElement().toString());
 		    }
 		}
-		catch ( QueryParser.ParseException pe)
+		catch ( ParseException pe)
 		{
 		    System.out.println( pe.getMessage());
 		}

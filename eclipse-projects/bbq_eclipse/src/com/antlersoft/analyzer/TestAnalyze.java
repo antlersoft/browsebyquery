@@ -13,8 +13,6 @@ public class TestAnalyze
     {
 	int i=0;
 	SimpleAnalyzerDB sadb=new SimpleAnalyzerDB();
-System.err.println( argv[0]);
-System.err.println( argv[1]);
 	sadb.openDB( argv[0]);
 	BufferedReader in=new BufferedReader( new FileReader( argv[1]));
 	String line="1";
