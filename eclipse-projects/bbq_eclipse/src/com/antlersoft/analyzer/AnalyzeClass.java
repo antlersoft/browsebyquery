@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.DataInputStream;
 
-class AnalyzeClass
+public class AnalyzeClass
 {
     int magic;
     int majorVersion;
@@ -46,7 +46,7 @@ class AnalyzeClass
     static final int ACC_INTERFACE=0x0200;
     static final int ACC_ABSTRACT=0x0400;
 
-    AnalyzeClass( InputStream is)
+    public AnalyzeClass( InputStream is)
 		throws IOException, IllegalStateException
     {
 		DataInputStream classStream=new DataInputStream( is);
