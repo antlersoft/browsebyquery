@@ -15,9 +15,9 @@ public class ParseException extends Exception
         int i;
         for ( i=0; i<qp.tokens.length; i++)
         {
-            retval.append( qp.tokens[i].toString());
             if ( i==qp.currentIndex)
                 retval.append( "<<here>>");
+            retval.append( qp.tokens[i].toString());
             retval.append( ' ');
         }
         if ( i==qp.currentIndex)
