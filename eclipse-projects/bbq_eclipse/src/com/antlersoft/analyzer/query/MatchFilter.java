@@ -32,7 +32,7 @@ class MatchFilter extends Filter
 		}
 		else if ( c==DBField.class)
 		{
-			name=((DBMethod)toMatch).getName();
+			name=((DBField)toMatch).getName();
 		}
 		else
 			throw new Exception( "Match filter bound incorrect class "+c.getName());
