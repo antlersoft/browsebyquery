@@ -118,7 +118,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
 
     public Enumeration getStringReferences()
     {
-	if ( fieldReferences!=null)
+	if ( stringReferences!=null)
 	{
 	    return stringReferences.elements();
 	}
@@ -209,7 +209,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
                         if ( called!=null)
                             stringReferenceTable.put( target, new Vector());
                     }
-        		    fieldReferences.removeAllElements();
+        		    stringReferences.removeAllElements();
                 }
                 final AnalyzeClass.CodeAttribute codeAttribute=
                     (AnalyzeClass.CodeAttribute)mi.attributes[i].value;

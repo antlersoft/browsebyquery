@@ -79,7 +79,7 @@ public class DBField implements Persistent, Cloneable, SourceObject
 
     public DBClass getDBClass()
     {
-	return (DBClass)dbclass.getReferenced();;
+	return (DBClass)dbclass.getReferenced();
     }
 
     public int getLineNumber()
