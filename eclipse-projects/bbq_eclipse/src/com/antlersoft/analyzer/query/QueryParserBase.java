@@ -197,6 +197,32 @@ class QueryParserBase extends Parser
         currentIndex--;
         clearNextValue();
     }
+
+    static class ReservedWord extends Symbol
+    {
+        static Hashtable wordList=new Hashtable();
+        private ReservedWord( String w)
+            throws DuplicateSymbolException
+        {
+            super( w);
+            wordList.put( w, this);
+        }
+
+        static ReservedWord getReserved( String w)
+        {
+            ReservedWord result;
+            try
+            {
+                result=new ReservedWord( w);
+            }
+            catch ( DuplicateSymbolException dse)
+            {
+                result=(ReservedWord)dse.duplicate;
+            }
+            return result;
+        }
+    }
+
     /*
      ClassSet : Class "x"
               | All Classes

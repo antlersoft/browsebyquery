@@ -18,9 +18,9 @@ class SetOpTransform extends TransformImpl
 	HashSet a_only;
 	HashSet b_only;
 	HashSet both;
-	ReservedWord op;
+	QueryParserBase.ReservedWord op;
 
-	SetOpTransform( ReservedWord setOp, Transform t1, Transform t2)
+	SetOpTransform( QueryParserBase.ReservedWord setOp, Transform t1, Transform t2)
 		throws RuleActionException
 	{
 		super( null, null);

@@ -5,11 +5,11 @@ import com.antlersoft.parser.RuleActionException;
 
 public class LogicalOpFilter extends Filter
 {
-    private ReservedWord _op;
+    private QueryParserBase.ReservedWord _op;
     private Filter _f1;
     private Filter _f2;
 
-    public LogicalOpFilter( ReservedWord op,
+    public LogicalOpFilter( QueryParserBase.ReservedWord op,
         Filter f1, Filter f2)
         throws RuleActionException
     {

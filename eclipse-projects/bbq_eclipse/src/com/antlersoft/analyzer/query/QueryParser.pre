@@ -2,7 +2,14 @@ package com.antlersoft.analyzer.query;
 
 import java.util.List;
 
-import com.antlersoft.parser.*;
+import com.antlersoft.parser.GotoRule;
+import com.antlersoft.parser.Parser;
+import com.antlersoft.parser.ParseState;
+import com.antlersoft.parser.ReduceRule;
+import com.antlersoft.parser.RuleAction;
+import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.ShiftRule;
+import com.antlersoft.parser.Symbol;
 
 import com.antlersoft.classwriter.ClassWriter;
 

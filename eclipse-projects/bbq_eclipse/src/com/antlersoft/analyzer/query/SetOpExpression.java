@@ -16,9 +16,9 @@ class SetOpExpression extends SetExpression
 	HashSet a_only;
 	HashSet b_only;
 	HashSet both;
-	ReservedWord op;
+	QueryParserBase.ReservedWord op;
 
-	SetOpExpression( ReservedWord setOp, SetExpression s1, SetExpression s2)
+	SetOpExpression( QueryParserBase.ReservedWord setOp, SetExpression s1, SetExpression s2)
 		throws RuleActionException
 	{
 		super( TransformSet.commonSubType( s1.getSetClass(), s2.getSetClass(), true));
