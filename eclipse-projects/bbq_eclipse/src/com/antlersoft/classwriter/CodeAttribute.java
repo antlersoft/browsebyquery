@@ -183,6 +183,14 @@ public class CodeAttribute implements Attribute
                 || ( range.end>start && range.end<oldPostEnd) ||
                 ( range.handler>start && range.handler<oldPostEnd))
             {
+                // You are allowed to remove an entire try/catch block
+                if ( ( range.start>start && range.start<oldPostEnd)
+                    && ( range.end>start && range.end<oldPostEnd) &&
+                    ( range.handler>start && range.handler<oldPostEnd))
+                {
+                    i.remove();
+                    continue;
+                }
                 throw new CodeCheckException(
                     "Exception range overlaps inserted code");
             }
