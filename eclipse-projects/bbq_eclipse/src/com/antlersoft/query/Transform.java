@@ -9,8 +9,9 @@ public abstract class Transform implements Bindable {
 	public abstract Enumeration finishEvaluation( DataSource source);
 	public boolean isAbleToUseMore()
 	{ return true; }
-    public Comparator getOrdering( Comparator base)
+    public Comparator getOrdering()
 	{
 		return null;
 	}
+	void bindOrdering( Comparator ord) {};
 }

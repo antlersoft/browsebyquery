@@ -1,5 +1,6 @@
 package com.antlersoft.query;
 
+import java.util.Comparator;
 import java.util.Enumeration;
 
 public class TransformTransform extends Transform {
@@ -46,6 +47,17 @@ public class TransformTransform extends Transform {
 	public boolean isAbleToUseMore()
 	{
 		return m_primary.isAbleToUseMore() && m_secondary.isAbleToUseMore();
+	}
+
+	public Comparator getOrdering()
+	{
+		return m_secondary.getOrdering();
+	}
+
+	public void bindOrdering( Comparator comp)
+	{
+		m_primary.bindOrdering( comp);
+		m_secondary.bindOrdering( m_primary.getOrdering());
 	}
 
 	private ResolveCompoundBinding m_binding;

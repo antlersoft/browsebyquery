@@ -1,5 +1,6 @@
 package com.antlersoft.query;
 
+import java.util.Comparator;
 import java.util.Enumeration;
 
 public class TransformSet extends SetExpression {
@@ -10,6 +11,7 @@ public class TransformSet extends SetExpression {
 	throws BindException
 	{
 		transform.lateBindResult( base.getResultClass());
+		transform.bindOrdering( base.getOrdering());
 		m_transform=transform;
 		m_set=base;
 	}
@@ -24,6 +26,10 @@ public class TransformSet extends SetExpression {
     public Class getResultClass() {
 		return m_transform.resultClass();
     }
+	public Comparator getOrdering()
+	{
+		return m_transform.getOrdering();
+	}
 
 	static class BaseAdapter implements Enumeration
 	{
