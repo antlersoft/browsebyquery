@@ -90,7 +90,7 @@ public :
 			return new NonTerminalSymbol( symbol_name);
 		if ( ! terminal_scope_iter.to_find( SymbolKey( symbol_name)))
 		{
-			cout<<"Undefined symbol in rule: "<<symbol_name<<endl;
+			cout<<"//Undefined symbol in rule: "<<symbol_name<<endl;
 			Symbol( terminal_scope, symbol_name);
 		}
 		return new TerminalSymbol( symbol_name);
@@ -110,11 +110,15 @@ public :
 	SeqData* ruleFire( Sequence value_stack)
 	{
 		// Throw away rule_ender
+		unsigned int precedence=static_cast<unsigned int>( atoi( *static_cast<const SeqString*>( value_stack.last())));
 		value_stack=value_stack.butLast();
 		CompareSequence partial_sequence= *static_cast<const CompareSequence*>( value_stack.last());
 		const NonTerminalSymbol& target= *static_cast<const NonTerminalSymbol*>( partial_sequence.first());
 		partial_sequence=partial_sequence.butFirst();
-		build_parser.addRule( Rule( target, partial_sequence));
+		Rule new_rule=Rule( target, partial_sequence);
+		if ( precedence)
+			new_rule.setPrecedence( precedence);
+		build_parser.addRule( new_rule);
 		if ( ! java_goal_set)
 		{
 			build_parser.setGoal( target);
@@ -157,13 +161,17 @@ public :
 	SeqData* ruleFire( Sequence value_stack)
 	{
 		// Throw away rule_ender
+		unsigned int precedence=static_cast<unsigned int>( atoi( *static_cast<const SeqString*>( value_stack.last())));
 		value_stack=value_stack.butLast();
 		bstring java_action= *static_cast<const SeqString*>( value_stack.last());
 		value_stack=value_stack.butLast();
 		CompareSequence partial_sequence= *static_cast<const CompareSequence*>( value_stack.last());
 		const NonTerminalSymbol& target= *static_cast<const NonTerminalSymbol*>( partial_sequence.first());
 		partial_sequence=partial_sequence.butFirst();
-		build_parser.addRule( Rule( target, partial_sequence, *new RuleReduceAction( java_action)));
+		Rule new_rule=Rule( target, partial_sequence, *new RuleReduceAction( java_action));
+		if ( precedence)
+			new_rule.setPrecedence( precedence);
+		build_parser.addRule( new_rule);
 		if ( ! java_goal_set)
 		{
 			build_parser.setGoal( target);
@@ -195,6 +203,26 @@ public:
 	}
 };
 
+class SetPrecedenceAction : public RuleAction
+{
+	SeqData* ruleFire( Sequence value_stack)
+	{
+		value_stack=value_stack.butLast();
+		SeqData* result=value_stack.last()->copy();
+		value_stack=value_stack.butLast();
+		return result;
+	}
+};
+
+class NoPrecedenceAction : public RuleAction
+{
+	SeqData* ruleFire( Sequence value_stack)
+	{
+		value_stack=value_stack.butLast();
+		return new SeqString( "0");
+	}
+};
+
 int main( int argc, char* argv[])
 	{
 	BuildParser x;
@@ -209,6 +237,8 @@ int main( int argc, char* argv[])
 	RuleStartAction rsa;
 	AddKnownSymbol aks;
 	AddNamedSymbol ans;
+	SetPrecedenceAction set_precedence;
+	NoPrecedenceAction no_precedence;
 	ExtendPartialAction epa;
 	RuleDefAction rda( java_parser);
 	RuleDefActionWithString rdaws( java_parser);
@@ -217,6 +247,7 @@ int main( int argc, char* argv[])
 	NonTerminalSymbol SymbolDef( "SymbolDef");
 	NonTerminalSymbol RuleDef( "RuleDef");
 	NonTerminalSymbol Associativity( "Associativity");
+	NonTerminalSymbol RulePrecedence( "RulePrecedence");
 	NonTerminalSymbol Rules( "Rules");
 	NonTerminalSymbol Defs( "Defs");
 	NonTerminalSymbol CompleteParser( "CompleteParser");
@@ -243,6 +274,8 @@ int main( int argc, char* argv[])
 	x.addRule( Rule( Associativity, CompareSequence(right)));
 	x.addRule( Rule( Associativity, CompareSequence(none)));
 	x.addRule( Rule( Associativity, CompareSequence(not)));
+	x.addRule( Rule( RulePrecedence, CompareSequence( rule_ender), no_precedence));
+	x.addRule( Rule( RulePrecedence, CompareSequence( LexScan::_num_const)|rule_ender, set_precedence));
 	x.addRule( Rule( SymbolDef, CompareSequence( symbol)|LexScan::_name, sda));
 	x.addRule( Rule( AnySymbol, CompareSequence( name), aks));
 	x.addRule( Rule( AnySymbol, CompareSequence( number), aks));
@@ -251,8 +284,8 @@ int main( int argc, char* argv[])
 	x.addRule( Rule( AnySymbol, CompareSequence( LexScan::_name), ans));
 	x.addRule( Rule( PartialRule, CompareSequence( LexScan::_name)|colon, rsa));
 	x.addRule( Rule( PartialRule, CompareSequence( PartialRule)|AnySymbol, epa));
-	x.addRule( Rule( RuleDef, CompareSequence( PartialRule)|LexScan::_str_const|rule_ender, rdaws));
-	x.addRule( Rule( RuleDef, CompareSequence( PartialRule)|rule_ender, rda));
+	x.addRule( Rule( RuleDef, CompareSequence( PartialRule)|LexScan::_str_const|RulePrecedence, rdaws));
+	x.addRule( Rule( RuleDef, CompareSequence( PartialRule)|RulePrecedence, rda));
 	x.addRule( Rule( Rules, CompareSequence( RuleDef)));
 	x.addRule( Rule( Rules, CompareSequence( Rules)|RuleDef));
 	x.addRule( Rule( Defs, CompareSequence()));
