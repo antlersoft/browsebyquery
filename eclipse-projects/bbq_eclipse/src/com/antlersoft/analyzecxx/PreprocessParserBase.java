@@ -100,8 +100,8 @@ class PreprocessParserBase extends Parser {
 		try
 		{
 			for (Iterator i = tokens.iterator(); i.hasNext(); )
-				m_base_expander.processToken(m_empty_set, (LexToken) i.next());
-			m_base_expander.processToken( m_empty_set, WhiteSpace.m_new_line_token);
+				m_base_expander.processToken((LexToken) i.next());
+			m_base_expander.processToken( WhiteSpace.m_new_line_token);
 		}
 		catch ( LexException le)
 		{
@@ -258,6 +258,8 @@ e.printStackTrace();
 		{
 			tokens.remove( tokens.size()-1);
 		}
+		if ( tokens.size()>0 && ((LexToken)tokens.get(0)).symbol==PreprocessParser.lex_white_space)
+			tokens.remove(0);
 	}
 
 	/**

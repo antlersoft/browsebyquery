@@ -30,13 +30,13 @@ class MacroExpander {
 		m_deferred_tokens=new ArrayList();
 	}
 
-    void processToken(HashSet no_expand, LexToken next_token) throws com.antlersoft.parser.RuleActionException, LexException
+    void processToken( LexToken next_token) throws com.antlersoft.parser.RuleActionException, LexException
 	{
 		// What no expand set do we use to expand the macro-- the one at the initial token,
 		// the one at the last token, or the one that is the union of all the tokens?
 		if ( m_current_function_macro==null)
 		{
-			if ( next_token.symbol==PreprocessParser.lex_identifier && ! no_expand.contains( next_token.value))
+			if ( next_token.symbol==PreprocessParser.lex_identifier && next_token.canExpand( next_token.value))
 			{
 				Macro macro=(Macro)m_macros.get( next_token.value);
 				if ( macro==null)
@@ -47,19 +47,18 @@ class MacroExpander {
 				{
 					if ( macro instanceof ObjectMacro)
 					{
-						HashSet new_set=(HashSet)no_expand.clone();
-						new_set.add( next_token.value);
+						HashSet new_set=next_token.setWithNewMember( macro.getIdentifier());
 						ArrayList replacement_list=((ObjectMacro)macro).getTokens();
 						for ( Iterator i=replacement_list.iterator();
 							  i.hasNext();)
 						{
-							processToken( new_set, (LexToken)i.next());
+							processToken( ((LexToken)i.next()).cloneWithNewSet( new_set));
 						}
 					}
 					else
 					{
 						m_current_function_macro=(FunctionMacro)macro;
-						m_deferred_tokens.add( new TokenWithNoExpand( next_token, no_expand));
+						m_deferred_tokens.add( next_token);
 					}
 				}
 			}
@@ -74,11 +73,16 @@ class MacroExpander {
 				if ( next_token instanceof AltSymbolToken &&
 					 ((AltSymbolToken)next_token).m_alt_symbol==PreprocessParser.pp_lparen)
 				{
-					m_deferred_tokens.add( new TokenWithNoExpand( next_token, no_expand));
+					m_deferred_tokens.add( next_token);
 					m_current_argument=new Argument();
 					m_arguments=new ArrayList();
 					m_arguments.add( m_current_argument);
 					m_paren_depth=1;
+				}
+				else if ( next_token.symbol==PreprocessParser.lex_new_line ||
+						  next_token.symbol==PreprocessParser.lex_white_space)
+				{
+					m_deferred_tokens.add( next_token);
 				}
 				else
 				{
@@ -93,9 +97,8 @@ class MacroExpander {
 					((AltSymbolToken)next_token).m_alt_symbol==PreprocessParser.pp_lparen)
 				{
 					m_paren_depth++;
-					TokenWithNoExpand twne=new TokenWithNoExpand( next_token, no_expand);
-					m_current_argument.add( twne);
-					m_deferred_tokens.add( twne);
+					m_current_argument.add( next_token);
+					m_deferred_tokens.add( next_token);
 				}
 				else if ( next_token instanceof AltSymbolToken &&
 					((AltSymbolToken)next_token).m_alt_symbol==PreprocessParser.pp_rparen)
@@ -108,6 +111,7 @@ class MacroExpander {
 							m_arguments.remove( m_arguments.size()-1);
 						FunctionMacro fm=m_current_function_macro;
 						m_current_function_macro=null;
+						LexToken orig_token=(LexToken)m_deferred_tokens.get(0);
 						m_deferred_tokens.clear();
 						m_current_argument=null;
 						ArrayList args=new ArrayList( m_arguments.size());
@@ -119,13 +123,12 @@ class MacroExpander {
 							exp_args.add( arg.getExpandedArgumentTokens( m_macros));
 						}
 						m_arguments=null;
-						fm.expandTo( this, no_expand, args, exp_args);
+						fm.expandTo( orig_token, this, args, exp_args);
 					}
 					else
 					{
-						TokenWithNoExpand twne=new TokenWithNoExpand( next_token, no_expand);
-						m_current_argument.add( twne);
-						m_deferred_tokens.add( twne);
+						m_current_argument.add( next_token);
+						m_deferred_tokens.add( next_token);
 					}
 				}
 				else if ( m_paren_depth==1 && next_token instanceof AltSymbolToken &&
@@ -133,13 +136,12 @@ class MacroExpander {
 				{
 				    m_current_argument=new Argument();
 					m_arguments.add( m_current_argument);
-					m_deferred_tokens.add( new TokenWithNoExpand( next_token, no_expand));
+					m_deferred_tokens.add( next_token);
 				}
 				else
 				{
-					TokenWithNoExpand twne=new TokenWithNoExpand( next_token, no_expand);
-					m_current_argument.add( twne);
-					m_deferred_tokens.add( twne);
+					m_current_argument.add( next_token);
+					m_deferred_tokens.add( next_token);
 				}
 			}
 		}
@@ -162,10 +164,9 @@ class MacroExpander {
 			m_deferred_tokens.clear();
 			Iterator i = deferred.iterator();
 			if (i.hasNext()) {
-				m_reader.processToken( ( (TokenWithNoExpand) i.next()).m_token);
+				m_reader.processToken( (LexToken)i.next());
 				while (i.hasNext()) {
-					TokenWithNoExpand twne = (TokenWithNoExpand) i.next();
-					processToken(twne.m_no_expand, twne.m_token);
+					processToken( (LexToken)i.next());
 				}
 			}
 		}
@@ -185,16 +186,26 @@ class MacroExpander {
 			m_tokens=new ArrayList();
 		}
 
-		void add( TokenWithNoExpand twne)
+		void add( LexToken twne)
 		{
-			if ( twne.m_token==WhiteSpace.m_new_line_token)
-				twne.m_token=WhiteSpace.m_white_space_token;
+			if ( twne.symbol==PreprocessParser.lex_new_line)
+			{
+				try
+				{
+					twne = (LexToken) twne.clone();
+				}
+				catch ( CloneNotSupportedException cnse)
+				{
+
+				}
+				twne.symbol=PreprocessParser.lex_white_space;
+			}
 			m_tokens.add( twne);
 		}
 
 		boolean isEmpty()
 		{
-			return m_tokens.size()==0 || ( m_tokens.size()==1 && ((TokenWithNoExpand)m_tokens.get(0)).m_token.symbol==
+			return m_tokens.size()==0 || ( m_tokens.size()==1 && ((LexToken)m_tokens.get(0)).symbol==
 				PreprocessParser.lex_white_space);
 		}
 
@@ -206,8 +217,7 @@ class MacroExpander {
 			Iterator token_i=m_tokens.iterator();
 			while ( token_i.hasNext())
 			{
-				TokenWithNoExpand twne=(TokenWithNoExpand)token_i.next();
-				expander.processToken( twne.m_no_expand, twne.m_token);
+				expander.processToken( (LexToken)token_i.next());
 			}
 			expander.noMoreTokens();
 			return reader.getTokens();
@@ -215,23 +225,9 @@ class MacroExpander {
 
 		ArrayList getArgumentTokens()
 		{
-			ArrayList result=new ArrayList( m_tokens.size());
-			for ( Iterator i=m_tokens.iterator(); i.hasNext();)
-				result.add( ((TokenWithNoExpand)i.next()).m_token);
+			ArrayList result=(ArrayList)m_tokens.clone();
 			PreprocessParserBase.normalizeWhitespace( result);
 			return result;
-		}
-	}
-
-	static class TokenWithNoExpand
-	{
-		LexToken m_token;
-		HashSet m_no_expand;
-
-		TokenWithNoExpand( LexToken token, HashSet no_expand)
-		{
-			m_token=token;
-			m_no_expand=no_expand;
 		}
 	}
 }

@@ -23,7 +23,7 @@ class ParameterExpander extends LexToken implements SpecialExpander {
 		ArrayList tokens=(ArrayList)expanded_arguments.get( m_arg_index);
 		for ( Iterator i=tokens.iterator(); i.hasNext();)
 			try {
-				reader.processToken(no_expand, (LexToken) i.next());
+				reader.processToken( ((LexToken) i.next()).cloneWithMergedSet( no_expand));
 			}
 		    catch ( LexException le)
 			{

@@ -58,8 +58,7 @@ class StringExpander extends LexToken implements SpecialExpander
 
 		try
 		{
-			reader.processToken(no_expand,
-								new StringLiteral(sb.toString(), m_wide));
+			reader.processToken( new StringLiteral(sb.toString(), m_wide).cloneWithNewSet( no_expand));
 		}
 		catch ( LexException le)
 		{

@@ -1,5 +1,7 @@
 package com.antlersoft.analyzecxx;
 
+import java.util.HashSet;
+
 import com.antlersoft.parser.Symbol;
 import com.antlersoft.parser.Token;
 
@@ -10,9 +12,14 @@ import com.antlersoft.parser.Token;
  */
 class LexToken extends Token
 {
+	private HashSet m_no_expand;
+
+	HashSet m_empty_set=new HashSet();
+
 	LexToken( Symbol symbol, String value)
 	{
 		super( symbol, value);
+		m_no_expand=m_empty_set;
 	}
 
 	/**
@@ -34,5 +41,54 @@ class LexToken extends Token
 				result=false;
 		}
 		return result;
+	}
+
+	boolean canExpand( String name)
+	{
+		return ! m_no_expand.contains( name);
+	}
+
+	HashSet setWithNewMember( String added)
+	{
+		//try
+		//{
+			HashSet result = (HashSet) m_no_expand.clone();
+			result.add(added);
+			return result;
+		//}
+		//catch ( CloneNotSupportedException cse)
+		//{
+		//}
+		//return null;
+	}
+
+	LexToken cloneWithNewSet( HashSet set)
+	{
+		try
+		{
+			LexToken result = (LexToken) clone();
+			result.m_no_expand = set;
+			return result;
+		}
+		catch ( CloneNotSupportedException cse)
+		{
+
+		}
+		return null;
+	}
+	LexToken cloneWithMergedSet( HashSet set)
+	{
+		try
+		{
+			LexToken result = (LexToken) clone();
+			result.m_no_expand = (HashSet)result.m_no_expand.clone();
+			result.m_no_expand.addAll( set);
+			return result;
+		}
+		catch ( CloneNotSupportedException cse)
+		{
+
+		}
+		return null;
 	}
 }

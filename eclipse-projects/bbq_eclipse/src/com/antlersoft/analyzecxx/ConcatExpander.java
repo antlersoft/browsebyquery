@@ -38,9 +38,9 @@ class ConcatExpander extends LexToken implements SpecialExpander {
 		try
 		{
 			for (Iterator i = start.iterator(); i.hasNext(); )
-				reader.processToken(no_expand, (LexToken) i.next());
+				reader.processToken( ((LexToken) i.next()).cloneWithMergedSet( no_expand));
 			for (Iterator i = end.iterator(); i.hasNext(); )
-				reader.processToken(no_expand, (LexToken) i.next());
+				reader.processToken(((LexToken) i.next()).cloneWithMergedSet( no_expand));
 		}
 		catch ( LexException le)
 		{

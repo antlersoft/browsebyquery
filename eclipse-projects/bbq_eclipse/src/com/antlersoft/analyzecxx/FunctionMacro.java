@@ -18,11 +18,10 @@ class FunctionMacro extends Macro
 		m_replacement_list=replacement_list;
 	}
 
-	void expandTo( MacroExpander reader, HashSet no_expand, ArrayList arguments, ArrayList expanded_arguments)
+	void expandTo( LexToken orig_token, MacroExpander reader, ArrayList arguments, ArrayList expanded_arguments)
 	throws RuleActionException, LexException
 	{
-		HashSet new_no_expand=(HashSet)no_expand.clone();
-		new_no_expand.add( getIdentifier());
+		HashSet new_no_expand=orig_token.setWithNewMember( getIdentifier());
 		if ( arguments.size()!=m_arguments || expanded_arguments.size()!=m_arguments)
 			throw new RuleActionException( "Bad argument count for macro "+getIdentifier());
 		for ( Iterator i=m_replacement_list.iterator(); i.hasNext();)
@@ -31,7 +30,7 @@ class FunctionMacro extends Macro
 			if ( token instanceof SpecialExpander)
 				((SpecialExpander)token).expandTo( reader, new_no_expand, arguments, expanded_arguments);
 			else
-				reader.processToken( new_no_expand, token);
+				reader.processToken( token.cloneWithNewSet( new_no_expand));
 		}
 	}
 }
