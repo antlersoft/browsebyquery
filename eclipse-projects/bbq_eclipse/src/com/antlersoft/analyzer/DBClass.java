@@ -27,45 +27,45 @@ public class DBClass implements Persistent, Cloneable, SourceObject
     Vector derivedClasses;
     private boolean resolved;
 
-	private transient PersistentImpl _persistentImpl;
+		private transient PersistentImpl _persistentImpl;
 
     public DBClass( String key, AnalyzerDB db)
     {
-		name=key;
-		superClasses=new Vector();
-		derivedClasses=new Vector();
-		methods=new Hashtable();
-		fields=new Hashtable();
-		resolved=false;
-		_persistentImpl=new PersistentImpl();
-		ObjectDB.makePersistent( this);
+				name=key;
+				superClasses=new Vector();
+				derivedClasses=new Vector();
+				methods=new Hashtable();
+				fields=new Hashtable();
+				resolved=false;
+				_persistentImpl=new PersistentImpl();
+				ObjectDB.makePersistent( this);
     }
 
-	public PersistentImpl _getPersistentImpl()
-	{
-		if ( _persistentImpl==null)
-			_persistentImpl=new PersistentImpl();
-		return _persistentImpl;
-	}
+		public PersistentImpl _getPersistentImpl()
+		{
+				if ( _persistentImpl==null)
+						_persistentImpl=new PersistentImpl();
+				return _persistentImpl;
+		}
 
     public String toString()
     {
-		return name;
+				return name;
     }
 
     public boolean isResolved()
     {
-	return resolved;
+		return resolved;
     }
 
     public Enumeration getMethods()
     {
-	return new FromRefEnumeration( methods.elements());
+		return new FromRefEnumeration( methods.elements());
     }
 
     public Enumeration getFields()
     {
-	return new FromRefEnumeration( fields.elements());
+		return new FromRefEnumeration( fields.elements());
     }
 
     public DBClass getDBClass()
@@ -100,155 +100,155 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 
     public String getName()
     {
-	return name;
+		return name;
     }
 
     private void clearMethods()
     {
-	methods.clear();
-	ObjectDB.makeDirty( this);
+		methods.clear();
+		ObjectDB.makeDirty( this);
     }
 
     private void clearFields()
     {
-	fields.clear();
-	ObjectDB.makeDirty( this);
+		fields.clear();
+		ObjectDB.makeDirty( this);
     }
 
     public Enumeration getSuperClasses()
     {
-	return new FromRefEnumeration( superClasses.elements());
+		return new FromRefEnumeration( superClasses.elements());
     }
 
     public Enumeration getDerivedClasses()
     {
-	return new FromRefEnumeration( derivedClasses.elements());
+		return new FromRefEnumeration( derivedClasses.elements());
     }
 
     private void addSuperClass( DBClass toAdd)
     {
-	superClasses.addElement( new ObjectRef( toAdd));
-	toAdd.derivedClasses.addElement( new ObjectRef( this));
-	ObjectDB.makeDirty( this);
-	ObjectDB.makeDirty( toAdd);
+		superClasses.addElement( new ObjectRef( toAdd));
+		toAdd.derivedClasses.addElement( new ObjectRef( this));
+		ObjectDB.makeDirty( this);
+		ObjectDB.makeDirty( toAdd);
     }
 
     private void clearSuperClasses()
     {
-	superClasses.removeAllElements();
-	ObjectDB.makeDirty( this);
+		superClasses.removeAllElements();
+		ObjectDB.makeDirty( this);
     }
 
     public static void addClassToDB( AnalyzeClass ac, AnalyzerDB db)
-	throws Exception
+		throws Exception
     {
-	DBClass dbc=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass",
-	    ac.getClassName( ac.thisClassIndex));
-	dbc.clearMethods();
-	dbc.clearSuperClasses();
-	dbc.clearFields();
-	dbc.resolved=true;
-	int superClassIndex=ac.superClassIndex;
-	if ( superClassIndex!=0)
-	{
-	    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName( superClassIndex)));
-	}
-	int i;
-	for ( i=0; i<ac.interfaces.length; i++)
-	{
-	    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName(ac.interfaces[i])));
-	}
-	for ( i=0; i<ac.fields.length; i++)
-	{
-	    dbc.addField( (DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-		DBField.makeKey( dbc.name, ac.getString(
+		DBClass dbc=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass",
+		    ac.getClassName( ac.thisClassIndex));
+		dbc.clearMethods();
+		dbc.clearSuperClasses();
+		dbc.clearFields();
+		dbc.resolved=true;
+		int superClassIndex=ac.superClassIndex;
+		if ( superClassIndex!=0)
+		{
+		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName( superClassIndex)));
+		}
+		int i;
+		for ( i=0; i<ac.interfaces.length; i++)
+		{
+		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName(ac.interfaces[i])));
+		}
+		for ( i=0; i<ac.fields.length; i++)
+		{
+		    dbc.addField( (DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
+				DBField.makeKey( dbc.name, ac.getString(
             ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex))));
-	}
-	for ( i=0; i<ac.methods.length; i++)
-	{
-	    AnalyzeClass.FieldInfo mi=ac.methods[i];
-	    DBMethod method=(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
-		DBMethod.makeKey( dbc.name,
-		ac.getString( mi.nameIndex),
-		ac.getString( mi.descriptorIndex)
-		));
+		}
+		for ( i=0; i<ac.methods.length; i++)
+		{
+		    AnalyzeClass.FieldInfo mi=ac.methods[i];
+		    DBMethod method=(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
+				DBMethod.makeKey( dbc.name,
+				ac.getString( mi.nameIndex),
+				ac.getString( mi.descriptorIndex)
+				));
         dbc.addMethod( method);
-	    method.setFromAnalyzeClass( ac, i, db);
-	}
+		    method.setFromAnalyzeClass( ac, i, db);
+		}
     }
 
     public static void addFileToDB( File file, AnalyzerDB db)
-	throws Exception
+		throws Exception
     {
-	if ( file.isDirectory())
-	{
-	    File[] listFiles;
-	    try
-	    {
-		listFiles=file.listFiles();
-		for ( int i=0; i<listFiles.length; i++)
+		if ( file.isDirectory())
 		{
-		    addFileToDB( listFiles[i], db);
+		    File[] listFiles;
+		    try
+		    {
+				listFiles=file.listFiles();
+				for ( int i=0; i<listFiles.length; i++)
+				{
+				    addFileToDB( listFiles[i], db);
+				}
+		    }
+		    catch ( SecurityException se)
+		    {
+		    }
+		    return;
 		}
-	    }
-	    catch ( SecurityException se)
-	    {
-	    }
-	    return;
-	}
-	// Check to see if it is a Zip file
-	try
-	{
-	    ZipFile zip=new ZipFile( file);
+		// Check to see if it is a Zip file
+		try
+		{
+		    ZipFile zip=new ZipFile( file);
 
-	    // If it is a Zip file, process each member in turn
-	    for ( Enumeration e=zip.entries(); e.hasMoreElements(); )
-	    {
-		ZipEntry entry=(ZipEntry)e.nextElement();
-		String entryName=entry.getName();
-		int length=entryName.length();
-		if ( length>6 && entryName.substring( length-6).equals( ".class"))
+		    // If it is a Zip file, process each member in turn
+		    for ( Enumeration e=zip.entries(); e.hasMoreElements(); )
+		    {
+				ZipEntry entry=(ZipEntry)e.nextElement();
+				String entryName=entry.getName();
+				int length=entryName.length();
+				if ( length>6 && entryName.substring( length-6).equals( ".class"))
+				{
+				    try
+				    {
+						addClassToDB( new AnalyzeClass( zip.getInputStream( entry)), db);
+				    }
+				    // If it is not a class file, don't fret it
+				    catch ( IllegalStateException ise)
+				    {
+				    }
+				    catch ( IOException ioe)
+				    {
+				    }
+				    catch ( CodeReader.BadInstructionException bie)
+				    {
+						System.out.println( bie.getMessage());
+						System.out.println( "In "+file.getCanonicalPath()+"/"+entryName);
+				    }
+				}
+		    }
+
+		    zip.close();
+		    return;
+		}
+		// Not a zip file -- see if it is a class file
+		catch ( ZipException zfe)
+		{
+		}
+		String fileName=file.getName();
+		int fileLength=fileName.length();
+		if ( fileLength>6 && fileName.substring( fileLength-6).equals( ".class"))
 		{
 		    try
 		    {
-			addClassToDB( new AnalyzeClass( zip.getInputStream( entry)), db);
-		    }
-		    // If it is not a class file, don't fret it
-		    catch ( IllegalStateException ise)
-		    {
-		    }
-		    catch ( IOException ioe)
-		    {
+				addClassToDB(
+				    new AnalyzeClass( new BufferedInputStream( new FileInputStream( file))), db);
 		    }
 		    catch ( CodeReader.BadInstructionException bie)
 		    {
-			System.out.println( bie.getMessage());
-			System.out.println( "In "+file.getCanonicalPath()+"/"+entryName);
+				System.out.println( bie.getMessage());
+				System.out.println( "In "+file.getCanonicalPath());
 		    }
 		}
-	    }
-
-	    zip.close();
-	    return;
-	}
-	// Not a zip file -- see if it is a class file
-	catch ( ZipException zfe)
-	{
-	}
-	String fileName=file.getName();
-	int fileLength=fileName.length();
-	if ( fileLength>6 && fileName.substring( fileLength-6).equals( ".class"))
-	{
-	    try
-	    {
-		addClassToDB(
-		    new AnalyzeClass( new BufferedInputStream( new FileInputStream( file))), db);
-	    }
-	    catch ( CodeReader.BadInstructionException bie)
-	    {
-		System.out.println( bie.getMessage());
-		System.out.println( "In "+file.getCanonicalPath());
-	    }
-	}
     }
 }
