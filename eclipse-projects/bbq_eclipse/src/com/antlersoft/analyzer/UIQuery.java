@@ -1,25 +1,40 @@
 package analyzer;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Enumeration;
 import javax.swing.*;
+//import javax.swing.filechooser.ExtensionFileFilter;
 import java.awt.*;
 import java.awt.event.*;
 
 public class UIQuery
 {
+    JFileChooser chooser;
     AnalyzerDB analyzerDB;
+    String analyzerDBOpenString;
     QueryParser qp;
     JTextArea queryArea;
     JTextArea outputArea;
+    Window frameWindow;
 
     UIQuery()
     {
 	analyzerDB=new SimpleAnalyzerDB();
 	qp=new QueryParser();
+	chooser=new JFileChooser();
+	chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES);
+	//chooser.setMultiSelectionEnabled( true); // Doesn't work yet
+	//ExtensionFileFilter filter=new ExtensionFileFilter();
+	//filter.addExtension( "class");
+	//filter.addExtension( "zip");
+	//filter.addExtension( "jar");
+	//chooser.setFileFilter( filter);
     }
 
     Component createComponents()
@@ -59,26 +74,65 @@ public class UIQuery
 			}
 			outputArea.setText( results.toString());
 		    }
-		    catch ( Exception pe)
+		    catch ( QueryParser.ParseException pe)
 		    {
-			JOptionPane.showMessageDialog( outputArea, pe.getMessage(),
-			    "Parse Error", JOptionPane.ERROR_MESSAGE);
-		    }		    
+			displayException( "Parse Error", pe);
+		    }
+		    catch ( Exception unkn)		    
+		    {
+			displayException( "Query Error", unkn);
+		    }
 		}
 	    });
 
 	return mainPane;
     }
 
+    JMenuBar createMenuBar()
+    {
+        JMenuBar menuBar=new JMenuBar();
+
+	// Create File menu
+	JMenu fileMenu=new JMenu( "File");
+
+	// Create analyze action
+	fileMenu.add( new AnalyzeAction());
+
+	// Create save action
+	fileMenu.add( new SaveAction());
+
+	// Create Exit action
+	fileMenu.addSeparator();
+	fileMenu.add( new ExitAction());
+
+	// Add menu to menu bar
+	menuBar.add( fileMenu);
+
+	return menuBar;	
+    }
+
+    void displayException( String caption, Throwable t)
+    {
+	StringWriter sw=new StringWriter( 1000);
+	PrintWriter pw=new PrintWriter( sw);
+	t.printStackTrace( pw);
+	pw.close();
+	JOptionPane.showMessageDialog( frameWindow, t.getMessage()+" \n"+sw.toString(),
+	    caption, JOptionPane.ERROR_MESSAGE);
+    }
+
     public static void main( String argv[])
 	throws Exception
     {
 	final UIQuery app = new UIQuery();
-	app.analyzerDB.openDB( argv[0]);
+	app.analyzerDBOpenString=argv[0];
+	app.analyzerDB.openDB( app.analyzerDBOpenString);
 
 	JFrame appFrame=new JFrame( "Querying "+argv[0]);
+	app.frameWindow=appFrame;
         Component contents = app.createComponents();
         appFrame.getContentPane().add(contents, BorderLayout.CENTER);
+	appFrame.setJMenuBar( app.createMenuBar());
         //Finish setting up the frame, and show it.
         appFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -92,5 +146,81 @@ public class UIQuery
                 System.exit(0);      }        });
         appFrame.pack();
         appFrame.setVisible(true);
+    }
+
+    class ExitAction extends AbstractAction
+    {
+	ExitAction()
+	{
+	    super( "Exit");
+	}
+
+	public void actionPerformed( ActionEvent event)
+	{
+	    frameWindow.dispatchEvent( new WindowEvent( frameWindow, WindowEvent.WINDOW_CLOSING));
+	}
+    }
+
+    class SaveAction extends AbstractAction
+    {
+	SaveAction()
+	{
+	    super( "Save");
+	}
+
+	public void actionPerformed( ActionEvent event)
+	{
+	    if ( analyzerDB!=null)
+	    {
+		try
+		{
+                    analyzerDB.closeDB();
+		    analyzerDB.openDB( analyzerDBOpenString);
+		}
+		catch ( Exception e)
+		{
+		    displayException( "Save Error", e);
+		}
+	    }
+	}
+    }
+
+    class AnalyzeAction extends AbstractAction
+    {
+	AnalyzeAction()
+	{
+	    super( "Analyze");
+	}
+
+	public void actionPerformed( ActionEvent event)
+	{
+	    try
+	    {
+		if ( chooser.showDialog( frameWindow, "Analyze")==JFileChooser.APPROVE_OPTION)
+		{
+		    Cursor oldCursor=frameWindow.getCursor();
+		    frameWindow.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR));
+		    try
+		    {
+			// File[] selectedFiles=chooser.getSelectedFiles();
+			// Multi-file selection is broken
+			File[] selectedFiles=new File[] { chooser.getSelectedFile() };
+
+			for ( int i=0; i<selectedFiles.length; i++)
+			{
+			    DBClass.addFileToDB( selectedFiles[i], analyzerDB);
+			}
+		    }
+		    finally
+		    {
+			frameWindow.setCursor( oldCursor);
+		    }
+		}
+	    }
+	    catch ( Exception e)
+	    {
+		displayException( "Analyze Error", e);
+	    }
+	}
     }
 }
