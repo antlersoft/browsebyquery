@@ -37,6 +37,11 @@ public class ValueExpressionTransform extends Transform
 		}
 	}
 
+	public boolean isAbleToUseMore()
+	{
+		return m_able_to_use_more;
+	}
+
 	public Enumeration transformObject(DataSource source, Object to_transform) {
 		Enumeration result=EmptyEnum.empty;
 		switch (m_expr.getContext().getContextType()) {

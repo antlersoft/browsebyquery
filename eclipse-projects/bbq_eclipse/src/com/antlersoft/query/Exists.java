@@ -6,15 +6,10 @@ public class Exists extends Filter implements CountPreservingValueContext {
 	public Exists( Transform transform)
 	{
 		m_transform=transform;
-		m_result=false;
-		m_result_object=new Boolean( false);
 	}
 
     public List getValueCollection() {
 		return NO_SUBS;
-    }
-    public Object getValue() {
-		return m_result_object;
     }
 	public boolean booleanValue() { return m_result; }
     public ValueContext getContext() {
@@ -28,13 +23,8 @@ public class Exists extends Filter implements CountPreservingValueContext {
 	public void inputObject( ValueObject obj, DataSource source, Object to_transform)
 	{
 		m_transform.startEvaluation( source);
-		boolean new_result=m_transform.transformObject( source, to_transform).hasMoreElements();
-		new_result=m_transform.finishEvaluation( source).hasMoreElements() || new_result;
-		if ( new_result!=m_result)
-		{
-			m_result=new_result;
-			m_result_object=new Boolean( m_result);
-		}
+		m_result=m_transform.transformObject( source, to_transform).hasMoreElements();
+		m_result=m_transform.finishEvaluation( source).hasMoreElements() || m_result;
 	}
 
 	// Bindable implementation
@@ -51,6 +41,5 @@ public class Exists extends Filter implements CountPreservingValueContext {
 	}
 
 	private boolean m_result;
-	private Boolean m_result_object;
 	private Transform m_transform;
 }

@@ -43,6 +43,11 @@ public class TransformTransform extends Transform {
 						));
     }
 
+	public boolean isAbleToUseMore()
+	{
+		return m_primary.isAbleToUseMore() && m_secondary.isAbleToUseMore();
+	}
+
 	private ResolveCompoundBinding m_binding;
 	private Transform m_primary, m_secondary;
 }
