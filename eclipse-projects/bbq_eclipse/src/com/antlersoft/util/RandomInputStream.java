@@ -22,12 +22,14 @@ public class RandomInputStream extends InputStream
 		position=0;
 		count=0;
 		buffer=new byte[SIZE_INCREMENT];
+        mark_position= -1;
 	}
 
 	public synchronized void emptyAddBytes( byte[] toAdd, int offset,
         int length)
 	{
 		position=0;
+        mark_position= -1;
 		count=0;
 		if ( length>buffer.length)
 		{
@@ -50,6 +52,7 @@ public class RandomInputStream extends InputStream
 		{
 			position=0;
 			count=0;
+            mark_position= -1;
 		}
 	}
 
@@ -99,7 +102,27 @@ public class RandomInputStream extends InputStream
 		return count-position;
 	}
 
+    public boolean markSupported()
+    {
+        return true;
+    }
+
+    public synchronized void mark( int mark_count)
+    {
+        mark_position=position;
+    }
+
+    public synchronized void reset()
+        throws IOException
+    {
+        if ( mark_position== -1)
+            throw new IOException( "No marked position");
+        position=mark_position;
+        mark_position= -1;
+    }
+
 	private int position;
 	private int count;
+    private int mark_position;
 	private byte[] buffer;
 }

@@ -48,54 +48,69 @@ public class Messenger
         return outMessage;
     }
 
-    public synchronized void sendMessage()
+    public void sendMessage()
         throws IOException
     {
-        outMessage.flush();
-        byte[] outBuffer=randomOutput.getWrittenBytes();
-        socketOutput.writeInt( outBuffer.length);
-        socketOutput.write( outBuffer);
-        socketOutput.flush();
+        synchronized ( outLock)
+        {
+            outMessage.flush();
+            byte[] outBuffer=randomOutput.getWrittenBytes();
+            socketOutput.writeInt( outBuffer.length);
+            socketOutput.write( outBuffer);
+            socketOutput.flush();
+        }
     }
 
-    public synchronized void receiveMessage()
+    public void receiveMessage()
         throws IOException
     {
-        int messageLength=socketInput.readInt();
-        byte[] inBuffer;
-        if ( messageLength<=DEFAULT_BUFFER_LENGTH)
-            inBuffer=defaultBuffer;
-        else
-            inBuffer=new byte[messageLength];
-        socketInput.readFully( inBuffer, 0, messageLength);
-        randomInput.emptyAddBytes( inBuffer);
+        synchronized ( inLock)
+        {
+            int messageLength=socketInput.readInt();
+            byte[] inBuffer;
+            if ( messageLength<=DEFAULT_BUFFER_LENGTH)
+                inBuffer=defaultBuffer;
+            else
+                inBuffer=new byte[messageLength];
+            socketInput.readFully( inBuffer, 0, messageLength);
+            randomInput.emptyAddBytes( inBuffer);
+        }
     }
 
-    public synchronized void clearOutputMessage()
+    public void clearOutputMessage()
         throws IOException
     {
-        outMessage.flush();
-        randomOutput.getWrittenBytes();
+        synchronized( outLock)
+        {
+            outMessage.flush();
+            randomOutput.getWrittenBytes();
+        }
     }
 
-    public synchronized void sendRequest()
+    public void sendRequest()
         throws IOException
     {
         sendMessage();
         receiveMessage();
     }
 
-    public synchronized void close()
+    public void close()
         throws IOException
     {
-        socket.close();
-        socket=null;
-        socketInput=null;
-        socketOutput=null;
-        randomInput=null;
-        randomOutput=null;
-        inMessage=null;
-        outMessage=null;
+        synchronized ( outLock)
+        {
+            synchronized( inLock)
+            {
+                socket.close();
+                socket=null;
+                socketInput=null;
+                socketOutput=null;
+                randomInput=null;
+                randomOutput=null;
+                inMessage=null;
+                outMessage=null;
+            }
+        }
     }
 
     private final int DEFAULT_BUFFER_LENGTH=10240;
@@ -107,4 +122,6 @@ public class Messenger
     private RandomOutputStream randomOutput;
     private DataOutputStream outMessage;
     private DataInputStream inMessage;
+    private Object inLock=new Object();
+    private Object outLock=new Object();
 }
