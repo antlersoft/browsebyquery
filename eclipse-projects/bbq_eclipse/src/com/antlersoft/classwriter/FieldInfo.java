@@ -48,6 +48,11 @@ public class FieldInfo
         return attributes.getCurrentClass().getString( descriptorIndex);
     }
 
+    public void setType( String newType)
+    {
+        descriptorIndex=attributes.getCurrentClass().getStringIndex( newType);
+    }
+
 	void write( DataOutputStream classStream)
 		throws IOException
 	{

@@ -16,6 +16,8 @@ import classwriter.*;
 
 public class WriterTest
 {
+    private static Class[] parameterTypes={ (new String[0]).getClass() };
+
     public static void rewrite(String[] args)
     	throws IOException, CodeCheckException
     {
@@ -130,13 +132,21 @@ public class WriterTest
         outStream.close();
     }
 
+    public static void anyclass( String[] args)
+        throws Throwable
+    {
+        String[] newArgs=new String[args.length-2];
+        System.arraycopy( args, 2, newArgs, 0, newArgs.length);
+        Class.forName( args[0]).getMethod( args[1], parameterTypes).invoke(
+            null, newArgs);
+    }
+
     public static void main( String[] args)
         throws Throwable
     {
         BufferedReader commands=new BufferedReader(
             new InputStreamReader( new FileInputStream( args[0])));
         String line;
-        Class[] parameterTypes={ (new String[0]).getClass() };
         for ( line=commands.readLine(); line!=null; line=commands.readLine())
         {
             if ( line.startsWith( "#"))

@@ -69,7 +69,7 @@ public class ClassWriter implements Cloneable
         magic=0xCAFEBABE;
         majorVersion=45;
         minorVersion=32767;
-        accessFlags=flags;
+        accessFlags=flags|ACC_SUPER;
         thisClassIndex=getClassIndex( className);
         superClassIndex=getClassIndex( superClass);
      }
@@ -165,11 +165,45 @@ public class ClassWriter implements Cloneable
         return Collections.unmodifiableCollection( methods);
     }
 
+    public Collection getFields()
+    {
+        return Collections.unmodifiableCollection( fields);
+    }
+
+    public Collection getInterfaces()
+    {
+        return Collections.unmodifiableCollection( interfaces);
+    }
+
     public MethodInfo addMethod( int flags, String name, String descriptor)
     {
         MethodInfo result=new MethodInfo( flags, name, descriptor, this);
         methods.add( result);
         return result;
+    }
+
+    public FieldInfo addField( int flags, String name, String descriptor)
+    {
+        FieldInfo result=new FieldInfo( flags, name, descriptor, this);
+        fields.add( result);
+        return result;
+    }
+
+    public int addInterface( String interfaceName)
+    {
+        int result=getClassIndex( interfaceName);
+        interfaces.add( new Integer( result));
+        return result;
+    }
+
+    public int getCurrentClassIndex()
+    {
+        return thisClassIndex;
+    }
+
+    public int getSuperClassIndex()
+    {
+        return superClassIndex;
     }
 
     private void clearClass()
@@ -395,7 +429,7 @@ public class ClassWriter implements Cloneable
 		return new String( nameBuffer);
     }
 
-    class CPTypeRef extends CPInfo
+    public class CPTypeRef extends CPInfo
     {
 		int classIndex;
 		int nameAndTypeIndex;
@@ -415,16 +449,22 @@ public class ClassWriter implements Cloneable
             nameAndTypeIndex=nti;
         }
 
-		String getSynbolName()
+		public String getSymbolName()
   		{
         	return getString( ((CPNameAndType)constantPool.get(
          		nameAndTypeIndex)).nameIndex);
         }
 
-        String getSymbolType()
+        public String getSymbolType()
         {
             return getString( ((CPNameAndType)constantPool.get(
             	nameAndTypeIndex)).descriptorIndex);
+        }
+
+        public void setSymbolType( String newType)
+        {
+            ((CPNameAndType)constantPool.get( nameAndTypeIndex)).descriptorIndex
+                =getStringIndex( newType);
         }
 
   		void write( DataOutputStream classStream)
