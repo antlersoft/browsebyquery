@@ -32,7 +32,7 @@ public class UIQuery
 
     UIQuery()
     {
-	analyzerDB=new SimpleAnalyzerDB();
+	analyzerDB=new ObjectAnalyzeDB();
 	qp=new QueryParser();
 	chooser=new JFileChooser();
 	chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES);

@@ -1,17 +1,24 @@
 package analyzer;
 
+import odb.ObjectRef;
+
 class DBCall extends DBReference
 {
     DBCall( DBMethod s, DBMethod t, int l)
     {
 	super( s, l);	
-	target=t;
+	target=new ObjectRef( t);
     }
 
-    DBMethod target;
+    ObjectRef target;
+
+	public DBMethod getTarget()
+	{
+		return (DBMethod)target.getReferenced();
+	}
 
     public String toString()
     {
-	return "Call to "+target.toString()+" from "+source.toString()+" at line "+String.valueOf( lineNumber);
+	return "Call to "+getTarget().toString()+" from "+getSource().toString()+" at line "+String.valueOf( lineNumber);
     }
 }

@@ -1,7 +1,6 @@
 package analyzer;
 
 import java.util.Vector;
-import java.util.Hashtable;
 import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
@@ -12,28 +11,45 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
-public class DBClass implements Serializable, Cloneable
+import odb.FromRefEnumeration;
+import odb.ObjectRef;
+import odb.ObjectDB;
+import odb.Persistent;
+import odb.PersistentImpl;
+
+public class DBClass implements Persistent, Cloneable
 {
     String name;
     Vector superClasses;
     Vector methods;
     Vector fields;
-    Hashtable derivedClasses;
+    Vector derivedClasses;
     private boolean resolved;
+
+	private transient PersistentImpl _persistentImpl;
 
     public DBClass( String key, AnalyzerDB db)
     {
-	name=key;
-	superClasses=new Vector();
-	derivedClasses=new Hashtable();
-	methods=new Vector();
-	fields=new Vector();
-	resolved=false;
+		name=key;
+		superClasses=new Vector();
+		derivedClasses=new Vector();
+		methods=new Vector();
+		fields=new Vector();
+		resolved=false;
+		_persistentImpl=new PersistentImpl();
+		ObjectDB.setPersistent( this);
     }
+
+	public PersistentImpl _getPersistentImpl()
+	{
+		if ( _persistentImpl==null)
+			_persistentImpl=new PersistentImpl();
+		return _persistentImpl;
+	}
 
     public String toString()
     {
-	return name;
+		return name;
     }
 
     public boolean isResolved()
@@ -43,12 +59,12 @@ public class DBClass implements Serializable, Cloneable
 
     public Enumeration getMethods()
     {
-	return methods.elements();
+	return new FromRefEnumeration( methods.elements());
     }
 
     public Enumeration getFields()
     {
-	return fields.elements();
+	return new FromRefEnumeration( fields.elements());
     }
 
     public String getName()
@@ -59,32 +75,37 @@ public class DBClass implements Serializable, Cloneable
     private void clearMethods()
     {
 	methods.removeAllElements();
+	ObjectDB.makeDirty( this);
     }
 
     private void clearFields()
     {
 	fields.removeAllElements();
+	ObjectDB.makeDirty( this);
     }
 
     public Enumeration getSuperClasses()
     {
-	return superClasses.elements();
+	return new FromRefEnumeration( superClasses.elements());
     }
 
     public Enumeration getDerivedClasses()
     {
-	return derivedClasses.elements();
+	return new FromRefEnumeration( derivedClasses.elements());
     }
 
     private void addSuperClass( DBClass toAdd)
     {
-	superClasses.addElement( toAdd);
-	toAdd.derivedClasses.put( this, this);
+	superClasses.addElement( new ObjectRef( toAdd));
+	toAdd.derivedClasses.addElement( new ObjectRef( this));
+	ObjectDB.makeDirty( this);
+	ObjectDB.makeDirty( toAdd);
     }
 
     private void clearSuperClasses()
     {
 	superClasses.removeAllElements();
+	ObjectDB.makeDirty( this);
     }
 
     public static void addClassToDB( AnalyzeClass ac, AnalyzerDB db)
@@ -108,8 +129,8 @@ public class DBClass implements Serializable, Cloneable
 	}
 	for ( i=0; i<ac.fields.length; i++)
 	{
-	    dbc.fields.addElement( (DBField)db.getWithKey( "analyzer.DBField",
-		DBField.makeKey( dbc.name, ac.getString( ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex))));
+	    dbc.fields.addElement( new ObjectRef( (DBField)db.getWithKey( "analyzer.DBField",
+		DBField.makeKey( dbc.name, ac.getString( ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex)))));
 	}
 	for ( i=0; i<ac.methods.length; i++)
 	{
@@ -120,7 +141,7 @@ public class DBClass implements Serializable, Cloneable
 		ac.getString( mi.descriptorIndex)
 		));
 	    method.setFromAnalyzeClass( ac, i, db);
-	    dbc.methods.addElement( method);
+	    dbc.methods.addElement( new ObjectRef( method));
 	}
     }
 

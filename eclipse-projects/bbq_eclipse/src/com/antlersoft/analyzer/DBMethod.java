@@ -6,13 +6,18 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-public class DBMethod implements Serializable, Cloneable
+import odb.ObjectRef;
+import odb.ObjectDB;
+import odb.Persistent;
+import odb.PersistentImpl;
+
+public class DBMethod implements Persistent, Cloneable
 {
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
     public static final int REAL=3;
 
-    DBClass dbclass;
+    ObjectRef dbclass;
     String name;
     String signature;
     Vector calls;
@@ -22,24 +27,35 @@ public class DBMethod implements Serializable, Cloneable
     private boolean resolved;
     static public Vector emptyVector=new Vector();
 
+    private transient PersistentImpl _persistentImpl;
+
     public DBMethod( String key, AnalyzerDB db)
 	throws Exception
     {
 	StringTokenizer st=new StringTokenizer( key, "\t");
-	dbclass=(DBClass)db.getWithKey( "analyzer.DBClass", (String)st.nextElement());
+	dbclass=new ObjectRef( (DBClass)db.getWithKey( "analyzer.DBClass", (String)st.nextElement()));
 	name=(String)st.nextElement();
 	signature=(String)st.nextElement();
 	resolved=false;
+	_persistentImpl=new PersistentImpl();
+	ObjectDB.setPersistent( this);
+    }
+
+    public PersistentImpl _getPersistentImpl()
+    {
+	if ( _persistentImpl==null)
+		_persistentImpl=new PersistentImpl();
+	return _persistentImpl;
     }
 
     public String toString()
     {
-	return dbclass.name+":"+name+signature;
+	return ((DBClass)dbclass.getReferenced()).name+":"+name+signature;
     }
 
     public int methodStatus()
     {
-	if ( ! dbclass.isResolved())
+	if ( ! ((DBClass)dbclass.getReferenced()).isResolved())
 	    return UNRESOLVED;
 	else
 	    return resolved ? REAL : VIRTUAL;
@@ -68,7 +84,7 @@ public class DBMethod implements Serializable, Cloneable
 
     public DBClass getDBClass()
     {
-	return dbclass;
+	return (DBClass)dbclass.getReferenced();
     }
 
     public Enumeration getCalls()
@@ -96,6 +112,7 @@ public class DBMethod implements Serializable, Cloneable
 
     public void addCalledBy( DBMethod caller, Vector callsFromCaller)
     {
+	ObjectDB.makeDirty( this);
 	if ( calledBy==null)
 	    calledBy=callsFromCaller;
 	else
@@ -104,7 +121,7 @@ public class DBMethod implements Serializable, Cloneable
 	    int i;
 	    for ( i=0; i<calledBy.size(); i++)
 	    {
-		if ( ((DBCall)calledBy.elementAt( i)).source==caller)
+		if ( ((DBCall)calledBy.elementAt( i)).getSource()==caller)
 		{
 		    calledBy.removeElementAt( i);
 		    i--;
@@ -189,11 +206,11 @@ public class DBMethod implements Serializable, Cloneable
 		for ( e=calls.elements(); e.hasMoreElements(); )
 		{
 		    DBCall call=(DBCall)e.nextElement();
-		    Vector calledByMethod=(Vector)calledTable.get( call.target);
+		    Vector calledByMethod=(Vector)calledTable.get( call.getTarget());
 		    if ( calledByMethod==null)
 		    {
 			calledByMethod=new Vector();
-			calledTable.put( call.target, calledByMethod);
+			calledTable.put( call.getTarget(), calledByMethod);
 		    }
 		    calledByMethod.addElement( call);
 		}
@@ -206,11 +223,11 @@ public class DBMethod implements Serializable, Cloneable
 		for ( e=fieldReferences.elements(); e.hasMoreElements(); )
 		{
 		    DBFieldReference reference=(DBFieldReference)e.nextElement();
-		    Vector calledByMethod=(Vector)calledTable.get( reference.target);
+		    Vector calledByMethod=(Vector)calledTable.get( reference.getTarget());
 		    if ( calledByMethod==null)
 		    {
 			calledByMethod=new Vector();
-			calledTable.put( reference.target, calledByMethod);
+			calledTable.put( reference.getTarget(), calledByMethod);
 		    }
 		    calledByMethod.addElement( reference);
 		}

@@ -6,30 +6,46 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-public class DBField implements Serializable, Cloneable
+import odb.ObjectRef;
+import odb.ObjectDB;
+import odb.Persistent;
+import odb.PersistentImpl;
+
+public class DBField implements Persistent, Cloneable
 {
-    DBClass dbclass;
+    ObjectRef dbclass;
     String name;
     String descriptor;
     Vector referencedBy;
+
+    private transient PersistentImpl _persistentImpl;
 
     public DBField( String key, AnalyzerDB db)
 	throws Exception
     {
 	StringTokenizer st=new StringTokenizer( key, "\t");
-	dbclass=(DBClass)db.getWithKey( "analyzer.DBClass", (String)st.nextElement());
+	dbclass=new ObjectRef( (DBClass)db.getWithKey( "analyzer.DBClass", (String)st.nextElement()));
 	name=(String)st.nextElement();
 	descriptor=new String();
+	_persistentImpl=new PersistentImpl();
+	ObjectDB.setPersistent( this);
+    }
+
+    public PersistentImpl _getPersistentImpl()
+    {
+		if ( _persistentImpl==null)
+			_persistentImpl=new PersistentImpl();
+	    return _persistentImpl;
     }
 
     public String toString()
     {
-	return dbclass.name+":"+name+descriptor;
+	return ((DBClass)dbclass.getReferenced()).name+":"+name+descriptor;
     }
 
     public int fieldStatus()
     {
-	if ( ! dbclass.isResolved())
+	if ( ! ((DBClass)dbclass.getReferenced()).isResolved())
 	    return DBMethod.UNRESOLVED;
 	else
 	    return DBMethod.REAL;
@@ -57,11 +73,12 @@ public class DBField implements Serializable, Cloneable
     public void setDescriptor( String s)
     {
 	descriptor=s;
+	ObjectDB.makeDirty( this);
     }
 
     public DBClass getDBClass()
     {
-	return dbclass;
+	return (DBClass)dbclass.getReferenced();;
     }
 
     public Enumeration getReferencedBy()
@@ -73,6 +90,7 @@ public class DBField implements Serializable, Cloneable
 
     public void addReferencedBy( DBMethod caller, Vector callsFromCaller)
     {
+	ObjectDB.makeDirty( this);
 	if ( referencedBy==null)
 	    referencedBy=callsFromCaller;
 	else
@@ -81,7 +99,7 @@ public class DBField implements Serializable, Cloneable
 	    int i;
 	    for ( i=0; i<referencedBy.size(); i++)
 	    {
-		if ( ((DBFieldReference)referencedBy.elementAt( i)).source==caller)
+		if ( ((DBFieldReference)referencedBy.elementAt( i)).getSource()==caller)
 		{
 		    referencedBy.removeElementAt( i);
 		    i--;
