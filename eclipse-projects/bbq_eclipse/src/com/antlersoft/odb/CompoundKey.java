@@ -1,6 +1,8 @@
 package com.antlersoft.odb;
 
-public class CompoundKey implements Comparable {
+import java.io.Serializable;
+
+public class CompoundKey implements Comparable, Serializable {
 	private Comparable key1;
 	private Comparable key2;
 
