@@ -1,14 +1,15 @@
 package com.antlersoft.analyzer.query;
 
+import com.antlersoft.parser.ReservedWord;
 import com.antlersoft.parser.RuleActionException;
 
 public class LogicalOpFilter extends Filter
 {
-    private QueryParser.ReservedWord _op;
+    private ReservedWord _op;
     private Filter _f1;
     private Filter _f2;
 
-    public LogicalOpFilter( QueryParser.ReservedWord op,
+    public LogicalOpFilter( ReservedWord op,
         Filter f1, Filter f2)
         throws RuleActionException
     {
@@ -18,7 +19,7 @@ public class LogicalOpFilter extends Filter
         _f2=f2;
         setFilterClass();
     }
-    
+
     public void lateBind( Class _newFilterClass)
         throws RuleActionException
     {

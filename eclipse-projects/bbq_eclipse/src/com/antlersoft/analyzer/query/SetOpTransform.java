@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import com.antlersoft.parser.ReservedWord;
 import com.antlersoft.parser.RuleActionException;
 
 import com.antlersoft.analyzer.AnalyzerDB;
@@ -17,9 +18,9 @@ class SetOpTransform extends TransformImpl
 	HashSet a_only;
 	HashSet b_only;
 	HashSet both;
-	QueryParser.ReservedWord op;
+	ReservedWord op;
 
-	SetOpTransform( QueryParser.ReservedWord setOp, Transform t1, Transform t2)
+	SetOpTransform( ReservedWord setOp, Transform t1, Transform t2)
 		throws RuleActionException
 	{
 		super( null, null);
@@ -90,7 +91,7 @@ class SetOpTransform extends TransformImpl
 		Enumeration result;
 		if ( op==QueryParser.union)
 		{
-			result=new QueryParser.ComboEnumeration( Collections.enumeration( a_only), 
+			result=new QueryParser.ComboEnumeration( Collections.enumeration( a_only),
 				new QueryParser.ComboEnumeration( Collections.enumeration( both),
 				Collections.enumeration( b_only)));
 		}

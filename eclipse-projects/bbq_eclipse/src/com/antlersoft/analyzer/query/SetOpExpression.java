@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import com.antlersoft.parser.ReservedWord;
 import com.antlersoft.parser.RuleActionException;
 
 import com.antlersoft.analyzer.AnalyzerDB;
@@ -15,9 +16,9 @@ class SetOpExpression extends SetExpression
 	HashSet a_only;
 	HashSet b_only;
 	HashSet both;
-	QueryParser.ReservedWord op;
+	ReservedWord op;
 
-	SetOpExpression( QueryParser.ReservedWord setOp, SetExpression s1, SetExpression s2)
+	SetOpExpression( ReservedWord setOp, SetExpression s1, SetExpression s2)
 		throws RuleActionException
 	{
 		super( TransformSet.commonSubType( s1.getSetClass(), s2.getSetClass(), true));
@@ -37,7 +38,7 @@ class SetOpExpression extends SetExpression
 		Enumeration result;
 		if ( op==QueryParser.union)
 		{
-			result=new QueryParser.ComboEnumeration( Collections.enumeration( a_only), 
+			result=new QueryParser.ComboEnumeration( Collections.enumeration( a_only),
 				new QueryParser.ComboEnumeration( Collections.enumeration( both),
 				Collections.enumeration( b_only)));
 		}
