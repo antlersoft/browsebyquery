@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
+import java.util.HashMap;
 import java.io.PrintStream;
 
 class QueryParser
@@ -12,6 +13,7 @@ class QueryParser
     int currentIndex;
     int maxIndex;
     SetExpression previousSet;
+    HashMap storedValues; // String, SetExpression
 
     public QueryParser( String toParse)
     {
@@ -23,6 +25,7 @@ class QueryParser
     {
 	tokens=null;
 	previousSet=null;
+	storedValues=new HashMap();
     }
 
     public void setLine( String toParse)
@@ -88,6 +91,7 @@ class QueryParser
     final static ReservedWord TO=new ReservedWord( "to");
     final static ReservedWord ALL=new ReservedWord( "all");
     final static ReservedWord PREVIOUS=new ReservedWord( "previous");
+    final static ReservedWord SET=new ReservedWord( "set");
 
     static abstract class Token
     {
@@ -265,11 +269,45 @@ class QueryParser
 
     static SetExpression parseOperatorExpression( QueryParser qp)
     {
-	if ( qp.nextToken()==PREVIOUS)
+	int pos=qp.currentIndex;
+	Token nextToken=qp.nextToken();
+	SetExpression retVal=null;
+	if ( nextToken==PREVIOUS)
 	{
-	    return qp.previousSet;
+	    retVal=qp.previousSet;
 	}
-	return null;
+	else if ( nextToken instanceof Literal)
+	{
+	    synchronized( qp.storedValues)
+	    {
+		retVal=(SetExpression)qp.storedValues.get( ((Literal)nextToken).value);
+	    }
+	}
+	else if ( nextToken==SET)
+	{
+	    nextToken=qp.nextToken();
+	    if ( nextToken instanceof Literal && qp.nextToken()==TO)
+	    {
+		try
+		{
+		    retVal=parse( qp);
+		}
+		catch ( ParseException pe)
+		{
+		    retVal=null;
+		}
+		if ( retVal!=null)   
+		{
+		    synchronized ( qp.storedValues)
+		    {
+			qp.storedValues.put( ((Literal)nextToken).value, retVal);
+		    }
+		}
+	    }
+	}
+	if ( retVal==null)
+	    qp.currentIndex=pos;
+	return retVal;
     }
 
     static SetExpression parseCallSet( QueryParser qp)
