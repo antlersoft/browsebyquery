@@ -12,6 +12,7 @@ package classwriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.Iterator;
 import java.util.Stack;
 
@@ -121,7 +122,7 @@ public class CodeAttribute implements Attribute
     {
         int start;
         int oldPostEnd;
-        Instruction oldLastInstruction;
+        int newCount=newInstructions.size();
 
         if ( at<0 || at+oldLength>instructions.size())
             throw new CodeCheckException( "Bad instruction insertion point");
@@ -159,11 +160,11 @@ public class CodeAttribute implements Attribute
         instructions.addAll( at, newInstructions);
 
         // Fix instructions for the opcodes
-        for ( Iterator i=instructions.iterator(); i.hasNext();)
+        for ( ListIterator i=instructions.listIterator(); i.hasNext();)
         {
+            int index=i.nextIndex();
             Instruction current=(Instruction)i.next();
-            if ( current.instructionStart<start ||
-                current.instructionStart>=newPostEnd)
+            if ( index<at || index>=at+newCount)
                 current.opCode.fixDestinationAddress( current,
                     start, oldPostEnd, newPostEnd);
         }
@@ -195,18 +196,20 @@ public class CodeAttribute implements Attribute
      * is a consistent stack depth at each instruction, and determines the
      * maximum stack depth-- and saves it in the max stack variable.
      */
- 	public void codeCheck()
+ 	public CheckedInstruction[] codeCheck()
         throws CodeCheckException
     {
         LinkedList next=new LinkedList();
-        Stack[] stackArray=new Stack[instructions.size()];
+        CheckedInstruction[] stackArray=
+            new CheckedInstruction[instructions.size()];
 
         /*
          * Initialize next collection with the start point of the
          * method and with any exception handlers
          */
         next.add( new InstructionPointer( 0));
-        stackArray[0]=new Stack();
+        stackArray[0]=new CheckedInstruction( (Instruction)instructions.get(0),
+            new Stack());
         for ( Iterator i=exceptions.iterator(); i.hasNext();)
         {
             int handler=((CodeException)i.next()).handler;
@@ -214,8 +217,9 @@ public class CodeAttribute implements Attribute
                 ((CodeException)i.next()).handler);
             next.add( ip);
             int index=indexAtOffset( ip);
-            stackArray[index]=new Stack();
-            stackArray[index].push( ProcessStack.CAT1);
+            stackArray[index]=new CheckedInstruction(
+                (Instruction)instructions.get( index), new Stack());
+            stackArray[index].stack.push( ProcessStack.CAT1);
         }
         while ( ! next.isEmpty())
         {
@@ -224,13 +228,14 @@ public class CodeAttribute implements Attribute
             try
             {
                 int index=indexAtOffset( ip);
-                if ( stackArray[index]==null)
+                CheckedInstruction currentCheckedInstruction=stackArray[index];
+                if ( currentCheckedInstruction==null)
                 {
                     throw new
                         CodeCheckException( "Instruction with undefined stack");
                 }
-                Stack old_stack=stackArray[index];
-                Instruction instruction=getByIndex( index);
+                Stack old_stack=currentCheckedInstruction.stack;
+                Instruction instruction=currentCheckedInstruction.instruction;
                 Stack new_stack=instruction.opCode.stackUpdate( instruction,
                     old_stack, this);
                 ArrayList new_pointers=new ArrayList( 20);
@@ -241,14 +246,17 @@ public class CodeAttribute implements Attribute
                     index=indexAtOffset( ip);
                     if ( stackArray[index]==null)
                     {
-                        stackArray[index]=new_stack;
+                        stackArray[index]=new CheckedInstruction(
+                            (Instruction)instructions.get( index), new_stack);
                         next.add( ip);
                     }
                     else
                     {
-                        if ( ! new_stack.equals( stackArray[index]))
+                        if ( ! new_stack.equals( stackArray[index].stack))
                             throw new CodeCheckException( "Stacks don't match");
                     }
+                    stackArray[index].previousCheckedInstructions.add(
+                        currentCheckedInstruction);
                 }
                 // Special processing for jsr opcodes
                 if ( instruction.opCode.getMnemonic().startsWith( "jsr"))
@@ -256,14 +264,21 @@ public class CodeAttribute implements Attribute
                     ip=new InstructionPointer(
                         instruction.getOffsetDestination());
                     index=indexAtOffset( ip);
-                    new_stack=(Stack)new_stack.clone();
-                    new_stack.push( ProcessStack.CAT1);
-                    stackArray[index]=new_stack;
-                    next.add( ip);
+                    if ( stackArray[index]==null)
+                    {
+                        new_stack=(Stack)new_stack.clone();
+                        new_stack.push( ProcessStack.CAT1);
+                        stackArray[index]=new CheckedInstruction(
+                            (Instruction)instructions.get( index), new_stack);
+                        next.add( ip);
+                    }
+                    stackArray[index].previousCheckedInstructions.add(
+                        currentCheckedInstruction);
                 }
             }
             catch ( CodeCheckException cce)
             {
+                cce.printStackTrace();
                 throw new CodeCheckException( cce.getMessage()+" at offset "
                     +ip.currentPos);
             }
@@ -274,10 +289,12 @@ public class CodeAttribute implements Attribute
             if ( stackArray[i]==null)
                 throw new CodeCheckException( "Unvisited opcode at offset "+
                     ((Instruction)instructions.get( i)).instructionStart);
-            if ( stackArray[i].size()>max_stack)
-                max_stack=stackArray[i].size();
+            if ( stackArray[i].stack.size()>max_stack)
+                max_stack=stackArray[i].stack.size();
         }
         maxStack=max_stack;
+
+        return stackArray;
     }
 
  	public int indexAtOffset( InstructionPointer ip)

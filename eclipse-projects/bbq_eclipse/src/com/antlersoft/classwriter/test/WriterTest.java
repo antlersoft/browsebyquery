@@ -11,6 +11,7 @@ package classwriter.test;
 
 import java.io.*;
 import java.util.*;
+import java.lang.reflect.*;
 import classwriter.*;
 
 public class WriterTest
@@ -31,10 +32,13 @@ public class WriterTest
             System.out.println( " "+origStack+" "+
                 attribute.getMaxStack());
         }
-      	writer.writeClass( new FileOutputStream( args[1]));
+        BufferedOutputStream outStream=new BufferedOutputStream(
+            new FileOutputStream( args[1]));
+      	writer.writeClass( outStream);
+        outStream.close();
     }
 
-    public static void main( String[] args)
+    public static void testclass( String[] args)
         throws IOException, CodeCheckException
     {
         ClassWriter writer=new ClassWriter();
@@ -48,7 +52,7 @@ public class WriterTest
         int methodRefIndex=writer.getReferenceIndex( ClassWriter.CONSTANT_Methodref,
             "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
         ArrayList instructions=new ArrayList();
-        // Instruction to read constant
+        // Add instructions for method
         byte[] operands;
 
         operands=new byte[2];
@@ -76,5 +80,86 @@ public class WriterTest
             "c:/cygnus/home/javaodb/classes/TestClass.class"));
         writer.readClass( new FileInputStream(
             "c:/cygnus/home/javaodb/classes/TestClass.class"));
+    }
+
+    public static void entering( String[] args)
+        throws IOException, CodeCheckException
+    {
+    	ClassWriter writer=new ClassWriter();
+
+     	writer.readClass( new BufferedInputStream( new FileInputStream( args[0])));
+        int constantIndex=writer.getStringConstantIndex( "Entering ");
+        int fieldRefIndex=writer.getReferenceIndex( ClassWriter.CONSTANT_Fieldref,
+            "java/lang/System", "out", "Ljava/io/PrintStream;");
+        int printlnRefIndex=writer.getReferenceIndex( ClassWriter.CONSTANT_Methodref,
+            "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
+        int printRefIndex=writer.getReferenceIndex( ClassWriter.CONSTANT_Methodref,
+            "java/io/PrintStream", "print", "(Ljava/lang/String;)V");
+        for ( Iterator i=writer.getMethods().iterator(); i.hasNext();)
+        {
+            MethodInfo method=(MethodInfo)i.next();
+            if ( method.getName().equals( "readConstant"))
+                continue;
+            CodeAttribute attribute=method.getCodeAttribute();
+            ArrayList instructions=new ArrayList( 10);
+            byte[] operands;
+
+            operands=new byte[2];
+            OpCode.intToPair( fieldRefIndex, operands, 0);
+            instructions.add( new Instruction(
+                OpCode.getOpCodeByMnemonic( "getstatic"), 0, operands, false));
+            instructions.add( new Instruction(
+                OpCode.getOpCodeByMnemonic( "dup"), 0, null, false));
+            instructions.add( Instruction.appropriateLdc( constantIndex, false));
+            operands=new byte[2];
+            OpCode.intToPair( printRefIndex, operands, 0);
+            instructions.add( new Instruction(
+                OpCode.getOpCodeByMnemonic( "invokevirtual"), 0, operands, false));
+            instructions.add( Instruction.appropriateLdc(
+                writer.getStringConstantIndex( method.getName()), false));
+            operands=new byte[2];
+            OpCode.intToPair( printlnRefIndex, operands, 0);
+            instructions.add( new Instruction(
+                OpCode.getOpCodeByMnemonic( "invokevirtual"), 0, operands, false));
+            attribute.insertInstructions( 0, 0, instructions);
+            attribute.codeCheck();
+        }
+        BufferedOutputStream outStream=new BufferedOutputStream(
+            new FileOutputStream( args[1]));
+      	writer.writeClass( outStream);
+        outStream.close();
+    }
+
+    public static void main( String[] args)
+        throws Throwable
+    {
+        BufferedReader commands=new BufferedReader(
+            new InputStreamReader( new FileInputStream( args[0])));
+        String line;
+        Class[] parameterTypes={ (new String[0]).getClass() };
+        for ( line=commands.readLine(); line!=null; line=commands.readLine())
+        {
+            if ( line.startsWith( "#"))
+                continue;
+            StringTokenizer tokens=new StringTokenizer( line, "|");
+            if ( tokens.hasMoreTokens())
+            {
+                String method=tokens.nextToken();
+                ArrayList argList=new ArrayList();
+                while ( tokens.hasMoreTokens())
+                {
+                    argList.add( tokens.nextToken());
+                }
+                try
+                {
+                    WriterTest.class.getMethod( method, parameterTypes).invoke( null,
+                        new Object[] { argList.toArray( new String[argList.size()])});
+                }
+                catch ( InvocationTargetException ite)
+                {
+                    throw ite.getTargetException();
+                }
+            }
+        }
     }
 }

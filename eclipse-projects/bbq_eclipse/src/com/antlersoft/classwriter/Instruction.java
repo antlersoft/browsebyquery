@@ -64,6 +64,10 @@ public class Instruction
         throws CodeCheckException
     {
         int oldDestination=getOffsetDestination();
+        if ( instructionStart>=oldPostEnd)
+        {
+            instructionStart+=newPostEnd-oldPostEnd;
+        }
         if ( oldDestination>start && oldDestination<oldPostEnd)
         {
             throw new CodeCheckException(
@@ -78,5 +82,36 @@ public class Instruction
             else
                 OpCode.intToPair( newDestination, operands, 0);
         }
+    }
+
+    public static Instruction appropriateLdc( int index, boolean wide)
+        throws CodeCheckException
+    {
+        byte[] operands;
+        String mnemonic;
+
+        if ( wide)
+        {
+            mnemonic="ldc2_w";
+            operands=new byte[2];
+            OpCode.intToPair( index, operands, 0);
+        }
+        else
+        {
+            if ( index<256)
+            {
+                mnemonic="ldc";
+                operands=new byte[1];
+                operands[0]=(byte)index;
+            }
+            else
+            {
+                mnemonic="ldc_w";
+                operands=new byte[2];
+                OpCode.intToPair( index, operands, 0);
+            }
+        }
+        return new Instruction( OpCode.getOpCodeByMnemonic( mnemonic), 0,
+            operands, false);
     }
 }

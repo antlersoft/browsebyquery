@@ -48,7 +48,10 @@ public abstract class OpCode
     void fixDestinationAddress( Instruction instruction,
         int start, int oldPostEnd, int newPostEnd)
         throws CodeCheckException
-    {}
+    {
+        if ( instruction.instructionStart>=oldPostEnd)
+            instruction.instructionStart+=newPostEnd-oldPostEnd;
+    }
 
  	void write( DataOutputStream out, Instruction instruction)
   		throws IOException
