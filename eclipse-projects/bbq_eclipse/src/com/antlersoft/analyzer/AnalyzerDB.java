@@ -2,7 +2,7 @@ package analyzer;
 
 import java.util.Enumeration;
 
-interface AnalyzerDB
+public interface AnalyzerDB
 {
     public abstract void openDB( String dbName)
 	throws Exception;
