@@ -3,13 +3,23 @@ package com.antlersoft.query;
 import com.antlersoft.parser.*;
 
 public class BasicBase extends Parser {
-	static Symbol literalString=Symbol.get( "literalString");
-	static Symbol number=Symbol.get( "number");
+	static protected final Symbol literalString=Symbol.get( "literalString");
+	static protected final Symbol number=Symbol.get( "number");
 
-	protected SetExpression m_last_expression;
+	private SetExpression m_last_expression;
 
-	BasicBase( ParseState[] states)
+	public BasicBase( ParseState[] states)
 	{
 		super( states);
+	}
+
+	public SetExpression getLastParsedExpression()
+	{
+		return m_last_expression;
+	}
+
+	public void setLastParsedExpression( SetExpression expr)
+	{
+		m_last_expression=expr;
 	}
 }

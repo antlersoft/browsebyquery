@@ -41,7 +41,7 @@ symbol VALUE_EXPRESSION
 symbol VALUE_LIST
 
 DONE : SET_EXPRESSION
-"{ return ((BasicBase)parser).m_last_expression=(SetExpression)valueStack.get( valueStack.size()-1); }" .
+"{ ((BasicBase)parser).setLastParsedExpression( (SetExpression)valueStack.get( valueStack.size()-1)); return \"\"; }" .
 
 SET_EXPRESSION : SET_EXPRESSION SET_OPERATOR SET_EXPRESSION
 "{ return new SetOperatorExpression( SetOperator.getType(
@@ -125,9 +125,9 @@ TRANSFORM : recursive TRANSFORM comma TRANSFORM
 (Transform)valueStack.get( valueStack.size()-1)); }" .
 
 GROUP_TRANSFORM : VALUE_LIST
-"{ return new ValueListGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" .
+"{ return new ValueListGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" 1 .
 GROUP_TRANSFORM : SET_EXPRESSION
-"{ return new SetExpressionGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" .
+"{ return new SetExpressionGroupTransform( (SetExpression)valueStack.get( valueStack.size()-1)); }" .
 
 FILTER : Not FILTER
 "{ Filter result=(Filter)valueStack.get(valueStack.size()-1);

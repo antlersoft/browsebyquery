@@ -1,0 +1,16 @@
+package com.antlersoft.query.reflect;
+
+import java.text.DateFormat;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.antlersoft.parser.*;
+import com.antlersoft.query.*;
+
+public class Reflect extends ReflectBase
+{
+public Reflect()
+{
+super( parseStates);
+}

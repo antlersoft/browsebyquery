@@ -1,0 +1,21 @@
+#include ../Basic.bp
+
+reserved call
+reserved Class "rclass"
+reserved create
+reserved methods "rmethods"
+reserved name
+reserved item
+
+symbol METHOD_NAME
+
+VALUE_EXPRESSION : create GROUP_TRANSFORM .
+VALUE_EXPRESSION : item METHOD_NAME GROUP_TRANSFORM .
+VALUE_EXPRESSION : call METHOD_NAME GROUP_TRANSFORM .
+VALUE_EXPRESSION : Class literalString .
+
+TRANSFORM : METHOD_NAME GROUP_TRANSFORM .
+TRANSFORM : methods .
+
+METHOD_NAME : nameSymbol .
+METHOD_NAME : name literalString .
