@@ -19,7 +19,7 @@ class AccessFilter extends Filter {
 
     AccessFilter( int mask,int compare_value)
     {
-        super(AccessFlags.class);
+        super( null);
         _mask=mask;
         _compareValue=compare_value;
     }
@@ -30,10 +30,15 @@ class AccessFilter extends Filter {
     public void lateBind( Class new_applies)
     throws RuleActionException
     {
+        if ( ! AccessFlags.class.isAssignableFrom( new_applies))
+            throw new RuleActionException( "Failed to bind: "+new_applies.getName()+".  Does not implement AccessFlags");
+        if ( getFilterClass()==null)
+            _filterClass=new_applies;
+        else
         if ( getFilterClass().isAssignableFrom( new_applies))
             _filterClass=new_applies;
         else
-            throw new RuleActionException( "Failed to bind: "+new_applies.getName()+".  Does not implement AccessFlags");
+            throw new RuleActionException( "Failed to bind: "+new_applies.getName()+".  Not compatible with "+getFilterClass().getName());
     }
     protected boolean include(Object toCheck) throws java.lang.Exception {
         return (((AccessFlags)toCheck).getAccessFlags() & _mask) == _compareValue;
