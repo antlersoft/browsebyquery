@@ -1,0 +1,4 @@
+com.antlersoft.classwriter.test.* a
+com.antlersoft.classwriter.test.QuestionNode p
+com.antlersoft.classwriter.test.AnimalNode p
+com.antlersoft.classwriter.test.BinaryNode p

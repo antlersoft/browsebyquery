@@ -48,6 +48,11 @@ public class FieldInfo
         return attributes.getCurrentClass().getString( descriptorIndex);
     }
 
+    public int getFlags()
+    {
+        return accessFlags;
+    }
+
     public void setType( String newType)
     {
         descriptorIndex=attributes.getCurrentClass().getStringIndex( newType);

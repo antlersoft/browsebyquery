@@ -12,21 +12,21 @@ public class PersistentHashtable extends Hashtable implements Persistent
 	{
 		super();
 		persistentImpl=new PersistentImpl();
-		ObjectDB.setPersistent( this);
+		ObjectDB.makePersistent( this);
 	}
 
 	public PersistentHashtable( int s)
 	{
 		super( s);
 		persistentImpl=new PersistentImpl();
-		ObjectDB.setPersistent( this);
+		ObjectDB.makePersistent( this);
 	}
 
 	public PersistentHashtable( int s, float f)
 	{
 		super( s, f);
 		persistentImpl=new PersistentImpl();
-		ObjectDB.setPersistent( this);
+		ObjectDB.makePersistent( this);
 	}
 
 	public PersistentHashtable( java.util.Map m)
@@ -34,7 +34,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
 		super( m.size());
 		persistentImpl=new PersistentImpl();
 		putAll( m);
-		ObjectDB.setPersistent( this);
+		ObjectDB.makePersistent( this);
 	}
 
 	public synchronized PersistentImpl _getPersistentImpl()
@@ -64,7 +64,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
     public java.util.Set entrySet()
 	{
-		return new FromRefEntrySet( this, super.entrySet()); 
+		return new FromRefEntrySet( this, super.entrySet());
 	}
 
     //public synchronized boolean equals(java.lang.Object);

@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class ClassWriter implements Cloneable
+public class ClassWriter
 {
     private int magic;
     private int majorVersion;
@@ -170,6 +170,18 @@ public class ClassWriter implements Cloneable
         return Collections.unmodifiableCollection( fields);
     }
 
+    public void removeFromFields( Collection toRemove)
+    {
+System.out.print( getClassName( thisClassIndex)+" "+fields.size()+" "+toRemove.size());
+        fields.removeAll( toRemove);
+System.out.println( " "+fields.size());
+    }
+
+    public void setBase( String newBaseClass)
+    {
+        superClassIndex=getClassIndex( newBaseClass);
+    }
+
     public Collection getInterfaces()
     {
         return Collections.unmodifiableCollection( interfaces);
@@ -180,6 +192,11 @@ public class ClassWriter implements Cloneable
         MethodInfo result=new MethodInfo( flags, name, descriptor, this);
         methods.add( result);
         return result;
+    }
+
+    public CPTypeRef getTypeRef( int index)
+    {
+        return (CPTypeRef)constantPool.get( index);
     }
 
     public FieldInfo addField( int flags, String name, String descriptor)
@@ -446,6 +463,11 @@ public class ClassWriter implements Cloneable
             super( t);
             classIndex=ci;
             nameAndTypeIndex=nti;
+        }
+
+        public int getClassIndex()
+        {
+            return classIndex;
         }
 
 		public String getSymbolName()

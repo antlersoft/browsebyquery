@@ -4,7 +4,7 @@ import java.lang.reflect.Array;
 import java.util.Set;
 import java.util.Iterator;
 
-class FromRefEntrySet implements java.util.Set 
+class FromRefEntrySet implements java.util.Set
 {
     private Set _fromMap;
     private ObjectRef _containing;
@@ -29,7 +29,7 @@ class FromRefEntrySet implements java.util.Set
 
     public void clear()
     {
-	ObjectDB.makeDirty( _containing.getReferenced());
+	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
 	_fromMap.clear();
     }
 
@@ -65,19 +65,19 @@ class FromRefEntrySet implements java.util.Set
 
     public boolean remove(java.lang.Object o)
     {
-	ObjectDB.makeDirty( _containing.getReferenced());
+	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
 	return _fromMap.remove( o);
     }
 
     public boolean removeAll(java.util.Collection c)
     {
-	ObjectDB.makeDirty( _containing.getReferenced());
+	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
 	return _fromMap.removeAll( c);
     }
 
     public boolean retainAll(java.util.Collection c)
     {
-	ObjectDB.makeDirty( _containing.getReferenced());
+	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
 	return _fromMap.retainAll( c);
     }
 
@@ -111,7 +111,7 @@ class FromRefEntrySet implements java.util.Set
 	return o;
     }
 
-    static class Entry implements java.util.Map.Entry 
+    static class Entry implements java.util.Map.Entry
     {
 	private java.util.Map.Entry _base;
 	Entry( java.util.Map.Entry base)
@@ -127,7 +127,7 @@ class FromRefEntrySet implements java.util.Set
 	public java.lang.Object setValue(java.lang.Object o)
 	{ return _base.setValue( new DualRef( o)); }
     }
-    static class EntrySetIterator implements java.util.Iterator 
+    static class EntrySetIterator implements java.util.Iterator
     {
 	private Iterator _base;
 	private ObjectRef _containing;
@@ -143,7 +143,7 @@ class FromRefEntrySet implements java.util.Set
 	{ return new Entry( (java.util.Map.Entry)_base.next()); }
 	public void remove()
 	{
-	    ObjectDB.makeDirty( _containing.getReferenced());
+	    ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
 	    _base.remove();
 	}
     }

@@ -75,10 +75,10 @@ public class ObjectDB
 
 	public static void makePersistent( Object toStore)
 	{
-		getObjectDB().makePersistent( toStore);
+		getObjectDB().setPersistent( toStore);
 	}
 
-    public synchronized Object getObjectByKey( ObjectKey key)
+    protected final synchronized Persistent getObjectByKey( ObjectKey key)
 		throws ObjectStoreException
     {
 		Persistent retVal=(Persistent)cachedObjects.get( key);
@@ -92,6 +92,11 @@ public class ObjectDB
 		}
 
 		return retVal;
+    }
+
+    public Object get( ObjectKey key)
+    {
+        return getObjectByKey( key);
     }
 
 	public ObjectKey getObjectKey( Object object)

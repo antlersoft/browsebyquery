@@ -48,11 +48,36 @@ public class TypeParse
         new ParseTable( 'V', ARG_VOID),
         new ParseTable( 'Z', ARG_BOOLEAN)
         };
+
+    private static ParseTable prefixes[]={
+        new ParseTable( 'a', ARG_OBJREF),
+        new ParseTable( 'a', ARG_ARRAYREF),
+        new ParseTable( 'd', ARG_DOUBLE),
+        new ParseTable( 'l', ARG_LONG),
+        new ParseTable( 'f', ARG_FLOAT)
+    };
+
     public static String parseFieldType( String simpleType)
     	throws CodeCheckException
     {
         return parseFieldArray( simpleType.toCharArray(),
         	new InstructionPointer( 0));
+    }
+
+    public static String getOpCodePrefix( String parsedType)
+    {
+        String result="i";
+
+        for ( int i=0; i<prefixes.length; i++)
+        {
+            if ( prefixes[i].s==parsedType)
+            {
+                result=new String( new char[] { prefixes[i].c });
+                break;
+            }
+        }
+
+        return result;
     }
 
     public static String convertFromInternalClassName( String toConvert)

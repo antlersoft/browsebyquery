@@ -33,7 +33,7 @@ public class PersistentImpl
         {
             if ( objectKey==null)
                 throw new ObjectDBException( "Internal: obsolete with no object key");
-            cachedReference=(Persistent)ObjectDB.getObjectDB().
+            cachedReference=ObjectDB.getObjectDB().
                 getObjectByKey( objectKey);
             PersistentImpl newImpl=cachedReference._getPersistentImpl();
             synchronized( toUpdate)

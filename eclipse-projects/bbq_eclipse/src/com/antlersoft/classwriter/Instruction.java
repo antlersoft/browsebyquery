@@ -9,6 +9,8 @@
  */
 package com.antlersoft.classwriter;
 
+import java.util.List;
+
 public class Instruction
 {
 	OpCode opCode;
@@ -24,11 +26,58 @@ public class Instruction
       	wideFlag=wide;
     }
 
+    public int getInstructionStart()
+    {
+        return instructionStart;
+    }
+
+    public static void addNextInstruction( List instructionList,
+        String mnemonic, byte[] ops, boolean wide)
+        throws CodeCheckException
+    {
+        int start=0;
+        if ( instructionList.size()>=1)
+        {
+            Instruction lastInstruction=(Instruction)instructionList.
+                get( instructionList.size()-1);
+            start=lastInstruction.instructionStart+lastInstruction.getLength();
+        }
+        instructionList.add( new Instruction(
+            OpCode.getOpCodeByMnemonic( mnemonic),
+            start,
+            ops, wide));
+    }
+
+    public static void addNextInstruction( List instructionList,
+        String mnemonic, int constIndex)
+        throws CodeCheckException
+    {
+        byte[] operands=new byte[2];
+        OpCode.intToPair( constIndex, operands, 0);
+        addNextInstruction( instructionList, mnemonic, operands, false);
+    }
+
     public int getLength()
     {
         if ( operands==null)
         	return 1;
         return operands.length+1;
+    }
+
+    public OpCode getOpCode() { return opCode; }
+    public int operandsAsInt()
+        throws CodeCheckException
+    {
+        if ( operands!=null)
+        {
+            switch ( operands.length)
+            {
+            case 1 : return OpCode.mU( operands[0]);
+            case 2 : return OpCode.pairToInt( operands, 0);
+            case 4 : return OpCode.quadToInt( operands, 0);
+            }
+        }
+        throw new CodeCheckException( "Operands not integer");
     }
 
     /**
