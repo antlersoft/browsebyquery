@@ -38,9 +38,11 @@ public abstract class OpCode
 
 	abstract Instruction read( InstructionPointer cr, byte[] code)
  		throws CodeCheckException;
- 	abstract Stack stackUpdate( Instruction instruction, Stack current)
+ 	abstract Stack stackUpdate( Instruction instruction, Stack current,
+  		CodeAttribute attribute)
   		throws CodeCheckException;
-    abstract void traverse( Instruction instruction, Collection next)
+    abstract void traverse( Instruction instruction, Collection next,
+    	CodeAttribute attribute)
     	throws CodeCheckException;
 
  	void write( DataOutputStream out, Instruction instruction)
@@ -68,6 +70,17 @@ public abstract class OpCode
 		return retval;
     }
 
+    public static final int pairToInt( byte[] array, int offset)
+    {
+        return (array[offset]<<8)|mU( array[offset+1]);
+    }
+
+    public static final int quadToInt( byte[] array, int offset)
+    {
+        return (array[offset]<<24)|( mU( array[offset+1])<<16)|
+        	( mU( array[offset+2])<<8)|mU( array[offset+3]);
+    }
+
     static OpCode getOpCodeByMnemonic( String mnemonic)
     {
     	for ( int i=0; i<256; i++)
@@ -81,10 +94,14 @@ public abstract class OpCode
     }
 
     static byte[] getSubArray( byte[] code, int offset, int length)
+    	throws CodeCheckException
     {
         if ( length==0)
         	return null;
         byte[] result=new byte[length];
+        if ( code.length<offset+length)
+        	throw new CodeCheckException(
+         	"Code segment is too short for instruction");
         for ( int i=0; i<length; i++)
         {
             result[i]=code[offset+i];

@@ -47,6 +47,11 @@ public class AttributeList implements Cloneable
         return null;
     }
 
+    public ClassWriter getCurrentClass()
+    {
+        return containing;
+    }
+
     public void addAttribute( Attribute toAdd)
     {
         if ( attributes==null)

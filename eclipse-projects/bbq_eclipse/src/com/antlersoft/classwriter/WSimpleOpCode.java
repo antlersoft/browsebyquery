@@ -26,9 +26,9 @@ public class WSimpleOpCode extends SimpleOpCode
 	{
      	int wideLength;
       	if ( cr.wide)
-         	wideLength=2*(length-1)+1;
+         	wideLength=2*(getDefaultLength()-1)+1;
         else
-            wideLength=length;
+            wideLength=getDefaultLength();
 		Instruction result=new Instruction( this, cr.currentPos,
   			getSubArray( code, cr.currentPos+1, wideLength-1), cr.wide);
 	    cr.currentPos+=wideLength;

@@ -15,7 +15,7 @@ import classwriter.*;
 public class WriterTest
 {
     public static void main(String[] args)
-    	throws IOException
+    	throws IOException, CodeCheckException
     {
     	ClassWriter writer=new ClassWriter();
 

@@ -11,16 +11,17 @@ package classwriter;
 
 import java.util.Collection;
 
-class ReturnOpCode extends SimpleOpCode
+class GotoOpCode extends SimpleOpCode
 {
-	ReturnOpCode( int v, int l, String m, ProcessStack stack)
+	GotoOpCode( int v, int l, String m)
  	{
-      	super( v, l, m, stack);
+      	super( v, l, m, new Cat1Stack( 0, 0));
     }
 
-    void traverse( Instruction instruction, Collection next,
+    void traverse(Instruction instruction, Collection next,
     	CodeAttribute attribute)
     	throws CodeCheckException
     {
+		next.add( new InstructionPointer( instruction.getOffsetDestination()));
     }
 }

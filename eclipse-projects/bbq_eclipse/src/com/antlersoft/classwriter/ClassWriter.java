@@ -197,7 +197,7 @@ public class ClassWriter implements Cloneable
 		return result;
     }
 
-	class CPInfo
+	static class CPInfo
 	{
 		short tag;
 		CPInfo( short t)
@@ -211,7 +211,7 @@ public class ClassWriter implements Cloneable
 		}
 	}
 
-    class CPUtf8 extends CPInfo
+    static class CPUtf8 extends CPInfo
     {
 		String value;
 		CPUtf8( DataInputStream classStream)
@@ -274,6 +274,18 @@ public class ClassWriter implements Cloneable
 		    nameAndTypeIndex=classStream.readUnsignedShort();
 		}
 
+		String getSynbolName()
+  		{
+        	return getString( ((CPNameAndType)constantPool.get(
+         		nameAndTypeIndex)).nameIndex);
+        }
+
+        String getSymbolType()
+        {
+            return getString( ((CPNameAndType)constantPool.get(
+            	nameAndTypeIndex)).descriptorIndex);
+        }
+
   		void write( DataOutputStream classStream)
     		throws IOException
     	{
@@ -283,7 +295,7 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    class CPNameAndType extends CPInfo
+    static class CPNameAndType extends CPInfo
     {
 		int nameIndex;
 		int descriptorIndex;
@@ -305,7 +317,7 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    class CPClass extends CPInfo
+    static class CPClass extends CPInfo
     {
 		int nameIndex;
 		CPClass( DataInputStream classStream)
@@ -323,7 +335,7 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    class CPString extends CPInfo
+    static class CPString extends CPInfo
     {
 		int valueIndex;
 		CPString( DataInputStream classStream)
@@ -341,7 +353,7 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    class CPInteger extends CPInfo
+    static class CPInteger extends CPInfo
     {
 		int value;
 		CPInteger( DataInputStream classStream)
@@ -359,7 +371,7 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    class CPFloat extends CPInfo
+    static class CPFloat extends CPInfo
     {
 		float value;
 		CPFloat( DataInputStream classStream)
@@ -377,7 +389,7 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    class CPLong extends CPInfo
+    static class CPLong extends CPInfo
     {
 		long value;
 		CPLong( DataInputStream classStream)
@@ -395,7 +407,7 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    class CPDouble extends CPInfo
+    static class CPDouble extends CPInfo
     {
 		double value;
 		CPDouble( DataInputStream classStream)
@@ -424,5 +436,4 @@ public class ClassWriter implements Cloneable
     {
     	return new MethodInfo( classStream, this);
     }
-
 }

@@ -30,4 +30,30 @@ public class Instruction
         	return 1;
         return operands.length+1;
     }
+
+    /**
+     * Interpret operands as symbolic reference
+     */
+    ClassWriter.CPTypeRef getSymbolicReference( ClassWriter writer)
+    	throws CodeCheckException
+    {
+        return (ClassWriter.CPTypeRef)
+        	writer.constantPool.get( OpCode.pairToInt(
+         	operands, 0));
+    }
+
+    /**
+     * Interpret operands as destination opcode address
+     */
+    int getOffsetDestination()
+    {
+        int offset;
+        if ( operands.length==4)
+        {
+            offset=OpCode.quadToInt( operands, 0);
+        }
+        else
+        	offset=OpCode.pairToInt( operands, 0);
+        return instructionStart+offset;
+    }
 }

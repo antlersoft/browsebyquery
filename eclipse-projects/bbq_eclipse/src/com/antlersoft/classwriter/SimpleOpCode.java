@@ -29,13 +29,20 @@ public class SimpleOpCode extends OpCode
     	this( v, l, m, new Cat1Stack( 1, 1));
     }
 
-   	Stack stackUpdate( Instruction instruction, Stack current)
+   	Stack stackUpdate( Instruction instruction, Stack current, CodeAttribute
+    	attribute)
  		throws CodeCheckException
     {
         return stack_update.stackUpdate( current);
     }
 
-    void traverse( Instruction instruction,	Collection next)
+    final int getDefaultLength()
+    {
+        return length;
+    }
+
+    void traverse( Instruction instruction,	Collection next,
+    	CodeAttribute attribute)
     	throws CodeCheckException
     {
         next.add(
