@@ -62,6 +62,8 @@ public class CodeReader
     public void processOpCodes()
 	throws BadInstructionException
     {
+	try
+	{
 	while ( currentPos<ca.codeLength)
 	{
 	    int whichCode=mU( ca.code[currentPos]);
@@ -74,6 +76,27 @@ public class CodeReader
 		_opCodeCallback.processOpCode( opCodes[whichCode], currentPos);
 	    }
 	    opCodes[whichCode].read( this);
+	}
+	}
+	catch ( Throwable t)
+	{
+	    t.printStackTrace();
+	    currentPos=0;
+	    while ( currentPos<ca.codeLength)
+	    {
+		int whichCode=mU( ca.code[currentPos]);
+		if ( opCodes[whichCode]==null)
+		{
+		    throw new BadInstructionException( whichCode);
+		}
+		System.out.println( opCodes[whichCode].mnemonic);
+		if ( _opCodeCallback!=null)
+		{
+		    _opCodeCallback.processOpCode( opCodes[whichCode], currentPos);
+		}
+		opCodes[whichCode].read( this);
+	    }
+
 	}
     }
 
@@ -369,7 +392,7 @@ public class CodeReader
 	void read( CodeReader cr)
 	{
 	    cr.currentPos++;
-	    cr.currentPos+=4-( cr.currentPos%4);
+	    cr.currentPos+=(4-( cr.currentPos%4))%4;
 	    cr.currentPos+=4;
 	    int npairs=( mU(cr.ca.code[cr.currentPos++])<<24)|(mU(cr.ca.code[cr.currentPos++])<<16)|(mU(cr.ca.code[cr.currentPos++])<<8)|mU(cr.ca.code[cr.currentPos++]);
 	    cr.currentPos+=8*npairs;
@@ -405,7 +428,7 @@ public class CodeReader
 	void read( CodeReader cr)
 	{
 	    cr.currentPos++;
-	    cr.currentPos+=4-( cr.currentPos%4);
+	    cr.currentPos+=(4-( cr.currentPos%4))%4;
 	    cr.currentPos+=4;
 	    int lowend=( mU(cr.ca.code[cr.currentPos++])<<24)|(mU(cr.ca.code[cr.currentPos++])<<16)|(mU(cr.ca.code[cr.currentPos++])<<8)|mU(cr.ca.code[cr.currentPos++]);
 	    int highend=( mU(cr.ca.code[cr.currentPos++])<<24)|(mU(cr.ca.code[cr.currentPos++])<<16)|(mU(cr.ca.code[cr.currentPos++])<<8)|mU(cr.ca.code[cr.currentPos++]);
