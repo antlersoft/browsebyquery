@@ -7,8 +7,6 @@ public class ValueListSetExpression extends SetExpression {
 	throws BindException
 	{
 		m_list=list;
-		if ( list.getContextType()!=ValueContext.SCALAR)
-			throw new BindException( "Non-scalarar value list can't be evaluated as a set expression");
 	}
     public Enumeration evaluate(DataSource source) {
 		return m_list.evaluate();

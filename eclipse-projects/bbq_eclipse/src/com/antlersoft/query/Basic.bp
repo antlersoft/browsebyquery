@@ -103,9 +103,9 @@ return result; }" .
 # Transform rules
 TRANSFORM : TRANSFORM TRANSFORM
 "{ return new TransformTransform( (Transform)valueStack.get( valueStack.size()-2),
-(Transform)valueStack.get( valueStack.size()-1)); }" .
+(Transform)valueStack.get( valueStack.size()-1)); }" 5 .
 TRANSFORM : same "{ return new SameTransform(); }" .
-TRANSFORM : FILTER "{ return new FilterTransform( (Filter)valueStack.get( valueStack.size()-1)); }" .
+TRANSFORM : FILTER "{ return new FilterTransform( (Filter)valueStack.get( valueStack.size()-1)); }" 2 .
 
 TRANSFORM : TRANSFORM SET_OPERATOR TRANSFORM "{
 return new SetOperatorTransform( SetOperator.getType(
@@ -124,8 +124,10 @@ TRANSFORM : recursive TRANSFORM comma TRANSFORM
 "{ return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-3),
 (Transform)valueStack.get( valueStack.size()-1)); }" .
 
-GROUP_TRANSFORM : VALUE_LIST .
-GROUP_TRANSFORM : SET_EXPRESSION .
+GROUP_TRANSFORM : VALUE_LIST
+"{ return new ValueListGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" .
+GROUP_TRANSFORM : SET_EXPRESSION
+"{ return new SetExpressionGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" .
 
 FILTER : Not FILTER
 "{ Filter result=(Filter)valueStack.get(valueStack.size()-1);
@@ -148,7 +150,7 @@ FILTER : FILTER Xor FILTER
 (Filter)valueStack.get( valueStack.size()-3),
 (Filter)valueStack.get( valueStack.size()-1)); }" .
 FILTER : VALUE_EXPRESSION RELATIONAL_OPERATOR VALUE_EXPRESSION
-"{ return new RelationalFilter( valueStack.get( valueStack.size()-2).toString(),
+"{ return new RelationalFilter( ((ArrayList)valueStack.get( valueStack.size()-2)).get(0).toString(),
 (ValueExpression)valueStack.get( valueStack.size()-3),
 (ValueExpression)valueStack.get( valueStack.size()-1)); }" 7 .
 FILTER : matching literalString
@@ -163,3 +165,10 @@ SET_OPERATOR : union .
 SET_OPERATOR : intersection .
 SET_OPERATOR : deintersection .
 SET_OPERATOR : without .
+
+RELATIONAL_OPERATOR : LT .
+RELATIONAL_OPERATOR : LTE .
+RELATIONAL_OPERATOR : ET .
+RELATIONAL_OPERATOR : NE .
+RELATIONAL_OPERATOR : GTE .
+RELATIONAL_OPERATOR : GT .
