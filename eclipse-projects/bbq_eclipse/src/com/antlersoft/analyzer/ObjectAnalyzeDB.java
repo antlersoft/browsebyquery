@@ -16,11 +16,13 @@ class ObjectAnalyzeDB implements AnalyzerDB
 {
     ObjectDB _session;
     PersistentHashtable _classHash;
+	private int createCount;
 
     ObjectAnalyzeDB()
     {
 		_session=null;
 		_classHash=null;
+		createCount=0;
     }
 
     // Implement AnalyzeDB
@@ -58,6 +60,12 @@ class ObjectAnalyzeDB implements AnalyzerDB
 			retVal=Class.forName( type).getConstructor( new Class[] { String.class, AnalyzerDB.class }).newInstance( new Object[] { key, this });
 			_session.makeRootObject( type+"|"+key, retVal);
 			getObjectVector( type).add( retVal);
+			createCount++;
+			if ( createCount==1000)
+			{
+				_session.commit();
+				createCount=0;
+			}
 		}
 		return retVal;
     }
@@ -73,7 +81,6 @@ class ObjectAnalyzeDB implements AnalyzerDB
 	throws Exception
     {
 		verifyState();
-		_session.commit();
 		return getObjectVector( type).elements();
     }
 
