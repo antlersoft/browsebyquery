@@ -1,20 +1,22 @@
-#include "BuildParse.h"
-#include "LexScan.h"
-#include "SeqStr.h"
-#include <stdlib.h>
+#include "com/antlersoft/parser/BuildParse.h"
+#include "com/antlersoft/parser/LexScan.h"
+#include "com/antlersoft/parser/SeqStr.h"
+#include <cstdlib>
+#include <string>
+
+using namespace com::antlersoft::parser;
+using namespace std;
 
 static SymbolScope non_terminal_scope;
-static SymbolScopeIter non_terminal_scope_iter( non_terminal_scope);
 static SymbolScope terminal_scope;
-static SymbolScopeIter terminal_scope_iter( terminal_scope);
 static int java_goal_set=0;
 
 class ReservedWordDefAction : public RuleAction
 {
 public :
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
-		bstring word= *static_cast<const SeqString*>( value_stack.last());
+		string word= *static_cast<const SeqString*>( value_stack.last());
 		cout<<"static ReservedWord "<<word<<"=ReservedWord.getReserved( \""<<word<<"\");\n";
 		Symbol scope_symbol( terminal_scope, word);
 		return new TerminalSymbol( word);
@@ -24,11 +26,11 @@ public :
 class ReservedWordDefWithString : public RuleAction
 {
 public :
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
-		bstring text= *static_cast<const SeqString*>( value_stack.last());
+		string text= *static_cast<const SeqString*>( value_stack.last());
 		value_stack=value_stack.butLast();
-		bstring word= *static_cast<const SeqString*>( value_stack.last());
+		string word= *static_cast<const SeqString*>( value_stack.last());
 		cout<<"static ReservedWord "<<word<<"=ReservedWord.getReserved( \""<<text<<"\");\n";
 		Symbol scope_symbol( terminal_scope, word);
 		return new TerminalSymbol( word);
@@ -38,9 +40,9 @@ public :
 class SymbolDefAction : public RuleAction
 {
 public :
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
-		bstring word= *static_cast<const SeqString*>( value_stack.last());
+		string word= *static_cast<const SeqString*>( value_stack.last());
 		Symbol scope_symbol( non_terminal_scope, word);
 		cout<<"static Symbol "<<word<<"=Symbol.get( \""<<word<<"\");\n";
 		return new NonTerminalSymbol( word);
@@ -50,16 +52,16 @@ public :
 class AssociativitySetAction : public RuleAction
 {
 public :
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		Sequence associativity_seq=*static_cast<const Sequence*>( value_stack.last());
 		AssocType assoc_type=assoc_none;
-		bstring associativity_symbol=*static_cast<const SeqString*>( associativity_seq.first());
-		if ( associativity_symbol==bstring( "left"))
+		string associativity_symbol=*static_cast<const SeqString*>( associativity_seq.first());
+		if ( associativity_symbol==string( "left"))
 			assoc_type=assoc_left;
-		else if ( associativity_symbol==bstring( "right"))
+		else if ( associativity_symbol==string( "right"))
 			assoc_type=assoc_right;
-		else if ( associativity_symbol==bstring( "not"))
+		else if ( associativity_symbol==string( "not"))
 			assoc_type=assoc_not;
 		value_stack=value_stack.butLast();
 		unsigned int precedence=(unsigned int)atoi( *static_cast<const SeqString*>( value_stack.last()));
@@ -74,7 +76,7 @@ public :
 class AddKnownSymbol : public RuleAction
 {
 public :
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		return new TerminalSymbol( *static_cast<const SeqString*>(value_stack.last()));
 	}
@@ -83,12 +85,12 @@ public :
 class AddNamedSymbol : public RuleAction
 {
 public :
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
-		bstring symbol_name= *static_cast<const SeqString*>(value_stack.last());
-		if ( non_terminal_scope_iter.to_find( SymbolKey( symbol_name)))
+		string symbol_name= *static_cast<const SeqString*>(value_stack.last());
+		if ( non_terminal_scope.find( symbol_name)!=non_terminal_scope.end())
 			return new NonTerminalSymbol( symbol_name);
-		if ( ! terminal_scope_iter.to_find( SymbolKey( symbol_name)))
+		if ( terminal_scope.find( symbol_name)==terminal_scope.end())
 		{
 			cout<<"//Undefined symbol in rule: "<<symbol_name<<endl;
 			Symbol( terminal_scope, symbol_name);
@@ -107,7 +109,7 @@ public :
 		: build_parser( bp)
 	{
 	}
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		// Throw away rule_ender
 		unsigned int precedence=static_cast<unsigned int>( atoi( *static_cast<const SeqString*>( value_stack.last())));
@@ -132,17 +134,17 @@ public :
 class RuleReduceAction : public RuleAction
 {
 private:
-	bstring java_action;
+	string java_action;
 
 public:
-	RuleReduceAction( const bstring& ja) : java_action( ja) {};
+	RuleReduceAction( const string& ja) : java_action( ja) {};
 
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		return value_stack.copy();
 	}
 
-	const bstring& getJavaAction()
+	const string& getJavaAction()
 	{
 		return java_action;
 	}
@@ -158,12 +160,12 @@ public :
 		: build_parser( bp)
 	{
 	}
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		// Throw away rule_ender
 		unsigned int precedence=static_cast<unsigned int>( atoi( *static_cast<const SeqString*>( value_stack.last())));
 		value_stack=value_stack.butLast();
-		bstring java_action= *static_cast<const SeqString*>( value_stack.last());
+		string java_action= *static_cast<const SeqString*>( value_stack.last());
 		value_stack=value_stack.butLast();
 		CompareSequence partial_sequence= *static_cast<const CompareSequence*>( value_stack.last());
 		const NonTerminalSymbol& target= *static_cast<const NonTerminalSymbol*>( partial_sequence.first());
@@ -184,7 +186,7 @@ public :
 class RuleStartAction : public RuleAction
 {
 public :
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		value_stack=value_stack.butLast();
 		return new CompareSequence( NonTerminalSymbol( *static_cast<const SeqString*>( value_stack.last())));
@@ -194,7 +196,7 @@ public :
 class ExtendPartialAction : public RuleAction
 {
 public:
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		const ParseSymbol& added_symbol= *static_cast<const ParseSymbol*>( value_stack.last());
 		value_stack=value_stack.butLast();
@@ -205,7 +207,7 @@ public:
 
 class SetPrecedenceAction : public RuleAction
 {
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		value_stack=value_stack.butLast();
 		SeqData* result=value_stack.last()->copy();
@@ -216,7 +218,7 @@ class SetPrecedenceAction : public RuleAction
 
 class NoPrecedenceAction : public RuleAction
 {
-	SeqData* ruleFire( Sequence value_stack)
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		value_stack=value_stack.butLast();
 		return new SeqString( "0");
@@ -304,7 +306,7 @@ int main( int argc, char* argv[])
 	cout<<"static Symbol errorSymbol=_error_;\n";
 	while ( cin.good())
 		{
-		bstring nl;
+		std::string nl;
 		cin>>nl;
 		if ( ! cin.eof())
 			{
@@ -312,13 +314,13 @@ int main( int argc, char* argv[])
 			lex_scan.addText( "\n");
 		    for( ;;)
 		    	{
-		    	bstring val;
+		    	std::string val;
 		    	TerminalSymbol ts=lex_scan.nextToken( val);
 		    	if ( ts==LexScan::_need_more)
 		    		break;
 				if ( ts==statement_divider)
 					ts=Parser::_end_;
-		    	if ( parser->parse( ts, SeqString( val)))
+		    	if ( parser->parse( static_cast<void*>(0), ts, SeqString( val)))
 					{
 					cout<<"Error on token ["<<val<<"]"<<endl;
 					parser->reset();
@@ -331,9 +333,9 @@ int main( int argc, char* argv[])
 	TerminalSymbol ts( LexScan::_need_more);
 	do
 		{                           
-		bstring val;
+		std::string val;
 		ts=lex_scan.nextToken( val);
-		parser->parse( ts, SeqString( val));
+		parser->parse( static_cast<void*>(0), ts, SeqString( val));
 		}
 	while ( ! ( ts==Parser::_end_));
 	Parser* out_parser=java_parser.build( cerr);
@@ -345,28 +347,30 @@ int main( int argc, char* argv[])
 
 		cout<<"new ParseState( new ShiftRule[] {";
 		unsigned int count=0;
-		for ( ShiftRuleIter sri( out_state.shift_rules); sri.to_next(); count++)
+		for ( ShiftRuleIter sri( out_state.shift_rules.begin()); sri!=out_state.shift_rules.end(); sri++)
 		{
-			ShiftRule& sr= *sri.current();
+			ShiftRule& sr= *sri;
 			if ( sr.state_index>max_index)
 				max_index=sr.state_index;
 			cout<<" new ShiftRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
-			if ( count<out_state.shift_rules.count()-1)
+			if ( count<out_state.shift_rules.size()-1)
 				cout<<",";
 			cout<<endl;
+			count++;
 		}
 		cout<<"},\n";
 		cout<<"new GotoRule[] {";
 		count=0;
-		for ( GotoRuleIter gri( out_state.goto_rules); gri.to_next(); count++)
+		for ( GotoRuleIter gri( out_state.goto_rules.begin()); gri!=out_state.goto_rules.end(); gri++)
 		{
-			GotoRule& sr= *gri.current();
+			GotoRule& sr= *gri;
 			if ( sr.state_index>max_index)
 				max_index=sr.state_index;
 			cout<<" new GotoRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
-			if ( count<out_state.goto_rules.count()-1)
+			if ( count<out_state.goto_rules.size()-1)
 				cout<<",";
 			cout<<endl;
+			count++;
 		}
 		cout<<"},\n";
 		if ( out_state.reduce_rule)
