@@ -31,7 +31,7 @@ public class URLFrame extends JFrame
         catch ( IOException ioe)
         {
             editor=new JEditorPane( "text/plain",
-                "Unable to open page: "+url.toString()+"\r\n\r\n"+
+                "Unable to open page "+url.toString()+"\r\n\r\n"+
                 ioe.getMessage());
         }
         editor.setEditable( false);
