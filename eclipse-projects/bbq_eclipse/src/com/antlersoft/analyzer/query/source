@@ -112,7 +112,10 @@ SetExpression : Transform SetExpression "{
 		(Transform)valueStack.get( size-2));
 	}" .
 
-SetExpression : execute SetExpression .
+SetExpression : execute SetExpression "{
+	return new ExecuteExpression( (SetExpression)valueStack.get(
+ 		valueStack.size()-1));
+   }" .
 
 SetExpression : leftParen SetExpression rightParen "{
 	return (SetExpression)valueStack.get( valueStack.size()-2);
