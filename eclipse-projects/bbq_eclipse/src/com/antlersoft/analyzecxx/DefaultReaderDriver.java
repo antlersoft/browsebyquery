@@ -51,7 +51,7 @@ public class DefaultReaderDriver implements ReaderDriver
 		reader_file.m_file=translation_unit;
 		reader_file.m_line=1;
 		reader_file.m_stream=new BufferedInputStream( new FileInputStream( translation_unit));
-		m_include_stack.add( reader_file);
+		m_include_stack.push( reader_file);
 		CxxReader reader=new CxxReader( this, translation_unit.getCanonicalPath(),
 										m_initial_defines);
 		while ( ! m_include_stack.isEmpty())
@@ -75,13 +75,23 @@ public class DefaultReaderDriver implements ReaderDriver
 		try
 		{
 			reader_file.m_stream.close();
-			reader_file = (ReaderFile) m_include_stack.peek();
-			reader.m_file = reader_file.m_file.getCanonicalPath();
-			reader.m_line = reader_file.m_line;
+			if ( ! m_include_stack.isEmpty())
+			{
+				reader_file = (ReaderFile) m_include_stack.peek();
+				reader.m_file = reader_file.m_file.getCanonicalPath();
+				reader.m_line = reader_file.m_line;
+			}
 		}
 		catch ( IOException ioe)
 		{
 			System.err.println( "Error popping include file stack: filenames will be wrong");
 		}
     }
+
+	public static void main( String args[])
+	throws Exception
+	{
+		DefaultReaderDriver drd=new DefaultReaderDriver( new ArrayList(), new Properties());
+		drd.analyze( new File( args[0]));
+	}
 }

@@ -12,6 +12,7 @@ public class SymbolFinderTree
 	{
 		Symbol m_symbol;
 		Link[] m_links;
+		String m_text;
 
 		final boolean canGrow()
 		{
@@ -35,6 +36,7 @@ public class SymbolFinderTree
 	{
 		Symbol m_symbol;
 		TreeMap m_tree;
+		String m_text;
 
 		BuildNode()
 		{
@@ -45,11 +47,13 @@ public class SymbolFinderTree
 		{
 			Node result=new Node();
 			result.m_symbol=m_symbol;
+			result.m_text=m_text;
 			result.m_links=new Link[m_tree.size()];
 			int i=0;
 			for ( Iterator it=m_tree.entrySet().iterator(); it.hasNext(); ++i)
 			{
 				Map.Entry entry=(Map.Entry)it.next();
+				result.m_links[i]=new Link();
 				result.m_links[i].m_match=((Character)entry.getKey()).charValue();
 				result.m_links[i].m_next=((BuildNode)entry.getValue()).makeNode();
 			}
@@ -85,6 +89,7 @@ public class SymbolFinderTree
 				current=next;
 			}
 			current.m_symbol=Symbol.get( s);
+			current.m_text=s;
 		}
 		m_root=root.makeNode();
 	}

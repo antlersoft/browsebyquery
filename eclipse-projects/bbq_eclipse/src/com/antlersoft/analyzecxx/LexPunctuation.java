@@ -53,19 +53,19 @@ public class LexPunctuation implements LexState {
 			{
 				Symbol s=m_finder.currentSymbol();
 				m_reader.m_lex_to_preprocess.processToken( new PunctuationToken(
-						s.toString(), s));
+						m_finder.currentText(), s));
 				m_finder.reset();
 			}
 		}
 	}
-	
+
 	private void rescan()
 	{
 		Symbol s=m_finder.currentSymbol();
 		if ( s!=null)
 		{
 			m_reader.m_lex_to_preprocess.processToken( new PunctuationToken(
-					s.toString(), s));
+					m_finder.currentText(), s));
 		}
 		String r=null;
 		if ( m_finder.isRemainder())
@@ -87,7 +87,7 @@ public class LexPunctuation implements LexState {
 				addCharacter( r.charAt( start_index));
 		}
 	}
-	
+
 	private void cleanRemainder()
 	{
 		rescan();

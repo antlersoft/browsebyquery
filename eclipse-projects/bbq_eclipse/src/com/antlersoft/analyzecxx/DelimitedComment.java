@@ -12,6 +12,7 @@ class DelimitedComment implements LexState {
 	{
 		m_reader=reader;
 		m_caller=caller;
+System.out.println( "Create delimited comment at line "+m_reader.m_line);
 	}
     public LexState nextCharacter(char c) throws IOException, RuleActionException, LexException
 	{

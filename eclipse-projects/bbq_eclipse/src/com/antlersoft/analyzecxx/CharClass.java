@@ -45,6 +45,6 @@ public class CharClass
 
 	public static final boolean isOperator( char c)
 	{
-		return ! ( isIdentifierPart(c) || c=='\'' || c=='"');
+		return ! ( isIdentifierPart(c) || c=='\'' || c=='"' || isWhiteSpace(c));
 	}
 }

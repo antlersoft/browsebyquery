@@ -39,8 +39,8 @@ class LineSplicer implements LexState
 		// char processing, if we were doing that
 		switch (c) {
 			case '\n':
-				m_reader.m_line++;
 				if (m_eol_backslash_state) {
+					m_reader.m_line++;
 					m_eol_backslash_state = false;
 					return this;
 				}
@@ -55,8 +55,11 @@ class LineSplicer implements LexState
 		if (m_eol_backslash_state)
 		{
 			m_preprocessor_state=m_preprocessor_state.nextCharacter('\\');
+			m_eol_backslash_state=false;
 		}
 		m_preprocessor_state=m_preprocessor_state.nextCharacter( c);
+		if ( c=='\n')
+			m_reader.m_line++;
 		return this;
 	}
 	/** Call to indicate no more characters in file to parser */

@@ -121,7 +121,9 @@ ENDIF_LINE : INITIAL_HASH pp_endif OPT_WHITE_SPACE lex_new_line .
 INCLUDE_HEADER : lex_include_header .
 INCLUDE_HEADER : lex_include_header_with_current .
 INCLUDE_HEADER : PP_TOKENS "{ throw new RuleActionException( \"Unimplemented: Getting include header from substitution tokens\"); }" .
-CONTROL_LINE : INITIAL_HASH pp_include OPT_WHITE_SPACE INCLUDE_HEADER OPT_WHITE_SPACE lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_include OPT_WHITE_SPACE INCLUDE_HEADER OPT_WHITE_SPACE lex_new_line "{
+System.out.println( \"Include file\"); return null;
+}" .
 CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line .
 CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line .
 CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen OPT_WHITE_SPACE pp_rparen REPLACEMENT_LIST lex_new_line .

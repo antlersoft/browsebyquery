@@ -49,9 +49,13 @@ public class LexIdentifier implements LexState {
 			if ( m_buffer==null)
 			{
 				Symbol s=m_finder.currentSymbol();
-				m_reader.m_lex_to_preprocess.processToken(
-				    new AltSymbolToken( PreprocessParser.lex_identifier,
-					s.toString(), s));
+				if ( s==null)
+					m_reader.m_lex_to_preprocess.processToken(
+					new LexToken( PreprocessParser.lex_identifier, m_finder.getRemainder()));
+				else
+					m_reader.m_lex_to_preprocess.processToken(
+						new AltSymbolToken( PreprocessParser.lex_identifier,
+						s.toString(), s));
 			}
 			else
 				m_reader.m_lex_to_preprocess.processToken( new LexToken(
@@ -74,7 +78,7 @@ public class LexIdentifier implements LexState {
 				m_buffer=new StringBuffer(20);
 				Symbol s=m_finder.currentSymbol();
 				if ( s!=null)
-					m_buffer.append( s.toString());
+					m_buffer.append( m_finder.currentText());
 				m_buffer.append( m_finder.getRemainder());
 				m_finder=null;
 			}

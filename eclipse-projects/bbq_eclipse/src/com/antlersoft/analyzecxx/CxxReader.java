@@ -52,13 +52,23 @@ public class CxxReader
 		m_driver=driver;
 		m_lex_to_preprocess=new LexToPreprocess( this);
 		m_preprocess_parser=new PreprocessParser( initial_defines);
-		m_first_phase=new PreprocessorTokens( this);
+		m_first_phase=new LineSplicer( this);
+		m_line=1;
+		m_file=m_translation_unit=translation_unit;
 	}
 
 	public void nextCharacter( char c)
 	throws IOException, RuleActionException, LexException
 	{
-		m_first_phase=m_first_phase.nextCharacter( c);
+		try
+		{
+			m_first_phase = m_first_phase.nextCharacter(c);
+		}
+		catch ( Exception e)
+		{
+			System.out.println( m_file+" at line "+m_line);
+			System.out.println( e.getMessage());
+		}
 	}
 
 	public void endOfFile()
