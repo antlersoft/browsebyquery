@@ -29,6 +29,7 @@ public class DBField implements Persistent, Cloneable
 	descriptor=new String();
 	_persistentImpl=new PersistentImpl();
 	ObjectDB.setPersistent( this);
+    ((DBClass)dbclass.getReferenced()).addField( this);
     }
 
     public PersistentImpl _getPersistentImpl()

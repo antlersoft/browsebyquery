@@ -39,6 +39,7 @@ public class DBMethod implements Persistent, Cloneable
 	resolved=false;
 	_persistentImpl=new PersistentImpl();
 	ObjectDB.setPersistent( this);
+    ((DBClass)dbclass.getReferenced()).addMethod( this);
     }
 
     public PersistentImpl _getPersistentImpl()
@@ -174,7 +175,7 @@ public class DBMethod implements Persistent, Cloneable
 			catch ( Exception e)
 			{
 			    e.printStackTrace();
-			}	
+			}
 		    }
 		} );
 		cr.setFieldReferenceCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
@@ -197,7 +198,7 @@ public class DBMethod implements Persistent, Cloneable
 			catch ( Exception e)
 			{
 			    e.printStackTrace();
-			}	
+			}
 		    }
 		} );
 		cr.processOpCodes();

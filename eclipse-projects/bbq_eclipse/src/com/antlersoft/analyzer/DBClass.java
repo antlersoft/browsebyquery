@@ -1,5 +1,6 @@
 package com.antlersoft.analyzer;
 
+import java.util.Hashtable;
 import java.util.Vector;
 import java.io.Serializable;
 import java.io.File;
@@ -21,8 +22,8 @@ public class DBClass implements Persistent, Cloneable
 {
     String name;
     Vector superClasses;
-    Vector methods;
-    Vector fields;
+    private Hashtable methods;
+    private Hashtable fields;
     Vector derivedClasses;
     private boolean resolved;
 
@@ -33,8 +34,8 @@ public class DBClass implements Persistent, Cloneable
 		name=key;
 		superClasses=new Vector();
 		derivedClasses=new Vector();
-		methods=new Vector();
-		fields=new Vector();
+		methods=new Hashtable();
+		fields=new Hashtable();
 		resolved=false;
 		_persistentImpl=new PersistentImpl();
 		ObjectDB.setPersistent( this);
@@ -67,6 +68,26 @@ public class DBClass implements Persistent, Cloneable
 	return new FromRefEnumeration( fields.elements());
     }
 
+    void addMethod( DBMethod toAdd)
+    {
+        String key=toAdd.getName()+toAdd.getSignature();
+        if ( methods.get( key)==null)
+        {
+            methods.put( key, new ObjectRef( toAdd));
+            ObjectDB.makeDirty( this);
+        }
+    }
+
+    void addField( DBField toAdd)
+    {
+        String key=toAdd.getName();
+        if ( fields.get( key)==null)
+        {
+            fields.put( key, new ObjectRef( toAdd));
+            ObjectDB.makeDirty( this);
+        }
+    }
+
     public String getName()
     {
 	return name;
@@ -74,13 +95,13 @@ public class DBClass implements Persistent, Cloneable
 
     private void clearMethods()
     {
-	methods.removeAllElements();
+	methods.clear();
 	ObjectDB.makeDirty( this);
     }
 
     private void clearFields()
     {
-	fields.removeAllElements();
+	fields.clear();
 	ObjectDB.makeDirty( this);
     }
 
@@ -129,8 +150,9 @@ public class DBClass implements Persistent, Cloneable
 	}
 	for ( i=0; i<ac.fields.length; i++)
 	{
-	    dbc.fields.addElement( new ObjectRef( (DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-		DBField.makeKey( dbc.name, ac.getString( ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex)))));
+	    db.getWithKey( "com.antlersoft.analyzer.DBField",
+		DBField.makeKey( dbc.name, ac.getString(
+            ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex)));
 	}
 	for ( i=0; i<ac.methods.length; i++)
 	{
@@ -141,7 +163,6 @@ public class DBClass implements Persistent, Cloneable
 		ac.getString( mi.descriptorIndex)
 		));
 	    method.setFromAnalyzeClass( ac, i, db);
-	    dbc.methods.addElement( new ObjectRef( method));
 	}
     }
 
@@ -162,7 +183,7 @@ public class DBClass implements Persistent, Cloneable
 	    catch ( SecurityException se)
 	    {
 	    }
-	    return;	    
+	    return;
 	}
 	// Check to see if it is a Zip file
 	try
@@ -215,7 +236,7 @@ public class DBClass implements Persistent, Cloneable
 	    catch ( CodeReader.BadInstructionException bie)
 	    {
 		System.out.println( bie.getMessage());
-		System.out.println( "In "+file.getCanonicalPath());   
+		System.out.println( "In "+file.getCanonicalPath());
 	    }
 	}
     }
