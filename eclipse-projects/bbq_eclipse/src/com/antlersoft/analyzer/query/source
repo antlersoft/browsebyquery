@@ -37,8 +37,12 @@ reserved methods
 reserved NOT "not" 5 right
 reserved or 4 left
 reserved of
+reserved Package "package" 4 right
 reserved polymorphic
 reserved previous
+reserved Protected "protected" 4 right
+reserved Private "private" 4 right
+reserved Public "public" 4 right
 reserved recursive
 reserved references
 reserved reference
@@ -94,12 +98,22 @@ Filter : matching literalString "{
 	return new MatchFilter( (String)valueStack.get( valueStack.size()-1));
 	}" .
 Filter : write "{ return new WriteReferences(); }" .
+
+Filter : Public "{
+	return new AccessFilter( ClassWriter.ACC_PUBLIC); }" .
+Filter : Private "{
+	return new AccessFilter( ClassWriter.ACC_PRIVATE); }" .
+Filter : Protected "{
+	return new AccessFilter( ClassWriter.ACC_PROTECTED); }" .
+Filter : Package "{
+    return new AccessFilter( ClassWriter.ACC_PUBLIC|ClassWriter.ACC_PRIVATE|
+        ClassWriter.ACC_PROTECTED, 0);
+    }" .
 Transform : Transform Transform "{
 	int size=valueStack.size();
 	return new TransformTransform( (Transform)valueStack.get( valueStack.size()-2),
 		(Transform)valueStack.get( valueStack.size()-1));
-	}"  3 .
-Transform : Filter "{
+	}"  3 .Transform : Filter "{
 	return new FilterTransform( (Filter)valueStack.get( valueStack.size()-1)); }" .
 Transform : Transform SetOperator Transform "{
 	int size=valueStack.size();
@@ -207,5 +221,5 @@ SetExpression : nameSymbol "{ QueryParser qp=(QueryParser)parser;
     SetExpression retVal=(SetExpression)qp.storedValues.get(
 	    valueStack.get( valueStack.size()-1));
     if ( retVal==null)
-	    throw new RuleActionException( \"Unknown name: \"+valueStack.get( valueStack.size()-1));
+	    throw new RuleActionException( \"Unknown_name:\"+valueStack.get( valueStack.size()-1));
     return retVal; }" .

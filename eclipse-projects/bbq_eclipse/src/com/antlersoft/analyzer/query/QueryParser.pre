@@ -15,6 +15,8 @@ import java.io.PrintStream;
 import com.antlersoft.analyzer.*;
 import com.antlersoft.parser.*;
 
+import com.antlersoft.classwriter.ClassWriter;
+
 public class QueryParser extends Parser
 {
     // Public interface
