@@ -31,7 +31,7 @@ public class QueryParser extends Parser
         storedValues=new HashMap();
         storedValuesSupport=new PropertyChangeSupport( this);
     }
-  
+
     public SetExpression getExpression()
         throws ParseException
     {
@@ -214,12 +214,12 @@ public class QueryParser extends Parser
         if ( se.getSetClass()==DBMethod.class)
             castToken=new Token( methodcast, "");
 		else
-			castToken=new Token( references, ""); 
-/*           
+			castToken=new Token( references, "");
+/*
         else if ( se instanceof MethodSet)
-            castToken=new Token( methodcast, "");            
+            castToken=new Token( methodcast, "");
         else if ( se instanceof CallSet)
-            castToken=new Token( callcast, "");            
+            castToken=new Token( callcast, "");
         else
             castToken=new Token( fieldcast, "");
 */
@@ -492,7 +492,7 @@ public class QueryParser extends Parser
         {
 			final DBMethod soughtMethod=(DBMethod)toTransform;
             DBClass c=soughtMethod.getDBClass();
-            Enumeration fromBase=new FilterEnumeration( 
+            Enumeration fromBase=new FilterEnumeration(
                 ( new TransformSet( new SingleClass( c),
                     new RecursiveBaseClasses())).execute( db)) {
                 protected Object filterObject( Object base)
@@ -525,7 +525,7 @@ public class QueryParser extends Parser
         GoodBase( DBClass fromHere, AnalyzerDB adb, DBMethod sm)
             throws Exception
         {
-            super( ( new TransformSet( 
+            super( ( new TransformSet(
                 new SingleClass( fromHere), new DerivedClasses())).
                 execute( adb));
             _adb=adb;
@@ -605,7 +605,7 @@ public class QueryParser extends Parser
 		protected boolean include( Object toCheck)
 			throws Exception
 		{
-			return ((DBMethod)toCheck).getCalledBy().hasMoreElements();
+			return ! ((DBMethod)toCheck).getCalledBy().hasMoreElements();
 		}
 	}
 

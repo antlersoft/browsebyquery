@@ -6,8 +6,8 @@ public class DBCall extends DBReference
 {
     DBCall( DBMethod s, DBMethod t, int l)
     {
-	super( s, l);	
-	target=new ObjectRef( t);
+        super( s, l);	
+        target=new ObjectRef( t);
     }
 
     ObjectRef target;
@@ -19,7 +19,7 @@ public class DBCall extends DBReference
 
     public String toString()
     {
-	return "Call to "+getTarget().toString()+" from "+getSource().toString()+" at line "+String.valueOf( lineNumber);
+        return "Call to "+getTarget().toString()+" from "+getSource().toString()+" at line "+String.valueOf( lineNumber);
     }
 
 	public int hashCode()
@@ -38,5 +38,4 @@ public class DBCall extends DBReference
 		}
 		return false;
 	}
-
 }
