@@ -14,6 +14,7 @@ import com.antlersoft.parser.Symbol;
 class ConcatExpander extends LexToken implements SpecialExpander {
 	private LexToken m_a, m_b;
 	private PreprocessParserBase m_parser;
+
 	ConcatExpander( PreprocessParserBase parser, LexToken a, LexToken b)
 	{
 		super( Symbol.get( "pp_concat_expr"), "");
@@ -55,7 +56,7 @@ class ConcatExpander extends LexToken implements SpecialExpander {
 			else
 			{
 				InitialMacroReader reader=new InitialMacroReader();
-				MacroExpander expander=new MacroExpander( new HashMap(), reader);
+				MacroExpander expander=new MacroExpander( new HashMap(), reader, m_parser.m_reader.m_db);
 				((SpecialExpander)a).expandTo( expander, no_expand, arguments, expanded_arguments);
 				expander.noMoreTokens();
 				result=reader.getTokens();

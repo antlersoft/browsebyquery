@@ -27,6 +27,11 @@ public class SourceFile implements Persistent {
 		return m_file_name;
 	}
 
+	public String toString()
+	{
+		return getName();
+	}
+
 	static class FileKeyGenerator implements KeyGenerator
 	{
 		public Comparable generateKey( Object o)

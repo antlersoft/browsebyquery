@@ -80,6 +80,7 @@ return ((PreprocessParser)parser).expandAndSend( (ArrayList)valueStack.get( valu
 GROUP_PART : lex_new_line .
 GROUP_PART : IF_SECTION .
 GROUP_PART : CONTROL_LINE .
+GROUP_PART : _error_ lex_new_line "{ return ((PreprocessParser)parser).syntaxError(); }" .
 #          if-section:
 #                  if-group elif-groupsopt else-groupopt endif-line
 IF_SECTION : IF_GROUP ELIF_GROUPS ELSE_GROUP ENDIF_LINE .

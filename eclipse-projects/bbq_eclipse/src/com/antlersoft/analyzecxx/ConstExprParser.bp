@@ -79,5 +79,7 @@ CEP_VALUE : CEP_VALUE question CEP_VALUE colon CEP_VALUE
 "{ return new Integer( ((Integer)valueStack.get( valueStack.size()-5)).intValue()!=0 ? ((Integer)valueStack.get( valueStack.size()-3)).intValue() : ((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
 CEP_VALUE : CEP_VALUE comma CEP_VALUE
 "{ return valueStack.get( valueStack.size()-1); }" .
+CEP_VALUE : _error_
+"{ System.err.println( \"Constant expression error\"); return ZERO; }" .
 
 

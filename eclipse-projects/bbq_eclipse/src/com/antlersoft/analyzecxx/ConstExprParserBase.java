@@ -5,7 +5,7 @@ import com.antlersoft.parser.ParseState;
 import com.antlersoft.parser.RuleActionException;
 
 class ConstExprParserBase extends Parser implements LexReader {
-	private static final Integer ZERO=new Integer(0);
+	static final Integer ZERO=new Integer(0);
 	private static final Integer ONE=new Integer(1);
 
 	int m_result;

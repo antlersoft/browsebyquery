@@ -1,0 +1,1 @@
+anyclass|com.antlersoft.analyzecxx.DefaultReaderDriver|main|/home/mike/src/cppquery/com/antlersoft/stdio_tunnel/StdioTunnel.cpp|test.cpj

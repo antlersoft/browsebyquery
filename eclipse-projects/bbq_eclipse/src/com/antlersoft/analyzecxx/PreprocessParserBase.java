@@ -41,7 +41,8 @@ class PreprocessParserBase extends Parser {
 		m_skipping=false;
 		m_skip_depth=0;
 		m_macros=new HashMap();
-		m_base_expander=new MacroExpander( m_macros, m_reader.m_preprocessing_output);
+		m_base_expander=new MacroExpander( m_macros, m_reader.m_preprocessing_output,
+										   m_reader.m_db);
 
 		// Create built-in macros
 		m_macros.put( "__LINE__", new LineMacro("__LINE__"));
@@ -83,7 +84,12 @@ class PreprocessParserBase extends Parser {
 	throws RuleActionException
 	{
 		if ( parse(s,v))
-			throw new RuleActionException( getRuleMessage());
+		{
+			String message=getRuleMessage();
+			if ( message==null)
+				message="Syntax error";
+			throw new RuleActionException( message+m_reader.getLocation());
+		}
 	}
 
 	final Object acceptIfDefined( boolean condition, String identifier)
@@ -172,7 +178,7 @@ class PreprocessParserBase extends Parser {
 		{
 System.out.println( "Include file: "+include_file);
 			m_reader.m_driver.includeFile(m_reader, include_file, with_current,
-										  m_reader.m_line);
+										  m_reader.getLineNumber());
 		}
 		catch ( IOException ioe)
 		{
@@ -189,19 +195,31 @@ System.out.println( "Include file: "+include_file);
 		ArrayList line_tokens=expandToArray( tokens);
 		if ( line_tokens.size()>=1 && line_tokens.size()<=3)
 		{
+			String file =m_reader.getFileName();
+
 			Object o=line_tokens.get(0);
+			int line=0;
 			if ( o instanceof NumericLiteral)
+			{
 				try {
-					m_reader.m_line=( (NumericLiteral) o).intValue();
+					line = ( (NumericLiteral) o).intValue();
 				}
 				catch (LexException le) {
 					throw new RuleActionException("Bad numeric literal: " +
 												  le.getMessage());
 				}
-			o=line_tokens.get( line_tokens.size()-1);
-			if ( o instanceof StringLiteral)
-				m_reader.m_file=((StringLiteral)o).value;
+				o = line_tokens.get(line_tokens.size() - 1);
+				if (o instanceof StringLiteral)
+					file = ( (StringLiteral) o).value;
+				m_reader.setFileAndLine( file, line);
+			}
 		}
+		return "";
+	}
+
+	final Object syntaxError()
+	{
+		System.err.println( "Syntax error"+m_reader.getLocation());
 		return "";
 	}
 
@@ -209,7 +227,8 @@ System.out.println( "Include file: "+include_file);
 	throws RuleActionException
 	{
 		normalizeWhitespace( tokens);
-		MacroExpander expander=new MacroExpander( m_macros, m_const_expr_parser);
+		MacroExpander expander=new MacroExpander( m_macros, m_const_expr_parser,
+												  m_reader.m_db);
 		for ( Iterator i=tokens.iterator(); i.hasNext();)
 			expander.processToken( (LexToken)i.next());
 		expander.noMoreTokens();
@@ -222,7 +241,8 @@ System.out.println( "Include file: "+include_file);
 	{
 		normalizeWhitespace( tokens);
 		InitialMacroReader reader=new InitialMacroReader();
-		MacroExpander expander=new MacroExpander( m_macros, reader);
+		MacroExpander expander=new MacroExpander( m_macros, reader,
+												  m_reader.m_db);
 		for ( Iterator i=tokens.iterator(); i.hasNext();)
 			expander.processToken( (LexToken)i.next());
 		expander.noMoreTokens();
@@ -551,7 +571,7 @@ e.printStackTrace();
 		ArrayList getTokens()
 		{
 			ArrayList result=new ArrayList(1);
-			result.add( new NumericLiteral( m_reader.m_line));
+			result.add( new NumericLiteral( m_reader.getLineNumber()));
 			return result;
 		}
 	}
@@ -566,7 +586,7 @@ e.printStackTrace();
 		ArrayList getTokens()
 		{
 			ArrayList result=new ArrayList(1);
-			result.add( new StringLiteral( m_reader.m_file, false));
+			result.add( new StringLiteral( m_reader.getFileName(), false));
 			return result;
 		}
 	}

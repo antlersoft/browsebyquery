@@ -16,19 +16,15 @@ import com.antlersoft.parser.Parser;
  */
 public class CxxReader
 {
-	/** Current file (_FILE_) */
-	String m_file;
-
-	/** Current line (_LINE_) */
-	int m_line;
-
-	/** Translation unit used as key in browse db */
-	String m_translation_unit;
-
 	/**
 	 * This is what we call when we include a file
 	 */
 	ReaderDriver m_driver;
+
+	/**
+	 * Interface to record things read
+	 */
+	DBDriver m_db;
 
 	/**
 	 * When a LexState object definitively identifies a token, it sends it
@@ -47,20 +43,65 @@ public class CxxReader
 	LexReader m_preprocessing_output;
 
 	/**
+	 * Initial definitions that are passed to preprocessor
+	 */
+	Properties m_initial_defines;
+
+	/**
 	 * Handles the first phase of processing input
 	 */
 	private LexState m_first_phase;
 
-	public CxxReader( ReaderDriver driver, String translation_unit,
-	Properties initial_defines)
+	public CxxReader( ReaderDriver driver, DBDriver db,
+					  Properties initial_defines)
 	{
 		m_driver=driver;
+		m_db=db;
 		m_preprocessing_output=new DebugReader();
+		m_initial_defines=initial_defines;
+	}
+
+	public void startTranslationUnit( String translation_unit)
+	{
 		m_lex_to_preprocess=new LexToPreprocess( this);
-		m_preprocess_parser=new PreprocessParser( this, initial_defines);
+		m_preprocess_parser=new PreprocessParser( this, m_initial_defines);
 		m_first_phase=new LineSplicer( this);
-		m_line=1;
-		m_file=m_translation_unit=translation_unit;
+		m_db.startTranslationUnit( translation_unit);
+	}
+
+	public void finishTranslationUnit()
+	{
+		m_db.finishTranslationUnit();
+	}
+
+	public void setFileAndLine( String file, int line)
+	{
+		m_db.setCurrentFile( file);
+		m_db.setCurrentLine( line);
+	}
+
+	public String getFileName()
+	{
+		return m_db.getCurrentFile();
+	}
+
+	public int getLineNumber()
+	{
+		return m_db.getCurrentLine();
+	}
+
+	public String getLocation()
+	{
+		StringBuffer sb=new StringBuffer( " at line ");
+		sb.append( getLineNumber());
+		sb.append( " in ");
+		sb.append( getFileName());
+		return sb.toString();
+	}
+
+	void incrementLineNumber()
+	{
+		m_db.setCurrentLine( m_db.getCurrentLine()+1);
 	}
 
 	public void nextCharacter( char c)
@@ -72,7 +113,7 @@ public class CxxReader
 		}
 		catch ( LexException e)
 		{
-			System.out.println( m_file+" at line "+m_line);
+			System.out.println( m_db.getCurrentFile()+" at line "+m_db.getCurrentLine());
 			System.out.println( e.getMessage());
 		}
 	}

@@ -27,6 +27,7 @@ public class DefaultReaderDriver implements ReaderDriver
 	private ArrayList m_include_paths;
 	private Properties m_initial_defines;
 	private HashSet m_no_repeat_files;
+	private CxxReader m_reader;
 
 	/**
 	 * Entry on stack of currently open files (top level is translation
@@ -39,13 +40,14 @@ public class DefaultReaderDriver implements ReaderDriver
 		int m_line;
 	}
 
-	public DefaultReaderDriver( Collection include_paths,
+	public DefaultReaderDriver( DBDriver db, Collection include_paths,
 						 Properties initial_defines)
 	{
 		m_include_paths=new ArrayList( include_paths);
 		m_initial_defines=initial_defines;
 		m_include_stack=new Stack();
 		m_no_repeat_files=new HashSet();
+		m_reader=new CxxReader( this, db, initial_defines);
 	}
 
 	public void analyze( File translation_unit)
@@ -58,17 +60,17 @@ public class DefaultReaderDriver implements ReaderDriver
 		reader_file.m_line=1;
 		reader_file.m_stream=new BufferedInputStream( new FileInputStream( translation_unit));
 		m_include_stack.push( reader_file);
-		CxxReader reader=new CxxReader( this, translation_unit.getCanonicalPath(),
-										m_initial_defines);
+		m_reader.startTranslationUnit( translation_unit.getCanonicalPath());
 		while ( ! m_include_stack.isEmpty())
 		{
 			ReaderFile top=(ReaderFile)m_include_stack.peek();
 			int c=top.m_stream.read();
 			if ( c== -1)
-				reader.endOfFile();
+				m_reader.endOfFile();
 			else
-				reader.nextCharacter( (char)c);
+				m_reader.nextCharacter( (char)c);
 		}
+		m_reader.finishTranslationUnit();
 	}
 
 	private boolean tryIncludeFile( CxxReader reader, File parent, String child, int next_line)
@@ -83,10 +85,9 @@ public class DefaultReaderDriver implements ReaderDriver
 				ReaderFile rf=new ReaderFile();
 				rf.m_file=f;
 				rf.m_stream=new BufferedInputStream( new FileInputStream( f));
-				((ReaderFile)m_include_stack.peek()).m_line=next_line;
+				((ReaderFile)m_include_stack.peek()).m_line=next_line+1;
 				m_include_stack.push( rf);
-				reader.m_file=canon;
-				reader.m_line=1;
+				reader.setFileAndLine( canon, 0);
 			}
 			return true;
 		}
@@ -117,8 +118,8 @@ public class DefaultReaderDriver implements ReaderDriver
 			if ( ! m_include_stack.isEmpty())
 			{
 				reader_file = (ReaderFile) m_include_stack.peek();
-				reader.m_file = reader_file.m_file.getCanonicalPath();
-				reader.m_line = reader_file.m_line;
+				m_reader.setFileAndLine( reader_file.m_file.getCanonicalPath(),
+										 reader_file.m_line);
 			}
 		}
 		catch ( IOException ioe)
@@ -173,7 +174,8 @@ public class DefaultReaderDriver implements ReaderDriver
 	   initial_defines.setProperty( "__linux", "1");
 	   initial_defines.setProperty( "__ELF__", "1");
 	   initial_defines.setProperty( "unix", "1");
-		DefaultReaderDriver drd=new DefaultReaderDriver( includes, initial_defines);
+	   DBDriver db=new com.antlersoft.analyzecxx.db.CxxIndexObjectDB( args[1]);
+		DefaultReaderDriver drd=new DefaultReaderDriver( db, includes, initial_defines);
 		try
 		{
 			drd.analyze(new File(args[0]));

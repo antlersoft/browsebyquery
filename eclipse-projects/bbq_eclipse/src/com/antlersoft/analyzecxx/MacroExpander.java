@@ -10,6 +10,7 @@ import com.antlersoft.parser.RuleActionException;
 class MacroExpander {
 	HashMap m_macros;
 	LexReader m_reader;
+	DBDriver m_db;
 	/** Null if no function macro name has been recognized */
 	FunctionMacro m_current_function_macro;
 	/** Collection of tokens that have been deferred
@@ -23,11 +24,12 @@ class MacroExpander {
 	/** ArrayList of Argument objects, each of which are the tokens in an argument */
 	ArrayList m_arguments;
 
-	MacroExpander( HashMap macros, LexReader reader)
+	MacroExpander( HashMap macros, LexReader reader, DBDriver db)
 	{
 		m_macros=macros;
 		m_reader=reader;
 		m_deferred_tokens=new ArrayList();
+		m_db=db;
 	}
 
     void processToken( LexToken next_token) throws com.antlersoft.parser.RuleActionException
@@ -120,7 +122,7 @@ class MacroExpander {
 						{
 							Argument arg=(Argument)i.next();
 							args.add( arg.getArgumentTokens());
-							exp_args.add( arg.getExpandedArgumentTokens( m_macros));
+							exp_args.add( arg.getExpandedArgumentTokens( m_macros, m_db));
 						}
 						m_arguments=null;
 						fm.expandTo( orig_token, this, args, exp_args);
@@ -203,11 +205,11 @@ class MacroExpander {
 				PreprocessParser.lex_white_space);
 		}
 
-		ArrayList getExpandedArgumentTokens( HashMap macros)
+		ArrayList getExpandedArgumentTokens( HashMap macros, DBDriver db)
 		throws RuleActionException
 		{
 			InitialMacroReader reader=new InitialMacroReader();
-			MacroExpander expander=new MacroExpander( macros, reader);
+			MacroExpander expander=new MacroExpander( macros, reader, db);
 			Iterator token_i=m_tokens.iterator();
 			while ( token_i.hasNext())
 			{
