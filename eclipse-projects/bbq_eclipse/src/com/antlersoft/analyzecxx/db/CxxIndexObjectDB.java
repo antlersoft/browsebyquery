@@ -109,11 +109,9 @@ public class CxxIndexObjectDB implements DBDriver {
 		for ( IndexIterator ii=m_session.greaterThanOrEqualEntries(
 				  UnitEntry.UNIT_INDEX_NAME,
 				  new ObjectRefKey( m_unit));
-			  ii.hasNext();)
+			  ii.hasNext() && ii.isExactMatch();)
 		{
-			UnitEntry ue=(UnitEntry)ii.next();
-			if ( ue.getUnit()==m_unit)
-				entries.add( ue);
+			entries.add( ii.next());
 		}
 		HashSet possible_clear=new HashSet();
 		for ( Iterator i=entries.iterator(); i.hasNext();)
