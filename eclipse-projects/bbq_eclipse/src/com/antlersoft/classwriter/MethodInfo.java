@@ -15,7 +15,7 @@ import java.io.IOException;
 public class MethodInfo extends FieldInfo
 {
 	MethodInfo( DataInputStream dis, ClassWriter containing)
- 		throws IOException
+ 		throws IOException, CodeCheckException
     {
     	super( dis, containing);
     }

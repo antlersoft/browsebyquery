@@ -47,6 +47,13 @@ public class AttributeList implements Cloneable
         return null;
     }
 
+    public void addAttribute( Attribute toAdd)
+    {
+        if ( attributes==null)
+        	attributes=new ArrayList();
+        attributes.add( toAdd);
+    }
+
     public void read( DataInputStream classStream)
     	throws IOException
     {

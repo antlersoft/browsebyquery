@@ -27,7 +27,7 @@ class CodeAttribute implements Attribute
 	private AttributeList attributes;
 
 	CodeAttribute( DataInputStream classStream, ClassWriter contains)
-	    throws IOException
+	    throws IOException, CodeCheckException
 	{
 	    maxStack=classStream.readUnsignedShort();
 	    maxLocals=classStream.readUnsignedShort();
@@ -38,9 +38,7 @@ class CodeAttribute implements Attribute
      	InstructionPointer ip=new InstructionPointer(0);
         while ( ip.currentPos<code.length)
         {
-System.out.println( "ip.currentPos="+Integer.toString( ip.currentPos)+" code.length="+Integer.toString(code.length)+" current op="+Integer.toString( OpCode.mU( code[ip.currentPos])));;
     		Instruction instr=OpCode.opCodes[OpCode.mU( code[ip.currentPos])].read( ip, code);
-System.out.println( instr.opCode.getMnemonic());
       		instructions.add( instr);
         	ip.wide=instr.opCode instanceof Wide;
         }
@@ -58,6 +56,21 @@ System.out.println( instr.opCode.getMnemonic());
 		attributes=new AttributeList( contains);
 		attributes.read( classStream);
 	}
+
+ 	public Instruction atOffset( InstructionPointer ip)
+  		throws CodeCheckException
+    {
+        for ( Iterator i=instructions.iterator(); i.hasNext();)
+        {
+            Instruction current=(Instruction)i.next();
+            if ( current.instructionStart==ip.currentPos && current.wideFlag==
+            	ip.wide)
+            	return current;
+            if ( current.instructionStart<=ip.currentPos)
+            	throw new CodeCheckException();
+        }
+        throw new CodeCheckException();
+    }
 
 	public LineNumberTableAttribute getLineNumberAttribute()
  	{
@@ -120,61 +133,62 @@ System.out.println( instr.opCode.getMnemonic());
     {
 		try
 		{
-		    new SimpleOpCode( 50, 1, "aaload");
-		    new SimpleOpCode( 83, 1, "aastore");
-		    new SimpleOpCode( 1, 1, "aconst_null");
-		    new SimpleOpCode( 25, 2, "aload");
-		    new SimpleOpCode( 42, 1, "aload_0");
-		    new SimpleOpCode( 43, 1, "aload_1");
-		    new SimpleOpCode( 44, 1, "aload_2");
-		    new SimpleOpCode( 45, 1, "aload_3");
+		    new SimpleOpCode( 50, 1, "aaload", new Cat1Stack( 2, 1));
+		    new SimpleOpCode( 83, 1, "aastore", new Cat1Stack( 3, 0));
+		    new SimpleOpCode( 1, 1, "aconst_null", new Cat1Stack( 0, 1));
+		    new WSimpleOpCode( 25, 2, "aload", new Cat1Stack( 0, 1));
+		    new SimpleOpCode( 42, 1, "aload_0", new Cat1Stack( 0, 1));
+		    new SimpleOpCode( 43, 1, "aload_1", new Cat1Stack( 0, 1));
+		    new SimpleOpCode( 44, 1, "aload_2", new Cat1Stack( 0, 1));
+		    new SimpleOpCode( 45, 1, "aload_3", new Cat1Stack( 0, 1));
 		    new SimpleOpCode( 189, 3, "anewarray");
-		    new SimpleOpCode( 176, 1, "areturn");
+		    new ReturnOpCode( 176, 1, "areturn", ProcessStack.CAT1);
 		    new SimpleOpCode( 190, 1, "arraylength");
-		    new SimpleOpCode( 58, 2, "astore");
-		    new SimpleOpCode( 75, 1, "astore_0");
-		    new SimpleOpCode( 76, 1, "astore_1");
-		    new SimpleOpCode( 77, 1, "astore_2");
-		    new SimpleOpCode( 78, 1, "astore_3");
-		    new SimpleOpCode( 191, 1, "athrow");
-		    new SimpleOpCode( 51, 1, "baload");
-		    new SimpleOpCode( 84, 1, "bastore");
-		    new SimpleOpCode( 16, 2, "bipush");
-		    new SimpleOpCode( 52, 1, "caload");
-		    new SimpleOpCode( 85, 1, "castore");
+		    new WSimpleOpCode( 58, 2, "astore", new Cat1Stack( 1, 0));
+		    new SimpleOpCode( 75, 1, "astore_0", new Cat1Stack( 1, 0));
+		    new SimpleOpCode( 76, 1, "astore_1", new Cat1Stack( 1, 0));
+		    new SimpleOpCode( 77, 1, "astore_2", new Cat1Stack( 1, 0));
+		    new SimpleOpCode( 78, 1, "astore_3", new Cat1Stack( 1, 0));
+		    new ThrowOpCode( 191, 1, "athrow", new Cat1Stack( 1, 0));
+		    new SimpleOpCode( 51, 1, "baload", new Cat1Stack( 2, 1));
+		    new SimpleOpCode( 84, 1, "bastore", new Cat1Stack( 3, 0));
+		    new SimpleOpCode( 16, 2, "bipush", new Cat1Stack( 0, 1));
+		    new SimpleOpCode( 52, 1, "caload", new Cat1Stack( 2, 1));
+		    new SimpleOpCode( 85, 1, "castore", new Cat1Stack( 3, 0));
 		    new SimpleOpCode( 192, 3, "checkcast");
-		    new SimpleOpCode( 144, 1, "d2f");
-		    new SimpleOpCode( 142, 1, "d2i");
-		    new SimpleOpCode( 143, 1, "d2l");
-		    new SimpleOpCode( 99, 1, "dadd");
-		    new SimpleOpCode( 49, 1, "daload");
-		    new SimpleOpCode( 82, 1, "dastore");
-		    new SimpleOpCode( 152, 1, "dcmpg");
-		    new SimpleOpCode( 151, 1, "dcmpl");
-		    new SimpleOpCode( 14, 1, "dconst_0");
-		    new SimpleOpCode( 15, 1, "dconst_1");
-		    new SimpleOpCode( 111, 1, "ddiv");
-		    new SimpleOpCode( 24, 2, "dload");
-		    new SimpleOpCode( 38, 1, "dload_0");
-		    new SimpleOpCode( 39, 1, "dload_1");
-		    new SimpleOpCode( 40, 1, "dload_2");
-		    new SimpleOpCode( 41, 1, "dload_3");
-		    new SimpleOpCode( 107, 1, "dmul");
-		    new SimpleOpCode( 119, 1, "dneg");
-		    new SimpleOpCode( 115, 1, "drem");
-		    new SimpleOpCode( 175, 1, "dreturn");
-		    new SimpleOpCode( 57, 2, "dstore");
-		    new SimpleOpCode( 71, 1, "dstore_0");
-		    new SimpleOpCode( 72, 1, "dstore_1");
-		    new SimpleOpCode( 73, 1, "dstore_2");
-		    new SimpleOpCode( 74, 1, "dstore_3");
-		    new SimpleOpCode( 103, 1, "dsub");
-		    new SimpleOpCode( 89, 1, "dup");
-		    new SimpleOpCode( 90, 1, "dup_x1");
-		    new SimpleOpCode( 91, 1, "dup_x2");
-		    new SimpleOpCode( 92, 1, "dup2");
-		    new SimpleOpCode( 93, 1, "dup2_x1");
-		    new SimpleOpCode( 94, 1, "dup2_x4");
+		    new SimpleOpCode( 144, 1, "d2f", new ConvertStack( ProcessStack.CAT2, ProcessStack.CAT1));
+		    new SimpleOpCode( 142, 1, "d2i", new ConvertStack( ProcessStack.CAT2, ProcessStack.CAT1));
+		    new SimpleOpCode( 143, 1, "d2l", new ConvertStack( ProcessStack.CAT2, ProcessStack.CAT1));
+		    new SimpleOpCode( 99, 1, "dadd", new Cat2Stack( 2, 1));
+		    new SimpleOpCode( 49, 1, "daload", new Cat1Stack( 2, 1));
+		    new SimpleOpCode( 82, 1, "dastore", new Cat1Stack( 3, 0));
+		    new SimpleOpCode( 152, 1, "dcmpg", new Cat1Stack( 2, 1));
+		    new SimpleOpCode( 151, 1, "dcmpl", new Cat1Stack( 2, 1));
+		    new SimpleOpCode( 14, 1, "dconst_0", new Cat2Stack( 0, 1));
+		    new SimpleOpCode( 15, 1, "dconst_1", new Cat2Stack( 0, 1));
+		    new SimpleOpCode( 111, 1, "ddiv", new Cat2Stack( 2, 1));
+		    new WSimpleOpCode( 24, 2, "dload", new Cat2Stack( 0, 1));
+		    new SimpleOpCode( 38, 1, "dload_0", new Cat2Stack( 0, 1));
+		    new SimpleOpCode( 39, 1, "dload_1", new Cat2Stack( 0, 1));
+		    new SimpleOpCode( 40, 1, "dload_2", new Cat2Stack( 0, 1));
+		    new SimpleOpCode( 41, 1, "dload_3", new Cat2Stack( 0, 1));
+		    new SimpleOpCode( 107, 1, "dmul", new Cat2Stack( 2, 1));
+		    new SimpleOpCode( 119, 1, "dneg", new Cat2Stack( 1, 1));
+		    new SimpleOpCode( 115, 1, "drem", new Cat2Stack( 2, 1));
+		    new ReturnOpCode( 175, 1, "dreturn", ProcessStack.CAT2);
+		    new WSimpleOpCode( 57, 2, "dstore", new Cat2Stack( 1, 0));
+		    new SimpleOpCode( 71, 1, "dstore_0", new Cat2Stack( 1, 0));
+		    new SimpleOpCode( 72, 1, "dstore_1", new Cat2Stack( 1, 0));
+		    new SimpleOpCode( 73, 1, "dstore_2", new Cat2Stack( 1, 0));
+		    new SimpleOpCode( 74, 1, "dstore_3", new Cat2Stack( 1, 0));
+		    new SimpleOpCode( 103, 1, "dsub", new Cat2Stack( 2, 1));
+		    new SimpleOpCode( 89, 1, "dup", new Cat1Stack( 1, 2));
+		    new SimpleOpCode( 90, 1, "dup_x1", new Cat1Stack( 2, 3));
+		    new SimpleOpCode( 91, 1, "dup_x2", new Cat1Stack( 2, 3));
+		    new SimpleOpCode( 92, 1, "dup2", new Cat1Stack( 1, 2));
+		    new SimpleOpCode( 93, 1, "dup2_x1", new Cat1Stack( 2, 3));
+      		// This may fail, if used in mixed cat 1/cat 2 expression
+		    new SimpleOpCode( 94, 1, "dup2_x4", new Cat1Stack( 2, 3));
 		    new SimpleOpCode( 141, 1, "f2d");
 		    new SimpleOpCode( 139, 1, "f2i");
 		    new SimpleOpCode( 140, 1, "f2l");
@@ -187,7 +201,7 @@ System.out.println( instr.opCode.getMnemonic());
 		    new SimpleOpCode( 12, 1, "fconst_1");
 		    new SimpleOpCode( 13, 1, "fconst_2");
 		    new SimpleOpCode( 110, 1, "fdiv");
-		    new SimpleOpCode( 23, 2, "fload");
+		    new WSimpleOpCode( 23, 2, "fload");
 		    new SimpleOpCode( 34, 1, "fload_0");
 		    new SimpleOpCode( 35, 1, "fload_1");
 		    new SimpleOpCode( 36, 1, "fload_2");
@@ -196,7 +210,7 @@ System.out.println( instr.opCode.getMnemonic());
 		    new SimpleOpCode( 118, 1, "fneg");
 		    new SimpleOpCode( 114, 1, "frem");
 		    new SimpleOpCode( 174, 1, "freturn");
-		    new SimpleOpCode( 56, 2, "fstore");
+		    new WSimpleOpCode( 56, 2, "fstore");
 		    new SimpleOpCode( 67, 1, "fstore_0");
 		    new SimpleOpCode( 68, 1, "fstore_1");
 		    new SimpleOpCode( 69, 1, "fstore_2");
@@ -240,8 +254,8 @@ System.out.println( instr.opCode.getMnemonic());
 		    new SimpleOpCode( 158, 3, "ifle");
 		    new SimpleOpCode( 199, 3, "ifnonnull");
 		    new SimpleOpCode( 198, 3, "ifnull");
-		    new SimpleOpCode( 132, 3, "iinc");
-		    new SimpleOpCode( 21, 2, "iload");
+		    new WSimpleOpCode( 132, 3, "iinc");
+		    new WSimpleOpCode( 21, 2, "iload");
 		    new SimpleOpCode( 26, 1, "iload_0");
 		    new SimpleOpCode( 27, 1, "iload_1");
 		    new SimpleOpCode( 28, 1, "iload_2");
@@ -258,7 +272,7 @@ System.out.println( instr.opCode.getMnemonic());
 		    new SimpleOpCode( 172, 1, "ireturn");
 		    new SimpleOpCode( 120, 1, "ishl");
 		    new SimpleOpCode( 122, 1, "ishr");
-		    new SimpleOpCode( 54, 2, "istore");
+		    new WSimpleOpCode( 54, 2, "istore");
 		    new SimpleOpCode( 59, 1, "istore_0");
 		    new SimpleOpCode( 60, 1, "istore_1");
 		    new SimpleOpCode( 61, 1, "istore_2");
@@ -282,7 +296,7 @@ System.out.println( instr.opCode.getMnemonic());
 		    new SimpleOpCode( 19, 3, "ldc_w");
 		    new SimpleOpCode( 20, 3, "ldc2_w");
 		    new SimpleOpCode( 109, 1, "ldiv");
-		    new SimpleOpCode( 22, 2, "lload");
+		    new WSimpleOpCode( 22, 2, "lload");
 		    new SimpleOpCode( 30, 1, "lload_0");
 		    new SimpleOpCode( 31, 1, "lload_1");
 		    new SimpleOpCode( 32, 1, "lload_2");
@@ -295,7 +309,7 @@ System.out.println( instr.opCode.getMnemonic());
 		    new SimpleOpCode( 173, 1, "lreturn");
 		    new SimpleOpCode( 121, 1, "lshl");
 		    new SimpleOpCode( 123, 1, "lshr");
-		    new SimpleOpCode( 55, 2, "lstore");
+		    new WSimpleOpCode( 55, 2, "lstore");
 		    new SimpleOpCode( 63, 1, "lstore_0");
 		    new SimpleOpCode( 64, 1, "lstore_1");
 		    new SimpleOpCode( 65, 1, "lstore_2");
@@ -313,14 +327,14 @@ System.out.println( instr.opCode.getMnemonic());
 		    new SimpleOpCode( 88, 1, "pop2");
 		    new SimpleOpCode( 181, 3, "putfield");
 		    new SimpleOpCode( 179, 3, "putstatic");
-		    new SimpleOpCode( 169, 2, "ret");
+		    new WSimpleOpCode( 169, 2, "ret");
 		    new SimpleOpCode( 177, 1, "return");
 		    new SimpleOpCode( 53, 1, "saload");
 		    new SimpleOpCode( 86, 1, "sastore");
 		    new SimpleOpCode( 17, 3, "sipush");
 		    new SimpleOpCode( 95, 1, "swap");
 		    new TableSwitch( 170, "tableswitch");
-		    new Wide( 196, "wide");
+		    new Wide( 196, "wide", 0, 0);
 		}
 		catch ( Throwable t)
 		{

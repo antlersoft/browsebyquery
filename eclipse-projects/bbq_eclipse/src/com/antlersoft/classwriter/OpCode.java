@@ -12,6 +12,9 @@ package classwriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import java.util.Collection;
+import java.util.Stack;
+
 public abstract class OpCode
 {
 	private int value;
@@ -33,7 +36,12 @@ public abstract class OpCode
         return mnemonic;
     }
 
-	abstract Instruction read( InstructionPointer cr, byte[] code);
+	abstract Instruction read( InstructionPointer cr, byte[] code)
+ 		throws CodeCheckException;
+ 	abstract Stack stackUpdate( Instruction instruction, Stack current)
+  		throws CodeCheckException;
+    abstract void traverse( Instruction instruction, Collection next)
+    	throws CodeCheckException;
 
  	void write( DataOutputStream out, Instruction instruction)
   		throws IOException

@@ -14,6 +14,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -37,6 +38,12 @@ class ExceptionsAttribute implements Attribute
 			exceptions.add( new Integer( classStream.readUnsignedShort()));
 	    }
 	}
+
+ 	public ExceptionsAttribute( Collection integerCollection)
+    {
+        exceptions=new ArrayList( integerCollection.size());
+        exceptions.addAll( integerCollection);
+    }
 
 	public String getTypeString() { return typeString; }
 

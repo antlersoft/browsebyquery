@@ -9,33 +9,49 @@
  */
 package classwriter;
 
+import java.util.Collection;
+import java.util.Stack;
+
 public class SimpleOpCode extends OpCode
 {
 	private int length;
- 	private int stack_change;
+ 	private ProcessStack stack_update;
 
-	SimpleOpCode( int v, int l, String m, int sc)
+	SimpleOpCode( int v, int l, String m, ProcessStack stacker)
 	{
  		super( v, m);
 	    length=l;
-        stack_change=sc;
+     	stack_update=stacker;
 	}
 
  	SimpleOpCode( int v, int l, String m)
     {
-    	this( v, l, m, 0);
+    	this( v, l, m, new Cat1Stack( 1, 1));
+    }
+
+   	Stack stackUpdate( Instruction instruction, Stack current)
+ 		throws CodeCheckException
+    {
+        return stack_update.stackUpdate( current);
+    }
+
+    void traverse( Instruction instruction,	Collection next)
+    	throws CodeCheckException
+    {
+        next.add(
+        	new InstructionPointer( instruction.instructionStart
+         		+instruction.getLength()));
     }
 
 	Instruction read( InstructionPointer cr, byte[] code)
+ 		throws CodeCheckException
 	{
-     	int wideLength;
       	if ( cr.wide)
-         	wideLength=2*(length-1)+1;
-        else
-            wideLength=length;
+         	throw new CodeCheckException( getMnemonic()+" can not be wide");
+
 		Instruction result=new Instruction( this, cr.currentPos,
-  			getSubArray( code, cr.currentPos+1, wideLength-1), cr.wide);
-	    cr.currentPos+=wideLength;
+  			getSubArray( code, cr.currentPos+1, length-1), false);
+	    cr.currentPos+=length;
      	return result;
 	}
 }

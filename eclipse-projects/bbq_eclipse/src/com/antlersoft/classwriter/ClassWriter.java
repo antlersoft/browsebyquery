@@ -57,16 +57,14 @@ public class ClassWriter implements Cloneable
 
     public ClassWriter()
     {
-    	constantPool=new ArrayList();
-     	interfaces=new ArrayList();
-      	fields=new ArrayList();
-        methods=new ArrayList();
-        attributes=new AttributeList( this);
+        clearClass();
     }
 
     public void readClass( InputStream is)
-		throws IOException, IllegalStateException
+		throws IOException, CodeCheckException
     {
+        clearClass();
+
 		DataInputStream classStream=new DataInputStream( is);
 
 		magic=classStream.readInt();
@@ -148,8 +146,17 @@ public class ClassWriter implements Cloneable
   		attributes.write( classStream);
     }
 
+    private void clearClass()
+    {
+    	constantPool=new ArrayList();
+     	interfaces=new ArrayList();
+      	fields=new ArrayList();
+        methods=new ArrayList();
+        attributes=new AttributeList( this);
+    }
+
     CPInfo readConstant( DataInputStream classStream)
-		throws IOException, IllegalStateException
+		throws IOException, CodeCheckException
     {
 		short tag=(short)classStream.readUnsignedByte();
 		CPInfo result;
@@ -185,7 +192,7 @@ public class ClassWriter implements Cloneable
 				result=new CPNameAndType( classStream);
 				break;
 		    default :
-				throw new IllegalStateException();
+				throw new CodeCheckException( "Unknown constant type "+(int)tag);
 		}
 		return result;
     }

@@ -17,6 +17,7 @@ public class TableSwitch extends OpCode
 	}
 
  	Instruction read( InstructionPointer cr, byte[] code)
+  		throws CodeCheckException
 	{
 	    cr.currentPos++;
      	int operandStart=cr.currentPos;
