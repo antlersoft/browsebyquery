@@ -1,17 +1,14 @@
 package analyzer;
 
-class DBCall implements java.io.Serializable, Cloneable
+class DBCall extends DBReference
 {
     DBCall( DBMethod s, DBMethod t, int l)
     {
-	source=s;
+	super( s, l);	
 	target=t;
-	lineNumber=l;
     }
 
     DBMethod target;
-    DBMethod source;
-    int lineNumber;
 
     public String toString()
     {
