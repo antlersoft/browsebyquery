@@ -35,6 +35,7 @@ class ClassList implements Serializable
     transient boolean listModified;
     transient HashMap classMap;
     transient Semaphore classChangeLock;
+    transient CustomizerFactory factory;
     /**
      * Map of index names to indices
      */
@@ -113,7 +114,8 @@ class ClassList implements Serializable
             {
                 entry.indexStreams=new StreamPair(
                     new DiskAllocator( new File( baseDirectory,
-                        entry.fileName+"i"), 4, 10240, 102400, 0));
+                        entry.fileName+"i"), 4, 10240, 102400, 0),
+                        factory.getCustomizer( indexedClass));
             }
             IndexEntry indexEntry=Index.createIndexEntry( indexName,
                 keyGen, descending, unique, manager, entry.indexStreams);
@@ -239,7 +241,8 @@ class ClassList implements Serializable
                             new File( baseDirectory,
                             result.fileName), 4, 128, 102400,
                             DiskAllocator.FORCE_CREATE);
-                        result.objectStreams=new StreamPair( allocator);
+                        result.objectStreams=new StreamPair( allocator,
+                            factory.getCustomizer( toFind));
                     }
                     catch ( Exception dae)
                     {
@@ -262,7 +265,8 @@ class ClassList implements Serializable
                             new File( baseDirectory,
                             result.fileName), 4, 128, 102400,
                             DiskAllocator.FORCE_CREATE);
-                        result.objectStreams=new StreamPair( allocator);
+                        result.objectStreams=new StreamPair( allocator,
+                            factory.getCustomizer( toFind));
                     }
                     catch ( Exception dae)
                     {

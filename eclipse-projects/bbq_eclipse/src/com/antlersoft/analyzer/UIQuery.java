@@ -34,7 +34,7 @@ public class UIQuery
 
     UIQuery()
     {
-        analyzerDB=new ObjectAnalyzeDB();
+        analyzerDB=new IndexAnalyzeDB();
         qp=new QueryParser();
         chooser=new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES);
@@ -139,6 +139,7 @@ public class UIQuery
     {
         StringWriter sw=new StringWriter( 1000);
         PrintWriter pw=new PrintWriter( sw);
+t.printStackTrace();
         t.printStackTrace( pw);
         pw.close();
         JOptionPane.showMessageDialog( frameWindow, t.getMessage()+" \n"+sw.toString(),

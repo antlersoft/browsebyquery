@@ -31,6 +31,8 @@ public interface ObjectStreamCustomizer
     public abstract void resetObjectOutputStream( ObjectOutputStream oos)
         throws IOException;
 
+    public static BaseCustomizer BASE_CUSTOMIZER=new BaseCustomizer();
+
     static class BaseCustomizer implements ObjectStreamCustomizer
     {
         public ObjectInputStream createObjectInputStream( InputStream is)

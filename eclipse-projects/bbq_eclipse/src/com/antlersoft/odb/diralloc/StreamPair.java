@@ -25,13 +25,13 @@ import com.antlersoft.util.RandomOutputStream;
 
 class StreamPair
 {
-    StreamPair( DiskAllocator a)
+    StreamPair( DiskAllocator a, ObjectStreamCustomizer c)
         throws IOException, ClassNotFoundException
     {
         super();
         allocator=a;
         chunkSize=allocator.getChunkSize();
-        customizer=new ObjectStreamCustomizer.BaseCustomizer();
+        customizer=c;
         randomOutput=new RandomOutputStream();
         objectOutput=customizer.createObjectOutputStream( randomOutput);
         randomInput=new RandomInputStream();
@@ -40,6 +40,12 @@ class StreamPair
         randomInput.emptyAddBytes( randomOutput.getWrittenBytes());
         objectInput=customizer.createObjectInputStream( randomInput);
         objectInput.readObject();
+    }
+
+    StreamPair( DiskAllocator a)
+        throws IOException, ClassNotFoundException
+    {
+        this( a, ObjectStreamCustomizer.BASE_CUSTOMIZER);
     }
 
     int read2Ints( int offset)

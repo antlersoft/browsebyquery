@@ -35,9 +35,10 @@ class Index
         indexModificationLock=new Semaphore();
     }
 
-    IndexPage getChildPage( IndexPage parent, int offset)
+    IndexPage getChildPage( IndexPage parent, int index)
     {
-        IndexPageKey key=new IndexPageKey( this, offset, parent.thisPage);
+        IndexPageKey key=new IndexPageKey( this, parent.nextOffsetArray[index],
+            parent.thisPage);
         return manager.getIndexPageByKey( key);
     }
 
@@ -130,6 +131,11 @@ class Index
         {
             insertKey( objectRef, key);
         }
+catch ( NullPointerException npe)
+{
+System.out.println( "What's wrong here");
+npe.printStackTrace();
+}
         finally
         {
             indexModificationLock.leaveCritical();
@@ -296,18 +302,23 @@ class Index
                 throw new ObjectStoreException( "Error creating index page:",
                     dae);
             }
-            toSplit.thisPage.parent=parent.thisPage;
             entry.startPageOffset=parent.thisPage.offset;
+            topKey=parent.thisPage;
+            toSplit.thisPage.parent=parent.thisPage;
             manager.dirtyClassList();
             manager.addNewIndexPageToCache( parent);
 
-            splitParentPosition=0;
+            splitParentPosition=1;
         }
         else
         {
             parent=manager.getIndexPageByKey( toSplit.thisPage.parent);
             splitParentPosition=binarySearch( parent.keyArray, 0, parent.size-1,
                 toSplit.keyArray[0]);
+            if ( splitParentPosition<0)
+                throw new ObjectStoreException(
+                    "Index corrupt: splitting page");
+            splitParentPosition++;
         }
         int splitPosition=toSplit.size/2;
         IndexPage newPage=new IndexPage();
@@ -359,7 +370,7 @@ class Index
             parent.keyArray, splitParentPosition+1,
             parent.size-splitParentPosition);
         parent.size++;
-        parent.nextOffsetArray[splitParentPosition]=0;
+        parent.nextOffsetArray[splitParentPosition]=newPage.thisPage.offset;
         parent.keyArray[splitParentPosition]=newPage.keyArray[0];
         parent.modified=true;
         // If this is not a leaf index node, each index page key in the
@@ -499,8 +510,7 @@ class Index
         {
             if ( toMerge.size==1 && toMerge.reuseArray==null)
             {
-                IndexPage newTop=getChildPage( toMerge,
-                    toMerge.nextOffsetArray[0]);
+                IndexPage newTop=getChildPage( toMerge, 0);
                 entry.startPageOffset=newTop.thisPage.offset;
                 topKey=newTop.thisPage;
                 topKey.parent=null;
@@ -614,9 +624,11 @@ class Index
             else
             {
                 if ( difference<0)
-                    difference= -difference-1;
-                if ( difference>=currentPage.size)
-                    difference=currentPage.size-1;
+                {
+                    difference= -difference-2;
+                    if ( difference<0)
+                        difference=0;
+                }
                 currentPage=getChildPage( currentPage, difference);
             }
         }

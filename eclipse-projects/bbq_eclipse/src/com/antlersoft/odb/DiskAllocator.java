@@ -408,6 +408,8 @@ public class DiskAllocator
 	public void write( int offset, byte[] toWrite)
 		throws IOException, DiskAllocatorException
 	{
+if ( offset==704)
+    System.out.println( "Here");
 		int size=toWrite.length;
 		if ( offset<initialRegionOffset || offset>fileSize)
 			throw new DiskAllocatorException( "Not a region");
@@ -763,7 +765,7 @@ public class DiskAllocator
                 {
                     throw new NoSuchElementException();
                 }
-                Object result=new Integer( nextOffset);
+                Object result=new Integer( nextOffset+REGION_START_OFFSET);
                 try
                 {
                     getNextNonFree();

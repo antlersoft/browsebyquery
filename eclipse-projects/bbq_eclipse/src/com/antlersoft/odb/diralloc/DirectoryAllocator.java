@@ -24,6 +24,7 @@ import com.antlersoft.odb.IndexObjectStore;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectKey;
 import com.antlersoft.odb.ObjectStoreException;
+import com.antlersoft.odb.ObjectStreamCustomizer;
 import com.antlersoft.util.RandomInputStream;
 import com.antlersoft.util.RandomOutputStream;
 
@@ -32,7 +33,7 @@ import com.antlersoft.util.Semaphore;
 
 public class DirectoryAllocator implements IndexObjectStore
 {
-    public DirectoryAllocator( File file)
+    public DirectoryAllocator( File file, CustomizerFactory factory)
         throws ObjectStoreException
     {
         try
@@ -44,7 +45,8 @@ public class DirectoryAllocator implements IndexObjectStore
             overhead=new DiskAllocator( allocatorFile, INITIAL_REGION_SIZE,
                 10240, 204800, 0);
 
-            overheadStreams=new StreamPair( overhead);
+            overheadStreams=new StreamPair( overhead,
+                factory.getCustomizer( EntryPage.class));
             rootModified=false;
             offsets=new byte[INITIAL_REGION_SIZE];
 
@@ -74,6 +76,7 @@ public class DirectoryAllocator implements IndexObjectStore
             }
             // Traverse class list; create class and index maps and stream
             // pairs
+            classList.factory=factory;
             classList.classMap=new HashMap();
             classList.classChangeLock=new Semaphore();
             classList.indexMap=new HashMap();
@@ -87,13 +90,16 @@ public class DirectoryAllocator implements IndexObjectStore
                     new File( baseDirectory,
                     entry.fileName), 4, 128, 102400,
                     DiskAllocator.FORCE_EXIST);
-                entry.objectStreams=new StreamPair( allocator);
+                ObjectStreamCustomizer customizer=factory.getCustomizer(
+                    Class.forName( entry.className));
+                entry.objectStreams=new StreamPair( allocator,
+                    customizer);
                 if ( entry.indices.size()>0)
                 {
                     entry.indexStreams=new StreamPair(
                         new DiskAllocator( new File( baseDirectory,
                             entry.fileName+"i"), 4, 10240, 102400,
-                            DiskAllocator.FORCE_EXIST));
+                            DiskAllocator.FORCE_EXIST), customizer);
                     for ( Iterator j=entry.indices.iterator(); j.hasNext();)
                     {
                         IndexEntry indexEntry=(IndexEntry)j.next();
@@ -121,6 +127,11 @@ ioe.printStackTrace();
         // Initialize index page cache
         indexPageMap=new HashMap( INDEX_PAGE_CACHE_SIZE+1);
         indexPageLRU=new ArrayList( INDEX_PAGE_CACHE_SIZE+1);
+    }
+
+    public DirectoryAllocator( File file)
+    {
+        this( file, CustomizerFactory.BASE_FACTORY);
     }
 
     public Iterator getAll(Class toRetrieve) throws ObjectStoreException
@@ -191,19 +202,24 @@ ioe.printStackTrace();
     public ObjectKey insert(Serializable insertObject)
         throws ObjectStoreException
     {
+        DAKey result=null;
         try
         {
             ClassEntry classEntry=classList.getEntry( insertObject.getClass(),
                 baseDirectory);
-            DAKey result=entryList.getNewKey( overheadStreams,
+            result=entryList.getNewKey( overheadStreams,
                 classEntry.index, classEntry.reuseCount);
             int region=classEntry.objectStreams.writeObjectWithPrefix(
                 insertObject, 0, result.index, result.reuseCount);
             entryList.setRegion( result, region, overheadStreams);
             for ( Iterator i=classEntry.indices.iterator(); i.hasNext();)
                 ((IndexEntry)i.next()).index.insertKey( result, insertObject);
-            return result;
         }
+catch ( NullPointerException npe)
+{
+System.out.println( "What's wrong");
+npe.printStackTrace();
+}
         catch ( ClassNotFoundException cnfe)
         {
             throw new ObjectStoreException( "insert: class not found",
@@ -221,7 +237,15 @@ ioe.printStackTrace();
         }
         finally
         {
+try
+{
             classList.classChangeLock.leaveProtected();
+}
+catch ( NullPointerException npe)
+{
+System.out.println( "What's wrong 2");
+}
+return result;
         }
     }
 
@@ -568,7 +592,9 @@ ioe.printStackTrace();
                     toDump.thisPage.offset);
             if ( newOffset!=toDump.thisPage.offset)
             {
+                indexPageMap.remove( toDump.thisPage);
                 toDump.thisPage.offset=newOffset;
+                indexPageMap.put( toDump.thisPage, toDump);
                 if ( toDump.thisPage.parent==null)
                 {
                     toDump.thisPage.index.entry.startPageOffset

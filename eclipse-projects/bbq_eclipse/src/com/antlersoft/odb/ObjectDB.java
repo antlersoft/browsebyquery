@@ -62,20 +62,17 @@ public class ObjectDB
 	public synchronized void setPersistent( Object toStore)
 		throws ObjectStoreException
 	{
-		synchronized ( toStore)
+		PersistentImpl impl=((Persistent)toStore)._getPersistentImpl();
+		if ( impl.objectKey==null)
 		{
-			PersistentImpl impl=((Persistent)toStore)._getPersistentImpl();
-			if ( impl.objectKey==null)
-			{
-				impl.objectKey=store.insert( (Persistent)toStore);
-				if ( ! impl.dirty)
-                {
-                    impl.dirty=true;
-                    dirtyObjects.add( toStore);
-                }
-			}
-			cachedObjects.put( impl.objectKey, toStore);
-		}
+			impl.objectKey=store.insert( (Persistent)toStore);
+    		if ( ! impl.dirty)
+            {
+                impl.dirty=true;
+                dirtyObjects.add( toStore);
+            }
+        }
+    	cachedObjects.put( impl.objectKey, toStore);
 	}
 
 	public static void makePersistent( Object toStore)

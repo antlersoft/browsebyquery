@@ -19,6 +19,8 @@ class IndexPageKey implements Cloneable
     IndexPageKey( Index i, int o, IndexPageKey p)
     {
         index=i;
+if ( o==0)
+throw new com.antlersoft.odb.ObjectStoreException( "Bad offset");
         offset=o;
         parent=p;
     }
