@@ -394,6 +394,16 @@ public class ClassWriter
         return constantPool.size()-1;
     }
 
+    public String getStringConstant( int index)
+    {
+        Object constant=constantPool.get( index);
+        if ( constant instanceof CPString)
+            return getString( ((CPString)constant).valueIndex);
+        if ( constant instanceof CPInteger)
+            return Integer.toString( ((CPInteger)constant).value);
+        return "???";
+    }
+
     final int getNameAndTypeIndex( String name, String descriptor)
     {
         int nameIndex=getStringIndex( name);

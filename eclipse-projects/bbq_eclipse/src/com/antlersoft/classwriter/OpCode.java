@@ -256,7 +256,7 @@ public abstract class OpCode
 		    new SimpleOpCode( 47, 1, "laload", new ComboStack( new Cat1Stack( 2, 0), new Cat2Stack( 0, 1)));
 		    new SimpleOpCode( 127, 1, "land", new Cat2Stack( 2, 1));
 		    new SimpleOpCode( 80, 1, "lastore", new ComboStack( new Cat1Stack( 2, 0), new Cat2Stack( 1, 0)));
-		    new SimpleOpCode( 148, 1, "lcmp", new ComboStack( new Cat2Stack( 2, 0), new Cat1Stack( 1, 0)));
+		    new SimpleOpCode( 148, 1, "lcmp", new ComboStack( new Cat2Stack( 2, 0), new Cat1Stack( 0, 1)));
 		    new SimpleOpCode( 9, 1, "lconst_0", new Cat2Stack( 0, 1));
 		    new SimpleOpCode( 10, 1, "lconst_1", new Cat2Stack( 0, 1));
 		    new SimpleOpCode( 18, 2, "ldc", new Cat1Stack( 0, 1));

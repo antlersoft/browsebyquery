@@ -9,7 +9,7 @@
  */
 package com.antlersoft.classwriter;
 
-class InstructionPointer
+public class InstructionPointer
 {
 	int currentPos;
     boolean wide;
