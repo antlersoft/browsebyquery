@@ -38,7 +38,7 @@ public class DBClass implements Persistent, Cloneable
 		fields=new Hashtable();
 		resolved=false;
 		_persistentImpl=new PersistentImpl();
-		ObjectDB.setPersistent( this);
+		ObjectDB.makePersistent( this);
     }
 
 	public PersistentImpl _getPersistentImpl()

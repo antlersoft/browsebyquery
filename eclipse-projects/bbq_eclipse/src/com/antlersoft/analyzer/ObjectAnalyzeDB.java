@@ -118,7 +118,7 @@ class ObjectAnalyzeDB implements AnalyzerDB
 		{
 			v=new Vector();
 			_persistentImpl=new PersistentImpl();
-			ObjectDB.setPersistent( this);
+			ObjectDB.makePersistent( this);
 		}
 
 		void add( Object o)

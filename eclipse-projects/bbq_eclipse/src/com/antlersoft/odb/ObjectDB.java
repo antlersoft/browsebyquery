@@ -44,9 +44,9 @@ public class ObjectDB
 		return current;
     }
 
-	public static void makeDirty( Object toDirty)
+	public static void makeDirty( Persistent toDirty)
 	{
-        PersistentImpl impl=((Persistent)toDirty)._getPersistentImpl();
+        PersistentImpl impl=toDirty._getPersistentImpl();
         if ( ! impl.dirty)
         {
             impl.dirty=true;
@@ -54,7 +54,7 @@ public class ObjectDB
         }
 	}
 
-	public synchronized void makePersistent( Object toStore)
+	public synchronized void setPersistent( Object toStore)
 		throws ObjectStoreException
 	{
 		synchronized ( toStore)
@@ -73,7 +73,7 @@ public class ObjectDB
 		}
 	}
 
-	public static void setPersistent( Object toStore)
+	public static void makePersistent( Object toStore)
 	{
 		getObjectDB().makePersistent( toStore);
 	}

@@ -38,7 +38,7 @@ public class DBMethod implements Persistent, Cloneable
 	signature=(String)st.nextElement();
 	resolved=false;
 	_persistentImpl=new PersistentImpl();
-	ObjectDB.setPersistent( this);
+	ObjectDB.makePersistent( this);
     ((DBClass)dbclass.getReferenced()).addMethod( this);
     }
 
