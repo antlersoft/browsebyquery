@@ -3,7 +3,8 @@ package com.antlersoft.analyzer;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Enumeration;
 
 import com.antlersoft.odb.ObjectRef;
@@ -123,7 +124,10 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
     {
 	ObjectDB.makeDirty( this);
 	if ( calledBy==null)
-	    calledBy=callsFromCaller;
+    {
+	    if ( ! callsFromCaller.isEmpty())
+            calledBy=callsFromCaller;
+    }
 	else
 	    /* Remove calls from same method and append calls to list */
 	{
@@ -147,108 +151,130 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
 	final AnalyzerDB db)
 	throws CodeReader.BadInstructionException
     {
-	calls=null;
-	AnalyzeClass.FieldInfo mi=ac.methods[methodIndex];
-	for ( int i=0; i<mi.attributesCount; i++)
-	{
-	    if ( ac.getString(mi.attributes[i].nameIndex).equals( "Code"))
-	    {
-		if ( calls==null)
-		    calls=new Vector();
-		else
-		    calls.removeAllElements();
-		if ( fieldReferences==null)
-		    fieldReferences=new Vector();
-		else
-		    fieldReferences.removeAllElements();
-		CodeReader cr=new CodeReader( (AnalyzeClass.CodeAttribute)mi.attributes[i].value);
-        lineNumber=cr.getLineNumber( 0);
-		cr.setMethodInvokeCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
-		{
-		    public void processReference( CodeReader.OpCode read, int position,
-			int cpOffset, int lineNumber)
-		    {
-			try
-			{
-			    AnalyzeClass.CPTypeRef methodRef=(AnalyzeClass.CPTypeRef)ac.constantPool[cpOffset];
-			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
-			    calls.addElement( new DBCall(
-				DBMethod.this,
-				(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
-				DBMethod.makeKey(
-				ac.getClassName( methodRef.classIndex),
-				ac.getString( nameAndType.nameIndex),
-				ac.getString( nameAndType.descriptorIndex)
-				)), lineNumber));
-			}
-			catch ( Exception e)
-			{
-			    e.printStackTrace();
-			}
-		    }
-		} );
-		cr.setFieldReferenceCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
-		{
-		    public void processReference( CodeReader.OpCode read, int position,
-			int cpOffset, int lineNumber)
-		    {
-			try
-			{
-			    AnalyzeClass.CPTypeRef methodRef=(AnalyzeClass.CPTypeRef)ac.constantPool[cpOffset];
-			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
-			    fieldReferences.addElement( new DBFieldReference(
-				DBMethod.this,
-				(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-				DBField.makeKey(
-				ac.getClassName( methodRef.classIndex),
-				ac.getString( nameAndType.nameIndex)
-				)), lineNumber, read.mnemonic.substring( 0, 3).equals( "put")));
-			}
-			catch ( Exception e)
-			{
-			    e.printStackTrace();
-			}
-		    }
-		} );
-		cr.processOpCodes();
-		Hashtable calledTable=new Hashtable();
-		Enumeration e;
-		for ( e=calls.elements(); e.hasMoreElements(); )
-		{
-		    DBCall call=(DBCall)e.nextElement();
-		    Vector calledByMethod=(Vector)calledTable.get( call.getTarget());
-		    if ( calledByMethod==null)
-		    {
-			calledByMethod=new Vector();
-			calledTable.put( call.getTarget(), calledByMethod);
-		    }
-		    calledByMethod.addElement( call);
-		}
-		for ( e=calledTable.keys(); e.hasMoreElements(); )
-		{
-		    DBMethod called=(DBMethod)e.nextElement();
-		    called.addCalledBy( this, (Vector)calledTable.get( called));
-		}
-		calledTable.clear();
-		for ( e=fieldReferences.elements(); e.hasMoreElements(); )
-		{
-		    DBFieldReference reference=(DBFieldReference)e.nextElement();
-		    Vector calledByMethod=(Vector)calledTable.get( reference.getTarget());
-		    if ( calledByMethod==null)
-		    {
-			calledByMethod=new Vector();
-			calledTable.put( reference.getTarget(), calledByMethod);
-		    }
-		    calledByMethod.addElement( reference);
-		}
-		for ( e=calledTable.keys(); e.hasMoreElements(); )
-		{
-		    DBField called=(DBField)e.nextElement();
-		    called.addReferencedBy( this, (Vector)calledTable.get( called));
-		}
-		break;
-	    }
-	}
+    	calls=null;
+    	AnalyzeClass.FieldInfo mi=ac.methods[methodIndex];
+    	for ( int i=0; i<mi.attributesCount; i++)
+    	{
+    	    if ( ac.getString(mi.attributes[i].nameIndex).equals( "Code"))
+    	    {
+        		HashMap calledTable=new HashMap();
+                HashMap referencedTable=new HashMap();
+        		if ( calls==null)
+        		    calls=new Vector();
+        		else
+                {
+                    for ( Iterator it=calls.iterator(); it.hasNext();)
+                    {
+                        DBMethod target=((DBCall)it.next()).getTarget();
+                        Vector called=(Vector)calledTable.get( target);
+                        if ( called!=null)
+                            calledTable.put( target, new Vector());
+                    }
+        		    calls.removeAllElements();
+                }
+        		if ( fieldReferences==null)
+        		    fieldReferences=new Vector();
+        		else
+                {
+                    for ( Iterator it=fieldReferences.iterator(); it.hasNext();)
+                    {
+                        DBField target=((DBFieldReference)it.next()).getTarget();
+                        Vector called=(Vector)referencedTable.get( target);
+                        if ( called!=null)
+                            referencedTable.put( target, new Vector());
+                    }
+        		    fieldReferences.removeAllElements();
+                }
+        		CodeReader cr=new CodeReader( (AnalyzeClass.CodeAttribute)mi.attributes[i].value);
+                lineNumber=cr.getLineNumber( 0);
+        		cr.setMethodInvokeCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
+        		{
+        		    public void processReference( CodeReader.OpCode read, int position,
+        			int cpOffset, int lineNumber)
+        		    {
+            			try
+            			{
+            			    AnalyzeClass.CPTypeRef methodRef=(AnalyzeClass.CPTypeRef)ac.constantPool[cpOffset];
+            			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
+            			    calls.addElement( new DBCall(
+            				DBMethod.this,
+            				(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
+            				DBMethod.makeKey(
+            				ac.getClassName( methodRef.classIndex),
+            				ac.getString( nameAndType.nameIndex),
+            				ac.getString( nameAndType.descriptorIndex)
+            				)), lineNumber));
+            			}
+            			catch ( Exception e)
+            			{
+            			    e.printStackTrace();
+            			}
+        		    }
+        		} );
+        		cr.setFieldReferenceCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
+        		{
+        		    public void processReference( CodeReader.OpCode read, int position,
+        			int cpOffset, int lineNumber)
+        		    {
+        			try
+        			{
+        			    AnalyzeClass.CPTypeRef methodRef=(AnalyzeClass.CPTypeRef)ac.constantPool[cpOffset];
+        			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
+        			    fieldReferences.addElement( new DBFieldReference(
+        				DBMethod.this,
+        				(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
+        				DBField.makeKey(
+        				ac.getClassName( methodRef.classIndex),
+        				ac.getString( nameAndType.nameIndex)
+        				)), lineNumber, read.mnemonic.substring( 0, 3).equals( "put")));
+        			}
+        			catch ( Exception e)
+        			{
+        			    e.printStackTrace();
+        			}
+        		    }
+        		} );
+        		cr.processOpCodes();
+        		Enumeration e;
+                Iterator it;
+        		for ( e=calls.elements(); e.hasMoreElements(); )
+        		{
+        		    DBCall call=(DBCall)e.nextElement();
+        		    Vector calledByMethod=(Vector)calledTable.get( call.getTarget());
+        		    if ( calledByMethod==null)
+        		    {
+            			calledByMethod=new Vector();
+            			calledTable.put( call.getTarget(), calledByMethod);
+        		    }
+        		    calledByMethod.addElement( call);
+        		}
+        		for ( it=calledTable.keySet().iterator(); it.hasNext(); )
+        		{
+        		    DBMethod called=(DBMethod)it.next();
+        		    called.addCalledBy( this, (Vector)calledTable.get( called));
+        		}
+        		calledTable.clear();
+        		for ( e=fieldReferences.elements(); e.hasMoreElements(); )
+        		{
+        		    DBFieldReference reference=(DBFieldReference)e.nextElement();
+        		    Vector calledByMethod=(Vector)referencedTable.get(
+                        reference.getTarget());
+        		    if ( calledByMethod==null)
+        		    {
+        			    calledByMethod=new Vector();
+        			    calledTable.put( reference.getTarget(), calledByMethod);
+        		    }
+        		    calledByMethod.addElement( reference);
+        		}
+        		for ( it=referencedTable.keySet().iterator(); it.hasNext(); )
+        		{
+        		    DBField called=(DBField)it.next();
+        		    called.addReferencedBy( this, (Vector)referencedTable.
+                        get( called));
+        		}
+                referencedTable.clear();
+        		break;
+    	    }
+    	}
     }
-
 }
