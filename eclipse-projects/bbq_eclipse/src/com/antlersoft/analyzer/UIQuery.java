@@ -83,8 +83,8 @@ public class UIQuery
                         if ( line==null || line.length()==0)
                             return;
                         qp.setLine( line);
-                        historyList.addQuery( line);
                         SetExpression se=qp.getExpression();
+                        historyList.addQuery( line);
                         Enumeration e=se.execute( analyzerDB);
                         TreeSet resultSorter=new TreeSet();
                         while ( e.hasMoreElements())

@@ -12,6 +12,8 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
+import com.antlersoft.util.NetByte;
+
 public class DBMethod implements Persistent, Cloneable, SourceObject
 {
     public static final int UNRESOLVED=1;
@@ -24,6 +26,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
     Vector calls;
     Vector calledBy;
     Vector fieldReferences;
+    Vector stringReferences;
 
     private boolean resolved;
     private int lineNumber;
@@ -113,6 +116,15 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
 	return emptyVector.elements();
     }
 
+    public Enumeration getStringReferences()
+    {
+	if ( fieldReferences!=null)
+	{
+	    return stringReferences.elements();
+	}
+	return emptyVector.elements();
+    }
+
     public Enumeration getCalledBy()
     {
 	if ( calledBy!=null)
@@ -159,6 +171,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
     	    {
         		HashMap calledTable=new HashMap();
                 HashMap referencedTable=new HashMap();
+                HashMap stringReferenceTable=new HashMap();
         		if ( calls==null)
         		    calls=new Vector();
         		else
@@ -185,7 +198,22 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
                     }
         		    fieldReferences.removeAllElements();
                 }
-        		CodeReader cr=new CodeReader( (AnalyzeClass.CodeAttribute)mi.attributes[i].value);
+                if ( stringReferences==null)
+                    stringReferences=new Vector();
+                else
+                {
+                    for ( Iterator it=stringReferences.iterator(); it.hasNext();)
+                    {
+                        DBStringConstant target=((DBStringReference)it.next()).getTarget();
+                        Vector called=(Vector)stringReferenceTable.get( target);
+                        if ( called!=null)
+                            stringReferenceTable.put( target, new Vector());
+                    }
+        		    fieldReferences.removeAllElements();
+                }
+                final AnalyzeClass.CodeAttribute codeAttribute=
+                    (AnalyzeClass.CodeAttribute)mi.attributes[i].value;
+        		final CodeReader cr=new CodeReader( codeAttribute);
                 lineNumber=cr.getLineNumber( 0);
         		cr.setMethodInvokeCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
         		{
@@ -234,6 +262,48 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
         			}
         		    }
         		} );
+                cr.setOpCodeCallback( new CodeReader.OpCodeCallback()
+                {
+                    public void processOpCode( CodeReader.OpCode read, int
+                        position)
+                    {
+                        if ( read.mnemonic.equals( "ldc") || read.mnemonic.
+                            equals( "ldc_w"))
+                        {
+                            int constantIndex;
+                            if ( read.mnemonic.equals( "ldc"))
+                                constantIndex=NetByte.mU( codeAttribute.code[
+                                    position+1]);
+                            else
+                                constantIndex=NetByte.pairToInt( codeAttribute.
+                                    code, position+1);
+                            if ( ac.constantPool[constantIndex] instanceof
+                                AnalyzeClass.CPString)
+                            {
+                                String constant=ac.getString(
+                                    ((AnalyzeClass.CPString)ac.constantPool
+                                    [constantIndex]).valueIndex);
+                                // Throw out boring references to empty
+                                // string
+                                if ( constant.length()>0)
+                                {
+                                    try
+                                    {
+                                        stringReferences.add( new DBStringReference(
+                                            DBMethod.this, (DBStringConstant)db.getWithKey(
+                                        "com.antlersoft.analyzer.DBStringConstant",
+                                            constant),
+                                            cr.getLineNumber( position)));
+                                    }
+                                    catch ( Exception e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } );
         		cr.processOpCodes();
         		Enumeration e;
                 Iterator it;
@@ -273,6 +343,25 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
                         get( called));
         		}
                 referencedTable.clear();
+        		for ( e=stringReferences.elements(); e.hasMoreElements(); )
+        		{
+        		    DBStringReference reference=(DBStringReference)e.nextElement();
+        		    Vector calledByMethod=(Vector)stringReferenceTable.get(
+                        reference.getTarget());
+        		    if ( calledByMethod==null)
+        		    {
+        			    calledByMethod=new Vector();
+        			    stringReferenceTable.put( reference.getTarget(), calledByMethod);
+        		    }
+        		    calledByMethod.addElement( reference);
+        		}
+        		for ( it=stringReferenceTable.keySet().iterator(); it.hasNext(); )
+        		{
+        		    DBStringConstant called=(DBStringConstant)it.next();
+        		    called.addReferencedBy( this, (Vector)stringReferenceTable.
+                        get( called));
+        		}
+                stringReferenceTable.clear();
         		break;
     	    }
     	}

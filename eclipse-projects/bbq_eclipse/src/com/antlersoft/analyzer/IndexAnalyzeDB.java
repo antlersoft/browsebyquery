@@ -167,6 +167,7 @@ public static void printTypeKey( Comparable x)
             nameList.add( "com.antlersoft.analyzer.DBReference");
             nameList.add( "com.antlersoft.analyzer.DBFieldReference");
             nameList.add( "com.antlersoft.analyzer.DBCall");
+            nameList.add( "com.antlersoft.analyzer.DBStringReference");
             if ( toStore==Lookup.class)
             {
                 nameList.add( "com.antlersoft.analyzer.IndexAnalyzeDB$TypeKey");
