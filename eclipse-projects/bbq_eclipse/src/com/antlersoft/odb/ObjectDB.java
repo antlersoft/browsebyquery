@@ -1,6 +1,6 @@
 package com.antlersoft.odb;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -13,15 +13,17 @@ public class ObjectDB
 {
     // Support only one instance per process for now
     private static ObjectDB current=null;
-    private HashMap cachedObjects;
+    private ObjectCache cachedObjects;
     private ObjectStore store;
 	private ObjectRef rootObjects;
+    private ArrayList dirtyObjects;
 
     public ObjectDB( ObjectStore objectStore)
 		throws ObjectStoreException
     {
 		store=objectStore;
-		cachedObjects=new HashMap();
+		cachedObjects=new ObjectCache();
+        dirtyObjects=new ArrayList();
 		current=this;
 		ObjectKey rootKey=(ObjectKey)store.getRootObject();
 		if ( rootKey==null)
@@ -44,7 +46,12 @@ public class ObjectDB
 
 	public static void makeDirty( Object toDirty)
 	{
-		((Persistent)toDirty)._getPersistentImpl().dirty=true;
+        PersistentImpl impl=((Persistent)toDirty)._getPersistentImpl();
+        if ( ! impl.dirty)
+        {
+            impl.dirty=true;
+            getObjectDB().dirtyObjects.add( toDirty);
+        }
 	}
 
 	public synchronized void makePersistent( Object toStore)
@@ -56,7 +63,11 @@ public class ObjectDB
 			if ( impl.objectKey==null)
 			{
 				impl.objectKey=store.insert( (Persistent)toStore);
-				impl.dirty=true;
+				if ( ! impl.dirty)
+                {
+                    impl.dirty=true;
+                    dirtyObjects.add( toStore);
+                }
 			}
 			cachedObjects.put( impl.objectKey, toStore);
 		}
@@ -90,7 +101,13 @@ public class ObjectDB
 
     public void deleteObject( Object object)
     {
-        ((Persistent)object)._getPersistentImpl().deleted=true;
+        PersistentImpl impl=((Persistent)object)._getPersistentImpl();
+        impl.deleted=true;
+        if ( ! impl.dirty)
+        {
+            impl.dirty=true;
+            dirtyObjects.add( object);
+        }
     }
 
 	public synchronized void makeRootObject( String key, Object object)
@@ -103,11 +120,11 @@ public class ObjectDB
 		return ((PersistentHashtable)rootObjects.getReferenced()).get( key);
 	}
 
-    public synchronized void commit()
+    synchronized void commitDirty()
     {
         try
         {
-    		for ( Iterator i=cachedObjects.values().iterator(); i.hasNext();)
+    		for ( Iterator i=dirtyObjects.iterator(); i.hasNext();)
     		{
     			Persistent toCommit=(Persistent)i.next();
     			synchronized ( toCommit)
@@ -115,7 +132,7 @@ public class ObjectDB
     				PersistentImpl impl=toCommit._getPersistentImpl();
                     if ( impl.deleted)
                         store.delete( impl.objectKey);
-    				else if ( impl.dirty)
+    				else
     				{
     	    			store.update( impl.objectKey, toCommit);
     				}
@@ -137,7 +154,23 @@ public class ObjectDB
             throw new ObjectDBException( "Commit failed", e);
         }
 		store.sync();
-        for ( Iterator i=cachedObjects.values().iterator();
+	}
+
+    public synchronized void commitAndRetain()
+    {
+        commitDirty();
+        for ( Iterator i=dirtyObjects.iterator(); i.hasNext();)
+        {
+            PersistentImpl impl=((Persistent)i.next())._getPersistentImpl();
+            impl.dirty=false;
+        }
+        dirtyObjects.clear();
+    }
+
+    public synchronized void commit()
+    {
+        commitDirty();
+        for ( Iterator i=cachedObjects.iterator();
             i.hasNext();)
         {
             PersistentImpl impl=((Persistent)i.next())._getPersistentImpl();
@@ -145,10 +178,12 @@ public class ObjectDB
             impl.obsolete=true;
         }
 		cachedObjects.clear();
-	}
+        dirtyObjects.clear();
+    }
 
     public synchronized void rollback()
     {
         cachedObjects.clear();
+        dirtyObjects.clear();
     }
 }
