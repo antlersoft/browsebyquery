@@ -268,6 +268,7 @@ int main( int argc, char* argv[])
 	TerminalSymbol string( "literalString");
 	TerminalSymbol number( "number");
 	TerminalSymbol errorSymbol( "errorSymbol");
+	TerminalSymbol line_comment( "#");
 	x.addRule( Rule( ReservedWordDef, CompareSequence( reserved)|LexScan::_name, rwda));
 	x.addRule( Rule( ReservedWordDef, CompareSequence( reserved)|LexScan::_str_const, rwda));
 	x.addRule( Rule( ReservedWordDef, CompareSequence( reserved)|LexScan::_name|LexScan::_str_const, rwdws));
@@ -300,14 +301,16 @@ int main( int argc, char* argv[])
 		// Reserved words for lexical scanning
 		CompareSequence( reserved)|symbol|left|right|none|not|name|string|number|errorSymbol,      
 		// Tokens composed of punctuation
-		CompareSequence( colon)|statement_divider|rule_ender);
+		CompareSequence( colon)|statement_divider|rule_ender|line_comment);
+	lex_scan.setLineComment( line_comment);
 	cout.flush();
 
 	cout<<"static Symbol errorSymbol=_error_;\n";
 	while ( cin.good())
 		{
-		std::string nl;
-		cin>>nl;
+		char buf[1000];
+		cin.getline( buf, 1000);
+		std::string nl( buf);
 		if ( ! cin.eof())
 			{
 			lex_scan.addText( nl);
