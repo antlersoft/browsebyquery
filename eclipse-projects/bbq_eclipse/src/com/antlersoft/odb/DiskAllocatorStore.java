@@ -29,9 +29,14 @@ public class DiskAllocatorStore implements ObjectStore
 		{
 			RandomOutputStream dataStream=new RandomOutputStream();
 			dataOutputStream=new StreamPair( new DataOutputStream( dataStream), dataStream);
-			inputStreams=new HashMap();
-			outputStreams=new HashMap();
+			RandomOutputStream outStream=new RandomOutputStream();
+			outputStreams=new StreamPair( new ObjectOutputStream( outStream), outStream);
+			RandomInputStream inStream=new RandomInputStream();
+			inStream.addBytes( outputStreams.writeObject( new Integer( 1)));
+			inputStreams=new StreamPair( new ObjectInputStream( inStream), inStream);
 
+			// Initialize streams with stream header data
+			((ObjectInputStream)inputStreams.objectStream).readObject();
 			allocator=new DiskAllocator( file, 4, 504, 102400, 0);
 		}
 		catch ( Exception e)
@@ -53,7 +58,7 @@ public class DiskAllocatorStore implements ObjectStore
 				stateRegion=new DataInputStream( new ByteArrayInputStream( indexBuffer)).readInt();
 				indexBuffer=allocator.read( stateRegion,
 					allocator.getRegionSize( stateRegion));
-				storeState=(StoreState)(new ObjectInputStream( new ByteArrayInputStream( indexBuffer)).readObject());
+				storeState=(StoreState)inputStreams.readObject( indexBuffer);
 				storeState.dirty=false;
 			}
 		}
@@ -69,8 +74,7 @@ public class DiskAllocatorStore implements ObjectStore
 		try
 		{
 			storeState.dirty=true;
-			StreamPair sp=outputStreamForObject( insertObject);
-			return getNewObjectKey( sp.writeObject( insertObject), insertObject.getClass().getName());
+			return getNewObjectKey( outputStreams.writeObject( insertObject));
 		}
 		catch ( DiskAllocatorException dae)
 		{
@@ -88,7 +92,7 @@ public class DiskAllocatorStore implements ObjectStore
 		Entry entry=getEntry( retrieveKey);
 		try
 		{
-			return (Serializable)( inputStreamForClassName( entry.className).readObject(
+			return (Serializable)( inputStreams.readObject(
 				allocator.read( entry.region, entry.size)));
 		}
 		catch ( DiskAllocatorException dae)
@@ -111,7 +115,7 @@ public class DiskAllocatorStore implements ObjectStore
 		Entry entry=getEntry( replaceKey);
 		try
 		{
-			byte[] replaceBuffer=outputStreamForObject( toReplace).writeObject( toReplace);
+			byte[] replaceBuffer=outputStreams.writeObject( toReplace);
 			if ( replaceBuffer.length>entry.size ||
 				replaceBuffer.length<=entry.size/2
 				&& entry.size>=32)
@@ -171,9 +175,7 @@ public class DiskAllocatorStore implements ObjectStore
 			{
 				if ( stateRegion!=0)
 					allocator.free( stateRegion);
-				RandomOutputStream randomOut=new RandomOutputStream();
-				StreamPair stateStreams=new StreamPair( new ObjectOutputStream( randomOut), randomOut);
-				byte[] storeBuffer=stateStreams.writeObject( storeState);
+				byte[] storeBuffer=outputStreams.writeObject( storeState);
 				stateRegion=allocator.allocate( storeBuffer.length);
 				allocator.write( stateRegion, storeBuffer);
 
@@ -195,8 +197,8 @@ public class DiskAllocatorStore implements ObjectStore
 	private StoreState storeState;
 	private int stateRegion;
 	private StreamPair dataOutputStream;
-	private HashMap inputStreams; // String, StreamPair
-	private HashMap outputStreams; // String, StreamPair
+	private StreamPair inputStreams;
+	private StreamPair outputStreams;
 	private static final int SIZE_INCREMENT=1024;
 
 	private Entry getEntry( ObjectKey ok)
@@ -214,7 +216,7 @@ public class DiskAllocatorStore implements ObjectStore
 		return entry;
 	}
 
-	private DAKey getNewObjectKey( byte[] insertBuffer, String className)
+	private DAKey getNewObjectKey( byte[] insertBuffer)
 		throws ObjectStoreException, DiskAllocatorException, IOException
 	{
 		int region=allocator.allocate( insertBuffer.length);
@@ -232,62 +234,14 @@ public class DiskAllocatorStore implements ObjectStore
 			entry.size=insertBuffer.length;
 			entry.region=region;
 			entry.reuseCount++;
-			entry.className=className;
 		}
 		else
 		{
-			entry=new Entry( region, insertBuffer.length, className);
+			entry=new Entry( region, insertBuffer.length);
 			index=storeState.entries.size();
 			storeState.entries.add( entry);
 		}
 		return new DAKey( index, entry.reuseCount);
-	}
-
-	private StreamPair inputStreamForClassName( String className)
-		throws ObjectStoreException, DiskAllocatorException, IOException
-	{
-		StreamPair retval=(StreamPair)inputStreams.get( className);
-		if ( retval==null)
-		{
-			DAKey initialObjectKey=(DAKey)storeState.initialObjects.get( className);
-			if ( initialObjectKey==null)
-			{
-				throw new ObjectStoreException( "No initial object for "+className);
-			}
-			Entry entry=getEntry( initialObjectKey);
-			RandomInputStream inputStream=new RandomInputStream();
-			inputStream.emptyAddBytes( allocator.read( entry.region, entry.size));
-			ObjectInputStream objectStream=new ObjectInputStream( inputStream);
-			retval=new StreamPair( objectStream, inputStream);
-			inputStreams.put( className, retval);
-		}
-
-		return retval;
-	}
-
-	private StreamPair outputStreamForObject( Serializable toFind)
-		throws ObjectStoreException, DiskAllocatorException, IOException
-	{
-		String className=toFind.getClass().getName();
-		StreamPair retval=(StreamPair)outputStreams.get( className);
-		if ( retval==null)
-		{
-			RandomOutputStream outputStream=new RandomOutputStream();
-			ObjectOutputStream objectStream=new ObjectOutputStream( outputStream);
-			objectStream.writeObject( toFind);
-			objectStream.flush();
-			byte[] objectBuffer=outputStream.getWrittenBytes();
-			DAKey initialObjectKey=(DAKey)storeState.initialObjects.get( className);
-			if ( initialObjectKey==null)
-			{
-				initialObjectKey=getNewObjectKey( objectBuffer, className);
-				storeState.dirty=true;
-				storeState.initialObjects.put( className, initialObjectKey);					
-			}
-			retval=new StreamPair( objectStream, outputStream);
-			outputStreams.put( className, retval);
-		}
-		return retval;
 	}
 
 	static class StreamPair
@@ -328,7 +282,6 @@ public class DiskAllocatorStore implements ObjectStore
 		LinkedList freeEntries;
 		boolean dirty;
 		Serializable rootObject;
-		HashMap initialObjects; // String, DAKey
 
 		StoreState()
 		{
@@ -336,7 +289,6 @@ public class DiskAllocatorStore implements ObjectStore
 			freeEntries=new LinkedList();
 			dirty=true;
 			rootObject=null;
-			initialObjects=new HashMap();
 		}
 	}
 
@@ -346,13 +298,11 @@ public class DiskAllocatorStore implements ObjectStore
 		int region;
 		int size;
 		int reuseCount;
-		String className;
 
-		Entry( int r, int s, String cn)
+		Entry( int r, int s)
 		{
 			region=r;
 			size=s;
-			className=cn;
 			reuseCount=0;
 		}
 	}
