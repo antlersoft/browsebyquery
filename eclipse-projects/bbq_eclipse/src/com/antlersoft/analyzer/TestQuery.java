@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 
 import analyzer.query.QueryParser;
+import analyzer.query.SetExpression;
 import analyzer.query.ParseException;
 
 public class TestQuery
@@ -31,7 +32,7 @@ public class TestQuery
 		    if ( line==null || line.length()==0)
 			break;
 		    qp.setLine( line);
-		    QueryParser.SetExpression se=qp.getExpression();
+		    SetExpression se=qp.getExpression();
 		    Enumeration e=se.execute( sadb);
 		    while ( e.hasMoreElements())
 		    {

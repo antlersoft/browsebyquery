@@ -19,6 +19,7 @@ import java.awt.event.*;
 
 import analyzer.query.ParseException;
 import analyzer.query.QueryParser;
+import analyzer.query.SetExpression;
 
 public class UIQuery
 {
@@ -73,7 +74,7 @@ public class UIQuery
 			if ( line==null || line.length()==0)
 			    return;
 			qp.setLine( line);
-			QueryParser.SetExpression se=qp.getExpression();
+			SetExpression se=qp.getExpression();
 			Enumeration e=se.execute( analyzerDB);
 			TreeSet resultSorter=new TreeSet();
 			while ( e.hasMoreElements())
