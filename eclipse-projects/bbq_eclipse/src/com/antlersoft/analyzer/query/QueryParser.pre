@@ -6,6 +6,10 @@ import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.PrintStream;
 import analyzer.*;
 import parser.*;
@@ -25,6 +29,7 @@ public class QueryParser extends Parser
 	tokens=null;
 	previousSet=null;
 	storedValues=new HashMap();
+	storedValuesSupport=new PropertyChangeSupport( this);
     }
   
     public SetExpression getExpression()
@@ -38,7 +43,9 @@ public class QueryParser extends Parser
 	}
 	if ( errorOut)
 	{
-	    throw new ParseException( this);
+	    ParseException pe=new ParseException( this);
+	    reset();
+	    throw pe;
 	}
 	return previousSet;
     }
@@ -48,11 +55,28 @@ public class QueryParser extends Parser
 	tokens=tokenize( toParse);
     }
 
+    // Bean type interface for accessing stored value names
+    public String[] getStoredValues()
+    {
+	return (String[])storedValues.keySet().toArray( new String[0]);
+    }
+
+    public void addStoredValuesListener( PropertyChangeListener l)
+    {
+	storedValuesSupport.addPropertyChangeListener( "storedValues", l);
+    }
+
+    public void removeStoredValuesListener( PropertyChangeListener l)
+    {
+	storedValuesSupport.removePropertyChangeListener( l);
+    }
+
     // Package interface
     Token[] tokens;
     int currentIndex;
     SetExpression previousSet;
     HashMap storedValues; // String, SetExpression
+    PropertyChangeSupport storedValuesSupport;
 
     static class Token
     {
@@ -186,12 +210,28 @@ public class QueryParser extends Parser
 
     void pushCastToken( SetExpression se)
     {
+	Token castToken;
 	if ( se instanceof ClassSet)
-	    tokens[currentIndex--]=new Token( classcast, "");	    
+	    castToken=new Token( classcast, "");	    
 	else if ( se instanceof MethodSet)
-	    tokens[currentIndex--]=new Token( methodcast, "");	    
+	    castToken=new Token( methodcast, "");	    
 	else if ( se instanceof CallSet)
-	    tokens[currentIndex--]=new Token( callcast, "");	    
+	    castToken=new Token( callcast, "");	    
+	else
+	    castToken=new Token( fieldcast, "");
+	ArrayList tokenList=new ArrayList( tokens.length+1);
+	for ( int i=0; i<tokens.length; i++)
+	{
+	    if ( i==currentIndex)
+	    {
+		tokenList.add( castToken);
+	    }
+	    tokenList.add( tokens[i]);
+	}
+	tokens=new Token[tokenList.size()];
+	tokens=(Token[])tokenList.toArray( tokens);
+	currentIndex--;
+	clearNextValue();
     }
 
     public static interface SetExpression
@@ -209,6 +249,14 @@ public class QueryParser extends Parser
     }
 
     static interface MethodSet extends SetExpression
+    {
+    }
+
+    static interface FieldSet extends SetExpression
+    {
+    }
+
+    static interface FieldReferenceSet extends SetExpression
     {
     }
 
