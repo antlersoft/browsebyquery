@@ -101,6 +101,17 @@ ite.getTargetException().printStackTrace();
         return new IteratorEnumeration( _session.getAll( Class.forName( type)));
     }
 
+    public synchronized void makeCurrent()
+    {
+        _session.makeCurrent();
+    }
+
+public static void printTypeKey( Comparable x)
+{
+    TypeKey y=(TypeKey)x;
+    System.out.println( y.type+"|"+y.key);
+}
+
     static class TypeKey implements Comparable, Serializable
     {
         private String type;
@@ -146,7 +157,7 @@ ite.getTargetException().printStackTrace();
 
     static class CFactory extends CustomizerFactory
     {
-        ObjectStreamCustomizer getCustomizer( Class toStore)
+        public ObjectStreamCustomizer getCustomizer( Class toStore)
         {
             ArrayList nameList=new ArrayList();
             nameList.add( "java.lang.Comparable");
