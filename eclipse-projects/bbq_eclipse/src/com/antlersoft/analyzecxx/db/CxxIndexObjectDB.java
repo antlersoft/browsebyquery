@@ -85,6 +85,16 @@ public class CxxIndexObjectDB implements DBDriver {
 		catch (IndexExistsException iee) {
 			// Don't care if index exists
 		}
+		try
+		{
+			m_session.defineIndex(FileInclusion.UNIQUE_KEY,
+								  FileInclusion.class,
+								  new FileInclusion.InclusionKeyGenerator(),
+								  false, true);
+		}
+		catch (IndexExistsException iee) {
+			// Don't care if index exists
+		}
 	}
 
     public void startTranslationUnit(String file_name) {
@@ -100,7 +110,11 @@ public class CxxIndexObjectDB implements DBDriver {
 				  UnitEntry.UNIT_INDEX_NAME,
 				  new ObjectRefKey( m_unit));
 			  ii.hasNext();)
-			entries.add( ii.next());
+		{
+			UnitEntry ue=(UnitEntry)ii.next();
+			if ( ue.getUnit()==m_unit)
+				entries.add( ue);
+		}
 		HashSet possible_clear=new HashSet();
 		for ( Iterator i=entries.iterator(); i.hasNext();)
 			((UnitEntry)i.next()).clearIfObsolete( possible_clear);
@@ -116,8 +130,11 @@ public class CxxIndexObjectDB implements DBDriver {
     }
 
     public void includeFile(String included) {
-	/**@todo Implement this com.antlersoft.analyzecxx.DBDriver method*/
-	throw new java.lang.UnsupportedOperationException("Method includeFile() not yet implemented.");
+		FileInclusion fi=FileInclusion.get( m_session,
+											IncludeFile.get( m_session, included),
+											m_current_file,
+											m_line);
+		UnitEntry.update( m_session, m_unit, fi);
     }
     public void setCurrentFile(String file) {
 		if ( file.equals( m_unit.getName()))

@@ -87,6 +87,7 @@ public class DefaultReaderDriver implements ReaderDriver
 				rf.m_stream=new BufferedInputStream( new FileInputStream( f));
 				((ReaderFile)m_include_stack.peek()).m_line=next_line+1;
 				m_include_stack.push( rf);
+				reader.m_db.includeFile( canon);
 				reader.setFileAndLine( canon, 0);
 			}
 			return true;

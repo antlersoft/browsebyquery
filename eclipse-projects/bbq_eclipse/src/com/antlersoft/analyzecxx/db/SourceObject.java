@@ -14,8 +14,8 @@ public class SourceObject implements Persistent {
 		return _persistentImpl;
 	}
 
-	private ObjectRef m_file;
-	private int m_line;
+	ObjectRef m_file;
+	int m_line;
 
 	SourceObject( SourceFile file, int line)
 	{
