@@ -68,7 +68,10 @@ public class PersistentHashtable extends Hashtable implements Persistent
     //public synchronized boolean equals(java.lang.Object);
     public synchronized java.lang.Object get( Object key)
 	{
-		return ((ObjectRef)super.get( key)).getReferenced();
+		ObjectRef ref=(ObjectRef)super.get( key);
+		if ( ref==null)
+			return null;
+		return ref.getReferenced();
 	}
 
     //public synchronized int hashCode();
