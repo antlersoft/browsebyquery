@@ -31,6 +31,34 @@ import com.antlersoft.util.RandomOutputStream;
 import com.antlersoft.util.NetByte;
 import com.antlersoft.util.Semaphore;
 
+/**
+ * This IndexObjectStore saves objects in a set of files in a
+ * directory.  Each file is a DiskAllocator.
+ *
+ * The directory will always have one file called "overhead".  There
+ * will be an additional file for each class type that is stored.
+ * These files are named 1, 2, 3 etc. up to N for each class type.
+ * If a class type has any indices defined, an additional
+ * DiskAllocator is defined that stores the index information
+ * for that class.  The name of this file is the class file name
+ * with an i appended.  So if the class stored in file i has one or more
+ * indices, that information is stored in 5i.
+ *
+ * The point of an object database is to handle more data than
+ * will fit in memory comfortably.  The DiskAllocatorStore was a step
+ * in this direction, since the actual class data was kept on the disk
+ * (except for the ObjectDB cache), but all the metadata for
+ * finding objects on demand,
+ * as well as the root object,  was always kept in memory.  This became
+ * impractical with large databases; not just because you
+ * ran out of memory, but because the time required to sync
+ * the in-memory state with the disk became too large. 
+ * In the DirectoryAllocator,
+ * only a small sub-set of this data needs to be cached in memory;
+ * the rest is kept on the disk in the overhead allocator.
+ *
+ * The largest portion of the metadata 
+ */
 public class DirectoryAllocator implements IndexObjectStore
 {
     public DirectoryAllocator( File file, CustomizerFactory factory)
