@@ -4,12 +4,10 @@ import java.util.Hashtable;
 
 public class ReservedWord extends Symbol
 {
-	public static Hashtable wordList=new Hashtable();
 	protected ReservedWord( String w)
 			throws Symbol.DuplicateSymbolException
 	{
 		super( w);
-		wordList.put( w, this);
 	}
 
 	public static ReservedWord getReserved( String w)
