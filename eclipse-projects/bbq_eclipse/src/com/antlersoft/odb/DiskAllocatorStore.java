@@ -24,21 +24,22 @@ public class DiskAllocatorStore implements ObjectStore
 	// be exception-safe with regard to atomicity
 
     public DiskAllocatorStore( File file, int initialRegionSize, int chunkSize,
-        int incrementSize, int allocatorFlags)
+        int incrementSize, int allocatorFlags, ObjectStreamCustomizer c)
 		throws ObjectStoreException
 	{
 		try
 		{
+            customizer=c;
 			RandomOutputStream dataStream=new RandomOutputStream();
 			dataOutputStream=new StreamPair( new DataOutputStream( dataStream),
                 dataStream);
 			RandomOutputStream outStream=new RandomOutputStream();
-			outputStreams=new StreamPair( createObjectOutputStream( outStream),
-                outStream);
+			outputStreams=new StreamPair(
+                customizer.createObjectOutputStream( outStream), outStream);
 			RandomInputStream inStream=new RandomInputStream();
-			inStream.addBytes( outputStreams.writeObject( new Integer( 1)));
-			inputStreams=new StreamPair( createObjectInputStream( inStream),
-                inStream);
+			inStream.emptyAddBytes( outputStreams.writeObject( new Integer( 1)));
+			inputStreams=new StreamPair(
+                customizer.createObjectInputStream( inStream), inStream);
 
 			// Initialize streams with stream header data
 			((ObjectInputStream)inputStreams.objectStream).readObject();
@@ -47,7 +48,6 @@ public class DiskAllocatorStore implements ObjectStore
 		}
 		catch ( Exception e)
 		{
-e.printStackTrace();
 			throw new ObjectStoreException( "Error creating allocator", e);
 		}
 		try
@@ -77,7 +77,8 @@ e.printStackTrace();
 
     public DiskAllocatorStore( File file)
     {
-        this( file, 4, 504, 102400, 0);
+        this( file, 4, 504, 102400, 0,
+            new ObjectStreamCustomizer.BaseCustomizer());
     }
 
 	public synchronized ObjectKey insert( Serializable insertObject)
@@ -202,15 +203,20 @@ e.printStackTrace();
 		}
         catch ( DiskAllocatorException dae)
         {
-dae.printStackTrace();
 			throw new ObjectStoreException( "Sync error: ", dae);
         }
 		catch ( IOException e)
 		{
-e.printStackTrace();
 			throw new ObjectStoreException( "Sync error: ", e);
 		}
 	}
+
+    public void close()
+        throws ObjectStoreException
+    {
+        sync();
+        allocator=null;
+    }
 
     public void rollback()
         throws ObjectStoreException
@@ -219,37 +225,13 @@ e.printStackTrace();
             "DiskAllocatorStore does not support rollback");
     }
 
-    protected ObjectInputStream createObjectInputStream( InputStream is)
-        throws IOException
-    {
-        return new ObjectInputStream( is);
-    }
-
-    protected ObjectOutputStream createObjectOutputStream(
-        OutputStream os)
-        throws IOException
-    {
-        return new ObjectOutputStream( os);
-    }
-
-    protected void resetObjectInputStream( ObjectInputStream ois)
-        throws IOException
-    {
-    }
-
-    protected void resetObjectOutputStream( ObjectOutputStream oos)
-        throws IOException
-    {
-        oos.reset();
-    }
-
 	private DiskAllocator allocator;
 	private StoreState storeState;
 	private int stateRegion;
 	private StreamPair dataOutputStream;
 	private StreamPair inputStreams;
 	private StreamPair outputStreams;
-	private static final int SIZE_INCREMENT=1024;
+    private ObjectStreamCustomizer customizer;
 
 	private Entry getEntry( ObjectKey ok)
 		throws ObjectStoreException
@@ -309,7 +291,7 @@ e.printStackTrace();
 			throws IOException
 		{
 			ObjectOutputStream oos=(ObjectOutputStream)objectStream;
-			resetObjectOutputStream( oos);
+			customizer.resetObjectOutputStream( oos);
 			oos.writeObject( toWrite);
 			oos.flush();
 			return ((RandomOutputStream)randomStream).getWrittenBytes();
@@ -319,7 +301,7 @@ e.printStackTrace();
 			throws IOException, ClassNotFoundException
 		{
 			ObjectInputStream ois=(ObjectInputStream)objectStream;
-            resetObjectInputStream( ois);
+            customizer.resetObjectInputStream( ois);
 			((RandomInputStream)randomStream).emptyAddBytes( readBytes);
 			return ois.readObject();
 		}
@@ -383,115 +365,6 @@ e.printStackTrace();
 		public boolean equals( Object t)
 		{
 			return ( ( t instanceof DAKey) && ((DAKey)t).index==index && ((DAKey)t).reuseCount==reuseCount);
-		}
-	}
-
-	// DiskAllocatorStore's implementation of InputStream
-	static class RandomInputStream extends InputStream
-	{
-		RandomInputStream()
-		{
-			position=0;
-			count=0;
-			buffer=new byte[SIZE_INCREMENT];
-		}
-
-		synchronized void emptyAddBytes( byte[] toAdd)
-		{
-			position=0;
-			count=0;
-			addBytes( toAdd);
-		}
-
-		synchronized void addBytes( byte[] toAdd)
-		{
-			if ( toAdd.length+count>buffer.length)
-			{
-				int newSize=( ( ( toAdd.length+count)/SIZE_INCREMENT)+1)*SIZE_INCREMENT;
-				byte[] newBuffer=new byte[newSize];
-				System.arraycopy( buffer, 0, newBuffer, 0, count);
-				buffer=newBuffer;
-			}
-			System.arraycopy( toAdd, 0, buffer, count, toAdd.length);
-			count+=toAdd.length;
-		}
-
-		private void packBuffer()
-		{
-			if ( position==count)
-			{
-				position=0;
-				count=0;
-			}
-		}
-
-		synchronized public int read()
-			throws IOException
-		{
-			int retVal= -1;
-			if ( position<count)
-			{
-				retVal=buffer[position++];
-				if ( retVal<0)
-					retVal+=256;
-				packBuffer();
-			}
-
-			return retVal;
-		}
-
-		synchronized public int read( byte[] dest, int offset, int len)
-			throws IOException
-		{
-			int retval= -1;
-			if ( position<count)
-			{
-				if ( len>count-position)
-					len=count-position;
-				retval=len;
-				System.arraycopy( buffer, position, dest, offset, len);
-				position+=len;
-				packBuffer();
-			}
-			return retval;
-		}
-
-		synchronized public long skip( long n)
-			throws IOException
-		{
-			if ( n>count-position)
-				n=count-position;
-			position+=n;
-			packBuffer();
-
-			return n;
-		}
-
-		public int available()
-		    throws IOException
-		{
-			return count-position;
-		}
-
-		private int position;
-		private int count;
-		private byte[] buffer;
-	}
-
-	// DiskAllocatorStore's implementation of OutputStream
-	static class RandomOutputStream extends ByteArrayOutputStream
-	{
-		RandomOutputStream()
-		{
-			super( SIZE_INCREMENT);
-		}
-
-		byte[] getWrittenBytes()
-			throws IOException
-		{
-			byte[] retVal=toByteArray();
-			reset();
-			return retVal;
 		}
 	}
 }

@@ -2,6 +2,8 @@ package com.antlersoft.odb;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +12,7 @@ import java.io.RandomAccessFile;
 
 /**
  * This class allocates regions within a RandomAccessFile much like
- * malloc allocates regions in memory.  The caller can request a 
+ * malloc allocates regions in memory.  The caller can request a
  * region of arbitrary size; the class will extend the file if necessary
  * to accomodate it.  A caller can free a region, making the space inside
  * available for re-allocation.  Adjacent free regions are coalesced when
@@ -46,7 +48,7 @@ import java.io.RandomAccessFile;
  * negative, it means that the region is free.  For free regions, the first
  * four bytes of what was the client visible portion of the region is
  * converted to the file offset to the next free region, or 0 if this is
- * the last free region.  The next four bytes refer to the 
+ * the last free region.  The next four bytes refer to the
  *
  * This implies that the smallest allowable client part of a region is 4
  * bytes, and therefore the smallest allowable region is 12 bytes.  Callers
@@ -96,7 +98,8 @@ public class DiskAllocator
 		if ( sizeIncrement<chunkSize+REGION_OVERHEAD_SIZE)
 			sizeIncrement=chunkSize+REGION_OVERHEAD_SIZE;
 		largestFreeRegion=0;
-			
+        modifyCount=0l;
+
 		if ( file.exists())
 			initializeFromExisting( file, initialRegion, chunkSize, sizeIncrement,
 				creationFlags);
@@ -117,12 +120,13 @@ public class DiskAllocator
 		throws IOException, DiskAllocatorException
 	{
 		checkInvariant();
+        modifyCount++;
 		ListIterator freeIterator=freeList.listIterator(freeList.size());
 		FreeRegion freeRegion=null;
 		int biggestSoFar=0;
 		size=normalizeRegionSize( size);
 		if ( largestFreeRegion==0 || size<=largestFreeRegion)
-		{ 
+		{
 			// Walk free list to see if there is an available free region
 			for ( ;	freeIterator.hasPrevious();)
 			{
@@ -179,7 +183,7 @@ public class DiskAllocator
 			newFreeRegion.offset+=size;
 			newFreeRegion.size-=size;
 			randomFile.seek( freeRegion.offset);
-			randomFile.writeInt( size);	
+			randomFile.writeInt( size);
 			randomFile.seek( newFreeRegion.offset-REGION_END_OFFSET);
 			randomFile.writeInt( size);
 			randomFile.writeInt( -( newFreeRegion.size));
@@ -236,6 +240,7 @@ public class DiskAllocator
 			throw new DiskAllocatorException( "Not a region");
 		if ( regionOffset==initialRegionOffset)
 			throw new DiskAllocatorException( "Can't free initial region");
+        modifyCount++;
 		randomFile.seek( regionOffset-REGION_END_OFFSET);
 		int previousRegionSize=randomFile.readInt();
 		int previousRegionOffset=regionOffset-previousRegionSize;
@@ -327,9 +332,9 @@ public class DiskAllocator
 			if ( freeIterator.hasNext())
 				freeIterator.next();
 		}
-		
+
 		/* All information is ready to update the free list for the previous
-		 * and following blocks, and to set the info for this block */		
+		 * and following blocks, and to set the info for this block */
 		if ( regionSize>largestFreeRegion && largestFreeRegion!=0)
 			largestFreeRegion=regionSize;
 		// Update the free block earlier in the file (next in the list)
@@ -370,6 +375,11 @@ public class DiskAllocator
 		return initialRegionOffset+REGION_START_OFFSET;
 	}
 
+    public int getChunkSize()
+    {
+        return minimumRegionSize;
+    }
+
 	public int getRegionSize( int regionOffset)
 		throws IOException, DiskAllocatorException
 	{
@@ -403,6 +413,7 @@ public class DiskAllocator
 			throw new DiskAllocatorException( "Not a region");
 		if ( size+offset<offset || size+offset>fileSize)
 			throw new DiskAllocatorException( "Writing past end of region");
+        modifyCount++;
 		randomFile.seek( offset);
 		randomFile.write( toWrite);
 	}
@@ -421,10 +432,25 @@ public class DiskAllocator
 		randomFile.close();
 	}
 
+    /**
+     * True if the file did not exist before this allocator was created.
+     */
 	public boolean isNewFile()
 	{
 		return newFile;
 	}
+
+    /**
+     * Returns an iterator over the Integer values for the offsets of
+     * the non-free regions excluding the initial region.
+     * This iterator becomes invalid if the underlying DiskAllocator
+     * object is modified in any way (allocations, frees, writes).
+     */
+    public Iterator iterator()
+        throws IOException
+    {
+        return new DiskAllocatorIterator( this);
+    }
 
 	public void walkInternalFreeList( PrintStream ps)
 	{
@@ -445,7 +471,7 @@ public class DiskAllocator
 			oldOffset=fr.offset;
 			oldSize=fr.size;
 			stats.addValue( fr.size);
-		}	
+		}
 		ps.println( stats.toString());
 	}
 
@@ -459,6 +485,7 @@ public class DiskAllocator
 	private static final int REGION_PREV_FREE_OFFSET=REGION_FREE_PTR_OFFSET+4;
 
     private RandomAccessFile randomFile;
+    private long modifyCount;
 	private boolean newFile;
 	private int initialRegionOffset;
 	private int minimumRegionSize;
@@ -691,4 +718,85 @@ public class DiskAllocator
 			size=s;
 		}
 	}
+
+    private static class DiskAllocatorIterator implements Iterator
+    {
+        private DiskAllocator allocator;
+        private long startingModifyCount;
+        private int nextOffset;
+        private int nextSize;
+        private boolean isNext;
+
+        DiskAllocatorIterator( DiskAllocator alloc)
+            throws IOException
+        {
+            allocator=alloc;
+            synchronized ( allocator)
+            {
+                startingModifyCount=allocator.modifyCount;
+                nextOffset=allocator.initialRegionOffset;
+                allocator.randomFile.seek( nextOffset);
+                nextSize=allocator.randomFile.readInt();
+                if ( nextSize<0)
+                    nextSize= -nextSize;
+                // Don't return initial region-- it can't be freed, and
+                // won't be used as regular object
+                getNextNonFree();
+            }
+        }
+
+        public boolean hasNext()
+        {
+            return isNext;
+        }
+
+        public Object next()
+        {
+            synchronized ( allocator)
+            {
+                if ( allocator.modifyCount!=startingModifyCount)
+                {
+                    throw new IllegalStateException(
+                        "Underlying allocator modified");
+                }
+                if ( ! isNext)
+                {
+                    throw new NoSuchElementException();
+                }
+                Object result=new Integer( nextOffset);
+                try
+                {
+                    getNextNonFree();
+                }
+                catch ( IOException ioe)
+                {
+                    throw new IllegalStateException( ioe.getMessage());
+                }
+                return result;
+            }
+        }
+
+        private void getNextNonFree()
+            throws IOException
+        {
+            isNext=false;
+            for ( nextOffset+=nextSize; nextOffset<allocator.fileSize
+                && ! isNext;)
+            {
+                allocator.randomFile.seek( nextOffset);
+                nextSize=allocator.randomFile.readInt();
+                if ( nextSize<0)
+                {
+                    nextOffset-=nextSize;
+                }
+                else
+                    isNext=true;
+            }
+        }
+
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

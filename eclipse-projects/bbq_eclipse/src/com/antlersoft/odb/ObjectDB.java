@@ -125,6 +125,11 @@ public class ObjectDB
 		return ((PersistentHashtable)rootObjects.getReferenced()).get( key);
 	}
 
+    public synchronized void uprootObject( String key)
+    {
+        ((PersistentHashtable)rootObjects.getReferenced()).remove( key);
+    }
+
     synchronized void commitDirty()
     {
         try
@@ -169,6 +174,12 @@ public class ObjectDB
             PersistentImpl impl=((Persistent)i.next())._getPersistentImpl();
             impl.dirty=false;
         }
+        // Remove reference to root objects hash so all unref'd objects
+        // are clearable
+        PersistentImpl impl=((Persistent)rootObjects.getReferenced()).
+            _getPersistentImpl();
+        impl.cachedReference=null;
+        impl.obsolete=true;
         dirtyObjects.clear();
     }
 
@@ -187,8 +198,22 @@ public class ObjectDB
     }
 
     public synchronized void rollback()
+        throws ObjectStoreException
     {
+        store.rollback();
         cachedObjects.clear();
         dirtyObjects.clear();
+    }
+
+    public synchronized void close()
+        throws ObjectStoreException
+    {
+        commitDirty();
+        store.close();
+        cachedObjects=null;
+        dirtyObjects=null;
+        current=null;
+        store=null;
+        rootObjects=null;
     }
 }
