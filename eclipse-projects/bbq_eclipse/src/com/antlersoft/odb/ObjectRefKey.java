@@ -35,4 +35,9 @@ public class ObjectRefKey implements Comparable, Serializable
 		else
 			m_object_key=null;
 	}
+
+	public ObjectRefKey( Persistent p)
+	{
+		m_object_key=(Comparable)p._getPersistentImpl().objectKey;
+	}
 }
