@@ -29,6 +29,8 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     private Hashtable fields;
     Vector derivedClasses;
     private boolean resolved;
+    private String internalName;
+    private String sourceFile;
     int accessFlags;
 
 		private transient PersistentImpl _persistentImpl;
@@ -112,6 +114,16 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		return name;
     }
 
+    public String getInternalName()
+    {
+        return internalName;
+    }
+
+    public String getSourceFile()
+    {
+        return sourceFile;
+    }
+
     private void clearMethods()
     {
 		methods.clear();
@@ -158,6 +170,8 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		dbc.clearFields();
 		dbc.resolved=true;
         dbc.accessFlags=ac.getFlags();
+        dbc.internalName=ac.getInternalClassName( ac.getCurrentClassIndex());
+        dbc.sourceFile=ac.getSourceFile();
 		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{

@@ -41,6 +41,9 @@ class AccessFilter extends Filter {
             throw new RuleActionException( "Failed to bind: "+new_applies.getName()+".  Not compatible with "+getFilterClass().getName());
     }
     protected boolean include(Object toCheck) throws java.lang.Exception {
-        return (((AccessFlags)toCheck).getAccessFlags() & _mask) == _compareValue;
+        if ( _compareValue!= -1)
+            return (((AccessFlags)toCheck).getAccessFlags() & _mask)==_compareValue;
+        else
+            return (((AccessFlags)toCheck).getAccessFlags() & _mask)!=0;
     }
 }

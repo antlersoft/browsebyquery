@@ -10,6 +10,7 @@ symbol Reference
 symbol StringConstant
 symbol LogicalOperator
 
+reserved Abstract "abstract"
 reserved all
 reserved and 4 left
 reserved are
@@ -32,6 +33,7 @@ reserved Import "import"
 reserved in
 reserved is
 reserved intersection 2 left
+reserved Interface "interface"
 reserved leftParen "("
 reserved matching
 reserved methodcast
@@ -111,6 +113,8 @@ Filter : Package "{
     return new AccessFilter( ClassWriter.ACC_PUBLIC|ClassWriter.ACC_PRIVATE|
         ClassWriter.ACC_PROTECTED, 0);
     }" .
+Filter : Abstract "{ return new AccessFilter( ClassWriter.ACC_ABSTRACT); }" .
+Filter : Interface "{ return new AccessFilter( ClassWriter.ACC_INTERFACE); }" .
 Transform : Transform Transform "{
 	int size=valueStack.size();
 	return new TransformTransform( (Transform)valueStack.get( valueStack.size()-2),

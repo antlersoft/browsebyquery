@@ -285,12 +285,16 @@ public class ProjectBBQ implements NodeViewer
 
     class ResultArea extends JTextArea
     {
+        private JPopupMenu popupMenu;
         ResultArea( int lines, int columns)
         {
             super( lines, columns);
             indexMap=new TreeMap( Collections.reverseOrder());
             selectedObject=null;
             addMouseListener( new ResultListener());
+
+            popupMenu=new JPopupMenu();
+            popupMenu.add( new JumpToSelectedObjectAction());
         }
 
         void setResults( Enumeration e)
@@ -320,29 +324,14 @@ public class ProjectBBQ implements NodeViewer
         {
             if ( selectedObject!=null)
             {
-                char[] nameArray=selectedObject.getDBClass().getName().
-                    toCharArray();
-                for ( int i=0; i<nameArray.length; i++)
-                {
-                    if ( nameArray[i]=='.')
-                        nameArray[i]='/';
-                }
-                String path=new String( nameArray);
-System.out.println( "Trying path "+path);
-                Url fileUrl;
-                for ( fileUrl=analyzer.project.findSourcePathUrl( path+".java");
-                    fileUrl==null;)
-                {
-                    int lastIndex=path.lastIndexOf( '/');
-                    if ( lastIndex== -1)
-                        break;
-                    path=path.substring( 0, path.lastIndexOf( '/'));
-System.out.println( "Trying path "+path);
-                    fileUrl=analyzer.project.findSourcePathUrl( path+".java");
-                }
+                String path=selectedObject.getDBClass().getInternalName();
+                int lastSlash=path.lastIndexOf( '/');
+                if ( lastSlash!= -1)
+                    path=path.substring( 0, lastSlash+1);
+                path=path+selectedObject.getDBClass().getSourceFile();
+                Url fileUrl=analyzer.project.findSourcePathUrl( path);
                 if ( fileUrl!=null)
                 {
-System.out.println( "fileUrl is "+fileUrl.getName());
                     FileNode node=analyzer.project.getNode( fileUrl);
                     try
                     {
@@ -358,6 +347,18 @@ System.out.println( "fileUrl is "+fileUrl.getName());
 e.printStackTrace();
                     }
                 }
+            }
+        }
+
+        class JumpToSelectedObjectAction extends AbstractAction
+        {
+            JumpToSelectedObjectAction()
+            {
+                super( "Jump to Object");
+            }
+            public void actionPerformed( ActionEvent ae)
+            {
+                jumpToSelectedObject();
             }
         }
 
@@ -385,6 +386,17 @@ e.printStackTrace();
                 if ( count>1)
                 {
                     jumpToSelectedObject();
+                }
+                showPopup(e);
+            }
+            public void mouseReleased( MouseEvent e) {
+                showPopup( e);
+            }
+            void showPopup( MouseEvent e)
+            {
+                if (e.isPopupTrigger()) {
+                    if (selectedObject!=null)
+                        popupMenu.show(ResultArea.this, e.getX(), e.getY());
                 }
             }
         }
