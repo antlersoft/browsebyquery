@@ -42,4 +42,9 @@ public class CharClass
 	{
 		return isIdentifierStart( c) || isDigit( c);
 	}
+
+	public static final boolean isOperator( char c)
+	{
+		return ! ( isIdentifierPart(c) || c=='\'' || c=='"');
+	}
 }

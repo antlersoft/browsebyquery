@@ -21,11 +21,11 @@ class InitialL implements LexState {
 		{
 			case '\'' :
 				result=new QuotedLiteral( m_reader, this, c,
-						  new LexToken( PreprocessParser.lex_character_literal, null, null), false);
+						  new LexToken( PreprocessParser.lex_character_literal, null), false);
 			break;
 			case '"' :
 				result=new QuotedLiteral( m_reader, this, c,
-						  new LexToken( PreprocessParser.lex_string_literal, null, null), true);
+						  new LexToken( PreprocessParser.lex_string_literal, null), true);
 			break;
 			default : result=new LexIdentifier( m_reader, m_caller, 'L');
 				result=result.nextCharacter( c);

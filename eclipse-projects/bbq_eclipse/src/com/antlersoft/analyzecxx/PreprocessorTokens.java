@@ -2,8 +2,11 @@ package com.antlersoft.analyzecxx;
 
 import java.io.IOException;
 
+import java.util.Enumeration;
+
 import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.Symbol;
 
 /**
  * This class represents the initial state of processing to
@@ -35,19 +38,19 @@ class PreprocessorTokens implements LexState
 				break;
 			case '\'' :
 				result=new QuotedLiteral( m_reader, this, c,
-						  new LexToken( PreprocessParser.lex_character_literal, null, null), false);
+						  new LexToken( PreprocessParser.lex_character_literal, null), false);
 				break;
 			case '"' :
 			    result=new QuotedLiteral( m_reader, this, c,
 						  new LexToken( isExpectingIncludeHeader()
 						  ? PreprocessParser.lex_include_header
-						  : PreprocessParser.lex_string_literal, null, null), false);
+						  : PreprocessParser.lex_string_literal, null), false);
 				break;
 			case '<' :
 							if ( isExpectingIncludeHeader())
 							{
 								result=new QuotedLiteral( m_reader, this, '>',
-								new LexToken( PreprocessParser.lex_include_header, null, null),
+								new LexToken( PreprocessParser.lex_include_header, null),
 								false);
 							}
 							else
@@ -77,6 +80,12 @@ class PreprocessorTokens implements LexState
 
 	private boolean isExpectingIncludeHeader()
 	{
+		for ( Enumeration e=m_reader.m_preprocess_parser.getExpectedSymbols();
+			  e.hasMoreElements();)
+		{
+			if ( ((Symbol)e.nextElement())==PreprocessParser.lex_include_header)
+				return true;
+		}
 		return false;
 	}
 }
