@@ -6,6 +6,7 @@ import java.util.ListIterator;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.PrintStream;
 
 /**
  * This class allocates regions within a RandomAccessFile much like
@@ -120,7 +121,7 @@ public class DiskAllocator
 		FreeRegion freeRegion=null;
 		int biggestSoFar=0;
 		size=normalizeRegionSize( size);
-		if ( largestFreeRegion==0 || size<largestFreeRegion)
+		if ( largestFreeRegion==0 || size<=largestFreeRegion)
 		{ 
 			// Walk free list to see if there is an available free region
 			for ( ;	freeIterator.hasNext();)
@@ -143,29 +144,33 @@ public class DiskAllocator
 				largestFreeRegion=biggestSoFar;
 			}
 			extendFile( size);
-			freeIterator=freeList.listIterator();
-			freeRegion=(FreeRegion)freeIterator.next();
+			freeIterator=freeList.listIterator( freeList.size());
+			freeRegion=(FreeRegion)freeIterator.previous();
 		}
 		else
+		{
 			/* If we are consuming the largest region, we don't know what it is anymore */
 			if ( freeRegion.size>=largestFreeRegion)
 				largestFreeRegion=0;
+			// Position iterator just before found element in file
+			freeIterator.previous();
+		}
 
 		/* Get offset of next free region */
 		int nextFreeRegionOffset=0;
-		if ( freeIterator.hasNext())
-		{
-			nextFreeRegionOffset=((FreeRegion)freeIterator.next()).offset;
-			freeIterator.previous();
-		}
-		int prevOffset=0;
-		freeIterator.previous();
 		if ( freeIterator.hasPrevious())
 		{
-			prevOffset=((FreeRegion)freeIterator.previous()).offset;
+			nextFreeRegionOffset=((FreeRegion)freeIterator.previous()).offset;
 			freeIterator.next();
 		}
+		int prevOffset=0;
 		freeIterator.next();
+		if ( freeIterator.hasNext())
+		{
+			prevOffset=((FreeRegion)freeIterator.next()).offset;
+			freeIterator.previous();
+		}
+		freeIterator.previous();
 		/* If the free region is big enough, we have to split it */
 		if ( freeRegion.size-size>=minimumRegionSize)
 		{
@@ -261,13 +266,13 @@ public class DiskAllocator
 			return;
 		}
 		/* Position free list iterator where this should go */
-		ListIterator freeIterator=freeList.listIterator();
+		ListIterator freeIterator=freeList.listIterator( freeList.size());
 		FreeRegion prevFreeRegion=null;
-		FreeRegion nextFreeRegion=(FreeRegion)freeIterator.next();
-		for ( ; nextFreeRegion.offset>regionOffset; nextFreeRegion=(FreeRegion)freeIterator.next())
+		FreeRegion nextFreeRegion=(FreeRegion)freeIterator.previous();
+		for ( ; nextFreeRegion.offset>regionOffset; nextFreeRegion=(FreeRegion)freeIterator.previous())
 		{
 			prevFreeRegion=nextFreeRegion;
-			if ( ! freeIterator.hasNext())
+			if ( ! freeIterator.hasPrevious())
 			{
 				nextFreeRegion=null;
 				break;
@@ -282,9 +287,9 @@ public class DiskAllocator
 			toFree.offset=regionOffset;
 			toFree.size=regionSize;
 			freeIterator.remove();
-			if ( freeIterator.hasNext())
+			if ( freeIterator.hasPrevious())
 			{
-				nextFreeRegion=(FreeRegion)freeIterator.next();
+				nextFreeRegion=(FreeRegion)freeIterator.previous();
 			}
 			else
 			{
@@ -299,21 +304,21 @@ public class DiskAllocator
 			toFree.size=regionSize;
 			changeSize=true;
 			if ( nextFreeRegion!=null)
-				freeIterator.previous();
-			freeIterator.previous()
+				freeIterator.next();
+			freeIterator.next()
 			;
 			freeIterator.remove();
-			if ( freeIterator.hasPrevious())
+			if ( freeIterator.hasNext())
 			{
-				prevFreeRegion=(FreeRegion)freeIterator.previous();
-				freeIterator.next();
+				prevFreeRegion=(FreeRegion)freeIterator.next();
+				freeIterator.previous();
 			}
 			else
 			{
 				prevFreeRegion=null;
 			}
-			if ( freeIterator.hasNext())
-				freeIterator.next();
+			if ( freeIterator.hasPrevious())
+				freeIterator.previous();
 		}
 		
 		/* All information is ready to update the free list for the previous
@@ -348,7 +353,7 @@ public class DiskAllocator
 		}
 		// Insert the freed region in the linked list
 		if ( nextFreeRegion!=null)
-		    freeIterator.previous();
+		    freeIterator.next();
 		freeIterator.add( toFree);
 		checkInvariant();
 	}
@@ -412,6 +417,29 @@ public class DiskAllocator
 	public boolean isNewFile()
 	{
 		return newFile;
+	}
+
+	public void walkInternalFreeList( PrintStream ps)
+	{
+		Statistics stats=new Statistics();
+		int oldOffset= -1;
+		int oldSize=0;
+		ps.println( "Largest free region: "+Integer.toString( largestFreeRegion));
+		for ( ListIterator li=freeList.listIterator(); li.hasNext();)
+		{
+			FreeRegion fr=(FreeRegion)li.next();
+			if ( oldOffset!= -1)
+			{
+				if ( fr.offset<=oldOffset)
+				    ps.println( "****Free list out of order");
+				if ( fr.offset==oldOffset+oldSize)
+				    ps.println( "****Contiguous free regions");
+			}
+			oldOffset=fr.offset;
+			oldSize=fr.size;
+			stats.addValue( fr.size);
+		}	
+		ps.println( stats.toString());
 	}
 
 	private static final int OVERHEAD_SIZE=20;
@@ -557,7 +585,7 @@ public class DiskAllocator
 			int size= -randomFile.readInt();
 			if ( size<=0)
 				throw new DiskAllocatorException( "Free list corrupt reading structure");
-			freeList.add( new FreeRegion( nextFreeRegion, size));
+			freeList.addFirst( new FreeRegion( nextFreeRegion, size));
 			nextFreeRegion=randomFile.readInt();
 		}
 	}
@@ -575,7 +603,7 @@ public class DiskAllocator
 		int endRegionSize=0;
 		if ( lastFreeRegionOffset!=0)
 		{
-			endRegionSize=((FreeRegion)freeList.getFirst()).size;
+			endRegionSize=((FreeRegion)freeList.getLast()).size;
 			/* If last region is not free, we don't care about it */
 			if ( lastFreeRegionOffset+endRegionSize!=fileSize)
 				endRegionSize=0;
@@ -601,7 +629,7 @@ public class DiskAllocator
 			newRegionOffset=lastFreeRegionOffset;
 			randomFile.seek( lastFreeRegionOffset+REGION_FREE_PTR_OFFSET);
 			lastFreeRegionOffset=randomFile.readInt();
-			freeList.removeFirst();
+			freeList.removeLast();
 		}
 		// else last free region remains unchanged (unless we split added region)
 		else
@@ -619,7 +647,7 @@ public class DiskAllocator
 		randomFile.seek( fileSize-REGION_END_OFFSET);
 		randomFile.writeInt( newLastRegionSize);
 
-		freeList.addFirst( new FreeRegion( newRegionOffset, newLastRegionSize));
+		freeList.add( new FreeRegion( newRegionOffset, newLastRegionSize));
 
 		checkInvariant();
 		return newLastRegionSize;
@@ -637,10 +665,10 @@ public class DiskAllocator
 		{
 			if ( freeList.isEmpty())
 				throw new DiskAllocatorException( "Non-zero offset with empty free list");
-			if ( lastFreeRegionOffset!=((FreeRegion)freeList.getFirst()).offset)
+			if ( lastFreeRegionOffset!=((FreeRegion)freeList.getLast()).offset)
 			{
 				throw new DiskAllocatorException( "lastFreeRegionOffset "+Integer.toString( lastFreeRegionOffset)+
-				" does not match first offset "+Integer.toString( ((FreeRegion)freeList.getFirst()).offset));
+				" does not match last offset "+Integer.toString( ((FreeRegion)freeList.getLast()).offset));
 			}
 		}
 	}
