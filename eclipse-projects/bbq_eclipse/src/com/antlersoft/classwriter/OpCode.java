@@ -45,6 +45,11 @@ public abstract class OpCode
     	CodeAttribute attribute)
     	throws CodeCheckException;
 
+    boolean isValidOperandLength( int len, boolean wide)
+    {
+        return true;
+    }
+
     void fixDestinationAddress( Instruction instruction,
         int start, int oldPostEnd, int newPostEnd)
         throws CodeCheckException

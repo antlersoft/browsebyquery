@@ -36,6 +36,11 @@ public class SimpleOpCode extends OpCode
         return stack_update.stackUpdate( current);
     }
 
+    boolean isValidOperandLength( int len, boolean wide)
+    {
+        return len==length - 1;
+    }
+
     final int getDefaultLength()
     {
         return length;

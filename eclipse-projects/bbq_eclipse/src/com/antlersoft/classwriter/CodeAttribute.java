@@ -180,7 +180,8 @@ public class CodeAttribute implements Attribute
         {
             CodeException range=(CodeException)i.next();
             if ( ( range.start>start && range.start<oldPostEnd)
-                || ( range.end>start && range.end<oldPostEnd))
+                || ( range.end>start && range.end<oldPostEnd) ||
+                ( range.handler>start && range.handler<oldPostEnd))
             {
                 throw new CodeCheckException(
                     "Exception range overlaps inserted code");
@@ -189,6 +190,8 @@ public class CodeAttribute implements Attribute
                 range.start+=newPostEnd-oldPostEnd;
             if ( range.end>=oldPostEnd)
                 range.end+=newPostEnd-oldPostEnd;
+            if ( range.handler>=oldPostEnd)
+                range.handler+=newPostEnd-oldPostEnd;
         }
 
         // Fix line number table offsets
@@ -294,8 +297,9 @@ public class CodeAttribute implements Attribute
             if ( stackArray[i]==null)
                 throw new CodeCheckException( "Unvisited opcode at offset "+
                     ((Instruction)instructions.get( i)).instructionStart);
-            if ( stackArray[i].stack.size()>max_stack)
-                max_stack=stackArray[i].stack.size();
+            int depth=stackArray[i].getStackDepth();
+            if ( depth>max_stack)
+                max_stack=depth;
         }
         maxStack=max_stack;
 

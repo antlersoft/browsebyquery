@@ -44,6 +44,9 @@ public class Instruction
                 get( instructionList.size()-1);
             start=lastInstruction.instructionStart+lastInstruction.getLength();
         }
+        OpCode op_code=OpCode.getOpCodeByMnemonic( mnemonic);
+        if ( ! op_code.isValidOperandLength( ops.length, wide))
+            throw new CodeCheckException( "Operands wrong length in added instruction");
         instructionList.add( new Instruction(
             OpCode.getOpCodeByMnemonic( mnemonic),
             start,

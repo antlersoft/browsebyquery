@@ -21,6 +21,14 @@ public class WSimpleOpCode extends SimpleOpCode
     	super( v, l, m);
     }
 
+    boolean isValidOperandLength( int len, boolean wide)
+    {
+        int operand_length=getDefaultLength()-1;
+        if ( wide)
+            operand_length*=2;
+        return len==operand_length;
+    }
+
 	Instruction read( InstructionPointer cr, byte[] code)
  		throws CodeCheckException
 	{
