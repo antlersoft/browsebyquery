@@ -68,12 +68,13 @@ class IndexIterator implements com.antlersoft.odb.IndexIterator
                     else
                     {
                         nextPage=baseIndex.getChildPage( parent, keyOffset);
-                        while ( nextPage.reuseArray!=null)
+                        while ( nextPage.reuseArray==null)
                         {
                             nextPage=baseIndex.getChildPage( nextPage, 0);
                         }
                         currentPage=nextPage;
                         currentOffset=0;
+                        break;
                     }
                 }
             }
