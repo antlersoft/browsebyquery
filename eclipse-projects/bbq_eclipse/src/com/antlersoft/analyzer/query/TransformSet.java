@@ -63,9 +63,34 @@ class TransformSet extends SetExpression
 			superClass=b;
 			subClass=a;
 		}
+        else if ( returnSuper)
+        {
+            /* If they are not assignable to each other, but you want
+             * a super class, they may still have a super class in common.
+             * Go up a's base classes and see if any are assignable from
+             * b.  We're not interested if Object is assignable, but
+             * anything short of that is fair game
+             */
+            superClass=null;
+            subClass=null;
+            for ( Class baseClass=a.getSuperclass(); baseClass!=null &&
+                baseClass!=Object.class; baseClass=baseClass.getSuperclass())
+            {
+                if ( baseClass.isAssignableFrom( b))
+                {
+                    superClass=baseClass;
+                    subClass=b;
+                    break;
+                }
+            }
+            if ( superClass==null)
+    			throw new RuleActionException(
+    				"Incompatible object types: expecting "+
+    					b.getName()+" but getting "+a.getName());
+        }
 		else
 			throw new RuleActionException(
-				"Incompatible object types: expecting"+
+				"Incompatible object types: expecting "+
 					b.getName()+" but getting "+a.getName());
 
 		return returnSuper ? superClass : subClass;
