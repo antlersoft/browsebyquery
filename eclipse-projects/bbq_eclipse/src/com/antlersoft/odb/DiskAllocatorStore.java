@@ -28,7 +28,7 @@ public class DiskAllocatorStore implements ObjectStore
 			objectOutputStream=new ObjectOutputStream( byteOutputStream);
 			dataOutputStream=new DataOutputStream( byteOutputStream);
 
-			allocator=new DiskAllocator( file);
+			allocator=new DiskAllocator( file, 4, 504, 102400, 0);
 		}
 		catch ( Exception e)
 		{
