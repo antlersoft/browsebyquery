@@ -1,7 +1,5 @@
 package com.antlersoft.analyzer;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
@@ -20,6 +18,9 @@ import java.awt.event.*;
 import com.antlersoft.analyzer.query.ParseException;
 import com.antlersoft.analyzer.query.QueryParser;
 import com.antlersoft.analyzer.query.SetExpression;
+
+import com.antlersoft.analyzer.ui.HistoryList;
+import com.antlersoft.analyzer.ui.StoredValuesList;
 
 public class UIQuery
 {
@@ -57,7 +58,7 @@ public class UIQuery
         JScrollPane queryScroll=new JScrollPane( queryArea);
         historyList=new HistoryList( queryArea);
         JScrollPane historyScroll=new JScrollPane( historyList);
-        JScrollPane storedArea=new JScrollPane( new StoredValuesList());
+        JScrollPane storedArea=new JScrollPane( new StoredValuesList( qp));
         Box buttonBox=Box.createVerticalBox();
         buttonBox.add( queryButton);
         buttonBox.add( Box.createVerticalGlue());
@@ -246,73 +247,6 @@ t.printStackTrace();
             {
                 displayException( "Analyze Error", e);
             }
-        }
-    }
-
-    class StoredValuesList extends JList implements PropertyChangeListener
-    {
-        StoredValuesList()
-        {
-            super();
-            qp.addStoredValuesListener( this);
-            setVisibleRowCount(2);
-            setListData( qp.getStoredValues());
-        }
-
-        public void propertyChange( PropertyChangeEvent pce)
-        {
-            setListData( qp.getStoredValues());
-        }
-    }
-
-    class HistoryList extends JList
-    {
-    	private DefaultListModel dlm;
-        private JTextArea text;
-
-    	HistoryList( JTextArea toChange)
-        {
-        	super( new DefaultListModel());
-            text=toChange;
-            dlm=(DefaultListModel)getModel();
-            setVisibleRowCount(2);
-            addMouseListener( new MouseAdapter() {
-            	public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() == 2) {
-     					synchronized( dlm) {
-				        	int index = locationToIndex(e.getPoint());
-	            			text.setText( (String)dlm.elementAt(index));
-	                		moveToTop( index);
-                  		}
-			        }
-             	}
-            });
-        }
-
-        synchronized void addQuery( String toAdd)
-        {
-        	synchronized ( dlm)
-         	{
-          		int j=0;
-        		for ( Enumeration i=dlm.elements();
-          			i.hasMoreElements(); j++)
-             	{
-              		if ( toAdd.equals( i.nextElement()))
-                	{
-                 		moveToTop( j);
-                   		return;
-                 	}
-            	}
-             	dlm.insertElementAt( toAdd, 0);
-            }
-        }
-
-        private void moveToTop( int index)
-        {
-        	Object o=dlm.elementAt( index);
-         	dlm.remove( index);
-            dlm.insertElementAt( o, 0);
-            setSelectedIndex( 0);
         }
     }
 }
