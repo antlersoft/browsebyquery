@@ -40,6 +40,7 @@ symbol FieldSet
 symbol FieldReferenceSet
 symbol MethodSet
 symbol OperatorExpression
+symbol UncalledPoly
 CompleteQuery : SetExpression finalToken "{
     QueryParser qp=(QueryParser)parser;
     qp.previousSet=(SetExpression)valueStack.get(valueStack.size()-2);
@@ -116,12 +117,13 @@ OperatorExpression : OperatorExpression and OperatorExpression .
 MethodSet : methods in ClassSet "{
     return new MethodsIn( (ClassSet)valueStack.get( valueStack.size()-1));
     }" .
-MethodSet : uncalled polymorphic MethodSet "{
-    return new UncalledMethod.UncalledPolymorphic( (MethodSet)valueStack.get( valueStack.size()-1));
-    }".
 MethodSet : polymorphic MethodSet "{
     return new Polymorphic( (MethodSet)valueStack.get( valueStack.size()-1));
     }" .
+UncalledPoly : uncalled polymorphic .
+MethodSet : UncalledPoly MethodSet "{
+    return new UncalledMethod.UncalledPolymorphic( (MethodSet)valueStack.get( valueStack.size()-1));
+    }".
 MethodSet : matching literalString MethodSet "{
     return new MethodMatching( (MethodSet)valueStack.get( valueStack.size()-1),
 	(String)valueStack.get( valueStack.size()-2)); }" .
