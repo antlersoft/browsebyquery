@@ -215,11 +215,6 @@ ioe.printStackTrace();
             for ( Iterator i=classEntry.indices.iterator(); i.hasNext();)
                 ((IndexEntry)i.next()).index.insertKey( result, insertObject);
         }
-catch ( NullPointerException npe)
-{
-System.out.println( "What's wrong");
-npe.printStackTrace();
-}
         catch ( ClassNotFoundException cnfe)
         {
             throw new ObjectStoreException( "insert: class not found",
@@ -237,16 +232,9 @@ npe.printStackTrace();
         }
         finally
         {
-try
-{
             classList.classChangeLock.leaveProtected();
-}
-catch ( NullPointerException npe)
-{
-System.out.println( "What's wrong 2");
-}
-return result;
         }
+        return result;
     }
 
     public Serializable retrieve(ObjectKey retrieveKey) throws ObjectStoreException
@@ -612,6 +600,7 @@ return result;
                     if ( fixOffset<0)
                         throw new ObjectStoreException(
                         "Corrupt index when fixing offset in parent");
+
                     parent.nextOffsetArray[fixOffset]=
                         toDump.thisPage.offset;
                     parent.modified=true;

@@ -224,8 +224,6 @@ class EntryPageList implements Serializable
                 page.classIndex[localOffset]<0)
                 throw new InvalidObjectKeyException();
             page.offset[localOffset]=region;
-if ( region==704)
-System.out.println( "Insert Class is "+page.classIndex[localOffset]+" localOffset is "+localOffset+" index "+key.index);
             page.modified=true;
         }
         finally
@@ -317,15 +315,11 @@ System.out.println( "Insert Class is "+page.classIndex[localOffset]+" localOffse
                             toUpdate);
                     }
                 }
-if ( page.offset[localOffset]==704)
-System.out.println( "Before update Class is "+page.classIndex[localOffset]+" localOffset is "+localOffset+" index "+key.index);
                 int newRegion=classEntry.objectStreams.
                     writeObjectWithPrefix( toUpdate,
                     page.offset[localOffset], key.index, key.reuseCount);
                 if ( newRegion!=page.offset[localOffset])
                 {
-if ( newRegion==704)
-System.out.println( "After update Class is "+page.classIndex[localOffset]+" localOffset is "+localOffset+" index "+key.index);
                     page.offset[localOffset]=newRegion;
                     page.modified=true;
                 }
@@ -358,8 +352,6 @@ System.out.println( "After update Class is "+page.classIndex[localOffset]+" loca
     synchronized int sync( StreamPair streams, int entryOffset)
         throws DiskAllocatorException, IOException
     {
-if ( lruSize>1)
-System.out.println( "Syncing multiple pages");
         if ( freePage!=null)
         {
             int newFreeOffset=freePage.sync( streams, freePageOffset);

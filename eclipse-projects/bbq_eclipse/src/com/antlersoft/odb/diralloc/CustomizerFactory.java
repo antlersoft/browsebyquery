@@ -23,7 +23,7 @@ public class CustomizerFactory
     /**
      * Override this to provide custom customizers
      */
-    ObjectStreamCustomizer getCustomizer( Class toStore)
+    public ObjectStreamCustomizer getCustomizer( Class toStore)
     {
         return ObjectStreamCustomizer.BASE_CUSTOMIZER;
     }

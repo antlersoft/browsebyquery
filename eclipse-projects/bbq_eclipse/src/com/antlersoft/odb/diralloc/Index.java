@@ -131,11 +131,6 @@ class Index
         {
             insertKey( objectRef, key);
         }
-catch ( NullPointerException npe)
-{
-System.out.println( "What's wrong here");
-npe.printStackTrace();
-}
         finally
         {
             indexModificationLock.leaveCritical();
@@ -253,7 +248,7 @@ npe.printStackTrace();
             throw new ObjectStoreException( "Duplicate value for index: "
                 +entry.indexName);
         if ( fr.index==0)
-            fixParentKey( fr.page, key);
+            fixParentKey( fr.page, fr.page.keyArray[0], key);
         System.arraycopy( fr.page.nextOffsetArray, fr.index,
             fr.page.nextOffsetArray, fr.index+1, fr.page.size-fr.index);
         System.arraycopy( fr.page.reuseArray, fr.index,
@@ -403,7 +398,8 @@ npe.printStackTrace();
             {
                 // Fix parent page so key for this page points to next value,
                 // on up the line
-                fixParentKey( fr.page, fr.page.keyArray[1]);
+                fixParentKey( fr.page, fr.page.keyArray[0],
+                    fr.page.keyArray[1]);
             }
         }
         if ( fr.index+1<fr.page.size)
@@ -428,7 +424,8 @@ npe.printStackTrace();
      * Fix key value in parent pages, recursively, when initial value
      * in a child page changes
      */
-    private void fixParentKey( IndexPage newInitial, Comparable newStartValue)
+    private void fixParentKey( IndexPage newInitial, Comparable oldStartValue,
+        Comparable newStartValue)
         throws ObjectStoreException
     {
         if ( newInitial.thisPage.parent!=null)
@@ -436,7 +433,7 @@ npe.printStackTrace();
             IndexPage parent=manager.getIndexPageByKey(
                 newInitial.thisPage.parent);
             int parentPosition=binarySearch( parent.keyArray, 0,
-                parent.size-1, newInitial.keyArray[0]);
+                parent.size-1, oldStartValue);
             if ( parentPosition<0)
                 throw new ObjectStoreException(
                     "Index corrupt when changing initial value");
@@ -444,7 +441,7 @@ npe.printStackTrace();
             parent.modified=true;
             if ( parentPosition==0)
             {
-                fixParentKey( parent, newStartValue);
+                fixParentKey( parent, oldStartValue, newStartValue);
             }
         }
     }
@@ -472,7 +469,7 @@ npe.printStackTrace();
             if ( parentPosition<0)
                 throw new ObjectStoreException( "Index corrupt in emptyPage");
             if ( parentPosition==0)
-                fixParentKey( parent, parent.keyArray[1]);
+                fixParentKey( parent, parent.keyArray[0], parent.keyArray[1]);
             if ( parentPosition+1<parent.size)
             {
                 System.arraycopy( parent.nextOffsetArray, parentPosition+1,
