@@ -24,10 +24,11 @@ import com.borland.jbuilder.node.JBProject;
 import com.borland.primetime.vfs.Filesystem;
 import com.borland.primetime.vfs.Url;
 
-import com.antlersoft.analyzer.AnalyzeClass;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 import com.antlersoft.analyzer.query.QueryParser;
+
+import com.antlersoft.classwriter.ClassWriter;
 
 class ProjectAnalyzer
 {
@@ -121,6 +122,7 @@ class ProjectAnalyzer
             Stack directoryStack=new Stack();
             directoryStack.push( classUrl);
             Filesystem system=classUrl.getFilesystem();
+            ClassWriter classwriter=new ClassWriter();
             final long startTime=System.currentTimeMillis();
             try
             {
@@ -144,7 +146,8 @@ System.out.println( "Analyzing "+contents[i].toString());
                                 BufferedInputStream bis=
                                     new BufferedInputStream(
                                     system.getInputStream( contents[i]));
-                                DBClass.addClassToDB( new AnalyzeClass( bis),
+                                classwriter.readClass( bis);
+                                DBClass.addClassToDB( classwriter,
                                     db);
                                 bis.close();
                             }
