@@ -5,12 +5,9 @@ import com.antlersoft.parser.Token;
 
 class LexToken extends Token
 {
-	Symbol m_alt_symbol;
-
-	LexToken( Symbol symbol, String value, Symbol alt_symbol)
+	LexToken( Symbol symbol, String value)
 	{
 		super( symbol, value);
-		m_alt_symbol=alt_symbol;
 	}
 
 	Object getValue()

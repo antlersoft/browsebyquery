@@ -42,9 +42,9 @@ public class QuotedLiteral implements LexState
 				m_is_escaped=false;
 			else if ( c=='\\')
 				m_is_escaped=true;
-			m_buffer.
+			m_buffer.append( c);
 		}
-		return
+		return result;
     }
     public LexState endOfFile() throws IOException, RuleActionException, LexException {
 	/**@todo Implement this com.antlersoft.analyzecxx.LexState method*/

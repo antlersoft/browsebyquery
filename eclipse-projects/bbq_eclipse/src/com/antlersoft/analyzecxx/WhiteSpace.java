@@ -10,27 +10,11 @@ import com.antlersoft.parser.RuleActionException;
  */
 public class WhiteSpace implements LexState
 {
-	public static final boolean isWhiteSpace( char c)
-	{
-		boolean result=false;
-		switch ( c)
-		{
-		case ' ':
-		case '\t':
-		case '\r':
-		case '\b':
-		case '\n':
-		case '\f':
-			result=true;
-		}
-		return result;
-	}
-
 	private boolean m_is_new_line;
 	private LexState m_caller;
 	private LexToPreprocess m_lex;
-	static LexToken m_white_space_token=new LexToken( PreprocessParser.lex_white_space, "", null);
-	static LexToken m_new_line_token=new LexToken( PreprocessParser.lex_new_line, "", null);
+	static LexToken m_white_space_token=new LexToken( PreprocessParser.lex_white_space, "");
+	static LexToken m_new_line_token=new LexToken( PreprocessParser.lex_new_line, "");
 
 	WhiteSpace( LexToPreprocess lex, LexState caller, char c)
 		throws RuleActionException, IOException, LexException
@@ -43,7 +27,7 @@ public class WhiteSpace implements LexState
 
     public LexState nextCharacter(char c) throws IOException, RuleActionException, LexException
 	{
-		if ( isWhiteSpace( c))
+		if ( CharClass.isWhiteSpace( c))
 		{
 			if ( c=='\n')
 				m_is_new_line=true;
