@@ -36,7 +36,7 @@ class MacroExpander {
 		// the one at the last token, or the one that is the union of all the tokens?
 		if ( m_current_function_macro==null)
 		{
-			if ( next_token.symbol==PreprocessParser.lex_identifier)
+			if ( next_token.symbol==PreprocessParser.lex_identifier && ! no_expand.contains( next_token.value))
 			{
 				Macro macro=(Macro)m_macros.get( next_token.value);
 				if ( macro==null)

@@ -31,7 +31,7 @@ public class CxxReader
 	ReaderDriver m_driver;
 
 	/**
-	 * When a LexState object definitivel identifies a token, it sends it
+	 * When a LexState object definitively identifies a token, it sends it
 	 * here
 	 */
 	LexToPreprocess m_lex_to_preprocess;
@@ -42,6 +42,11 @@ public class CxxReader
 	PreprocessParser m_preprocess_parser;
 
 	/**
+	 * Preprocessing output goes here
+	 */
+	LexReader m_preprocessing_output;
+
+	/**
 	 * Handles the first phase of processing input
 	 */
 	private LexState m_first_phase;
@@ -50,6 +55,7 @@ public class CxxReader
 	Properties initial_defines)
 	{
 		m_driver=driver;
+		m_preprocessing_output=new DebugReader();
 		m_lex_to_preprocess=new LexToPreprocess( this);
 		m_preprocess_parser=new PreprocessParser( this, initial_defines);
 		m_first_phase=new LineSplicer( this);
@@ -74,8 +80,17 @@ public class CxxReader
 	public void endOfFile()
 		throws IOException, RuleActionException, LexException
 	{
-		m_first_phase=m_first_phase.endOfFile()
-;	}
+		m_first_phase=m_first_phase.endOfFile();
+	}
+
+	static class DebugReader implements LexReader
+	{
+		public void processToken( LexToken token)
+		{
+			System.out.println( token.symbol.toString()+":"+token.value);
+		}
+		public void noMoreTokens(){}
+	}
 }
 
 

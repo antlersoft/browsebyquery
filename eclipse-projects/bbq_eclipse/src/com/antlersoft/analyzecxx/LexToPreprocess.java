@@ -42,7 +42,7 @@ class LexToPreprocess implements LexReader
 		else if ( next_token.symbol==PreprocessParser.lex_new_line)
 		{
 			if ( m_preprocess_line || ! m_reader.m_preprocess_parser.m_skipping)
-				m_reader.m_preprocess_parser.parse( next_token.symbol);
+				m_reader.m_preprocess_parser.parse( next_token.symbol, next_token);
 			m_start_of_line = true;
 			m_preprocess_line = false;
 		}
@@ -65,7 +65,7 @@ class LexToPreprocess implements LexReader
 				if ( alt!=null)
 				{
 					m_reader.m_preprocess_parser.parse( alt.symbol,
-						alt.getValue());
+						alt);
 				}
 			}
 			else

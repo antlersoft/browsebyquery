@@ -11,9 +11,4 @@ class AltSymbolToken extends LexToken
 		super( symbol, value);
 		m_alt_symbol=alt_symbol;
 	}
-
-	Object getValue()
-	{
-		return m_alt_symbol;
-	}
 }

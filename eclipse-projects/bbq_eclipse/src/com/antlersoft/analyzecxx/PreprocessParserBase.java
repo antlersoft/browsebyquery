@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -24,6 +25,8 @@ class PreprocessParserBase extends Parser {
 	boolean m_skipping;
 	int m_skip_depth;
 	CxxReader m_reader;
+	MacroExpander m_base_expander;
+	static HashSet m_empty_set=new HashSet();
 	static SimpleDateFormat m_date_format=new SimpleDateFormat( "MMM dd yyyy");
 	static SimpleDateFormat m_time_format=new SimpleDateFormat( "HH:mm:ss");
 
@@ -34,6 +37,7 @@ class PreprocessParserBase extends Parser {
 		m_skipping=false;
 		m_skip_depth=0;
 		m_macros=new HashMap();
+		m_base_expander=new MacroExpander( m_macros, m_reader.m_preprocessing_output);
 
 		// Create built-in macros
 		m_macros.put( "__LINE__", new LineMacro("__LINE__"));
@@ -63,7 +67,7 @@ class PreprocessParserBase extends Parser {
 
 	public boolean parse( Symbol s, Object v)
 	{
-System.out.println( "Accept "+s.toString());
+//System.out.println( "Accept "+s.toString());
 		return super.parse( s, v);
 	}
 	public boolean parse( Symbol s)
@@ -91,7 +95,18 @@ System.out.println( "Accept "+s.toString());
 	 * Perform macro expansions on tokens and pass them on to the next stage
 	 */
 	final String expandAndSend( ArrayList tokens)
+	throws RuleActionException
 	{
+		try
+		{
+			for (Iterator i = tokens.iterator(); i.hasNext(); )
+				m_base_expander.processToken(m_empty_set, (LexToken) i.next());
+			m_base_expander.processToken( m_empty_set, WhiteSpace.m_new_line_token);
+		}
+		catch ( LexException le)
+		{
+			throw new RuleActionException( le.getMessage());
+		}
 		return "";
 	}
 
@@ -188,7 +203,7 @@ e.printStackTrace();
 						LexToken string_expander=new StringExpander( arg_index.intValue(),
 							((AltSymbolToken)replacement_list.get( candidate_stringize)).m_alt_symbol==
 							PreprocessParser.pp_wide_stringize);
-						while ( i-- >candidate_stringize)
+						for ( ; i >candidate_stringize; --i)
 						{
 							replacement_list.remove( candidate_stringize);
 							len--;
