@@ -15,6 +15,7 @@ public class TestQuery
 	SimpleAnalyzerDB sadb=new SimpleAnalyzerDB();
 	BufferedReader in=new BufferedReader( new InputStreamReader( System.in));
 	sadb.openDB( argv[0]);
+	QueryParser qp=new QueryParser();
 	try
 	{
 	    String line="1";
@@ -26,7 +27,7 @@ public class TestQuery
 		    line=in.readLine();
 		    if ( line==null || line.length()==0)
 			break;
-		    QueryParser qp=new QueryParser( line);
+		    qp.setLine( line);
 		    QueryParser.SetExpression se=qp.getExpression();
 		    Enumeration e=se.execute( sadb);
 		    while ( e.hasMoreElements())
