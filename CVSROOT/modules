@@ -42,6 +42,6 @@ mars_mola_viewer_ref -d humus_demos/Framework/antlersoft cppquery/com/antlersoft
 cpp_home cppquery com
 
 stdio_tunnel_ref -d stdio_tunnel package/stdio_tunnel
-stdio_tunnel_cpp_ref -d stdio_tunnel/com/antlersoft -l cppquery/com/antlersoft
-stdio_tunnel_cpp2_ref -d stdio_tunnel/com/antlersoft cppquery/com/antlersoft stdio_tunnel net
+stdio_tunnel_cpp_ref -d stdio_tunnel/src/com/antlersoft -l cppquery/com/antlersoft
+stdio_tunnel_cpp2_ref -d stdio_tunnel/src/com/antlersoft cppquery/com/antlersoft stdio_tunnel net
 stdio_tunnel -a stdio_tunnel_cpp_ref stdio_tunnel_cpp2_ref stdio_tunnel_ref
