@@ -21,4 +21,7 @@ public abstract class TransformImpl extends Transform {
     public void lateBindApplies(Class new_applies) throws BindException {
 		m_bind_impl.lateBindApplies( new_applies);
     }
+
+	public void startEvaluation( DataSource source) {}
+	public Enumeration finishEvaluation( DataSource source) { return EmptyEnum.empty; }
 }

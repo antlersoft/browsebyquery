@@ -1,0 +1,28 @@
+reserved And "and"
+reserved count
+reserved date
+reserved deintersection
+reserved exists
+reserved first
+reserved intersection
+reserved list
+reserved matching
+reserved max
+reserved min
+reserved not
+reserved of
+reserved recursive
+reserved same
+reserved union
+reserved without
+reserved xor
+reserved left_paren "("
+reserved right_paren ")"
+
+reserved LT "<"
+reserved LTE "<="
+reserved ET "="
+reserved GTE ">="
+reserved GT ">"
+reserved comma ","
+reserved ampersand "&"
