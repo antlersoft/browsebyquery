@@ -195,8 +195,8 @@ public class ProjectBBQ implements NodeViewer
                         if ( line==null || line.length()==0)
                             return;
                         analyzer.qp.setLine( line);
-                        historyList.addQuery( line);
                         SetExpression se=analyzer.qp.getExpression();
+                        historyList.addQuery( line);
                         outputArea.setResults( se.execute( analyzer.db));
                     }
                     catch ( ParseException pe)
