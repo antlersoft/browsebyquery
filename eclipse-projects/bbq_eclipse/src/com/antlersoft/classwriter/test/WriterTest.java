@@ -138,7 +138,7 @@ public class WriterTest
         String[] newArgs=new String[args.length-2];
         System.arraycopy( args, 2, newArgs, 0, newArgs.length);
         Class.forName( args[0]).getMethod( args[1], parameterTypes).invoke(
-            null, newArgs);
+            null, new Object[] { newArgs});
     }
 
     public static void main( String[] args)
