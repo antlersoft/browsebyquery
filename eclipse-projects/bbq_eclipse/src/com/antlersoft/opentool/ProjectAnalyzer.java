@@ -26,22 +26,21 @@ import com.borland.primetime.vfs.Url;
 
 import com.antlersoft.analyzer.AnalyzeClass;
 import com.antlersoft.analyzer.DBClass;
-import com.antlersoft.analyzer.ObjectAnalyzeDB;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 import com.antlersoft.analyzer.query.QueryParser;
 
 class ProjectAnalyzer
 {
     JBProject project;
-    ObjectAnalyzeDB db;
+    IndexAnalyzeDB db;
     QueryParser qp;
     private String goodPath;
 
     ProjectAnalyzer( BBQNode node)
         throws Exception
     {
-System.out.println( "<init>ProjectAnalyzer");
         project=(JBProject)node.getProject();
-        db=new ObjectAnalyzeDB();
+        db=new IndexAnalyzeDB();
         String dbPath=BBQPathsGroup.pathsProperty.getValue( node);
         File analyzerFile;
         if ( dbPath.length()==0)

@@ -311,8 +311,7 @@ public class ProjectBBQ implements NodeViewer
             TreeMap resultSorter=new TreeMap();
             while ( e.hasMoreElements())
             {
-                SourceObject sourceObject=
-                    (SourceObject)e.nextElement();
+                Object sourceObject=e.nextElement();
                 resultSorter.put( sourceObject.toString(),
                     sourceObject);
             }
@@ -389,9 +388,9 @@ e.printStackTrace();
                         values().iterator();
                     if ( i.hasNext())
                     {
-                        selectedObject=(SourceObject)i.next();
-System.out.println( selectedObject.getDBClass().getName()+" "+
-selectedObject.getLineNumber());
+                        Object resultObject=i.next();
+                        if ( resultObject instanceof SourceObject)
+                            selectedObject=(SourceObject)resultObject;
                     }
                 }
                 if ( count>1)
