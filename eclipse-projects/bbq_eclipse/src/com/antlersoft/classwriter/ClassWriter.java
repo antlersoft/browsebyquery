@@ -176,6 +176,11 @@ public class ClassWriter
   		attributes.write( classStream);
     }
 
+    public int getFlags()
+    {
+        return accessFlags;
+    }
+
     public Collection getMethods()
     {
         return Collections.unmodifiableCollection( methods);
