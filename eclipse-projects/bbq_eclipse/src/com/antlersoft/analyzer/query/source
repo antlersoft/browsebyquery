@@ -11,6 +11,8 @@ reserved all
 reserved and
 reserved are
 reserved base
+reserved by
+reserved called
 reserved calls
 reserved Class "class"
 reserved classes
@@ -36,6 +38,7 @@ reserved previous
 reserved recursive
 reserved references
 reserved reference
+reserved referenced
 reserved rightParen ")"
 reserved same
 reserved set
@@ -137,8 +140,10 @@ Transform : same "{ return new SameTransform(); }" .
 Transform : methods in "{ return new MethodsIn(); }" .
 Transform : fields in "{ return new FieldsIn(); }" .
 Transform : polymorphic "{ return new Polymorphic(); }" .
-Transform : methods containing .
-Transform : classes containing "{ return new ClassOfMethod(); }" .
+Transform : methods called by "{ return new MethodsOf(); }" .
+Transform : fields referenced by "{ return new FieldsOf(); }" .
+Transform : methods containing "{ return new MethodsContaining(); }" .
+Transform : classes containing "{ return new ClassOf(); }" .
 Filter : uncalled "{ return new UncalledMethod(); }" .
 Transform : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
 Reference : reference .

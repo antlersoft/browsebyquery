@@ -380,32 +380,31 @@ public class QueryParser extends Parser
         }
     }
 
-    static class ClassOfMethod extends TransformImpl
+    static class ClassOf extends UniqueTransform
     {
-        private Hashtable ht;
-        ClassOfMethod()
+        ClassOf()
         {
-			super( DBMethod.class, DBClass.class);
+			super( null, DBClass.class);
         }
 
-		public void startEvaluation( AnalyzerDB db)
-		{
-			ht=new Hashtable();
-		}
-
-        public Enumeration transform( Object toTransform)
+        public Object uniqueTransform( Object toTransform)
             throws Exception
         {
-			DBClass c=((DBMethod)toTransform).getDBClass();
-			ht.put( c, c);
-            return EmptyEnumeration.emptyEnumeration;
+			if ( appliesTo()==DBMethod.class)
+				return ((DBMethod)toTransform).getDBClass();
+			if ( appliesTo()==DBField.class)
+				return ((DBField)toTransform).getDBClass();
+			throw new Exception( "Class of incorrectly bound");
         }
 
-		public Enumeration finishEvaluation()
+		public void lateBindApplies( Class c)
+			throws RuleActionException
 		{
-			Enumeration result= ht.keys();
-			ht=null;
-			return result;
+			if ( c!=DBMethod.class && c!=DBField.class)
+			{
+				throw new RuleActionException( "Operator only applies to methods and fields");
+			}
+			_applies=c;
 		}
     }
 
