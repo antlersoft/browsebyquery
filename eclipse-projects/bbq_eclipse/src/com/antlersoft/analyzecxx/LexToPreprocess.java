@@ -43,10 +43,10 @@ System.out.println( "Preprocessor line");
 		}
 		else if ( next_token.symbol==PreprocessParser.lex_new_line)
 		{
+			if ( m_preprocess_line || ! m_reader.m_preprocess_parser.m_skipping)
+				m_reader.m_preprocess_parser.parse( next_token.symbol);
 			m_start_of_line = true;
 			m_preprocess_line = false;
-			if ( ! m_reader.m_preprocess_parser.m_skipping)
-				m_reader.m_preprocess_parser.parse( next_token.symbol);
 		}
 		else if ( m_preprocess_line)
 		{

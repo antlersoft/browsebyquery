@@ -86,14 +86,11 @@ IF_SECTION : IF_GROUP ELIF_GROUPS ENDIF_LINE .
 #                  # ifndef identifier new-line groupopt
 INITIAL_HASH : pp_hash .
 INITIAL_HASH : INITIAL_HASH lex_white_space .
-OPT_WHITE_SPACE : OPT_WHITE_SPACE lex_white_space .
-OPT_WHITE_SPACE : .
-OPT_WHITE_SPACE : lex_white_space .
 IF_GROUP : IF_COND .
 IF_GROUP : IF_GROUP GROUP_PART .
 IF_COND : INITIAL_HASH pp_if CONSTANT_EXPRESSION lex_new_line .
-IF_COND : INITIAL_HASH pp_ifdef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line .
-IF_COND : INITIAL_HASH pp_ifndef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line .
+IF_COND : INITIAL_HASH pp_ifdef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line "{ return ((PreprocessParser)parser).acceptIfDefined( true, ((LexToken)valueStack.get( valueStack.size()-3)).value); }" .
+IF_COND : INITIAL_HASH pp_ifndef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line "{ return ((PreprocessParser)parser).acceptIfDefined( false, ((LexToken)valueStack.get( valueStack.size()-3)).value); }" .
 #          elif-groups:
 #                  elif-group
 #                  elif-groups elif-group
@@ -111,7 +108,18 @@ ELSE_GROUP : ELSE_COND .
 ELSE_COND : INITIAL_HASH pp_else OPT_WHITE_SPACE lex_new_line .
 #          endif-line:
 #                  # endif  new-line
-ENDIF_LINE : INITIAL_HASH pp_endif OPT_WHITE_SPACE lex_new_line .
+ENDIF_LINE : INITIAL_HASH pp_endif OPT_WHITE_SPACE lex_new_line "{
+    PreprocessParser p=(PreprocessParser)parser;
+    if ( p.m_skipping)
+    {
+        if ( --p.m_skip_depth==0)
+            p.m_skipping=false;
+        else
+            if ( p.m_skip_depth<0)
+                 throw new RuleActionException( \"Bad #if #endif nesting\");
+    }
+    return \"\";
+}" .
 #          control-line:
 #                  # include pp-tokens new-line
 #                  # define  identifier replacement-list new-line
@@ -163,6 +171,9 @@ PP_TOKEN : lex_number "{ return valueStack.get( valueStack.size()-1); }" .
 PP_TOKEN : lex_character_literal "{ return valueStack.get( valueStack.size()-1); }" .
 PP_TOKEN : lex_string_literal "{ return valueStack.get( valueStack.size()-1); }" .
 PP_TOKEN : lex_preprocessing_op_or_punc "{ return valueStack.get( valueStack.size()-1); }" .
+OPT_WHITE_SPACE : OPT_WHITE_SPACE lex_white_space .
+OPT_WHITE_SPACE : .
+OPT_WHITE_SPACE : lex_white_space .
 
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE lex_identifier .
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE pp_lparen OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE pp_rparen .
