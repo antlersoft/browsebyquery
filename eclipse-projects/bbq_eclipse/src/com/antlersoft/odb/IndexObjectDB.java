@@ -111,4 +111,9 @@ public class IndexObjectDB extends ObjectDB
             base.remove();
         }
     }
+
+    public static Comparable ObjectRefIndexHelper( ObjectRef ref)
+    {
+    	return (Comparable)ref.impl.objectKey;
+    }
 }
