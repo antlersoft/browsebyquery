@@ -2,6 +2,7 @@ package com.antlersoft.analyzecxx;
 
 import java.util.Enumeration;
 
+import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.Symbol;
 
 /**
@@ -25,24 +26,26 @@ class LexToPreprocess implements LexReader
 	throws com.antlersoft.parser.RuleActionException
 	{
 		if (m_start_of_line) {
+			if ( next_token.symbol == PreprocessParser.lex_white_space)
+				return;
 			if ( ( next_token instanceof AltSymbolToken) && ((AltSymbolToken)next_token).m_alt_symbol == PreprocessParser.pp_hash) {
 				m_preprocess_line = true;
 				m_start_of_line=false;
-				m_reader.m_preprocess_parser.parse( PreprocessParser.pp_hash, "#");
+				m_reader.m_preprocess_parser.errorParse( PreprocessParser.pp_hash, "#");
 			}
 			else
 			{
 				if (next_token.symbol != PreprocessParser.lex_new_line)
 					m_start_of_line = false;
 				if (!m_reader.m_preprocess_parser.m_skipping)
-					m_reader.m_preprocess_parser.parse(next_token.symbol,
+					m_reader.m_preprocess_parser.errorParse(next_token.symbol,
 						next_token);
 			}
 		}
 		else if ( next_token.symbol==PreprocessParser.lex_new_line)
 		{
 			if ( m_preprocess_line || ! m_reader.m_preprocess_parser.m_skipping)
-				m_reader.m_preprocess_parser.parse( next_token.symbol, next_token);
+				m_reader.m_preprocess_parser.errorParse( next_token.symbol, next_token);
 			m_start_of_line = true;
 			m_preprocess_line = false;
 		}
@@ -57,31 +60,32 @@ class LexToPreprocess implements LexReader
 					Symbol s=(Symbol)e.nextElement();
 					if ( alt.m_alt_symbol==s)
 					{
-						m_reader.m_preprocess_parser.parse(s);
+						m_reader.m_preprocess_parser.errorParse(s, alt);
 						alt=null;
 						break;
 					}
 				}
 				if ( alt!=null)
 				{
-					m_reader.m_preprocess_parser.parse( alt.symbol,
+					m_reader.m_preprocess_parser.errorParse( alt.symbol,
 						alt);
 				}
 			}
 			else
 			{
-				m_reader.m_preprocess_parser.parse( next_token.symbol,
+				m_reader.m_preprocess_parser.errorParse( next_token.symbol,
 					next_token);
 			}
 		}
 		else if ( ! m_reader.m_preprocess_parser.m_skipping)
 		{
-			m_reader.m_preprocess_parser.parse( next_token.symbol,
+			m_reader.m_preprocess_parser.errorParse( next_token.symbol,
 												next_token);
 		}
 	}
 
 	public void noMoreTokens()
 	{
+		m_reader.m_preprocess_parser.parse( Parser._end_);
 	}
 }

@@ -1,5 +1,7 @@
 package com.antlersoft.analyzecxx;
 
+import java.io.IOException;
+
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
@@ -26,6 +28,8 @@ class PreprocessParserBase extends Parser {
 	int m_skip_depth;
 	CxxReader m_reader;
 	MacroExpander m_base_expander;
+	ConstExprParser m_const_expr_parser=new ConstExprParser();
+
 	static HashSet m_empty_set=new HashSet();
 	static SimpleDateFormat m_date_format=new SimpleDateFormat( "MMM dd yyyy");
 	static SimpleDateFormat m_time_format=new SimpleDateFormat( "HH:mm:ss");
@@ -75,6 +79,13 @@ class PreprocessParserBase extends Parser {
 		return super.parse( s);
 	}
 
+	void errorParse( Symbol s, Object v)
+	throws RuleActionException
+	{
+		if ( parse(s,v))
+			throw new RuleActionException( getRuleMessage());
+	}
+
 	final Object acceptIfDefined( boolean condition, String identifier)
 	{
 		if ( m_skipping)
@@ -91,10 +102,119 @@ class PreprocessParserBase extends Parser {
 		return "";
 	}
 
-	final boolean evaluateConstantExpression( ArrayList tokens)
+	final Object acceptIfTrue( ArrayList tokens)
+	throws RuleActionException
 	{
+		if ( m_skipping)
+			++m_skip_depth;
+		else
+		{
+			if ( ! evaluateConstantExpression( tokens))
+			{
+				m_skipping=true;
+				m_skip_depth=1;
+			}
+		}
+		return "";
+	}
 
-		return false;
+	final Object elseIf( ArrayList tokens)
+	throws RuleActionException
+	{
+		if ( ! m_skipping)
+		{
+			m_skipping=true;
+			m_skip_depth=1;
+		}
+		else
+		{
+			if ( m_skip_depth==1 && evaluateConstantExpression( tokens))
+			{
+				m_skipping=false;
+				m_skip_depth=0;
+			}
+		}
+		return "";
+	}
+
+	final Object recognizeError( ArrayList tokens)
+	throws RuleActionException
+	{
+		if ( m_skipping)
+			return "";
+		ArrayList error_tokens=expandToArray( tokens);
+		StringBuffer sb=new StringBuffer( "Error: ");
+		for ( Iterator i=error_tokens.iterator(); i.hasNext();)
+			sb.append( ((LexToken)i.next()).value);
+		throw new RuleActionException( sb.toString());
+	}
+
+	final Object processPragma( ArrayList tokens)
+	throws RuleActionException
+	{
+		if (m_skipping)
+			return "";
+		ArrayList pragma_tokens=expandToArray( tokens);
+		if ( pragma_tokens.size()==1 &&
+			((LexToken)pragma_tokens.get(0)).value.equals( "once"))
+	    {
+		   m_reader.m_driver.dontRepeat( m_reader);
+		}
+		return "";
+	}
+
+	final Object includeFile( String include_file, boolean with_current)
+	throws RuleActionException
+	{
+		if ( m_skipping)
+			return "";
+		try
+		{
+System.out.println( "Include file: "+include_file);
+			m_reader.m_driver.includeFile(m_reader, include_file, with_current,
+										  m_reader.m_line);
+		}
+		catch ( IOException ioe)
+		{
+			throw new RuleActionException( "Failed to find include file: "+include_file);
+		}
+		return "";
+	}
+
+	final Object setLine( ArrayList tokens)
+	throws RuleActionException
+	{
+		if ( m_skipping)
+			return "";
+		ArrayList line_tokens=expandToArray( tokens);
+		if ( line_tokens.size()>=1 && line_tokens.size()<=3)
+		{
+			Object o=line_tokens.get(0);
+			if ( o instanceof NumericLiteral)
+				try {
+					m_reader.m_line=( (NumericLiteral) o).intValue();
+				}
+				catch (LexException le) {
+					throw new RuleActionException("Bad numeric literal: " +
+												  le.getMessage());
+				}
+			o=line_tokens.get( line_tokens.size()-1);
+			if ( o instanceof StringLiteral)
+				m_reader.m_file=((StringLiteral)o).value;
+		}
+		return "";
+	}
+
+	final boolean evaluateConstantExpression( ArrayList tokens)
+	throws RuleActionException
+	{
+		normalizeWhitespace( tokens);
+		MacroExpander expander=new MacroExpander( m_macros, m_const_expr_parser);
+		for ( Iterator i=tokens.iterator(); i.hasNext();)
+			expander.processToken( (LexToken)i.next());
+		expander.noMoreTokens();
+
+		return m_const_expr_parser.getResult()!=0;
 	}
 
 	private ArrayList expandToArray( ArrayList tokens)

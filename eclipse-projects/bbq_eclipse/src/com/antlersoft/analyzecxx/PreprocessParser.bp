@@ -28,6 +28,7 @@ reserved pp_if "if"
 reserved pp_ifdef "ifdef"
 reserved pp_ifndef "ifndef"
 reserved pp_include "include"
+reserved pp_include_next "include_next"
 reserved pp_line "line"
 reserved pp_lparen "("
 reserved pp_pragma "pragma"
@@ -39,7 +40,6 @@ symbol CONSTANT_TOKEN
 symbol CONTROL_LINE
 symbol ELIF_COND
 symbol ELIF_GROUPS
-symbol ELIF_GROUP
 symbol ELSE_COND
 symbol ELSE_GROUP
 symbol ENDIF_LINE
@@ -94,24 +94,36 @@ INITIAL_HASH : pp_hash .
 INITIAL_HASH : INITIAL_HASH lex_white_space .
 IF_GROUP : IF_COND .
 IF_GROUP : IF_GROUP GROUP_PART .
-IF_COND : INITIAL_HASH pp_if CONSTANT_EXPRESSION lex_new_line .
+IF_COND : INITIAL_HASH pp_if OPT_WHITE_SPACE CONSTANT_EXPRESSION lex_new_line "{ return ((PreprocessParser)parser).acceptIfTrue( (ArrayList)valueStack.get( valueStack.size()-2)); }" .
 IF_COND : INITIAL_HASH pp_ifdef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line "{ return ((PreprocessParser)parser).acceptIfDefined( true, ((LexToken)valueStack.get( valueStack.size()-3)).value); }" .
 IF_COND : INITIAL_HASH pp_ifndef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line "{ return ((PreprocessParser)parser).acceptIfDefined( false, ((LexToken)valueStack.get( valueStack.size()-3)).value); }" .
 #          elif-groups:
 #                  elif-group
 #                  elif-groups elif-group
-ELIF_GROUPS : ELIF_GROUP .
-ELIF_GROUPS : ELIF_GROUPS ELIF_GROUP .
+ELIF_GROUPS : ELIF_COND .
+ELIF_GROUPS : ELIF_GROUPS ELIF_COND .
+ELIF_GROUPS : ELIF_GROUPS GROUP_PART .
 #          elif-group:
 #                  # elif   constant-expression new-line groupopt
-ELIF_COND : INITIAL_HASH pp_elif CONSTANT_EXPRESSION lex_new_line .
-ELIF_GROUP : ELIF_GROUP GROUP_PART .
-ELIF_GROUP : ELIF_COND .
+ELIF_COND : INITIAL_HASH pp_elif OPT_WHITE_SPACE CONSTANT_EXPRESSION lex_new_line "{ return ((PreprocessParser)parser).elseIf( (ArrayList)valueStack.get( valueStack.size()-2)); }" .
 #          else-group:
 #                  # else   new-line groupopt
 ELSE_GROUP : ELSE_GROUP GROUP_PART .
 ELSE_GROUP : ELSE_COND .
-ELSE_COND : INITIAL_HASH pp_else OPT_WHITE_SPACE lex_new_line .
+ELSE_COND : INITIAL_HASH pp_else OPT_WHITE_SPACE lex_new_line "{
+PreprocessParser p=(PreprocessParser)parser;
+if ( p.m_skipping && p.m_skip_depth==1)
+{
+p.m_skipping=false;
+p.m_skip_depth=0;
+}
+else if ( ! p.m_skipping)
+{
+p.m_skipping=true;
+p.m_skip_depth=1;
+}
+return \"\";
+}".
 #          endif-line:
 #                  # endif  new-line
 ENDIF_LINE : INITIAL_HASH pp_endif OPT_WHITE_SPACE lex_new_line "{
@@ -139,14 +151,19 @@ INCLUDE_HEADER : lex_include_header "{ return valueStack.get( valueStack.size()-
 INCLUDE_HEADER : lex_include_header_with_current "{ return valueStack.get( valueStack.size()-1); }" .
 INCLUDE_HEADER : PP_TOKENS "{ return ((PreprocessParser)parser).expandToIncludeHeader( (ArrayList)valueStack.get( valueStack.size()-1)); }" .
 CONTROL_LINE : INITIAL_HASH pp_include OPT_WHITE_SPACE INCLUDE_HEADER OPT_WHITE_SPACE lex_new_line "{
-System.out.println( \"Include file\"); return new ArrayList();
+return ((PreprocessParser)parser).includeFile( ((LexToken)valueStack.get( valueStack.size()-3)).value,
+((LexToken)valueStack.get( valueStack.size()-3)).symbol==lex_include_header_with_current);
 }" .
+
+# GNU C specific extension-- not fully supported
+CONTROL_LINE : INITIAL_HASH pp_include_next OPT_WHITE_SPACE INCLUDE_HEADER OPT_WHITE_SPACE lex_new_line .
+
 CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line "{
 return ((PreprocessParser)parser).defineObjectMacro( ((LexToken)valueStack.get( valueStack.size()-4)).value,
     (ArrayList)valueStack.get( valueStack.size()-2));
 }" .
-CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line "{
-return ((PreprocessParser)parser).defineFunctionMacro( ((LexToken)valueStack.get( valueStack.size()-7)).value,
+CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen OPT_WHITE_SPACE IDENTIFIER_LIST pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line "{
+return ((PreprocessParser)parser).defineFunctionMacro( ((LexToken)valueStack.get( valueStack.size()-8)).value,
     (ArrayList)valueStack.get( valueStack.size()-5), (ArrayList)valueStack.get( valueStack.size()-2));
 }" .
 CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen OPT_WHITE_SPACE pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line "{
@@ -156,10 +173,14 @@ return ((PreprocessParser)parser).defineFunctionMacro( ((LexToken)valueStack.get
 CONTROL_LINE : INITIAL_HASH pp_undef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line "{
 return ((PreprocessParser)parser).undefineMacro( ((LexToken)valueStack.get( valueStack.size()-3)).value);
 }" .
-CONTROL_LINE : INITIAL_HASH pp_line PP_TOKENS lex_new_line .
-CONTROL_LINE : INITIAL_HASH pp_error PP_TOKENS lex_new_line .
-CONTROL_LINE : INITIAL_HASH pp_error lex_new_line .
-CONTROL_LINE : INITIAL_HASH pp_pragma PP_TOKENS lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_line OPT_WHITE_SPACE PP_TOKENS lex_new_line
+"{ return ((PreprocessParser)parser).setLine( (ArrayList)valueStack.get(valueStack.size()-2)); }" .
+CONTROL_LINE : INITIAL_HASH pp_error OPT_WHITE_SPACE PP_TOKENS lex_new_line
+"{ return ((PreprocessParser)parser).recognizeError( (ArrayList)valueStack.get(valueStack.size()-2)); }" .
+CONTROL_LINE : INITIAL_HASH pp_error lex_new_line
+"{ return ((PreprocessParser)parser).recognizeError( new ArrayList()); }" .
+CONTROL_LINE : INITIAL_HASH pp_pragma OPT_WHITE_SPACE PP_TOKENS lex_new_line
+"{ return ((PreprocessParser)parser).processPragma( (ArrayList)valueStack.get(valueStack.size()-2)); }" .
 CONTROL_LINE : INITIAL_HASH lex_new_line .
 #          lparen:
 #                  the left-parenthesis character without preceding white-space
@@ -193,10 +214,10 @@ OPT_WHITE_SPACE : .
 OPT_WHITE_SPACE : lex_white_space .
 
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE lex_identifier "{
-return ((PreprocessParser)parser).evaluateDefined( (String)valueStack.get( valueStack.size()-1));
+return ((PreprocessParser)parser).evaluateDefined( ((LexToken)valueStack.get( valueStack.size()-1)).value);
 }" .
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE pp_lparen OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE pp_rparen "{
-return ((PreprocessParser)parser).evaluateDefined( (String)valueStack.get( valueStack.size()-3));
+return ((PreprocessParser)parser).evaluateDefined( ((LexToken)valueStack.get( valueStack.size()-3)).value);
 }" .
 CONSTANT_TOKEN : PP_TOKEN "{ return valueStack.get( valueStack.size()-1); }" .
 CONSTANT_EXPRESSION : CONSTANT_TOKEN .
@@ -205,7 +226,7 @@ CONSTANT_EXPRESSION : CONSTANT_EXPRESSION CONSTANT_TOKEN "{
     result.add( valueStack.get( valueStack.size()-1));
     return result;
 }" .
-CONSTANT_EXPRESSION : CONSTANT_TOKEN lex_white_space "{
+CONSTANT_EXPRESSION : CONSTANT_EXPRESSION lex_white_space "{
     ArrayList result=(ArrayList)valueStack.get( valueStack.size()-2);
     result.add( valueStack.get( valueStack.size()-1));
     return result;

@@ -1,23 +1,83 @@
-reserved cep_exclamation "!"
-reserved cep_not_eq "!="
-reserved cep_eq "=="
-reserved cep_lt "<"
-reserved cep_lt_eq "<="
-reserved cep_gt ">"
-reserved cep_gt_eq ">="
-reserved cep_lparen "("
-reserved cep_rparen ")"
+reserved exclamation "!" 13 right
+reserved complement "~" 13 right
+reserved multiply "*" 12 left
+reserved divide "/" 12 left
+reserved modulo "%" 12 left
+reserved minus "-" 11 left
+reserved plus "+" 11 left
+reserved left_shift "<<" 10 left
+reserved right_shift ">>" 10 left
+reserved lt "<" 9 left
+reserved lt_eq "<=" 9 left
+reserved gt ">" 9 left
+reserved gt_eq ">=" 9 left
+reserved not_eq "!=" 8 left
+reserved eq "==" 8 left
+reserved bit_and "&" 7 none
+reserved bit_xor "^" 6 none
+reserved bit_or "|" 5 none
+reserved cep_and "&&" 4 left
+reserved cep_or "||" 3 left
+reserved colon ":" 2 right
+reserved question "?" 2 right
+reserved comma "," 1 left
+reserved lparen "("
+reserved rparen ")"
 reserved cep_number
 
 symbol CEP_VALUE
-symbol CEP_UNARY_OP
-symbol CEP_BINARY_OP
+symbol CEP_DONE
 
+CEP_DONE : CEP_VALUE
+"{ ((ConstExprParserBase)parser).m_result=((Integer)valueStack.get( valueStack.size()-1)).intValue(); return \"\";}" .
 CEP_VALUE : cep_number "{ return valueStack.get( valueStack.size()-1); }" .
-CEP_VALUE : cep_lparen CEP_VALUE cep_rparen "{ return valueStack.get( valueStack.size()-2); }" .
-CEP_VALUE : CEP_UNARY_OP CEP_VALUE .
-CEP_VALUE : CEP_VALUE CEP_BINARY_OP CEP_VALUE .
+CEP_VALUE : lparen CEP_VALUE rparen "{ return valueStack.get( valueStack.size()-2); }" .
+CEP_VALUE : plus CEP_VALUE "{ return valueStack.get( valueStack.size()-1); }" .
+CEP_VALUE : minus CEP_VALUE
+"{ return new Integer( -((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : complement CEP_VALUE
+"{ return new Integer( ~((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : exclamation CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-1)).intValue()==0 ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE multiply CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()*((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE divide CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()/((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE modulo CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()%((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE minus CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()-((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE plus CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()+((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE left_shift CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()<<((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE right_shift CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()>>((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE lt CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()<((Integer)valueStack.get( valueStack.size()-1)).intValue() ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE lt_eq CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()<=((Integer)valueStack.get( valueStack.size()-1)).intValue() ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE gt_eq CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()>=((Integer)valueStack.get( valueStack.size()-1)).intValue() ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE gt CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()>((Integer)valueStack.get( valueStack.size()-1)).intValue() ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE eq CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()==((Integer)valueStack.get( valueStack.size()-1)).intValue() ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE not_eq CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()!=((Integer)valueStack.get( valueStack.size()-1)).intValue() ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE bit_and CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()&((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE bit_xor CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()^((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE bit_or CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()|((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE cep_and CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()!=0 && ((Integer)valueStack.get( valueStack.size()-1)).intValue()!=0 ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE cep_or CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-3)).intValue()!=0 || ((Integer)valueStack.get( valueStack.size()-1)).intValue()!=0 ? 1 : 0); }" .
+CEP_VALUE : CEP_VALUE question CEP_VALUE colon CEP_VALUE
+"{ return new Integer( ((Integer)valueStack.get( valueStack.size()-5)).intValue()!=0 ? ((Integer)valueStack.get( valueStack.size()-3)).intValue() : ((Integer)valueStack.get( valueStack.size()-1)).intValue()); }" .
+CEP_VALUE : CEP_VALUE comma CEP_VALUE
+"{ return valueStack.get( valueStack.size()-1); }" .
 
-CEP_UNARY_OP : cep_exclamation .
 
-CEP_BINARY_OP : cep_eq .

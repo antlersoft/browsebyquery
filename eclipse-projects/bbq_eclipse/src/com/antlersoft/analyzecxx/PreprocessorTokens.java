@@ -45,7 +45,7 @@ class PreprocessorTokens implements LexState
 			case '"' :
 			    result=new QuotedLiteral( m_reader, this, c,
 						  isExpectingIncludeHeader()
-						  ? new LexToken( PreprocessParser.lex_include_header, null)
+						  ? new LexToken( PreprocessParser.lex_include_header_with_current, null)
 						  : new StringLiteral( null, false));
 				break;
 			case '<' :

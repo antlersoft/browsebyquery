@@ -154,6 +154,7 @@ class MacroExpander {
 			m_current_argument=null;
 			clearDeferredTokens();
 		}
+		m_reader.noMoreTokens();
     }
 
 	private void clearDeferredTokens() throws RuleActionException

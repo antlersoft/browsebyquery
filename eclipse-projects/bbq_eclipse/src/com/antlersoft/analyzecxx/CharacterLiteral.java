@@ -11,4 +11,9 @@ class CharacterLiteral extends LexToken
 	}
 
 	boolean isWide() { return m_wide; }
+
+	int intValue()
+	{
+		return (int)value.charAt(0);
+	}
 }

@@ -180,14 +180,17 @@ class LexNumber implements LexState {
 				m_buffer.append( c);
 				break;
 			case INT_SUFFIX :
-				if ( comp_c=='U' || comp_c=='L' &&
-				comp_c!=m_buffer.charAt( m_buffer.length()-1))
+				if ( comp_c=='U' || comp_c=='L')
 		   {
 			   m_token.setFlag( comp_c);
 			   m_buffer.append( comp_c);
-			   finish();
-			   return m_caller;
 				}
+				else
+				{
+					finish();
+					return m_caller.nextCharacter(c);
+				}
+				break;
 			default :
 				throw new LexException ( "Bad number parsing state");
 			}
