@@ -54,6 +54,11 @@ public class ObjectDB
         }
 	}
 
+    public void makeCurrent()
+    {
+        current=this;
+    }
+
 	public synchronized void setPersistent( Object toStore)
 		throws ObjectStoreException
 	{
