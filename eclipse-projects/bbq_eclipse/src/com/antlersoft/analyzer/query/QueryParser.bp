@@ -4,6 +4,7 @@ symbol CompleteQuery
 symbol Filter
 symbol UncalledPolymorphic
 symbol Identity
+symbol ImportExpression
 symbol SetOperator
 symbol Reference
 symbol StringConstant
@@ -27,6 +28,7 @@ reserved exists
 reserved fields
 reserved finalToken
 reserved from
+reserved Import "import"
 reserved in
 reserved is
 reserved intersection 2 left
@@ -169,7 +171,7 @@ SetExpression : previous "{
 	}" .
 
 SetExpression : Class literalString "{
-	return new ClassGet( (String)valueStack.get( valueStack.size()-1));
+	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((QueryParserBase)parser).importedPackages);
 	}" .
 
 SetExpression : all classes "{
@@ -223,3 +225,14 @@ SetExpression : nameSymbol "{ QueryParser qp=(QueryParser)parser;
     if ( retVal==null)
 	    throw new RuleActionException( \"Unknown_name:\"+valueStack.get( valueStack.size()-1));
     return retVal; }" .
+
+ImportExpression : Import .
+ImportExpression : ImportExpression set "{
+    ((QueryParserBase)parser).importedPackages.clear();
+    return \"\";
+}" .
+ImportExpression : ImportExpression literalString "{
+    ((QueryParserBase)parser).importedPackages.add( valueStack.get( valueStack.size()-1));
+    return \"\";
+}" .
+SetExpression : ImportExpression "{ return new ImportSet( ((QueryParserBase)parser).importedPackages); }" .

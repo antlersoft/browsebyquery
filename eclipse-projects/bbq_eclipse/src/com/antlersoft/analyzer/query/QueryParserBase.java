@@ -6,8 +6,10 @@ import java.util.Stack;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.TreeSet;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -26,6 +28,7 @@ class QueryParserBase extends Parser
         previousSet=null;
         storedValues=new HashMap();
         storedValuesSupport=new PropertyChangeSupport( this);
+        importedPackages=new TreeSet();
     }
 
     public SetExpression getExpression()
@@ -73,7 +76,7 @@ class QueryParserBase extends Parser
     SetExpression previousSet;
     HashMap storedValues; // String, SetExpression
     PropertyChangeSupport storedValuesSupport;
-    Stack eachStack;
+    TreeSet importedPackages;
 
     static Symbol literalString=Symbol.get( "_literalString");
     static Symbol nameSymbol=Symbol.get( "_nameSymbol");
@@ -207,11 +210,13 @@ class QueryParserBase extends Parser
     static class ClassGet extends SetExpression
     {
         private String _className;
+        private TreeSet _set;
 
-        ClassGet( String className)
+        ClassGet( String className, TreeSet set)
         {
             super( DBClass.class);
             _className=className;
+            _set=set;
         }
 
         public Enumeration execute( AnalyzerDB db)
@@ -221,6 +226,12 @@ class QueryParserBase extends Parser
             Object q=db.findWithKey( "com.antlersoft.analyzer.DBClass", _className);
             if ( q!=null)
                 tmp.addElement( q);
+            for ( Iterator i=_set.iterator(); i.hasNext() && q==null;)
+            {
+                q=db.findWithKey( "com.antlersoft.analyzer.DBClass", ((String)i.next())+"."+_className);
+                if ( q!=null)
+                    tmp.addElement( q);
+            }
             return tmp.elements();
         }
     }
