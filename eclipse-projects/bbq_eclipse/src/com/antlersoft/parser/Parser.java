@@ -30,16 +30,6 @@ public abstract class Parser
 		while ( ! erred_out && ( next_value.size()>0 ||
 			cur.shift_rules.length==0))
 		{
-{
-for ( int q=0; q<parse_states.length; q++)
-{
-if ( parse_states[q]==cur)
-{
-System.out.println( "Parser examining state "+Integer.toString( q));
-break;
-}
-}
-}           
 			int sri;
 			int compare_length=cur.shift_rules.length;
 			for ( sri=0; sri<compare_length; sri++)
@@ -105,7 +95,6 @@ break;
 				}
 			}
 		}
-System.out.println( "parse function returning");
 		return erred_out;
 	}
 
@@ -212,7 +201,6 @@ System.out.println( "parse function returning");
 	private ArrayList next_value;
 	private ParseState pushError()
 	{
-System.out.println( "pushError called");
 		/* If in recovery state, throw away token
 		 * silently */
 		if ( recovery_count!=0 && next_value.size()>0)
@@ -225,7 +213,6 @@ System.out.println( "pushError called");
 				return null;
 			recovery_count=1;
 			next_value.clear();
-System.out.println( "in recovery state-- throwing away token");
 			return (ParseState)state_stack.get( state_stack.size()-1);
 		}
 		while( state_stack.size()>0)
@@ -233,21 +220,10 @@ System.out.println( "in recovery state-- throwing away token");
 			ParseState cur=(ParseState)state_stack.get( state_stack.size()-1);
 			
 			int sri;
-{
-for ( int q=0; q<parse_states.length; q++)
-{
-if ( parse_states[q]==cur)
-{
-System.out.println( "Push error examining state "+Integer.toString( q));
-break;
-}
-}
-}           
 			for ( sri=0; sri<cur.shift_rules.length; sri++)
 				{
 				if ( cur.shift_rules[sri].looked_for==Parser._error_)
 					{
-System.out.println( "Error shift found");
 
 					if ( cur.shift_rules[sri].state_index<0)
 						throw new IllegalStateException( "Error recovery would force error");
@@ -261,13 +237,11 @@ System.out.println( "Error shift found");
 					return cur;
 					}        
 				}
-System.out.println( "Popping state off stack");               
 			state_stack.remove( state_stack.size()-1);
 			value_stack.remove( value_stack.size()-1);
 		}
 
 		// No recovery state found
-System.out.println( "pushError returns null");			                                                   
 		return null;			                                                 
 	}
 }
