@@ -40,7 +40,7 @@ public class ObjectAnalyzeDB implements AnalyzerDB
 	throws Exception
     {
 		if ( _session!=null)
-			closeDB();
+            closeDB();
 		ObjectDB tempSession=new ObjectDB( SchemaAllocatorStore.getSchemaStore(
             new File( dbName), Arrays.asList( schemaClasses)));
         _classHash=(PersistentHashtable)tempSession.getRootObject( "_classHash");
@@ -56,7 +56,7 @@ public class ObjectAnalyzeDB implements AnalyzerDB
         throws Exception
     {
 		verifyState();
-		_session.commit();
+        _session.close();
 		_session=null;
 		_classHash=null;
     }
@@ -93,6 +93,11 @@ public class ObjectAnalyzeDB implements AnalyzerDB
     {
 		verifyState();
 		return getObjectVector( type).elements();
+    }
+
+    public synchronized void makeCurrent()
+    {
+        _session.makeCurrent();
     }
 
     private ObjectVector getObjectVector( String type)
