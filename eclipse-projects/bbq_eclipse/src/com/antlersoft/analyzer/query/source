@@ -159,7 +159,7 @@ Transform : fields referenced by "{ return new FieldsOf(); }" .
 Transform : methods containing "{ return new MethodsContaining(); }" .
 Transform : classes containing "{ return new ClassOf(); }" .
 Filter : uncalled "{ return new UncalledMethod(); }" .
-Transform : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
+Filter : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
 Reference : reference .
 Reference : references .
 Transform : calls from "{ return new CallsFrom(); }" .
