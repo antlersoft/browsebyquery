@@ -5,12 +5,12 @@ import java.util.List;
 public abstract class Filter implements ValueExpression {
 	public abstract boolean booleanValue();
 
-	public Object getValue()
+	public final Object getValue()
 	{
 		return adjustedBooleanValue() ? Boolean.TRUE : Boolean.FALSE;
 	}
 
-	public void applyNot()
+	public final void applyNot()
 	{
 		m_not= ! m_not;
 	}
