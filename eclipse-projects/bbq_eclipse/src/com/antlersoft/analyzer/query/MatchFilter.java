@@ -3,6 +3,7 @@ package com.antlersoft.analyzer.query;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.DBMethod;
 import com.antlersoft.analyzer.DBField;
+import com.antlersoft.analyzer.DBStringConstant;
 
 class MatchFilter extends Filter
 {
@@ -34,6 +35,10 @@ class MatchFilter extends Filter
 		{
 			name=((DBField)toMatch).getName();
 		}
+        else if ( c==DBStringConstant.class)
+        {
+            name=((DBStringConstant)toMatch).toString();
+        }
 		else
 			throw new Exception( "Match filter bound incorrect class "+c.getName());
 
