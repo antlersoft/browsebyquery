@@ -7,7 +7,7 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package classwriter;
+package com.antlersoft.classwriter;
 
 import java.util.Collection;
 
@@ -20,7 +20,7 @@ class BranchOpCode extends SimpleOpCode
 
     void traverse(Instruction instruction, Collection next,
     	CodeAttribute attribute)
-    	throws classwriter.CodeCheckException
+    	throws com.antlersoft.classwriter.CodeCheckException
     {
         super.traverse( instruction, next, attribute);
         next.add( new InstructionPointer( instruction.getOffsetDestination()));

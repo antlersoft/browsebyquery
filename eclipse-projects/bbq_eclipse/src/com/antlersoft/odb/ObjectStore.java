@@ -1,4 +1,4 @@
-package odb;
+package com.antlersoft.odb;
 
 import java.io.Serializable;
 

@@ -7,9 +7,9 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package odb.postproc;
+package com.antlersoft.odb.postproc;
 
-import classwriter.*;
+import com.antlersoft.classwriter.*;
 
 import java.io.*;
 

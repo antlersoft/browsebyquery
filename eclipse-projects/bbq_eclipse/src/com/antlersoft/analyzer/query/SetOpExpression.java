@@ -1,12 +1,12 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.HashSet;
 import java.util.Collections;
 import java.util.Enumeration;
 
-import parser.RuleActionException;
+import com.antlersoft.parser.RuleActionException;
 
-import analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.AnalyzerDB;
 
 class SetOpExpression extends SetExpression
 {

@@ -1,4 +1,4 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
@@ -6,10 +6,10 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-import odb.ObjectRef;
-import odb.ObjectDB;
-import odb.Persistent;
-import odb.PersistentImpl;
+import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.PersistentImpl;
 
 public class DBMethod implements Persistent, Cloneable
 {
@@ -33,7 +33,7 @@ public class DBMethod implements Persistent, Cloneable
 	throws Exception
     {
 	StringTokenizer st=new StringTokenizer( key, "\t");
-	dbclass=new ObjectRef( (DBClass)db.getWithKey( "analyzer.DBClass", (String)st.nextElement()));
+	dbclass=new ObjectRef( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", (String)st.nextElement()));
 	name=(String)st.nextElement();
 	signature=(String)st.nextElement();
 	resolved=false;
@@ -164,7 +164,7 @@ public class DBMethod implements Persistent, Cloneable
 			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
 			    calls.addElement( new DBCall(
 				DBMethod.this,
-				(DBMethod)db.getWithKey( "analyzer.DBMethod",
+				(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
 				DBMethod.makeKey(
 				ac.getClassName( methodRef.classIndex),
 				ac.getString( nameAndType.nameIndex),
@@ -188,7 +188,7 @@ public class DBMethod implements Persistent, Cloneable
 			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
 			    fieldReferences.addElement( new DBFieldReference(
 				DBMethod.this,
-				(DBField)db.getWithKey( "analyzer.DBField",
+				(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
 				DBField.makeKey(
 				ac.getClassName( methodRef.classIndex),
 				ac.getString( nameAndType.nameIndex)

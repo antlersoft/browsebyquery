@@ -7,7 +7,7 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package classwriter;
+package com.antlersoft.classwriter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

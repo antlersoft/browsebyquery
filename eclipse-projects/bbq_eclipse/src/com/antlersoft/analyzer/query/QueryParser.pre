@@ -1,4 +1,4 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -11,8 +11,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.PrintStream;
-import analyzer.*;
-import parser.*;
+import com.antlersoft.analyzer.*;
+import com.antlersoft.parser.*;
 
 public class QueryParser extends Parser
 {
@@ -261,7 +261,7 @@ public class QueryParser extends Parser
             throws Exception
         {
             Vector tmp=new Vector( 1);
-            Object q=db.findWithKey( "analyzer.DBClass", _className);
+            Object q=db.findWithKey( "com.antlersoft.analyzer.DBClass", _className);
             if ( q!=null)
                 tmp.addElement( q);
             return tmp.elements();
@@ -278,7 +278,7 @@ public class QueryParser extends Parser
         public Enumeration execute( AnalyzerDB db)
             throws Exception
         {
-            return db.getAll( "analyzer.DBClass");
+            return db.getAll( "com.antlersoft.analyzer.DBClass");
         }
     }
 
@@ -500,7 +500,7 @@ public class QueryParser extends Parser
                     DBClass filterc=(DBClass)base;
                     try
                     {
-                    return db.findWithKey( "analyzer.DBMethod",
+                    return db.findWithKey( "com.antlersoft.analyzer.DBMethod",
                         DBMethod.makeKey( filterc.getName(),
                         soughtMethod.getName(),
                         soughtMethod.getSignature()));
@@ -539,7 +539,7 @@ public class QueryParser extends Parser
             try
             {
                 DBMethod candidate=(DBMethod)
-                    _adb.findWithKey( "analyzer.DBMethod",
+                    _adb.findWithKey( "com.antlersoft.analyzer.DBMethod",
                     DBMethod.makeKey( c.getName(),
                     soughtMethod.getName(),
                     soughtMethod.getSignature()));

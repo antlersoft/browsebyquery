@@ -7,12 +7,12 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 import java.util.Vector;
 
-import analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.AnalyzerDB;
 
 public class ExecuteExpression extends SetExpression
 {

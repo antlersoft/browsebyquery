@@ -1,8 +1,8 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
-import analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.AnalyzerDB;
 
-import parser.RuleActionException;
+import com.antlersoft.parser.RuleActionException;
 
 public abstract class Filter
 {

@@ -1,9 +1,9 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.AnalyzerDB;
 
 abstract class UniqueTransform extends TransformImpl
 {

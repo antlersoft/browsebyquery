@@ -1,7 +1,7 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
-import analyzer.DBFieldReference;
-import analyzer.DBField;
+import com.antlersoft.analyzer.DBFieldReference;
+import com.antlersoft.analyzer.DBField;
 
 class FieldsOf extends UniqueTransform
 {

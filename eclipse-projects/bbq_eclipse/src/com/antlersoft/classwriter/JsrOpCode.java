@@ -7,7 +7,7 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package classwriter;
+package com.antlersoft.classwriter;
 
 class JsrOpCode extends SimpleOpCode
 {

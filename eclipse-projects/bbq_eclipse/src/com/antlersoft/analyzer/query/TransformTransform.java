@@ -1,11 +1,11 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
-import analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.AnalyzerDB;
 
-import parser.RuleActionException;
+import com.antlersoft.parser.RuleActionException;
 
 class TransformTransform extends TransformImpl
 {

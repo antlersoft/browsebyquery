@@ -1,8 +1,8 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
-import analyzer.DBMethod;
-import analyzer.DBCall;
+import com.antlersoft.analyzer.DBMethod;
+import com.antlersoft.analyzer.DBCall;
 
 class CallsTo extends TransformImpl
 {

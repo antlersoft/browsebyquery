@@ -1,4 +1,4 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
@@ -6,10 +6,10 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-import odb.ObjectRef;
-import odb.ObjectDB;
-import odb.Persistent;
-import odb.PersistentImpl;
+import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.PersistentImpl;
 
 public class DBField implements Persistent, Cloneable
 {
@@ -24,7 +24,7 @@ public class DBField implements Persistent, Cloneable
 	throws Exception
     {
 	StringTokenizer st=new StringTokenizer( key, "\t");
-	dbclass=new ObjectRef( (DBClass)db.getWithKey( "analyzer.DBClass", (String)st.nextElement()));
+	dbclass=new ObjectRef( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", (String)st.nextElement()));
 	name=(String)st.nextElement();
 	descriptor=new String();
 	_persistentImpl=new PersistentImpl();

@@ -1,4 +1,4 @@
-package odb;
+package com.antlersoft.odb;
 
 /**
  * Publicly opaque class that is included in persistent objects to provide

@@ -1,7 +1,7 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
-import analyzer.DBCall;
-import analyzer.DBMethod;
+import com.antlersoft.analyzer.DBCall;
+import com.antlersoft.analyzer.DBMethod;
 
 class MethodsOf extends UniqueTransform
 {

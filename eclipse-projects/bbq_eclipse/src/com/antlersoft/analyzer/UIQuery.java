@@ -1,4 +1,4 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -17,9 +17,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import analyzer.query.ParseException;
-import analyzer.query.QueryParser;
-import analyzer.query.SetExpression;
+import com.antlersoft.analyzer.query.ParseException;
+import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.analyzer.query.SetExpression;
 
 public class UIQuery
 {

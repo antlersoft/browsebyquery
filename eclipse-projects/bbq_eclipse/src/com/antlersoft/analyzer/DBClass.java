@@ -1,4 +1,4 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.util.Vector;
 import java.io.Serializable;
@@ -11,11 +11,11 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
-import odb.FromRefEnumeration;
-import odb.ObjectRef;
-import odb.ObjectDB;
-import odb.Persistent;
-import odb.PersistentImpl;
+import com.antlersoft.odb.FromRefEnumeration;
+import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.PersistentImpl;
 
 public class DBClass implements Persistent, Cloneable
 {
@@ -111,7 +111,7 @@ public class DBClass implements Persistent, Cloneable
     public static void addClassToDB( AnalyzeClass ac, AnalyzerDB db)
 	throws Exception
     {
-	DBClass dbc=(DBClass)db.getWithKey( "analyzer.DBClass",
+	DBClass dbc=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass",
 	    ac.getClassName( ac.thisClassIndex));
 	dbc.clearMethods();
 	dbc.clearSuperClasses();
@@ -120,22 +120,22 @@ public class DBClass implements Persistent, Cloneable
 	int superClassIndex=ac.superClassIndex;
 	if ( superClassIndex!=0)
 	{
-	    dbc.addSuperClass( (DBClass)db.getWithKey( "analyzer.DBClass", ac.getClassName( superClassIndex)));
+	    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName( superClassIndex)));
 	}
 	int i;
 	for ( i=0; i<ac.interfaces.length; i++)
 	{
-	    dbc.addSuperClass( (DBClass)db.getWithKey( "analyzer.DBClass", ac.getClassName(ac.interfaces[i])));
+	    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName(ac.interfaces[i])));
 	}
 	for ( i=0; i<ac.fields.length; i++)
 	{
-	    dbc.fields.addElement( new ObjectRef( (DBField)db.getWithKey( "analyzer.DBField",
+	    dbc.fields.addElement( new ObjectRef( (DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
 		DBField.makeKey( dbc.name, ac.getString( ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex)))));
 	}
 	for ( i=0; i<ac.methods.length; i++)
 	{
 	    AnalyzeClass.FieldInfo mi=ac.methods[i];
-	    DBMethod method=(DBMethod)db.getWithKey( "analyzer.DBMethod",
+	    DBMethod method=(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
 		DBMethod.makeKey( dbc.name,
 		ac.getString( mi.nameIndex),
 		ac.getString( mi.descriptorIndex)

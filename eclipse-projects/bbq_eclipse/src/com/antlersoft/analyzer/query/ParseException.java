@@ -1,4 +1,4 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 public class ParseException extends Exception
 {

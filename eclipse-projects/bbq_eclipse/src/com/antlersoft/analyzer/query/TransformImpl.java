@@ -1,10 +1,10 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 
-import analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.AnalyzerDB;
 
-import parser.RuleActionException;
+import com.antlersoft.parser.RuleActionException;
 
 abstract class TransformImpl implements Transform
 {

@@ -1,6 +1,6 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
-import odb.ObjectRef;
+import com.antlersoft.odb.ObjectRef;
 
 public class DBCall extends DBReference
 {

@@ -1,4 +1,4 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.util.Hashtable;
 import java.util.Enumeration;

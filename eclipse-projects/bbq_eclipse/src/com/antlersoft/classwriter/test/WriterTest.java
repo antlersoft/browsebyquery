@@ -7,12 +7,12 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package classwriter.test;
+package com.antlersoft.classwriter.test;
 
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
-import classwriter.*;
+import com.antlersoft.classwriter.*;
 
 public class WriterTest
 {

@@ -1,4 +1,4 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.io.FileInputStream;
 import java.io.FileReader;

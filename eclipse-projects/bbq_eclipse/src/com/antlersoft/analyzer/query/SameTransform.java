@@ -1,4 +1,4 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 

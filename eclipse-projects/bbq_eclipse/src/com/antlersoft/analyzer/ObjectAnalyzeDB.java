@@ -1,16 +1,16 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.io.File;
 import java.util.Vector;
 import java.util.Enumeration;
 
-import odb.DiskAllocatorStore;
-import odb.FromRefEnumeration;
-import odb.ObjectDB;
-import odb.ObjectRef;
-import odb.Persistent;
-import odb.PersistentHashtable;
-import odb.PersistentImpl;
+import com.antlersoft.odb.DiskAllocatorStore;
+import com.antlersoft.odb.FromRefEnumeration;
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.PersistentHashtable;
+import com.antlersoft.odb.PersistentImpl;
 
 class ObjectAnalyzeDB implements AnalyzerDB
 {

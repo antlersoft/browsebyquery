@@ -1,4 +1,4 @@
-package parser;
+package com.antlersoft.parser;
 
 import java.util.List;
 

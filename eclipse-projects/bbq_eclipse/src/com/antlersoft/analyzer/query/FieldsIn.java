@@ -1,8 +1,8 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
-import analyzer.DBClass;
-import analyzer.DBField;
+import com.antlersoft.analyzer.DBClass;
+import com.antlersoft.analyzer.DBField;
 
 class FieldsIn extends TransformImpl
 {

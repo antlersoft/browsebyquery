@@ -1,8 +1,8 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
-import analyzer.DBClass;
-import analyzer.DBMethod;
-import analyzer.DBField;
+import com.antlersoft.analyzer.DBClass;
+import com.antlersoft.analyzer.DBMethod;
+import com.antlersoft.analyzer.DBField;
 
 class MatchFilter extends Filter
 {

@@ -7,7 +7,7 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package classwriter.test;
+package com.antlersoft.classwriter.test;
 
 public class QuestionNode
 {

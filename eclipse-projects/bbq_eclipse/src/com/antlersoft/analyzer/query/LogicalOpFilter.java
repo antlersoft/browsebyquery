@@ -1,6 +1,6 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
-import parser.RuleActionException;
+import com.antlersoft.parser.RuleActionException;
 
 public class LogicalOpFilter extends Filter
 {

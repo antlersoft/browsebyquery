@@ -1,8 +1,8 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
-import analyzer.DBFieldReference;
-import analyzer.DBMethod;
+import com.antlersoft.analyzer.DBFieldReference;
+import com.antlersoft.analyzer.DBMethod;
 
 class ReferenceFrom extends TransformImpl
 {

@@ -1,10 +1,10 @@
-package analyzer.query;
+package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import analyzer.DBReference;
-import analyzer.DBMethod;
+import com.antlersoft.analyzer.DBReference;
+import com.antlersoft.analyzer.DBMethod;
 
 class MethodsContaining extends UniqueTransform
 {

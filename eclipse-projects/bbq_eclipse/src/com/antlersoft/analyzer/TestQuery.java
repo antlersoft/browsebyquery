@@ -1,4 +1,4 @@
-package analyzer;
+package com.antlersoft.analyzer;
 
 import java.io.FileInputStream;
 import java.io.BufferedReader;
@@ -6,9 +6,9 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.Enumeration;
 
-import analyzer.query.QueryParser;
-import analyzer.query.SetExpression;
-import analyzer.query.ParseException;
+import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.analyzer.query.SetExpression;
+import com.antlersoft.analyzer.query.ParseException;
 
 public class TestQuery
 {
