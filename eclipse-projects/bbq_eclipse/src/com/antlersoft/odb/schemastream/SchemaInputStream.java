@@ -10,14 +10,13 @@
  */
 package com.antlersoft.odb.schemastream;
 
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.ObjectStreamClass;
+
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.lang.reflect.Method;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.util.NoSuchElementException;
 
 class SchemaInputStream extends ObjectInputStream
 {
@@ -25,52 +24,31 @@ class SchemaInputStream extends ObjectInputStream
         throws IOException
     {
         super( os);
+        m_class_descs=classDescs;
+    }
+
+    protected ObjectStreamClass readClassDescriptor()
+        throws IOException, ClassNotFoundException
+    {
+        if ( read()!=TC_MAX+1)
+        {
+            return super.readClassDescriptor();
+        }
         try
         {
-            _wHandle2Object=classDescs;
-            Class inputClass=ObjectInputStream.class;
-            resetStream=inputClass.getDeclaredMethod( "resetStream", new Class[0]);
-            resetStream.setAccessible( true);
-            wHandle2Object=inputClass.getDeclaredField( "wireHandle2Object");
-            wHandle2Object.setAccessible( true);
-            nextWOffset=inputClass.getDeclaredField( "nextWireOffset");
-            nextWOffset.setAccessible( true);
+            int offset=readInt();
+            return (ObjectStreamClass)m_class_descs.get( offset);
         }
-        catch ( NoSuchFieldException fielde)
+        catch ( NoSuchElementException nsee)
         {
-            throw new IOException( fielde.getMessage());
-        }
-        catch ( NoSuchMethodException methode)
-        {
-            throw new IOException( methode.getMessage());
+            throw new IOException( "Bad schema identifier");
         }
     }
 
     void resetToSchema()
         throws IOException
     {
-        try
-        {
-            resetStream.invoke( this, noArgs);
-            wHandle2Object.set( this, _wHandle2Object.clone());
-            nextWOffset.setInt( this, _wHandle2Object.size());
-        }
-        catch ( InvocationTargetException ite)
-        {
-            if ( ite.getTargetException() instanceof IOException)
-                throw (IOException)ite.getTargetException();
-            throw new IOException( ite.getTargetException().getMessage());
-        }
-        catch ( Exception e)
-        {
-            throw new IOException( e.getMessage());
-        }
     }
 
-    private static Object[] noArgs=new Object[0];
-
-    private Method resetStream;
-    private Field wHandle2Object; // ArrayList
-    private ArrayList _wHandle2Object;
-    private Field nextWOffset; // int
+    private ArrayList m_class_descs;
 }
