@@ -1,0 +1,114 @@
+Transforms
+
+TODO:Figure out how to handle arrays of persistentable objects; also arrays in persistentable objects
+
+TODO: Determine how serialization works with constructors and transient
+fields.
+
+Serialization does not call constructors (any of them) or set values for fields that are initialized outside
+of a constructor.  All values are set to their defaults (0 or null for object references) 
+
+12.5 in JLS.  Determine how super() and this() methods are called (every constructor that does not call this( has a 
+super constructor (except for Object).  If super-constructor not explicitly called in code, a call
+to the default constructor is inserted.  Determine how fields that are initialized outside
+of constructors are initialized in files (called in any constructor that does not call this() before any
+code in the constructor body (but after the call to super() )).
+
+Constructors, private methods, and super. calls are made with invokespecial JVM instruction.  Invokespecial
+does not look for method definitions in containing classes, except when the called method is not <init>
+and the class type for the called method is a super-class of the current class; then it is a super-class method
+invocation (if the method is not <init> and it is not a super-class of the class that contains the
+method call, it must be a private method in the same class, and no look up is required).  
+
+Four varieties of classes:
+
+Persistent
+Persistent-Capable
+Persistent-Aware
+Non-persistent
+
+The first three are "processed" classes.
+
+The first two are Persistentable classes.
+
+(Note: Persistent-capable is dependent on a weak-reference implementation
+of ObjectRef, which is not available yet)
+
+First, the transformer must determine all the base classes for each
+persistentable class.  The complete set of these for all persistentable classes
+that are not themselves persistentable is the persistent-base set.  The
+persistent-base set will always include at least the java.lang.Object class.
+
+Two principals:
+
+No function signatures are changed; no Persistentable is stored in a variable
+except as part of an object reference.  Since persistent-base references
+are ambiguous, no persistent-base is stored in a variable except as part of
+a dual reference.
+
+So for all processed classes:
+
+Class members and local variables that are persistentable are changed to
+ObjectRefs.  Class members and local variables that are persistentable-base
+are changed to DualRefs.  Function parameters that are
+persistentable or persistentable-base are copied to new local variables
+that are ObjectRefs or DualRefs (respectively).  References to the
+changed class members, local variables, and function parameters are changed
+to use the appropriate getReference or setReference method on the
+xxxRef object.
+
+Processed classes can derive from non-processed classes.  Only persistentable
+classes can derive from persistentable classes.  Only processed classes can
+derive from processed classes.  Only persistent classes can derive from
+persistent classes.
+
+Allowed derivation table:
+
+ nacp
+nx
+axx
+cxxx
+pxxxx
+
+Allowed to have local, static or instance variables:
+
+ nacp
+nxx
+axxxx
+cxxxx
+pxxxx
+
+Only processed classes should use persistentable data-types.  However, non-processed
+classes are allowed to use Persistent-Aware data types.  This could cause a conflict
+if the persistent-aware data type has a non-private persistentable-base member; it
+will be transformed but a non-aware class will not detect the transform.  The
+transform process will give a warning in this case; it is recommended that no
+persistent-aware class have non-private persistentable-base or persistentable-
+base members.  (In some cases this could be OK; like the member is package
+visible and all classes in the package are processed).
+
+Constructor Tweaking
+
+Processed classes will need to have their constructors tweaked.  There are two types
+of constructors; those that call constructors in the same class (these are known
+as relay constructors) and those that don't (true constructors).  Relay constructors
+do not need to be tweaked except so far as the common changes to all methods described
+above.  True constructors have a call to the initializer of the superclass.  Immediately
+after this call, true constructors will have to have code inserted to initialize
+the value of each xxxRef member by calling the appropriate constructor.
+
+Persistentable classes that are not sub-classes of a persistentable class
+are changed so they include a PersistentImpl data member
+and implement the Persistent interface with an added _getPersistentImpl function.  The
+true constructors of Peristentable classes must be changed so that (again,
+immediately after the call to the super-constructor) the PersistentImpl data member
+is initialized.
+
+Persistent classes that are not sub-classes of Persistent classes
+have their true constructors changed so that ObjectDB.makePersistent is called
+before any normal return.
+
+Storing a non-serializable object in a DualRef may cause things to break...
+(TODO: Make a dual-ref a triple-ref with a transient pointer to the non-serializable
+ object?)
+
