@@ -74,7 +74,9 @@ public class ObjectDB
 		if ( retVal==null)
 		{
 			retVal=(Persistent)store.retrieve( key);
-			retVal._getPersistentImpl().objectKey=key;
+			PersistentImpl impl=retVal._getPersistentImpl();
+            impl.objectKey=key;
+            impl.cachedReference=retVal;
 			cachedObjects.put( key, retVal);
 		}
 
@@ -85,6 +87,11 @@ public class ObjectDB
 	{
 		return ((Persistent)object)._getPersistentImpl().objectKey;
 	}
+
+    public void deleteObject( Object object)
+    {
+        ((Persistent)object)._getPersistentImpl().deleted=true;
+    }
 
 	public synchronized void makeRootObject( String key, Object object)
 	{
@@ -106,11 +113,13 @@ public class ObjectDB
     			synchronized ( toCommit)
     			{
     				PersistentImpl impl=toCommit._getPersistentImpl();
-    				if ( impl.dirty)
+                    if ( impl.deleted)
+                        store.delete( impl.objectKey);
+    				else if ( impl.dirty)
     				{
     	    			store.update( impl.objectKey, toCommit);
-    					impl.dirty=false;
     				}
+                    impl.obsolete=true;
     			}
     		}
         }

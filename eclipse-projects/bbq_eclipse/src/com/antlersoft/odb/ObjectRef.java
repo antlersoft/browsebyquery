@@ -1,21 +1,17 @@
 package com.antlersoft.odb;
 
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class ObjectRef implements Serializable
 {
-    ObjectKey objectKey;
-
-	// TODO: Implement (soft?) reference to persistent object to cache it,
-	// so we don't have to go back to ObjectDB all the time.  If the
-	// reference is already set, provided that the obsolete flag
-	// that has to be added to PersistentImpl (so it can be set at
-	// object commit time) is not true, you can return it insted
-	// of doing the hash lookup all the time.
+    transient PersistentImpl impl;
 
     public ObjectRef()
     {
-        objectKey=null;
+        impl=null;
     }
 
 	public ObjectRef( Object toReference)
@@ -26,17 +22,18 @@ public class ObjectRef implements Serializable
 
     public Object getReferenced()
     {
-		if ( objectKey==null)
+        PersistentImpl currentImpl=impl;
+		if ( currentImpl==null)
 			return null;
-		return ObjectDB.getObjectDB().getObjectByKey( objectKey);
+        return currentImpl.getCanonical( this);
     }
 
-    public void setReferenced( Object newValue)
+    public synchronized void setReferenced( Object newValue)
     {
         if ( newValue!=null)
-			objectKey=((Persistent)newValue)._getPersistentImpl().objectKey;
+			impl=((Persistent)newValue)._getPersistentImpl();
 		else
-			objectKey=null;
+			impl=null;
     }
 
 	public int hashCode()
@@ -60,4 +57,30 @@ public class ObjectRef implements Serializable
 		}
 		return ours.equals( toCompare);
 	}
+
+    private void writeObject( ObjectOutputStream out)
+        throws IOException
+    {
+        PersistentImpl currentImpl=impl;
+
+        if ( currentImpl==null)
+            out.writeObject( null);
+        else
+            out.writeObject( currentImpl.objectKey);
+    }
+
+    private void readObject( ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
+        ObjectKey key=(ObjectKey)in.readObject();
+        if ( key==null)
+            impl=null;
+        else
+        {
+            impl=new PersistentImpl();
+            impl.objectKey=key;
+            impl.obsolete=true;
+        }
+    }
+
 }

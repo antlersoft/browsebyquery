@@ -1,3 +1,7 @@
+
+
+
+
 Transforms
 
 
@@ -263,3 +267,8 @@ however.
 
 The constructor tweaking section described above applies; the constructor changes
 can be made following the changes described above.
+------------------------------------------------------------------------------
+Method 3: Two classes
+
+For each persistable class, a shadow class is made.  This class implements
+Persistent with
