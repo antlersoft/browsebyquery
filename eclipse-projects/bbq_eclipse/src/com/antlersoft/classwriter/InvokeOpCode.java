@@ -29,7 +29,7 @@ import java.util.Stack;
 import java.util.Iterator;
 import java.util.ArrayList;
 
-class InvokeOpCode extends SimpleOpCode
+public class InvokeOpCode extends SimpleOpCode
 {
 	InvokeOpCode( int v, int l, String m)
 	{

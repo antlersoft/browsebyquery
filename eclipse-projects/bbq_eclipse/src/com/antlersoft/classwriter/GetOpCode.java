@@ -27,7 +27,7 @@ package com.antlersoft.classwriter;
 
 import java.util.Stack;
 
-class GetOpCode extends SimpleOpCode
+public class GetOpCode extends SimpleOpCode
 {
 	GetOpCode( int v, int l, String m)
     {

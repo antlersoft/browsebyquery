@@ -27,6 +27,7 @@ package com.antlersoft.classwriter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Iterator;
@@ -103,6 +104,11 @@ public class CodeAttribute implements Attribute
     public Instruction getByIndex( int i)
     {
         return (Instruction)instructions.get( i);
+    }
+
+    public Collection getInstructions()
+    {
+    	return Collections.unmodifiableCollection( instructions);
     }
 
     /**
@@ -390,6 +396,17 @@ public class CodeAttribute implements Attribute
   		return (LineNumberTableAttribute)attributes.getAttributeByType(
     		LineNumberTableAttribute.typeString);
   	}
+
+	public int getLineNumber( int pc)
+	{
+		int result=0;
+		LineNumberTableAttribute la=getLineNumberAttribute();
+		if ( la!=null)
+		{
+			result=la.getLineNumber( pc);
+		}
+		return result;
+	}
 
 	public String getTypeString() { return typeString; }
 

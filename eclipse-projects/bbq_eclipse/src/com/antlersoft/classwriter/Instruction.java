@@ -104,7 +104,7 @@ public class Instruction
     /**
      * Interpret operands as symbolic reference
      */
-    ClassWriter.CPTypeRef getSymbolicReference( ClassWriter writer)
+    public ClassWriter.CPTypeRef getSymbolicReference( ClassWriter writer)
     	throws CodeCheckException
     {
         return (ClassWriter.CPTypeRef)

@@ -81,6 +81,20 @@ class LineNumberTableAttribute implements Attribute
        	}
     }
 
+    public int getLineNumber( int position)
+    {
+		int lineNumber=0;
+		for ( Iterator i=lineNumberEntries.iterator(); i.hasNext();)
+		{
+			LineNumberEntry lne=(LineNumberEntry)i.next();
+			if ( lne.start_pc<=position)
+			{
+				lineNumber=lne.line_number;
+			}
+		}
+		return lineNumber;
+    }
+
     class LineNumberEntry
     {
 		int start_pc;

@@ -420,6 +420,16 @@ public class ClassWriter
         return "???";
     }
 
+    public String getIfStringConstant( int index)
+    {
+        String result=null;
+        Object constant=constantPool.get( index);
+        if ( constant instanceof CPString)
+            result= getString( ((CPString)constant).valueIndex);
+
+    	return result;
+    }
+
     final int getNameAndTypeIndex( String name, String descriptor)
     {
         int nameIndex=getStringIndex( name);
