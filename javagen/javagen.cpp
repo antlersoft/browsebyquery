@@ -306,95 +306,110 @@ int main( int argc, char* argv[])
 	cout.flush();
 
 	cout<<"static Symbol errorSymbol=_error_;\n";
-	while ( cin.good())
-		{
-		char buf[1000];
-		cin.getline( buf, 1000);
-		std::string nl( buf);
-		if ( ! cin.eof())
-			{
-			lex_scan.addText( nl);
-			lex_scan.addText( "\n");
-		    for( ;;)
-		    	{
-		    	std::string val;
-		    	TerminalSymbol ts=lex_scan.nextToken( val);
-		    	if ( ts==LexScan::_need_more)
-		    		break;
-				if ( ts==statement_divider)
-					ts=Parser::_end_;
-		    	if ( parser->parse( static_cast<void*>(0), ts, SeqString( val)))
-					{
-					cout<<"Error on token ["<<val<<"]"<<endl;
-					parser->reset();
-					}
-		    	}
-			}
-		}
-	lex_scan.endOfInput();
-	     
-	TerminalSymbol ts( LexScan::_need_more);
-	do
-		{                           
-		std::string val;
-		ts=lex_scan.nextToken( val);
-		parser->parse( static_cast<void*>(0), ts, SeqString( val));
-		}
-	while ( ! ( ts==Parser::_end_));
-	Parser* out_parser=java_parser.build( cerr);
-	cout<<"static ParseState[] parseStates={\n";
-	ParseState* out_states=const_cast<ParseState*>(out_parser->getParseStates());
-	for ( int index=0, max_index=0; index<=max_index; index++)
+	try
 	{
-		ParseState& out_state=out_states[index];
-
-		cout<<"new ParseState( new ShiftRule[] {";
-		unsigned int count=0;
-		for ( ShiftRuleIter sri( out_state.shift_rules.begin()); sri!=out_state.shift_rules.end(); sri++)
-		{
-			ShiftRule& sr= *sri;
-			if ( sr.state_index>max_index)
-				max_index=sr.state_index;
-			cout<<" new ShiftRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
-			if ( count<out_state.shift_rules.size()-1)
-				cout<<",";
-			cout<<endl;
-			count++;
-		}
-		cout<<"},\n";
-		cout<<"new GotoRule[] {";
-		count=0;
-		for ( GotoRuleIter gri( out_state.goto_rules.begin()); gri!=out_state.goto_rules.end(); gri++)
-		{
-			GotoRule& sr= *gri;
-			if ( sr.state_index>max_index)
-				max_index=sr.state_index;
-			cout<<" new GotoRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
-			if ( count<out_state.goto_rules.size()-1)
-				cout<<",";
-			cout<<endl;
-			count++;
-		}
-		cout<<"},\n";
-		if ( out_state.reduce_rule)
-		{
-			cout<<"new ReduceRule( "<<out_state.reduce_rule->result.name()<<", "<<out_state.reduce_rule->states_to_pop<<", ";
-			if ( out_state.reduce_rule->reduce_action)
+		while ( cin.good())
 			{
-				cout<<"new RuleAction() { public Object ruleFire( Parser parser, List valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
+			char buf[1000];
+			cin.getline( buf, 1000);
+			std::string nl( buf);
+			if ( ! cin.eof())
+				{
+				lex_scan.addText( nl);
+				lex_scan.addText( "\n");
+				for( ;;)
+					{
+					std::string val;
+					TerminalSymbol ts=lex_scan.nextToken( val);
+					if ( ts==LexScan::_need_more)
+						break;
+					if ( ts==statement_divider)
+						ts=Parser::_end_;
+					if ( parser->parse( static_cast<void*>(0), ts, SeqString( val)))
+						{
+						cout<<"Error on token ["<<val<<"]"<<endl;
+						parser->reset();
+						}
+					}
+				}
+			}
+		lex_scan.endOfInput();
+	}
+	catch ( exception& e)
+	{
+		cerr<<"Error parsing input file: "<<e.what()<<endl;
+		return -1;
+	}
+
+	try
+	{
+		TerminalSymbol ts( LexScan::_need_more);
+		do
+			{                           
+			std::string val;
+			ts=lex_scan.nextToken( val);
+			parser->parse( static_cast<void*>(0), ts, SeqString( val));
+			}
+		while ( ! ( ts==Parser::_end_));
+		Parser* out_parser=java_parser.build( cerr);
+		cout<<"static ParseState[] parseStates={\n";
+		ParseState* out_states=const_cast<ParseState*>(out_parser->getParseStates());
+		for ( int index=0, max_index=0; index<=max_index; index++)
+		{
+			ParseState& out_state=out_states[index];
+
+			cout<<"new ParseState( new ShiftRule[] {";
+			unsigned int count=0;
+			for ( ShiftRuleIter sri( out_state.shift_rules.begin()); sri!=out_state.shift_rules.end(); sri++)
+			{
+				ShiftRule& sr= *sri;
+				if ( sr.state_index>max_index)
+					max_index=sr.state_index;
+				cout<<" new ShiftRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
+				if ( count<out_state.shift_rules.size()-1)
+					cout<<",";
+				cout<<endl;
+				count++;
+			}
+			cout<<"},\n";
+			cout<<"new GotoRule[] {";
+			count=0;
+			for ( GotoRuleIter gri( out_state.goto_rules.begin()); gri!=out_state.goto_rules.end(); gri++)
+			{
+				GotoRule& sr= *gri;
+				if ( sr.state_index>max_index)
+					max_index=sr.state_index;
+				cout<<" new GotoRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
+				if ( count<out_state.goto_rules.size()-1)
+					cout<<",";
+				cout<<endl;
+				count++;
+			}
+			cout<<"},\n";
+			if ( out_state.reduce_rule)
+			{
+				cout<<"new ReduceRule( "<<out_state.reduce_rule->result.name()<<", "<<out_state.reduce_rule->states_to_pop<<", ";
+				if ( out_state.reduce_rule->reduce_action)
+				{
+					cout<<"new RuleAction() { public Object ruleFire( Parser parser, List valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
+				}
+				else
+					cout<<"null";
+				cout<<")\n";
 			}
 			else
 				cout<<"null";
-			cout<<")\n";
-		}
-		else
-		    cout<<"null";
-		// Output code to initialize Java parse state
-		cout<<")";
-		if ( index<max_index)
-			cout<<",";
+			// Output code to initialize Java parse state
+			cout<<")";
+			if ( index<max_index)
+				cout<<",";
 
-		cout<<endl;
+			cout<<endl;
+		}
+	}
+	catch ( exception& e2)
+	{
+		cerr<<"Error building parser from input: "<<e2.what()<<endl;
 	}
 	cout<<"};";
 
