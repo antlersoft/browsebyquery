@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -69,6 +70,30 @@ public class ProjectBBQ implements NodeViewer
         browser=b;
         node=n;
         component=createComponents();
+
+        // Initialize the analyzer with the saved imports
+        String[] imports=BBQPathsGroup.importsProperty.getValues( n);
+        StringBuffer sb=new StringBuffer("import ");
+        for ( int i=0; i<imports.length; ++i)
+        {
+            sb.append('"');
+            sb.append(imports[i]);
+            sb.append("\" ");
+        }
+        a.qp.setLine( sb.toString());
+        try
+        {
+            a.qp.getExpression();
+        }
+        catch ( Exception e)
+        {
+
+        }
+
+        // Initialize the history list with the recent queries
+        String[] recent_queries=BBQPathsGroup.recentQueriesProperty.getValues( n);
+        for ( int i=0; i<recent_queries.length; ++i)
+            historyList.addQuery( recent_queries[i]);
     }
 
     public void releaseViewer()
@@ -93,7 +118,34 @@ public class ProjectBBQ implements NodeViewer
 
     public void viewerDeactivating() throws com.borland.primetime.util.VetoException
     {
-        //TODO: Implement this com.borland.primetime.ide.NodeViewer method
+        // Save imports and recent query list
+        analyzer.qp.setLine( "import");
+        ArrayList temp_list=new ArrayList();
+        try
+        {
+            SetExpression se=analyzer.qp.getExpression();
+            for ( Enumeration i=se.execute( analyzer.db);
+                  i.hasMoreElements();)
+            {
+                temp_list.add( i.nextElement());
+            }
+            String[] imports=new String[temp_list.size()];
+            temp_list.toArray( imports);
+            BBQPathsGroup.importsProperty.setValues( node, imports);
+        }
+        catch ( Exception e)
+        {
+
+        }
+        temp_list.clear();
+        for ( Enumeration i=historyList.getContents(); i.hasMoreElements() &&
+              temp_list.size()<10;)
+        {
+            temp_list.add( i.nextElement());
+        }
+        String[] recent=new String[temp_list.size()];
+        temp_list.toArray( recent);
+        BBQPathsGroup.recentQueriesProperty.setValues( node, recent);
     }
 
     public void viewerActivated(boolean parm1)
