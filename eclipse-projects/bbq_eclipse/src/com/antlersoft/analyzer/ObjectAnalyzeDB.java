@@ -3,8 +3,9 @@ package com.antlersoft.analyzer;
 import java.io.File;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.Arrays;
 
-import com.antlersoft.odb.DiskAllocatorStore;
+import com.antlersoft.odb.schemastream.SchemaAllocatorStore;
 import com.antlersoft.odb.FromRefEnumeration;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
@@ -17,6 +18,15 @@ class ObjectAnalyzeDB implements AnalyzerDB
     ObjectDB _session;
     PersistentHashtable _classHash;
 	private int createCount;
+
+    private static String[] schemaClasses={
+        "com.antlersoft.analyzer.DBClass",
+        "com.antlersoft.analyzer.DBField",
+        "com.antlersoft.analyzer.DBMethod",
+        "com.antlersoft.analyzer.DBReference",
+        "com.antlersoft.analyzer.DBCall",
+        "com.antlersoft.analyzer.DBFieldReference"
+        };
 
     ObjectAnalyzeDB()
     {
@@ -31,8 +41,9 @@ class ObjectAnalyzeDB implements AnalyzerDB
     {
 		if ( _session!=null)
 			closeDB();
-		ObjectDB tempSession=new ObjectDB( new DiskAllocatorStore( new File( dbName)));
-		_classHash=(PersistentHashtable)tempSession.getRootObject( "_classHash");
+		ObjectDB tempSession=new ObjectDB( SchemaAllocatorStore.getSchemaStore(
+            new File( dbName), Arrays.asList( schemaClasses)));
+        _classHash=(PersistentHashtable)tempSession.getRootObject( "_classHash");
 		if ( _classHash==null)
 		{
 			_classHash=new PersistentHashtable();

@@ -12,11 +12,17 @@ package com.antlersoft.classwriter.test;
 
 import java.io.File;
 import com.antlersoft.odb.transp.TransparentDB;
-import com.antlersoft.odb.DiskAllocatorStore;
+import com.antlersoft.odb.schemastream.SchemaAllocatorStore;
 
 public class TranspBase implements QuestionBase
 {
     private TransparentDB db;
+
+    private static String[] classList={
+        "com.antlersoft.classwriter.test.QuestionNode",
+        "com.antlersoft.classwriter.test.BinaryNode",
+        "com.antlersoft.classwriter.test.AnimalNode"
+    };
 
     public QuestionNode getTopNode()
     {
@@ -34,7 +40,9 @@ public class TranspBase implements QuestionBase
 
     public void openDB(String[] args)
     {
-        db=new TransparentDB( new DiskAllocatorStore( new File( args[1])));
+        db=new TransparentDB( SchemaAllocatorStore.
+            getSchemaStore( new File( args[1]),
+            java.util.Arrays.asList( classList)));
     }
 
     public void closeDB()

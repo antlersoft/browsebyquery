@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -22,25 +23,31 @@ public class DiskAllocatorStore implements ObjectStore
 	// TODO: Change to make updates to internal state
 	// be exception-safe with regard to atomicity
 
-    public DiskAllocatorStore( File file)
+    public DiskAllocatorStore( File file, int initialRegionSize, int chunkSize,
+        int incrementSize, int allocatorFlags)
 		throws ObjectStoreException
 	{
 		try
 		{
 			RandomOutputStream dataStream=new RandomOutputStream();
-			dataOutputStream=new StreamPair( new DataOutputStream( dataStream), dataStream);
+			dataOutputStream=new StreamPair( new DataOutputStream( dataStream),
+                dataStream);
 			RandomOutputStream outStream=new RandomOutputStream();
-			outputStreams=new StreamPair( new ObjectOutputStream( outStream), outStream);
+			outputStreams=new StreamPair( createObjectOutputStream( outStream),
+                outStream);
 			RandomInputStream inStream=new RandomInputStream();
 			inStream.addBytes( outputStreams.writeObject( new Integer( 1)));
-			inputStreams=new StreamPair( new ObjectInputStream( inStream), inStream);
+			inputStreams=new StreamPair( createObjectInputStream( inStream),
+                inStream);
 
 			// Initialize streams with stream header data
 			((ObjectInputStream)inputStreams.objectStream).readObject();
-			allocator=new DiskAllocator( file, 4, 504, 102400, 0);
+			allocator=new DiskAllocator( file, initialRegionSize,
+                chunkSize, incrementSize, allocatorFlags);
 		}
 		catch ( Exception e)
 		{
+e.printStackTrace();
 			throw new ObjectStoreException( "Error creating allocator", e);
 		}
 		try
@@ -67,6 +74,11 @@ public class DiskAllocatorStore implements ObjectStore
 			throw new ObjectStoreException( "Error retrieving state", retrievingState);
 		}
 	}
+
+    public DiskAllocatorStore( File file)
+    {
+        this( file, 4, 504, 102400, 0);
+    }
 
 	public synchronized ObjectKey insert( Serializable insertObject)
 		throws ObjectStoreException
@@ -169,6 +181,7 @@ public class DiskAllocatorStore implements ObjectStore
     public synchronized void sync()
 		throws ObjectStoreException
 	{
+
 		try
 		{
 			if ( storeState.dirty)
@@ -187,8 +200,14 @@ public class DiskAllocatorStore implements ObjectStore
 			}
 			allocator.sync();
 		}
-		catch ( Exception e)
+        catch ( DiskAllocatorException dae)
+        {
+dae.printStackTrace();
+			throw new ObjectStoreException( "Sync error: ", dae);
+        }
+		catch ( IOException e)
 		{
+e.printStackTrace();
 			throw new ObjectStoreException( "Sync error: ", e);
 		}
 	}
@@ -198,6 +217,30 @@ public class DiskAllocatorStore implements ObjectStore
     {
         throw new ObjectStoreException(
             "DiskAllocatorStore does not support rollback");
+    }
+
+    protected ObjectInputStream createObjectInputStream( InputStream is)
+        throws IOException
+    {
+        return new ObjectInputStream( is);
+    }
+
+    protected ObjectOutputStream createObjectOutputStream(
+        OutputStream os)
+        throws IOException
+    {
+        return new ObjectOutputStream( os);
+    }
+
+    protected void resetObjectInputStream( ObjectInputStream ois)
+        throws IOException
+    {
+    }
+
+    protected void resetObjectOutputStream( ObjectOutputStream oos)
+        throws IOException
+    {
+        oos.reset();
     }
 
 	private DiskAllocator allocator;
@@ -251,7 +294,7 @@ public class DiskAllocatorStore implements ObjectStore
 		return new DAKey( index, entry.reuseCount);
 	}
 
-	static class StreamPair
+	class StreamPair
 	{
 		Object objectStream;
 		Object randomStream;
@@ -266,7 +309,7 @@ public class DiskAllocatorStore implements ObjectStore
 			throws IOException
 		{
 			ObjectOutputStream oos=(ObjectOutputStream)objectStream;
-			oos.reset();
+			resetObjectOutputStream( oos);
 			oos.writeObject( toWrite);
 			oos.flush();
 			return ((RandomOutputStream)randomStream).getWrittenBytes();
@@ -276,6 +319,7 @@ public class DiskAllocatorStore implements ObjectStore
 			throws IOException, ClassNotFoundException
 		{
 			ObjectInputStream ois=(ObjectInputStream)objectStream;
+            resetObjectInputStream( ois);
 			((RandomInputStream)randomStream).emptyAddBytes( readBytes);
 			return ois.readObject();
 		}
