@@ -8,7 +8,7 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package com.antlersoft.odb;
+package com.antlersoft.util;
 
 import java.io.IOException;
 import java.io.InputStream;
