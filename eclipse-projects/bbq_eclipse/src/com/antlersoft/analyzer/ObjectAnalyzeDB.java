@@ -74,7 +74,7 @@ class ObjectAnalyzeDB implements AnalyzerDB
 			createCount++;
 			if ( createCount==1000)
 			{
-				_session.commit();
+				_session.commitAndRetain();
 				createCount=0;
 			}
 		}
