@@ -20,6 +20,13 @@ public class MethodInfo extends FieldInfo
     	super( dis, containing);
     }
 
+    MethodInfo( int flags, String name, String descriptor,
+        ClassWriter contains)
+    {
+        super( flags, name, descriptor, contains);
+        attributes.addAttribute( new CodeAttribute( contains));
+     }
+
 	public CodeAttribute getCodeAttribute()
  	{
   		return (CodeAttribute)attributes.getAttributeByType(

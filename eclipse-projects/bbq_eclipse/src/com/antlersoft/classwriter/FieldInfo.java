@@ -30,6 +30,14 @@ public class FieldInfo
       	attributes.read( classStream);
 	}
 
+    FieldInfo( int flags, String name, String descriptor, ClassWriter contains)
+    {
+        nameIndex=contains.getStringIndex( name);
+        descriptorIndex=contains.getStringIndex( descriptor);
+        accessFlags=flags;
+        attributes=new AttributeList( contains);
+    }
+
     public String getName()
     {
         return attributes.getCurrentClass().getString( nameIndex);

@@ -36,6 +36,8 @@ public class AttributeList implements Cloneable
 
     public Attribute getAttributeByType( String type)
     {
+        if ( attributes==null)
+            return null;
     	for ( Iterator i=attributes.iterator(); i.hasNext();)
         {
         	Attribute next=(Attribute)i.next();
@@ -56,6 +58,7 @@ public class AttributeList implements Cloneable
     {
         if ( attributes==null)
         	attributes=new ArrayList();
+        containing.getStringIndex( toAdd.getTypeString());
         attributes.add( toAdd);
     }
 
@@ -116,6 +119,11 @@ public class AttributeList implements Cloneable
  	public void write( DataOutputStream classStream)
   		throws IOException
     {
+        if ( attributes==null)
+        {
+            classStream.writeShort(0);
+            return;
+        }
     	classStream.writeShort( attributes.size());
      	for ( Iterator i=attributes.iterator(); i.hasNext();)
       	{

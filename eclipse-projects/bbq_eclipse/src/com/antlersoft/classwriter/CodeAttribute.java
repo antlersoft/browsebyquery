@@ -10,6 +10,7 @@
 package classwriter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Stack;
@@ -27,6 +28,15 @@ public class CodeAttribute implements Attribute
  	private ArrayList instructions; // Instruction
 	private ArrayList exceptions;
 	private AttributeList attributes;
+
+    CodeAttribute( ClassWriter contains)
+    {
+        maxStack=0;
+        maxLocals=0;
+        instructions=new ArrayList();
+        exceptions=new ArrayList();
+        attributes=new AttributeList( contains);
+    }
 
 	CodeAttribute( DataInputStream classStream, ClassWriter contains)
 	    throws IOException
@@ -67,9 +77,117 @@ public class CodeAttribute implements Attribute
 	}
 
     public int getMaxStack() { return maxStack; }
+
+    public final int getMaxLocals() { return maxLocals; }
+    public void setMaxLocals( int m) { maxLocals=m; }
+
     public Instruction getByIndex( int i)
     {
         return (Instruction)instructions.get( i);
+    }
+
+    /**
+     * Replaces oldLength instructions at index at with the instructions
+     * in newInstructions.  instructionStarts for instructions after
+     * the inserted instructions are adjusted for the difference in length
+     * between the old instructions and the inserted instructions.
+     *
+     * Branches within the existing code to points after the inserted
+     * instructions are adjusted for the difference in instruction
+     * length between the old instructions and the new instructions.
+     * Branches from outside the inserted section to within the inserted
+     * section cause a CodeCheckException.  Branches within the inserted
+     * section are not adjusted; if such branches point to points after
+     * the inserted code, the branches must be set as if the code had
+     * already been inserted.
+     *
+     * Assumes branch
+     * offsets from instructions within newInstructions
+     * are already set as if newInstructions had been inserted.
+     *
+     * Exception ranges are adjusted for the difference in length
+     * between the old and new instructions.  Exception ranges that
+     * start or end within the added instructions throw a CodeCheckException.
+     *
+     * Offsets in the line number table after the end of the replaced section
+     * are updated by the difference between the length of the old and new
+     * instructions.  Offsets in the line number table that refer to the middle
+     * of the replaced range are removed so they don't end up pointing to a non-
+     * instruction.
+     */
+    public void insertInstructions( int at, int oldLength,
+        Collection newInstructions)
+        throws CodeCheckException
+    {
+        int start;
+        int oldPostEnd;
+        Instruction oldLastInstruction;
+
+        if ( at<0 || at+oldLength>instructions.size())
+            throw new CodeCheckException( "Bad instruction insertion point");
+        if ( at==0)
+        {
+            start=0;
+         }
+        else
+        {
+            Instruction lastInstruction=(Instruction)instructions.get( at-1);
+            start=lastInstruction.instructionStart+
+                lastInstruction.getLength();
+        }
+        if ( oldLength==0)
+        {
+            oldPostEnd=start;
+        }
+        else
+        {
+            Instruction lastInstruction=(Instruction)instructions.get(
+                at+oldLength-1);
+            oldPostEnd=lastInstruction.instructionStart+
+                lastInstruction.getLength();
+        }
+        int newPostEnd=start;
+        for ( Iterator i=newInstructions.iterator(); i.hasNext();)
+        {
+            Instruction currentInstruction=(Instruction)i.next();
+            currentInstruction.instructionStart=newPostEnd;
+            newPostEnd+=currentInstruction.getLength();
+        }
+        // Replace the instructions
+        for ( int i=0; i<oldLength; i++)
+            instructions.remove( at);
+        instructions.addAll( at, newInstructions);
+
+        // Fix instructions for the opcodes
+        for ( Iterator i=instructions.iterator(); i.hasNext();)
+        {
+            Instruction current=(Instruction)i.next();
+            if ( current.instructionStart<start ||
+                current.instructionStart>=newPostEnd)
+                current.opCode.fixDestinationAddress( current,
+                    start, oldPostEnd, newPostEnd);
+        }
+
+        // Fix exception ranges
+        for ( Iterator i=exceptions.iterator(); i.hasNext();)
+        {
+            CodeException range=(CodeException)i.next();
+            if ( ( range.start>start && range.start<oldPostEnd)
+                || ( range.end>start && range.end<oldPostEnd))
+            {
+                throw new CodeCheckException(
+                    "Exception range overlaps inserted code");
+            }
+            if ( range.start>=oldPostEnd)
+                range.start+=newPostEnd-oldPostEnd;
+            if ( range.end>=oldPostEnd)
+                range.end+=newPostEnd-oldPostEnd;
+        }
+
+        // Fix line number table offsets
+        LineNumberTableAttribute lineTable=getLineNumberAttribute();
+        if ( lineTable!=null)
+            lineTable.fixOffsets( start, oldPostEnd, newPostEnd);
     }
 
  	/**
@@ -214,7 +332,7 @@ public class CodeAttribute implements Attribute
         attributes.write( classStream);
    	}
 
-	class CodeException
+	static class CodeException
 	{
 		int start;
 		int end;
@@ -390,8 +508,8 @@ public class CodeAttribute implements Attribute
 		    new SimpleOpCode( 100, 1, "isub", new Cat1Stack( 2, 1));
 		    new SimpleOpCode( 124, 1, "iushr", new Cat1Stack( 2, 1));
 		    new SimpleOpCode( 130, 1, "ixor", new Cat1Stack( 2, 1));
-		    new SimpleOpCode( 168, 3, "jsr", new Cat1Stack( 0, 0)); // Special handling in check code
-		    new SimpleOpCode( 201, 5, "jsr_w", new Cat1Stack( 0, 0)); // ''
+		    new JsrOpCode( 168, 3, "jsr"); // Special handling in check code
+		    new JsrOpCode( 201, 5, "jsr_w"); // ''
 		    new SimpleOpCode( 138, 1, "l2d", new ConvertStack( ProcessStack.CAT2, ProcessStack.CAT2));
 		    new SimpleOpCode( 137, 1, "l2f", new ConvertStack( ProcessStack.CAT2, ProcessStack.CAT1));
 		    new SimpleOpCode( 136, 1, "l2i", new ConvertStack( ProcessStack.CAT2, ProcessStack.CAT1));

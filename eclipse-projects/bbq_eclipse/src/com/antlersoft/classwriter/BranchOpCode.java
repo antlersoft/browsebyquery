@@ -25,4 +25,11 @@ class BranchOpCode extends SimpleOpCode
         super.traverse( instruction, next, attribute);
         next.add( new InstructionPointer( instruction.getOffsetDestination()));
     }
+
+    void fixDestinationAddress( Instruction instruction,
+        int start, int oldPostEnd, int newPostEnd)
+        throws CodeCheckException
+    {
+        instruction.fixDestinationAddress( start, oldPostEnd, newPostEnd);
+    }
 }

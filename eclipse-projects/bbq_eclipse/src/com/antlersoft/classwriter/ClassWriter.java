@@ -22,9 +22,9 @@ import java.util.Iterator;
 
 public class ClassWriter implements Cloneable
 {
-    int magic;
-    int majorVersion;
-    int minorVersion;
+    private int magic;
+    private int majorVersion;
+    private int minorVersion;
     int accessFlags;
     int thisClassIndex;
     int superClassIndex;
@@ -62,6 +62,18 @@ public class ClassWriter implements Cloneable
         clearClass();
     }
 
+    public void emptyClass( int flags, String className, String superClass)
+    {
+        clearClass();
+        constantPool.add( null);
+        magic=0xCAFEBABE;
+        majorVersion=45;
+        minorVersion=32767;
+        accessFlags=flags;
+        thisClassIndex=getClassIndex( className);
+        superClassIndex=getClassIndex( superClass);
+     }
+
     public void readClass( InputStream is)
 		throws IOException, CodeCheckException
     {
@@ -70,8 +82,8 @@ public class ClassWriter implements Cloneable
 		DataInputStream classStream=new DataInputStream( is);
 
 		magic=classStream.readInt();
-		majorVersion=classStream.readUnsignedShort();
 		minorVersion=classStream.readUnsignedShort();
+		majorVersion=classStream.readUnsignedShort();
   		constantPool.add( null);
 		int constantPoolCount=classStream.readUnsignedShort();
   		int i;
@@ -113,8 +125,8 @@ public class ClassWriter implements Cloneable
 		DataOutputStream classStream=new DataOutputStream( is);
 
 		classStream.writeInt( magic);
-  		classStream.writeShort( majorVersion);
     	classStream.writeShort( minorVersion);
+  		classStream.writeShort( majorVersion);
      	classStream.writeShort( constantPool.size());
   		Iterator i=constantPool.iterator();
     	i.next();	// Skip initial, not really there entry
@@ -151,6 +163,13 @@ public class ClassWriter implements Cloneable
     public Collection getMethods()
     {
         return Collections.unmodifiableCollection( methods);
+    }
+
+    public MethodInfo addMethod( int flags, String name, String descriptor)
+    {
+        MethodInfo result=new MethodInfo( flags, name, descriptor, this);
+        methods.add( result);
+        return result;
     }
 
     private void clearClass()
@@ -227,6 +246,13 @@ public class ClassWriter implements Cloneable
 		    super( ClassWriter.CONSTANT_Utf8);
       		value=classStream.readUTF();
 		}
+
+        CPUtf8( String val)
+        {
+		    super( ClassWriter.CONSTANT_Utf8);
+            value=val;
+        }
+
   		void write( DataOutputStream classStream)
     		throws IOException
     	{
@@ -256,6 +282,107 @@ public class ClassWriter implements Cloneable
         return -1;
     }
 
+    public final int getStringIndex( String toFind)
+    {
+        int index=findStringIndex( toFind);
+        if ( index== -1)
+        {
+            constantPool.add( new CPUtf8( toFind));
+            index=constantPool.size()-1;
+        }
+        return index;
+    }
+
+    public final int getClassIndex( String toFind)
+    {
+        int stringIndex=findStringIndex( toFind);
+        if ( stringIndex== -1)
+        {
+            constantPool.add( new CPUtf8( toFind));
+            stringIndex=constantPool.size()-1;
+        }
+        else
+        {
+            int index=0;
+         	for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+            {
+            	Object constant=i.next();
+             	if ( constant!=null && constant instanceof CPClass)
+              	{
+               		if ( ((CPClass)constant).nameIndex==stringIndex)
+                 		return index;
+               	}
+            }
+        }
+        CPClass classRef=new CPClass( stringIndex);
+        constantPool.add( classRef);
+        return constantPool.size()-1;
+    }
+
+    public final int getStringConstantIndex( String toFind)
+    {
+        int stringIndex=findStringIndex( toFind);
+        if ( stringIndex== -1)
+        {
+            constantPool.add( new CPUtf8( toFind));
+            stringIndex=constantPool.size()-1;
+        }
+        else
+        {
+            int index=0;
+         	for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+            {
+            	Object constant=i.next();
+             	if ( constant!=null && constant instanceof CPString)
+              	{
+               		if ( ((CPString)constant).valueIndex==stringIndex)
+                 		return index;
+               	}
+            }
+        }
+        CPString stringRef=new CPString( stringIndex);
+        constantPool.add( stringRef);
+        return constantPool.size()-1;
+    }
+
+    final int getNameAndTypeIndex( String name, String descriptor)
+    {
+        int nameIndex=getStringIndex( name);
+        int descriptorIndex=getStringIndex( descriptor);
+        int index=0;
+        for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+        {
+            Object constant=i.next();
+            if ( constant instanceof CPNameAndType)
+            {
+                CPNameAndType nt=(CPNameAndType)constant;
+                if ( nt.nameIndex==nameIndex && nt.descriptorIndex==descriptorIndex)
+                    return index;
+            }
+        }
+        constantPool.add( new CPNameAndType( nameIndex, descriptorIndex));
+        return constantPool.size()-1;
+    }
+
+    public final int getReferenceIndex( int tag, String className, String name, String descriptor)
+    {
+        int classIndex=getClassIndex( className);
+        int nameAndTypeIndex=getNameAndTypeIndex( name, descriptor);
+        int index=0;
+        for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+        {
+            Object constant=i.next();
+            if ( constant instanceof CPTypeRef)
+            {
+                CPTypeRef tr=(CPTypeRef)constant;
+                if ( tr.classIndex==classIndex && tr.nameAndTypeIndex==nameAndTypeIndex)
+                    return index;
+            }
+        }
+        constantPool.add( new CPTypeRef( (short)tag, classIndex, nameAndTypeIndex));
+        return constantPool.size()-1;
+    }
+
     public String getClassName( int classIndex)
     {
 		char[] nameBuffer=getString( ((CPClass)constantPool.
@@ -280,6 +407,13 @@ public class ClassWriter implements Cloneable
 		    classIndex=classStream.readUnsignedShort();
 		    nameAndTypeIndex=classStream.readUnsignedShort();
 		}
+
+        CPTypeRef( short t, int ci, int nti)
+        {
+            super( t);
+            classIndex=ci;
+            nameAndTypeIndex=nti;
+        }
 
 		String getSynbolName()
   		{
@@ -315,6 +449,13 @@ public class ClassWriter implements Cloneable
 		    descriptorIndex=classStream.readUnsignedShort();
 		}
 
+        CPNameAndType( int ni, int di)
+        {
+            super( ClassWriter.CONSTANT_NameAndType);
+            nameIndex=ni;
+            descriptorIndex=di;
+        }
+
   		void write( DataOutputStream classStream)
     		throws IOException
       	{
@@ -334,6 +475,12 @@ public class ClassWriter implements Cloneable
 		    nameIndex=classStream.readUnsignedShort();
 		}
 
+        CPClass( int index)
+        {
+            super( ClassWriter.CONSTANT_Class);
+            nameIndex=index;
+        }
+
   		void write( DataOutputStream classStream)
     		throws IOException
       	{
@@ -351,6 +498,12 @@ public class ClassWriter implements Cloneable
 		    super( ClassWriter.CONSTANT_String);
 		    valueIndex=classStream.readUnsignedShort();
 		}
+
+        CPString( int index)
+        {
+            super( ClassWriter.CONSTANT_String);
+            valueIndex=index;
+        }
 
   		void write( DataOutputStream classStream)
     		throws IOException

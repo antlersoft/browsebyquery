@@ -54,6 +54,13 @@ public class TableSwitch extends OpCode
         }
     }
 
+    void fixDestinationAddress( Instruction instruction,
+        int start, int oldPostEnd, int newPostEnd)
+        throws CodeCheckException
+    {
+        throw new CodeCheckException( "Unsupported address fix-up- tableswitch");
+    }
+
  	Instruction read( InstructionPointer cr, byte[] code)
   		throws CodeCheckException
 	{

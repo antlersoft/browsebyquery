@@ -56,4 +56,27 @@ public class Instruction
         	offset=OpCode.pairToInt( operands, 0);
         return instructionStart+offset;
     }
+
+    /**
+     *  Update offset destination
+     */
+    void fixDestinationAddress( int start, int oldPostEnd, int newPostEnd)
+        throws CodeCheckException
+    {
+        int oldDestination=getOffsetDestination();
+        if ( oldDestination>start && oldDestination<oldPostEnd)
+        {
+            throw new CodeCheckException(
+                "Branch into code replaced by an inserted segment");
+        }
+        if ( oldDestination>=oldPostEnd)
+        {
+            int newDestination=oldDestination+newPostEnd-oldPostEnd-
+                instructionStart;
+            if ( operands.length==4)
+                OpCode.intToQuad( newDestination, operands, 0);
+            else
+                OpCode.intToPair( newDestination, operands, 0);
+        }
+    }
 }

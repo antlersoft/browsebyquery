@@ -45,6 +45,11 @@ public abstract class OpCode
     	CodeAttribute attribute)
     	throws CodeCheckException;
 
+    void fixDestinationAddress( Instruction instruction,
+        int start, int oldPostEnd, int newPostEnd)
+        throws CodeCheckException
+    {}
+
  	void write( DataOutputStream out, Instruction instruction)
   		throws IOException
     {
@@ -70,6 +75,24 @@ public abstract class OpCode
 		return retval;
     }
 
+    public static final void intToPair( int value, byte[] array, int offset)
+    {
+        array[offset+1]=(byte)(value&0xff);
+        value>>>=8;
+        array[offset]=(byte)value;
+    }
+
+    public static final void intToQuad( int value, byte[] array, int offset)
+    {
+        array[offset+3]=(byte)(value&0xff);
+        value>>>=8;
+        array[offset+2]=(byte)(value&0xff);
+        value>>>=8;
+        array[offset+1]=(byte)(value&0xff);
+        value>>>=8;
+        array[offset]=(byte)value;
+    }
+
     public static final int pairToInt( byte[] array, int offset)
     {
         return (array[offset]<<8)|mU( array[offset+1]);
@@ -81,7 +104,8 @@ public abstract class OpCode
         	( mU( array[offset+2])<<8)|mU( array[offset+3]);
     }
 
-    static OpCode getOpCodeByMnemonic( String mnemonic)
+    public static OpCode getOpCodeByMnemonic( String mnemonic)
+        throws CodeCheckException
     {
     	for ( int i=0; i<256; i++)
      	{
@@ -90,7 +114,7 @@ public abstract class OpCode
          		return opCodes[i];
          	}
       	}
-        throw new IllegalStateException( mnemonic);
+        throw new CodeCheckException( mnemonic+" not found");
     }
 
     static byte[] getSubArray( byte[] code, int offset, int length)
