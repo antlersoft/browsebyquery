@@ -13,27 +13,40 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
+/**
+ *  List of exceptions that a method may throw; the index numbers
+ * represents ClassInfo constants in the constant pool.  Found in
+ * the attribute list of a FieldInfo that represents a method.
+ */
 class ExceptionsAttribute implements Attribute
 {
 	public final static String typeString="Exceptions";
 
-	int exceptionCount;
-	int[] exceptions;
+	private ArrayList exceptions;
 
 	ExceptionsAttribute( DataInputStream classStream)
 	    throws IOException
 	{
-	    exceptionCount=classStream.readUnsignedShort();
-	    exceptions=new int[exceptionCount];
+	    int exceptionCount=classStream.readUnsignedShort();
+	    exceptions=new ArrayList( exceptionCount);
 	    for ( int i=0; i<exceptionCount; i++)
 	    {
-			exceptions[i]=classStream.readUnsignedShort();
+			exceptions.add( new Integer( classStream.readUnsignedShort()));
 	    }
 	}
 
 	public String getTypeString() { return typeString; }
+
 	public void write( DataOutputStream classStream)
 		throws IOException
 	{
+ 		classStream.writeShort( exceptions.size());
+   		for ( Iterator i=exceptions.iterator(); i.hasNext();)
+     	{
+      		classStream.writeShort( ((Integer)i.next()).intValue());
+      	}
 	}
 }

@@ -72,6 +72,7 @@ public class ClassWriter implements Cloneable
 		magic=classStream.readInt();
 		majorVersion=classStream.readUnsignedShort();
 		minorVersion=classStream.readUnsignedShort();
+  		constantPool.add( null);
 		int constantPoolCount=classStream.readUnsignedShort();
   		int i;
 		for ( i=1; i<constantPoolCount; i++)
@@ -115,8 +116,9 @@ public class ClassWriter implements Cloneable
   		classStream.writeShort( majorVersion);
     	classStream.writeShort( minorVersion);
      	classStream.writeShort( constantPool.size());
-  		Iterator i;
-		for ( i=constantPool.iterator(); i.hasNext();)
+  		Iterator i=constantPool.iterator();
+    	i.next();	// Skip initial, not really there entry
+		for ( ; i.hasNext();)
 		{
   			CPInfo poolEntry=(CPInfo)i.next();
   			poolEntry.write( classStream);
@@ -198,7 +200,7 @@ public class ClassWriter implements Cloneable
 		void write( DataOutputStream classStream)
 			throws IOException
 		{
-			classStream.writeShort( tag);
+			classStream.writeByte( tag);
 		}
 	}
 
@@ -236,6 +238,7 @@ public class ClassWriter implements Cloneable
              		return index;
            	}
         }
+
         return -1;
     }
 

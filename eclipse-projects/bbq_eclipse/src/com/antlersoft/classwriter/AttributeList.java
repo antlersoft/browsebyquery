@@ -101,7 +101,7 @@ public class AttributeList implements Cloneable
 
 	  		attribute.write( new DataOutputStream( byteStream));
 	    	byte[] valueBytes=byteStream.toByteArray();
-	     	classStream.writeShort( valueBytes.length);
+	     	classStream.writeInt( valueBytes.length);
 	    	classStream.write( valueBytes);
         }
     }

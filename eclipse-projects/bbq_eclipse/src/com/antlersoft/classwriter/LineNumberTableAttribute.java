@@ -34,6 +34,12 @@ class LineNumberTableAttribute implements Attribute
 	public void write( DataOutputStream classStream)
  		throws IOException
    	{
+    	classStream.writeShort( lineNumberEntryCount);
+     	for ( int i=0; i<lineNumberEntryCount; i++)
+      	{
+       		classStream.writeShort( lineNumberEntries[i].start_pc);
+         	classStream.writeShort( lineNumberEntries[i].line_number);
+       	}
     }
 
     class LineNumberEntry
