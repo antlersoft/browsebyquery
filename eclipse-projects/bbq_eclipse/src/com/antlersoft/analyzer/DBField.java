@@ -98,10 +98,10 @@ public class DBField implements Persistent, Cloneable, SourceObject
     {
 	ObjectDB.makeDirty( this);
 	if ( referencedBy==null)
-    {
-        if ( ! callsFromCaller.isEmpty())
+        {
+            if ( ! callsFromCaller.isEmpty())
 	        referencedBy=callsFromCaller;
-    }
+        }
 	else
 	    /* Remove calls from same method and append calls to list */
 	{
