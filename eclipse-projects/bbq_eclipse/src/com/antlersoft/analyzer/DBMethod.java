@@ -11,7 +11,7 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-public class DBMethod implements Persistent, Cloneable
+public class DBMethod implements Persistent, Cloneable, SourceObject
 {
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
@@ -25,6 +25,8 @@ public class DBMethod implements Persistent, Cloneable
     Vector fieldReferences;
 
     private boolean resolved;
+    private int lineNumber;
+
     static public Vector emptyVector=new Vector();
 
     private transient PersistentImpl _persistentImpl;
@@ -37,6 +39,7 @@ public class DBMethod implements Persistent, Cloneable
 	name=(String)st.nextElement();
 	signature=(String)st.nextElement();
 	resolved=false;
+    lineNumber=0;
 	_persistentImpl=new PersistentImpl();
 	ObjectDB.makePersistent( this);
     ((DBClass)dbclass.getReferenced()).addMethod( this);
@@ -86,6 +89,11 @@ public class DBMethod implements Persistent, Cloneable
     public DBClass getDBClass()
     {
 	return (DBClass)dbclass.getReferenced();
+    }
+
+    public int getLineNumber()
+    {
+        return lineNumber;
     }
 
     public Enumeration getCalls()
@@ -154,6 +162,7 @@ public class DBMethod implements Persistent, Cloneable
 		else
 		    fieldReferences.removeAllElements();
 		CodeReader cr=new CodeReader( (AnalyzeClass.CodeAttribute)mi.attributes[i].value);
+        lineNumber=cr.getLineNumber( 0);
 		cr.setMethodInvokeCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
 		{
 		    public void processReference( CodeReader.OpCode read, int position,

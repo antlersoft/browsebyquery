@@ -13,7 +13,7 @@ import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentHashtable;
 import com.antlersoft.odb.PersistentImpl;
 
-class ObjectAnalyzeDB implements AnalyzerDB
+public class ObjectAnalyzeDB implements AnalyzerDB
 {
     ObjectDB _session;
     PersistentHashtable _classHash;
@@ -28,7 +28,7 @@ class ObjectAnalyzeDB implements AnalyzerDB
         "com.antlersoft.analyzer.DBFieldReference"
         };
 
-    ObjectAnalyzeDB()
+    public ObjectAnalyzeDB()
     {
 		_session=null;
 		_classHash=null;

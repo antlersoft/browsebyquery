@@ -11,7 +11,7 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-public class DBField implements Persistent, Cloneable
+public class DBField implements Persistent, Cloneable, SourceObject
 {
     ObjectRef dbclass;
     String name;
@@ -80,6 +80,11 @@ public class DBField implements Persistent, Cloneable
     public DBClass getDBClass()
     {
 	return (DBClass)dbclass.getReferenced();;
+    }
+
+    public int getLineNumber()
+    {
+        return 1;
     }
 
     public Enumeration getReferencedBy()

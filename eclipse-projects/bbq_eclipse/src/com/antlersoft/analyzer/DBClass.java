@@ -18,7 +18,7 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-public class DBClass implements Persistent, Cloneable
+public class DBClass implements Persistent, Cloneable, SourceObject
 {
     String name;
     Vector superClasses;
@@ -66,6 +66,16 @@ public class DBClass implements Persistent, Cloneable
     public Enumeration getFields()
     {
 	return new FromRefEnumeration( fields.elements());
+    }
+
+    public DBClass getDBClass()
+    {
+        return this;
+    }
+
+    public int getLineNumber()
+    {
+        return 1;
     }
 
     void addMethod( DBMethod toAdd)

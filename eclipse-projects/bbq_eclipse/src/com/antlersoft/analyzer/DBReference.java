@@ -2,7 +2,8 @@ package com.antlersoft.analyzer;
 
 import com.antlersoft.odb.ObjectRef;
 
-public abstract class DBReference implements java.io.Serializable, Cloneable
+public abstract class DBReference implements java.io.Serializable, Cloneable,
+    SourceObject
 {
     DBReference( DBMethod s, int l)
     {
@@ -16,5 +17,16 @@ public abstract class DBReference implements java.io.Serializable, Cloneable
     {
 	return (DBMethod)source.getReferenced();
     }
+
+    public DBClass getDBClass()
+    {
+        return getSource().getDBClass();
+    }
+
+    public int getLineNumber()
+    {
+        return lineNumber;
+    }
+
     protected int lineNumber;
 }
