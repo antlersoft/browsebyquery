@@ -1,5 +1,7 @@
 package analyzer;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
@@ -8,10 +10,15 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.TreeSet;
 import javax.swing.*;
 //import javax.swing.filechooser.ExtensionFileFilter;
 import java.awt.*;
 import java.awt.event.*;
+
+import analyzer.query.ParseException;
+import analyzer.query.QueryParser;
 
 public class UIQuery
 {
@@ -44,11 +51,13 @@ public class UIQuery
 	Dimension buttonDimension=queryButton.getPreferredSize();
 	queryButton.setMinimumSize( buttonDimension);
 	queryButton.setMaximumSize( buttonDimension);
-	queryArea=new JTextArea( 2, 80);
+	queryArea=new JTextArea( 2, 60);
 	JScrollPane queryScroll=new JScrollPane( queryArea);
+	JScrollPane storedArea=new JScrollPane( new StoredValuesList());
 	Box upperPane=Box.createHorizontalBox();
 	upperPane.add( queryButton);
 	upperPane.add( queryScroll);
+	upperPane.add( storedArea);
 	outputArea=new JTextArea( 16, 80);
 	JScrollPane lowerPane=new JScrollPane( outputArea);
         JSplitPane mainPane=new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, lowerPane);
@@ -66,15 +75,19 @@ public class UIQuery
 			qp.setLine( line);
 			QueryParser.SetExpression se=qp.getExpression();
 			Enumeration e=se.execute( analyzerDB);
-			StringBuffer results=new StringBuffer();
+			TreeSet resultSorter=new TreeSet();
 			while ( e.hasMoreElements())
+			    resultSorter.add( e.nextElement().toString());
+			Iterator iterator=resultSorter.iterator();
+			StringBuffer results=new StringBuffer();
+			while ( iterator.hasNext())
 			{
-			    results.append( e.nextElement().toString());
+			    results.append( (String)iterator.next());
 			    results.append( '\n');
 			}
 			outputArea.setText( results.toString());
 		    }
-		    catch ( QueryParser.ParseException pe)
+		    catch ( ParseException pe)
 		    {
 			displayException( "Parse Error", pe);
 		    }
@@ -221,6 +234,21 @@ public class UIQuery
 	    {
 		displayException( "Analyze Error", e);
 	    }
+	}
+    }
+
+    class StoredValuesList extends JList implements PropertyChangeListener
+    {
+	StoredValuesList()
+	{
+	    super();
+	    qp.addStoredValuesListener( this);
+	    setListData( qp.getStoredValues());
+	}
+
+	public void propertyChange( PropertyChangeEvent pce)
+	{
+	    setListData( qp.getStoredValues());
 	}
     }
 }
