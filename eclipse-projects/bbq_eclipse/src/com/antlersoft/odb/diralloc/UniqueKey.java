@@ -15,7 +15,7 @@ import java.io.Serializable;
 class UniqueKey implements Comparable, Serializable
 {
     static DAKey largestDAKey=new DAKey( Integer.MAX_VALUE, Integer.MAX_VALUE);
-    static DAKey smallestDAKey=new DAKey( Integer.MIN_VALUE, Integer.MIN_VALUE);
+    static DAKey smallestDAKey=new DAKey( -1, -1);
 
     UniqueKey( Comparable base, DAKey ref)
     {
