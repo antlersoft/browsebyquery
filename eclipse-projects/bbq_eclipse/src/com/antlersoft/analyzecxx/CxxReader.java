@@ -87,7 +87,25 @@ public class CxxReader
 	{
 		public void processToken( LexToken token)
 		{
-			System.out.println( token.symbol.toString()+":"+token.value);
+			//System.out.println( token.symbol.toString()+":"+token.value);
+			if ( token.symbol==PreprocessParser.lex_white_space)
+				System.out.print(" ");
+			else if ( token.symbol==PreprocessParser.lex_new_line)
+				System.out.println("");
+			else if ( token.symbol==PreprocessParser.lex_character_literal)
+			{
+				System.out.print('\'');
+				System.out.print( token.value);
+				System.out.print( '\'');
+			}
+			else if ( token.symbol==PreprocessParser.lex_string_literal)
+			{
+				System.out.print('"');
+				System.out.print( token.value);
+				System.out.print( '"');
+			}
+			else
+				System.out.print( token.value);
 		}
 		public void noMoreTokens(){}
 	}

@@ -35,17 +35,10 @@ class ConcatExpander extends LexToken implements SpecialExpander {
 				end.set( 0, concat);
 			}
 		}
-		try
-		{
-			for (Iterator i = start.iterator(); i.hasNext(); )
-				reader.processToken( ((LexToken) i.next()).cloneWithMergedSet( no_expand));
-			for (Iterator i = end.iterator(); i.hasNext(); )
-				reader.processToken(((LexToken) i.next()).cloneWithMergedSet( no_expand));
-		}
-		catch ( LexException le)
-		{
-			throw new RuleActionException( le.getMessage());
-		}
+		for (Iterator i = start.iterator(); i.hasNext(); )
+			reader.processToken( ((LexToken) i.next()).cloneWithMergedSet( no_expand));
+		for (Iterator i = end.iterator(); i.hasNext(); )
+			reader.processToken(((LexToken) i.next()).cloneWithMergedSet( no_expand));
     }
 
 	/**

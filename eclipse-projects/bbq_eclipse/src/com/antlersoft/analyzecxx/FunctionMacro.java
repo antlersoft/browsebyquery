@@ -19,7 +19,7 @@ class FunctionMacro extends Macro
 	}
 
 	void expandTo( LexToken orig_token, MacroExpander reader, ArrayList arguments, ArrayList expanded_arguments)
-	throws RuleActionException, LexException
+	throws RuleActionException
 	{
 		HashSet new_no_expand=orig_token.setWithNewMember( getIdentifier());
 		if ( arguments.size()!=m_arguments || expanded_arguments.size()!=m_arguments)

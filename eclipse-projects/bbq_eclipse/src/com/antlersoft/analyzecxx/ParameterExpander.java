@@ -22,12 +22,6 @@ class ParameterExpander extends LexToken implements SpecialExpander {
     public void expandTo(MacroExpander reader, HashSet no_expand, ArrayList arguments, ArrayList expanded_arguments) throws RuleActionException {
 		ArrayList tokens=(ArrayList)expanded_arguments.get( m_arg_index);
 		for ( Iterator i=tokens.iterator(); i.hasNext();)
-			try {
-				reader.processToken( ((LexToken) i.next()).cloneWithMergedSet( no_expand));
-			}
-		    catch ( LexException le)
-			{
-				throw new RuleActionException( le.getMessage());
-			}
+			reader.processToken( ((LexToken) i.next()).cloneWithMergedSet( no_expand));
     }
 }

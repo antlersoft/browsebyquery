@@ -22,7 +22,7 @@ class LexToPreprocess implements LexReader
 	}
 
 	public void processToken( LexToken next_token)
-	throws com.antlersoft.parser.RuleActionException, LexException
+	throws com.antlersoft.parser.RuleActionException
 	{
 		if (m_start_of_line) {
 			if ( ( next_token instanceof AltSymbolToken) && ((AltSymbolToken)next_token).m_alt_symbol == PreprocessParser.pp_hash) {

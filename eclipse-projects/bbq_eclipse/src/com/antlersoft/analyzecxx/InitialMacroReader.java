@@ -6,7 +6,7 @@ import com.antlersoft.parser.RuleActionException;
 
 public class InitialMacroReader implements LexReader {
 	private ArrayList m_list=new ArrayList();
-    public void processToken(LexToken next_token) throws com.antlersoft.parser.RuleActionException, LexException {
+    public void processToken(LexToken next_token) throws com.antlersoft.parser.RuleActionException {
 		m_list.add( next_token);
     }
 

@@ -91,21 +91,34 @@ class PreprocessParserBase extends Parser {
 		return "";
 	}
 
+	final boolean evaluateConstantExpression( ArrayList tokens)
+	{
+		normalizeWhitespace( tokens);
+		return false;
+	}
+
+	private ArrayList expandToArray( ArrayList tokens)
+	throws RuleActionException
+	{
+		InitialMacroReader reader=new InitialMacroReader();
+		MacroExpander expander=new MacroExpander( m_macros, reader);
+		for ( Iterator i=tokens.iterator(); i.hasNext();)
+			expander.processToken( (LexToken)i.next());
+		expander.noMoreTokens();
+		return reader.getTokens();
+	}
+
 	/**
 	 * Perform macro expansions on tokens and pass them on to the next stage
 	 */
 	final String expandAndSend( ArrayList tokens)
 	throws RuleActionException
 	{
-		try
+		if ( ! m_skipping)
 		{
 			for (Iterator i = tokens.iterator(); i.hasNext(); )
 				m_base_expander.processToken((LexToken) i.next());
 			m_base_expander.processToken( WhiteSpace.m_new_line_token);
-		}
-		catch ( LexException le)
-		{
-			throw new RuleActionException( le.getMessage());
 		}
 		return "";
 	}
@@ -148,6 +161,8 @@ e.printStackTrace();
 	final Object defineObjectMacro( String name, ArrayList replacement_list)
 	throws RuleActionException
 	{
+		if ( m_skipping)
+			return "";
 		Macro macro=(Macro)m_macros.get( name);
 		if ( macro!=null)
 		{
@@ -177,6 +192,8 @@ e.printStackTrace();
 	final Object defineFunctionMacro( String name, ArrayList identifier_list, ArrayList replacement_list)
 	throws RuleActionException
 	{
+		if ( m_skipping)
+			return "";
 		HashMap identifier_names=new HashMap( identifier_list.size());
 		int identifier_count=0;
 		for ( Iterator i=identifier_list.iterator(); i.hasNext();)
@@ -230,7 +247,8 @@ e.printStackTrace();
 
 	final Object undefineMacro( String name)
 	{
-		m_macros.remove( name);
+		if ( ! m_skipping)
+			m_macros.remove( name);
 		return "";
 	}
 
@@ -290,6 +308,27 @@ System.err.println( "Exception parsing concatenated token: "+value);
 e.printStackTrace();
 		}
 		return null;
+	}
+
+	final LexToken expandToIncludeHeader( ArrayList tokens)
+	throws RuleActionException
+	{
+		if ( m_skipping)
+			return WhiteSpace.m_white_space_token;
+		normalizeWhitespace( tokens);
+		LexToken first_token=(LexToken)tokens.get(0);
+		if ( first_token.symbol==PreprocessParser.lex_string_literal &&
+			tokens.size()==1)
+		   return new LexToken( PreprocessParser.lex_include_header_with_current, first_token.value);
+	    if ( tokens.size()>=3 && first_token.value.equals("<") &&
+			 ((LexToken)tokens.get(tokens.size()-1)).value.equals(">"))
+		{
+			StringBuffer sb=new StringBuffer();
+			for ( int i=1; i<tokens.size()-1; i++)
+				sb.append( ((LexToken)tokens.get(i)).value);
+			return new LexToken( PreprocessParser.lex_include_header, sb.toString());
+		}
+		throw new RuleActionException( "Tokens can not convert to include header");
 	}
 
 	private static int isStringize( ArrayList tokens, int start)

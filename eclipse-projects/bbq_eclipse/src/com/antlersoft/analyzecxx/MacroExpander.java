@@ -30,7 +30,7 @@ class MacroExpander {
 		m_deferred_tokens=new ArrayList();
 	}
 
-    void processToken( LexToken next_token) throws com.antlersoft.parser.RuleActionException, LexException
+    void processToken( LexToken next_token) throws com.antlersoft.parser.RuleActionException
 	{
 		// What no expand set do we use to expand the macro-- the one at the initial token,
 		// the one at the last token, or the one that is the union of all the tokens?
@@ -158,21 +158,14 @@ class MacroExpander {
 
 	private void clearDeferredTokens() throws RuleActionException
 	{
-		try
-		{
-			ArrayList deferred = (ArrayList) m_deferred_tokens.clone();
-			m_deferred_tokens.clear();
-			Iterator i = deferred.iterator();
-			if (i.hasNext()) {
-				m_reader.processToken( (LexToken)i.next());
-				while (i.hasNext()) {
-					processToken( (LexToken)i.next());
-				}
+		ArrayList deferred = (ArrayList) m_deferred_tokens.clone();
+		m_deferred_tokens.clear();
+		Iterator i = deferred.iterator();
+		if (i.hasNext()) {
+			m_reader.processToken( (LexToken)i.next());
+			while (i.hasNext()) {
+				processToken( (LexToken)i.next());
 			}
-		}
-		catch ( LexException le)
-		{
-			throw new RuleActionException( le.getMessage());
 		}
 	}
 
@@ -210,7 +203,7 @@ class MacroExpander {
 		}
 
 		ArrayList getExpandedArgumentTokens( HashMap macros)
-		throws RuleActionException, LexException
+		throws RuleActionException
 		{
 			InitialMacroReader reader=new InitialMacroReader();
 			MacroExpander expander=new MacroExpander( macros, reader);

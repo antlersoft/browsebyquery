@@ -137,7 +137,7 @@ ENDIF_LINE : INITIAL_HASH pp_endif OPT_WHITE_SPACE lex_new_line "{
 #                  #         new-line
 INCLUDE_HEADER : lex_include_header "{ return valueStack.get( valueStack.size()-1); }" .
 INCLUDE_HEADER : lex_include_header_with_current "{ return valueStack.get( valueStack.size()-1); }" .
-INCLUDE_HEADER : PP_TOKENS "{ throw new RuleActionException( \"Unimplemented: Getting include header from substitution tokens\"); }" .
+INCLUDE_HEADER : PP_TOKENS "{ return ((PreprocessParser)parser).expandToIncludeHeader( (ArrayList)valueStack.get( valueStack.size()-1)); }" .
 CONTROL_LINE : INITIAL_HASH pp_include OPT_WHITE_SPACE INCLUDE_HEADER OPT_WHITE_SPACE lex_new_line "{
 System.out.println( \"Include file\"); return new ArrayList();
 }" .

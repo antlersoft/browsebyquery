@@ -7,8 +7,7 @@ package com.antlersoft.analyzecxx;
 interface LexReader
 {
 	void processToken( LexToken next_token)
-		throws com.antlersoft.parser.RuleActionException,
-		LexException;
+		throws com.antlersoft.parser.RuleActionException;
 
 	void noMoreTokens()
 		throws com.antlersoft.parser.RuleActionException;
