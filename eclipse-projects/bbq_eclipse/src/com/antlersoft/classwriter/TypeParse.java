@@ -91,6 +91,14 @@ public class TypeParse
 		return new String( nameBuffer);
     }
 
+    public static String packageFromInternalClassName( String toConvert)
+    {
+        int index=toConvert.lastIndexOf( '/');
+        if ( index== -1)
+            return new String();
+        return convertFromInternalClassName( toConvert.substring( 0, index));
+    }
+
 	public static ArrayList parseMethodType( String methodType)
  		throws CodeCheckException
  	{
