@@ -1,5 +1,9 @@
 package com.antlersoft.analyzecxx;
 
+import java.io.IOException;
+
+import com.antlersoft.parser.RuleActionException;
+
 /**
  * Performs first two stages of translation processing described in
  * the spec.
@@ -22,13 +26,14 @@ class LineSplicer implements LexState
 	LineSplicer( CxxReader reader)
 	{
 		m_reader=reader;
-		m_preprocessor_state=new PreprocessorTokens();
+		m_preprocessor_state=new PreprocessorTokens( reader);
 		m_eol_backslash_state=false;
 	}
 
 	/** Call to send next character to parser; this function
 	 * implements first two phases described in spec */
 	public LexState nextCharacter( char c)
+	throws RuleActionException, IOException, LexException
 	{
 		// This is where we would do trigraph processing and unsupported
 		// char processing, if we were doing that
@@ -56,11 +61,13 @@ class LineSplicer implements LexState
 	}
 	/** Call to indicate no more characters in file to parser */
 	public LexState endOfFile( )
-	throws LexException
+		throws RuleActionException, IOException, LexException
 	{
-		m_preprocessor_state=m_preprocessor_state.endOfFile( );
+		m_preprocessor_state=m_preprocessor_state.nextCharacter( '\n');
+		m_preprocessor_state=m_preprocessor_state.endOfFile();
 		if ( m_eol_backslash_state)
-			throw new LexException( "File ends with \\");
+			throw new LexException( "File ends with backslash");
+		m_reader.m_driver.popIncludeFile( m_reader);
 		return this;
 	}
 }

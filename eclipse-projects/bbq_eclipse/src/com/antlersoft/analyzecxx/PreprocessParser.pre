@@ -1,0 +1,13 @@
+package com.antlersoft.analyzecxx;
+
+import java.util.List;
+import java.util.Properties;
+
+import com.antlersoft.parser.*;
+
+class PreprocessParser extends Parser
+{
+    PreprocessParser( Properties initial_defines)
+    {
+	    super( parseStates);
+    }

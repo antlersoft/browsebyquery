@@ -29,8 +29,11 @@ public class WhiteSpace implements LexState
 	private boolean m_is_new_line;
 	private LexState m_caller;
 	private LexToPreprocess m_lex;
+	static LexToken m_white_space_token=new LexToken( PreprocessParser.lex_white_space, "", null);
+	static LexToken m_new_line_token=new LexToken( PreprocessParser.lex_new_line, "", null);
 
 	WhiteSpace( LexToPreprocess lex, LexState caller, char c)
+		throws RuleActionException, IOException, LexException
 	{
 		m_lex=lex;
 		m_caller=caller;
@@ -46,11 +49,11 @@ public class WhiteSpace implements LexState
 				m_is_new_line=true;
 			return this;
 		}
-		m_parser.parse( m_is_new_line ? PreprocessParser.NEW_LINE : PreprocessParser.WHITE_SPACE);
+		m_lex.processToken( m_is_new_line ? m_new_line_token : m_white_space_token);
 		return m_caller.nextCharacter(c);
     }
     public LexState endOfFile() throws IOException, RuleActionException, LexException {
-		m_parser.parse( m_is_new_line ? PreprocessParser.NEW_LINE : PreprocessParser.WHITE_SPACE);
+		m_lex.processToken( m_is_new_line ? m_new_line_token : m_white_space_token);
 		return m_caller.endOfFile();
     }
 }

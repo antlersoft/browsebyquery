@@ -6,21 +6,26 @@ import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.RuleActionException;
 
 public class LineComment implements LexState {
-	private Parser m_parser;
+	private CxxReader m_reader;
 	private LexState m_caller;
+
+	LineComment( CxxReader reader, LexState caller)
+	{
+		m_reader=reader;
+		m_caller=caller;
+	}
 
 	public LexState nextCharacter(char c) throws IOException, RuleActionException, LexException
 	{
-		switch ( c)
+		if ( c=='\n')
 		{
-			case '/' : return new LineComment( m_parser, m_caller);
-			case '*' : return new DelimitedComment( m_parser, m_caller);
+			m_reader.m_lex_to_preprocess.processToken( WhiteSpace.m_new_line_token);
+			return m_caller;
 		}
-		LexState result=new LexPunctuation( m_parser, m_caller).nextCharacter( '/');
-		return result.nextCharacter( c);
+		return this;
 	}
 	public LexState endOfFile() throws IOException, RuleActionException, LexException {
-		LexState result=new LexPunctuation( m_parser, m_caller).nextCharacter( '/');
-		return result.endOfFile();
+		m_reader.m_lex_to_preprocess.processToken( WhiteSpace.m_new_line_token);
+		return m_caller.endOfFile();
 	}
 }

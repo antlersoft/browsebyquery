@@ -8,6 +8,13 @@ import com.antlersoft.parser.Token;
  */
 class LexToPreprocess
 {
+	private CxxReader m_reader;
+
+	LexToPreprocess( CxxReader reader)
+	{
+		m_reader=reader;
+	}
+
 	void processToken( Token next_token)
 	{
 	}

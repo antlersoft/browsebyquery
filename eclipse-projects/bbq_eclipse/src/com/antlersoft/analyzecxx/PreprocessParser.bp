@@ -1,0 +1,155 @@
+# Recognized by lexer
+reserved lex_character_literal
+reserved lex_include_header
+reserved lex_include_header_with_current
+reserved lex_identifier
+reserved lex_preprocessing_op_or_punc
+reserved lex_string_literal
+reserved lex_white_space
+reserved lex_new_line
+reserved lex_number
+
+# Recognized from lexer tokens on input to preprocessor
+reserved pp_comma
+reserved pp_define
+reserved pp_defined
+
+# Note that when a preprocessor token can end a skipped section, it is
+# detected together with the '#'
+reserved pp_elif
+reserved pp_else
+reserved pp_endif
+
+reserved pp_error
+reserved pp_hash "#"
+reserved pp_if
+reserved pp_ifdef
+reserved pp_ifndef
+reserved pp_include
+reserved pp_left_paren
+reserved pp_line
+reserved pp_lparen
+reserved pp_pragma
+reserved pp_rparen
+reserved pp_undef
+
+symbol CONSTANT_EXPRESSION
+symbol CONSTANT_TOKEN
+symbol CONTROL_LINE
+symbol ELIF_COND
+symbol ELIF_GROUPS
+symbol ELIF_GROUP
+symbol ELSE_COND
+symbol ELSE_GROUP
+symbol ENDIF_LINE
+symbol GROUP
+symbol GROUP_PART
+symbol IDENTIFIER_LIST
+symbol IF_COND
+symbol IF_GROUP
+symbol IF_SECTION
+symbol INCLUDE_HEADER
+symbol PP_FILE
+symbol PP_TOKEN
+symbol PP_TOKENS
+symbol REPLACEMENT_LIST
+
+#         preprocessing-file:
+#                  groupopt
+PP_FILE : GROUP .
+PP_FILE : .
+#          group:
+#                  group-part
+#                  group group-part
+GROUP : GROUP_PART .
+GROUP : GROUP GROUP_PART .
+#          group-part:
+#                  pp-tokensopt new-line
+#                  if-section
+#                  control-line
+GROUP_PART : lex_new_line .
+GROUP_PART : PP_TOKENS lex_new_line .
+GROUP_PART : IF_SECTION .
+GROUP_PART : CONTROL_LINE .
+#          if-section:
+#                  if-group elif-groupsopt else-groupopt endif-line
+IF_SECTION : IF_GROUP ELIF_GROUPS ELSE_GROUP ENDIF_LINE .
+IF_SECTION : IF_GROUP ENDIF_LINE .
+IF_SECTION : IF_GROUP ELSE_GROUP ENDIF_LINE .
+IF_SECTION : IF_GROUP ELIF_GROUPS ENDIF_LINE .
+#          if-group:
+#                  # if     constant-expression new-line groupopt
+#                  # ifdef  identifier new-line groupopt
+#                  # ifndef identifier new-line groupopt
+IF_GROUP : IF_COND .
+IF_GROUP : IF_COND GROUP .
+IF_COND : pp_hash pp_if CONSTANT_EXPRESSION lex_new_line .
+IF_COND : pp_hash pp_ifdef lex_identifier lex_new_line .
+IF_COND : pp_hash pp_ifndef lex_identifier lex_new_line .
+#          elif-groups:
+#                  elif-group
+#                  elif-groups elif-group
+ELIF_GROUPS : ELIF_GROUP .
+ELIF_GROUPS : ELIF_GROUPS ELIF_GROUP .
+#          elif-group:
+#                  # elif   constant-expression new-line groupopt
+ELIF_COND : pp_elif CONSTANT_EXPRESSION lex_new_line .
+ELIF_GROUP : ELIF_COND GROUP .
+ELIF_GROUP : ELIF_COND .
+#          else-group:
+#                  # else   new-line groupopt
+ELSE_GROUP : pp_else lex_new_line GROUP .
+ELSE_GROUP : ELSE_COND .
+ELSE_COND : pp_hash pp_else lex_new_line .
+#          endif-line:
+#                  # endif  new-line
+ENDIF_LINE : pp_endif lex_new_line .
+#          control-line:
+#                  # include pp-tokens new-line
+#                  # define  identifier replacement-list new-line
+#                  # define  identifier lparen identifier-listopt ) replacement-list new-line
+#                  # undef   identifier new-line
+#                  # line    pp-tokens new-line
+#                  # error   pp-tokensopt new-line
+#                  # pragma  pp-tokensopt new-line
+#                  #         new-line
+INCLUDE_HEADER : lex_include_header .
+INCLUDE_HEADER : lex_include_header_with_current .
+INCLUDE_HEADER : PP_TOKENS "{ throw new RuleActionException( \"Unimplemented: Getting include header from substitution tokens\"); }" .
+CONTROL_LINE : pp_hash pp_include INCLUDE_HEADER lex_new_line .
+CONTROL_LINE : pp_hash pp_define lex_identifier REPLACEMENT_LIST lex_new_line .
+CONTROL_LINE : pp_hash pp_define lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen REPLACEMENT_LIST lex_new_line .
+CONTROL_LINE : pp_hash pp_define lex_identifier pp_lparen pp_rparen REPLACEMENT_LIST lex_new_line .
+CONTROL_LINE : pp_hash pp_undef lex_identifier lex_new_line .
+CONTROL_LINE : pp_hash pp_line PP_TOKENS lex_new_line .
+CONTROL_LINE : pp_hash pp_error PP_TOKENS lex_new_line .
+CONTROL_LINE : pp_hash pp_error lex_new_line .
+CONTROL_LINE : pp_hash pp_pragma PP_TOKENS lex_new_line .
+CONTROL_LINE : pp_hash lex_new_line .
+#          lparen:
+#                  the left-parenthesis character without preceding white-space
+#          replacement-list:
+#                  pp-tokensopt
+REPLACEMENT_LIST : .
+REPLACEMENT_LIST : PP_TOKENS .
+#          pp-tokens:
+#                  preprocessing-token
+#                  pp-tokens preprocessing-token
+#          new-line:
+#                  the new-line character
+PP_TOKENS : PP_TOKEN .
+PP_TOKENS : PP_TOKENS PP_TOKEN .
+PP_TOKEN : lex_identifier .
+PP_TOKEN : lex_number .
+PP_TOKEN : lex_character_literal .
+PP_TOKEN : lex_string_literal .
+PP_TOKEN : lex_preprocessing_op_or_punc .
+
+CONSTANT_TOKEN : pp_defined lex_identifier .
+CONSTANT_TOKEN : pp_defined pp_left_paren lex_identifier pp_rparen .
+CONSTANT_TOKEN : PP_TOKEN .
+CONSTANT_EXPRESSION : CONSTANT_TOKEN .
+CONSTANT_EXPRESSION : CONSTANT_EXPRESSION CONSTANT_TOKEN .
+
+IDENTIFIER_LIST : lex_identifier .
+IDENTIFIER_LIST : IDENTIFIER_LIST pp_comma lex_identifier .

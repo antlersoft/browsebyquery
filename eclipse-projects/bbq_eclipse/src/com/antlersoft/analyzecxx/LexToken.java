@@ -12,4 +12,9 @@ class LexToken extends Token
 		super( symbol, value);
 		m_alt_symbol=alt_symbol;
 	}
+
+	Object getValue()
+	{
+		return value;
+	}
 }

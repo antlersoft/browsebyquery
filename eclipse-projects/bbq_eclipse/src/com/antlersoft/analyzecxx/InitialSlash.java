@@ -5,13 +5,13 @@ import java.io.IOException;
 import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.RuleActionException;
 
-public class InitialSlash implements LexState {
-	private Parser m_parser;
+class InitialSlash implements LexState {
+	private CxxReader m_reader;
 	private LexState m_caller;
 
-	InitialSlash( Parser parser, LexState caller)
+	InitialSlash( CxxReader reader, LexState caller)
 	{
-		m_parser=parser;
+		m_reader=reader;
 		m_caller=caller;
 	}
 
@@ -19,14 +19,14 @@ public class InitialSlash implements LexState {
 	{
 		switch ( c)
 		{
-			case '/' : return new LineComment( m_parser, m_caller);
-			case '*' : return new DelimitedComment( m_parser, m_caller);
+			case '/' : return new LineComment( m_reader, m_caller);
+			case '*' : return new DelimitedComment( m_reader, m_caller);
 		}
-		LexState result=new LexPunctuation( m_parser, m_caller).nextCharacter( '/');
+		LexState result=new LexPunctuation( m_reader, m_caller, '/');
 		return result.nextCharacter( c);
     }
     public LexState endOfFile() throws IOException, RuleActionException, LexException {
-		LexState result=new LexPunctuation( m_parser, m_caller).nextCharacter( '/');
+		LexState result=new LexPunctuation( m_reader, m_caller, '/');
 		return result.endOfFile();
     }
 }

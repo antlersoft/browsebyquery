@@ -22,10 +22,19 @@ public class CxxReader
 	/** Current line (_LINE_) */
 	int m_line;
 
+	/** Translation unit used as key in browse db */
+	String m_translation_unit;
+
 	/**
 	 * This is what we call when we include a file
 	 */
-	private ReaderDriver m_driver;
+	ReaderDriver m_driver;
+
+	/**
+	 * When a LexState object definitivel identifies a token, it sends it
+	 * here
+	 */
+	LexToPreprocess m_lex_to_preprocess;
 
 	/**
 	 * Parser derived class that handles inclusions and preprocessings
@@ -37,11 +46,13 @@ public class CxxReader
 	 */
 	private LexState m_first_phase;
 
-	public CxxReader( ReaderDriver driver, Properties initial_defines)
+	public CxxReader( ReaderDriver driver, String translation_unit,
+	Properties initial_defines)
 	{
 		m_driver=driver;
-		m_preprocess_parser=new PreprocessParser();
-		m_first_phase=new PreprocessorTokens();
+		m_lex_to_preprocess=new LexToPreprocess( this);
+		m_preprocess_parser=new PreprocessParser( initial_defines);
+		m_first_phase=new PreprocessorTokens( this);
 	}
 
 	public void nextCharacter( char c)
