@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 public class ClassWriter implements Cloneable
@@ -144,6 +146,11 @@ public class ClassWriter implements Cloneable
 		    ((FieldInfo)i.next()).write( classStream);
 		}
   		attributes.write( classStream);
+    }
+
+    public Collection getMethods()
+    {
+        return Collections.unmodifiableCollection( methods);
     }
 
     private void clearClass()

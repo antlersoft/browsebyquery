@@ -30,6 +30,16 @@ public class FieldInfo
       	attributes.read( classStream);
 	}
 
+    public String getName()
+    {
+        return attributes.getCurrentClass().getString( nameIndex);
+    }
+
+    public String getType()
+    {
+        return attributes.getCurrentClass().getString( descriptorIndex);
+    }
+
 	void write( DataOutputStream classStream)
 		throws IOException
 	{

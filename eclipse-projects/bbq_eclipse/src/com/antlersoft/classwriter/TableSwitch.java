@@ -49,7 +49,7 @@ public class TableSwitch extends OpCode
         offset+=4;
         for ( int i=lowend; i<=highend; i++)
         {
-            next.add( new InstructionPointer( quadToInt( instruction.operands, offset+4*i)+
+            next.add( new InstructionPointer( quadToInt( instruction.operands, offset+4*(i-lowend))+
             	instruction.instructionStart));
         }
     }

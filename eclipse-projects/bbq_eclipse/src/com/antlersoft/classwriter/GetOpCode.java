@@ -29,7 +29,7 @@ class GetOpCode extends SimpleOpCode
         	throw new CodeCheckException( "GetOpCode-- bad operand type");
         Stack new_stack=(Stack)old_stack.clone();
 
-        if ( getMnemonic().substring( 0, 2).equals( "put"))
+        if ( getMnemonic().startsWith( "put"))
         {
             if ( new_stack.pop()!=stack_type)
             	throw new CodeCheckException( "put value wrong size");
@@ -45,7 +45,7 @@ class GetOpCode extends SimpleOpCode
             	throw new CodeCheckException( "getfield: CAT2 on stack");
         }
 
- 		if ( getMnemonic().substring( 0, 2).equals( "get"))
+ 		if ( getMnemonic().startsWith( "get"))
    		{
 			new_stack.push( stack_type);
      	}

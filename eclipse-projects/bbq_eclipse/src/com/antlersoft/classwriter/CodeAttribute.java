@@ -10,13 +10,15 @@
 package classwriter;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.Stack;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-class CodeAttribute implements Attribute
+public class CodeAttribute implements Attribute
 {
 	public final static String typeString="Code";
 
@@ -64,19 +66,106 @@ class CodeAttribute implements Attribute
 		attributes.read( classStream);
 	}
 
- 	public Instruction atOffset( InstructionPointer ip)
+    public int getMaxStack() { return maxStack; }
+    public Instruction getByIndex( int i)
+    {
+        return (Instruction)instructions.get( i);
+    }
+
+ 	/**
+	 * Checks the code to make sure each instruction is visited, that there
+     * is a consistent stack depth at each instruction, and determines the
+     * maximum stack depth-- and saves it in the max stack variable.
+     */
+ 	public void codeCheck()
+        throws CodeCheckException
+    {
+        LinkedList next=new LinkedList();
+        Stack[] stackArray=new Stack[instructions.size()];
+
+        /*
+         * Initialize next collection with the start point of the
+         * method and with any exception handlers
+         */
+        next.add( new InstructionPointer( 0));
+        stackArray[0]=new Stack();
+        for ( Iterator i=exceptions.iterator(); i.hasNext();)
+        {
+            int handler=((CodeException)i.next()).handler;
+            InstructionPointer ip=new InstructionPointer(
+                ((CodeException)i.next()).handler);
+            next.add( ip);
+            int index=indexAtOffset( ip);
+            stackArray[index]=new Stack();
+            stackArray[index].push( ProcessStack.CAT1);
+        }
+        while ( ! next.isEmpty())
+        {
+            InstructionPointer ip=(InstructionPointer)next.getFirst();
+            next.removeFirst();
+            try
+            {
+                int index=indexAtOffset( ip);
+                if ( stackArray[index]==null)
+                {
+                    throw new
+                        CodeCheckException( "Instruction with undefined stack");
+                }
+                Stack old_stack=stackArray[index];
+                Instruction instruction=getByIndex( index);
+                Stack new_stack=instruction.opCode.stackUpdate( instruction,
+                    old_stack, this);
+                ArrayList new_pointers=new ArrayList( 20);
+                instruction.opCode.traverse( instruction, new_pointers, this);
+                for ( Iterator i=new_pointers.iterator(); i.hasNext();)
+                {
+                    ip=(InstructionPointer)i.next();
+                    index=indexAtOffset( ip);
+                    if ( stackArray[index]==null)
+                    {
+                        stackArray[index]=new_stack;
+                        next.add( ip);
+                    }
+                    else
+                    {
+                        if ( ! new_stack.equals( stackArray[index]))
+                            throw new CodeCheckException( "Stacks don't match");
+                    }
+                }
+                // Special processing for jsr opcodes
+                if ( instruction.opCode.getMnemonic().startsWith( "jsr"))
+                {
+                    ip=new InstructionPointer(
+                        instruction.getOffsetDestination());
+                    index=indexAtOffset( ip);
+                    new_stack=(Stack)new_stack.clone();
+                    new_stack.push( ProcessStack.CAT1);
+                    stackArray[index]=new_stack;
+                    next.add( ip);
+                }
+            }
+            catch ( CodeCheckException cce)
+            {
+                throw new CodeCheckException( cce.getMessage()+" at offset "
+                    +ip.currentPos);
+            }
+        }
+    }
+
+ 	public int indexAtOffset( InstructionPointer ip)
   		throws CodeCheckException
     {
-        for ( Iterator i=instructions.iterator(); i.hasNext();)
+        int result=0;
+        for ( Iterator i=instructions.iterator(); i.hasNext(); result++)
         {
             Instruction current=(Instruction)i.next();
             if ( current.instructionStart==ip.currentPos && current.wideFlag==
             	ip.wide)
-            	return current;
-            if ( current.instructionStart<=ip.currentPos)
-            	throw new CodeCheckException();
+            	return result;
+            if ( current.instructionStart>ip.currentPos)
+            	throw new CodeCheckException( "Bad instruction alignment");
         }
-        throw new CodeCheckException();
+        throw new CodeCheckException( "Offset beyond end of method");
     }
 
 	public LineNumberTableAttribute getLineNumberAttribute()
