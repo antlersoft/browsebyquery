@@ -14,4 +14,25 @@ class LexToken extends Token
 	{
 		super( symbol, value);
 	}
+
+	/**
+	 * Compares symbol and value for equality; used to match up
+	 * replacement lists in duplicate macro definitions.
+	 */
+	public boolean equals( Object o)
+	{
+		boolean result=( o instanceof LexToken);
+		if ( result)
+		{
+			LexToken other=(LexToken)o;
+			if ( other.symbol==symbol)
+			{
+				result=( other.value==null) ? ( value==null) :
+					( other.value.equals( value));
+			}
+			else
+				result=false;
+		}
+		return result;
+	}
 }

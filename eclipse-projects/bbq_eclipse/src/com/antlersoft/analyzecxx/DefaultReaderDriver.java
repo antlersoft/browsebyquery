@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Stack;
 
@@ -23,6 +24,7 @@ public class DefaultReaderDriver implements ReaderDriver
 	private Stack m_include_stack;
 	private ArrayList m_include_paths;
 	private Properties m_initial_defines;
+	private HashSet m_no_repeat_files;
 
 	/**
 	 * Entry on stack of currently open files (top level is translation
@@ -41,6 +43,28 @@ public class DefaultReaderDriver implements ReaderDriver
 		m_include_paths=new ArrayList( include_paths);
 		m_initial_defines=initial_defines;
 		m_include_stack=new Stack();
+		/*
+		#define __linux__ 1
+		#define linux 1
+		#define __i386__ 1
+		#define __i386 1
+		#define i386 1
+		#define __unix 1
+		#define __unix__ 1
+		#define __linux 1
+		#define __ELF__ 1
+		#define unix 1
+	    */
+	   initial_defines.setProperty( "__linux__", "1");
+	   initial_defines.setProperty( "linux", "1");
+	   initial_defines.setProperty( "__i386__", "1");
+	   initial_defines.setProperty( "__i386", "1");
+	   initial_defines.setProperty( "i386", "1");
+	   initial_defines.setProperty( "__unix", "1");
+	   initial_defines.setProperty( "__unix__", "1");
+	   initial_defines.setProperty( "__linux", "1");
+	   initial_defines.setProperty( "__ELF__", "1");
+	   initial_defines.setProperty( "unix", "1");
 	}
 
 	public void analyze( File translation_unit)
@@ -87,6 +111,11 @@ public class DefaultReaderDriver implements ReaderDriver
 			System.err.println( "Error popping include file stack: filenames will be wrong");
 		}
     }
+
+	public void dontRepeat( String file)
+	{
+		m_no_repeat_files.add( file);
+	}
 
 	public static void main( String args[])
 	throws Exception

@@ -38,8 +38,8 @@ public class LexPunctuation implements LexState {
     }
 
     public LexState endOfFile() throws IOException, RuleActionException, LexException {
-	/**@todo Implement this com.antlersoft.analyzecxx.LexState method*/
-	throw new java.lang.UnsupportedOperationException("Method endOfFile() not yet implemented.");
+		cleanRemainder();
+		return m_caller.endOfFile();
     }
 
 	private void addCharacter( char c)

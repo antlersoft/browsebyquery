@@ -10,6 +10,8 @@ public class InitialMacroReader implements LexReader {
 		m_list.add( next_token);
     }
 
+	public void noMoreTokens() {}
+
 	ArrayList getTokens()
 	{
 		return m_list;

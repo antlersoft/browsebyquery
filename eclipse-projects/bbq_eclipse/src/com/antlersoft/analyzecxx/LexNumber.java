@@ -194,8 +194,8 @@ class LexNumber implements LexState {
 		return this;
     }
     public LexState endOfFile() throws IOException, RuleActionException, LexException {
-	/**@todo Implement this com.antlersoft.analyzecxx.LexState method*/
-	throw new java.lang.UnsupportedOperationException("Method endOfFile() not yet implemented.");
+		finish();
+		return m_caller.endOfFile();
     }
 	private void finish()
 	throws RuleActionException, LexException

@@ -17,6 +17,13 @@ class ObjectMacro extends Macro
 		m_token_list=token_list;
 	}
 
+	ObjectMacro( String identifier, LexToken token)
+	{
+		super( identifier);
+		m_token_list=new ArrayList(1);
+		m_token_list.add( token);
+	}
+
 	ObjectMacro( String identifier)
 	{
 		this( identifier, m_empty_list);

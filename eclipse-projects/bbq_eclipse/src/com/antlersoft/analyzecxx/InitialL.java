@@ -27,6 +27,11 @@ class InitialL implements LexState {
 				result=new QuotedLiteral( m_reader, this, c,
 						  new StringLiteral( null, true));
 			break;
+			case '#' :
+			    m_reader.processToken( new PunctuationToken( PreprocessParser.pp_wide_stringize.toString(),
+					PreprocessParser.pp_wide_stringize));
+			    result=m_caller;
+				break;
 			default : result=new LexIdentifier( m_reader, m_caller, 'L');
 				result=result.nextCharacter( c);
 		}

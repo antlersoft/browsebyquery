@@ -9,4 +9,7 @@ interface LexReader
 	void processToken( LexToken next_token)
 		throws com.antlersoft.parser.RuleActionException,
 		LexException;
+
+	void noMoreTokens()
+		throws com.antlersoft.parser.RuleActionException;
 }

@@ -51,7 +51,7 @@ public class CxxReader
 	{
 		m_driver=driver;
 		m_lex_to_preprocess=new LexToPreprocess( this);
-		m_preprocess_parser=new PreprocessParser( initial_defines);
+		m_preprocess_parser=new PreprocessParser( this, initial_defines);
 		m_first_phase=new LineSplicer( this);
 		m_line=1;
 		m_file=m_translation_unit=translation_unit;

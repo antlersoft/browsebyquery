@@ -48,27 +48,15 @@ public class LexIdentifier implements LexState {
 		}
 		else
 		{
-			if ( m_buffer==null)
-			{
-				Symbol s=m_finder.currentSymbol();
-				if ( s==null)
-					m_reader.processToken(
-					new LexToken( PreprocessParser.lex_identifier, m_finder.getRemainder()));
-				else
-					m_reader.processToken(
-						new AltSymbolToken( PreprocessParser.lex_identifier,
-						s.toString(), s));
-			}
-			else
-				m_reader.processToken( new LexToken(
-				    PreprocessParser.lex_identifier, m_buffer.toString()));
+			finish();
 			result=m_caller.nextCharacter( c);
 		}
 		return result;
     }
+
     public LexState endOfFile() throws IOException, RuleActionException, LexException {
-	/**@todo Implement this com.antlersoft.analyzecxx.LexState method*/
-	throw new java.lang.UnsupportedOperationException("Method endOfFile() not yet implemented.");
+		finish();
+		return m_caller.endOfFile();
     }
 
 	private void addCharacter( char c)
@@ -87,5 +75,24 @@ public class LexIdentifier implements LexState {
 		}
 		else
 			m_buffer.append( c);
+	}
+
+	private void finish() throws IOException, RuleActionException, LexException
+	{
+		if ( m_buffer==null)
+		{
+			Symbol s=m_finder.currentSymbol();
+			if ( s==null)
+				m_reader.processToken(
+				new LexToken( PreprocessParser.lex_identifier, m_finder.getRemainder()));
+			else
+				m_reader.processToken(
+					new AltSymbolToken( PreprocessParser.lex_identifier,
+					s.toString(), s));
+		}
+		else
+			m_reader.processToken( new LexToken(
+				PreprocessParser.lex_identifier, m_buffer.toString()));
+
 	}
 }

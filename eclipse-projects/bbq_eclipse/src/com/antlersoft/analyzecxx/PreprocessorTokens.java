@@ -15,9 +15,9 @@ import com.antlersoft.parser.Symbol;
 class PreprocessorTokens implements LexState
 {
 	private LexReader m_reader;
-	private PreprocessParser m_parser;
+	private PreprocessParserBase m_parser;
 
-	PreprocessorTokens( LexReader reader, PreprocessParser parser)
+	PreprocessorTokens( LexReader reader, PreprocessParserBase parser)
 	{
 		m_reader=reader;
 		m_parser=parser;

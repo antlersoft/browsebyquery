@@ -12,4 +12,9 @@ interface ReaderDriver
 					  int next_line_in_this_file)
 		throws IOException;
 	void popIncludeFile( CxxReader reader);
+
+	/**
+	 * Support pragma once
+	 */
+	void dontRepeat( String file);
 }
