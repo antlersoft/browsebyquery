@@ -68,8 +68,8 @@ public class DiskAllocatorStore implements ObjectStore
 			objectOutputStream.writeObject( insertObject);
 			objectOutputStream.flush();
 			byte[] insertBuffer=byteOutputStream.toByteArray();
-			objectOutputStream.reset();
 			byteOutputStream.reset();
+			objectOutputStream=new ObjectOutputStream( byteOutputStream);
 			int region=allocator.allocate( insertBuffer.length);
 			allocator.write( region, insertBuffer);
 			Entry entry;
@@ -127,8 +127,8 @@ public class DiskAllocatorStore implements ObjectStore
 			objectOutputStream.writeObject( toReplace);
 			objectOutputStream.flush();
 			byte[] replaceBuffer=byteOutputStream.toByteArray();
-			objectOutputStream.reset();
 			byteOutputStream.reset();
+			objectOutputStream=new ObjectOutputStream( byteOutputStream);
 			if ( replaceBuffer.length>entry.size ||
 				replaceBuffer.length<=entry.size/2
 				&& entry.size>=32)
@@ -182,18 +182,19 @@ public class DiskAllocatorStore implements ObjectStore
 		{
 			if ( storeState.dirty)
 			{
-				allocator.free( stateRegion);
+				if ( stateRegion!=0)
+					allocator.free( stateRegion);
 				objectOutputStream.writeObject( storeState);
 				objectOutputStream.flush();
 				byte[] storeBuffer=byteOutputStream.toByteArray();
 				stateRegion=allocator.allocate( storeBuffer.length);
 				allocator.write( stateRegion, storeBuffer);
-				objectOutputStream.reset();
 				byteOutputStream.reset();
 				dataOutputStream.writeInt( stateRegion);
 				dataOutputStream.flush();
 				allocator.write( allocator.getInitialRegion(), byteOutputStream.toByteArray());
 				byteOutputStream.reset();
+				objectOutputStream=new ObjectOutputStream( byteOutputStream);
 				storeState.dirty=false;
 			}
 			allocator.sync();
@@ -279,6 +280,11 @@ public class DiskAllocatorStore implements ObjectStore
 		public int hashCode()
 		{
 			return index;
+		}
+
+		public boolean equals( Object t)
+		{
+			return ( ( t instanceof DAKey) && ((DAKey)t).index==index && ((DAKey)t).reuseCount==reuseCount);
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class ObjectDB
 		}
 		else
 		{
-			rootObjects=new ObjectRef( (Persistent)getObjectByKey( rootKey));
+			rootObjects=new ObjectRef( (PersistentHashtable)getObjectByKey( rootKey));
 		}
     }
 
@@ -74,6 +74,7 @@ public class ObjectDB
 		if ( retVal==null)
 		{
 			retVal=(Persistent)store.retrieve( key);
+			retVal._getPersistentImpl().objectKey=key;
 			cachedObjects.put( key, retVal);
 		}
 
@@ -90,14 +91,14 @@ public class ObjectDB
 		((PersistentHashtable)rootObjects.getReferenced()).put( key, object);
 	}
 
-	public synchronized Object getRootObject( String key, Object object)
+	public synchronized Object getRootObject( String key)
 	{
 		return ((PersistentHashtable)rootObjects.getReferenced()).get( key);
 	}
 
     public synchronized void commit()
     {
-		for ( Iterator i=cachedObjects.entrySet().iterator(); i.hasNext();)
+		for ( Iterator i=cachedObjects.values().iterator(); i.hasNext();)
 		{
 			Persistent toCommit=(Persistent)i.next();
 			synchronized ( toCommit)

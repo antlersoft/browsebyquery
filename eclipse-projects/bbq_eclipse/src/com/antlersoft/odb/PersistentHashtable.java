@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class PersistentHashtable extends Hashtable implements Persistent
 {
-	private PersistentImpl persistentImpl;
+	private transient PersistentImpl persistentImpl;
 
 	public PersistentHashtable()
 	{
@@ -39,6 +39,8 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
 	public synchronized PersistentImpl _getPersistentImpl()
 	{
+		if ( persistentImpl==null)
+			persistentImpl=new PersistentImpl();
 		return persistentImpl;
 	}
 
@@ -89,8 +91,14 @@ public class PersistentHashtable extends Hashtable implements Persistent
     public synchronized java.lang.Object put( Object key, Object value)
     {
 		ObjectDB.makeDirty( this);
-		return ((ObjectRef)super.put( new DualRef( key), new DualRef( value))).
-			getReferenced();
+		if ( ! ( key instanceof ObjectRef))
+		    key=new DualRef( key);
+		if ( ! ( value instanceof ObjectRef))
+			value=new DualRef( value);
+		Object putResult=super.put( key, value);
+		if ( putResult!=null)
+			return ((ObjectRef)putResult).getReferenced();
+		return null;
 	}
 
 	public synchronized void putAll( Map m)

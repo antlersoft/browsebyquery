@@ -149,6 +149,7 @@ public class DiskAllocator
 			randomFile.writeInt( prevOffset);
 			randomFile.seek( freeOffset+freeSize-REGION_END_OFFSET);
 			randomFile.writeInt( freeSize-size);
+			freeSize=size;
 			if ( prevOffset==0)
 				lastFreeRegionOffset=newFreeOffset;
 			else
@@ -163,6 +164,7 @@ public class DiskAllocator
 			}
 		}
 		/* Else mark the region as no longer free */
+		else
 		{
 			randomFile.seek( freeOffset);
 			randomFile.writeInt( freeSize);
@@ -268,7 +270,7 @@ public class DiskAllocator
 			{
 				// Scan towards the end of the file
 				for ( previousFreeOffset=nextRegionOffset+nextRegionSize;
-					previousFreeOffset<lastFreeRegionOffset;
+					previousFreeOffset<=lastFreeRegionOffset;
 					previousFreeOffset=previousFreeOffset+nextRegionSize)
 				{
 					randomFile.seek( previousFreeOffset);
@@ -276,7 +278,7 @@ public class DiskAllocator
 					if ( nextRegionSize<0)
 						break;
 				}
-				if ( nextFreeOffset>lastFreeRegionOffset)
+				if ( previousFreeOffset>lastFreeRegionOffset)
 				{
 					throw new DiskAllocatorException(
 						"Corrupt file walking region list to next free");
@@ -320,7 +322,7 @@ public class DiskAllocator
 
 	public int getInitialRegion()
 	{
-		return initialRegionOffset;
+		return initialRegionOffset+REGION_START_OFFSET;
 	}
 
 	public int getRegionSize( int regionOffset)
@@ -331,7 +333,7 @@ public class DiskAllocator
 			MIN_CHUNK_SIZE+REGION_OVERHEAD_SIZE)
 			throw new DiskAllocatorException( "Invalid region");
 		randomFile.seek( regionOffset);
-		return randomFile.readInt();
+		return randomFile.readInt()-REGION_OVERHEAD_SIZE;
 	}
 
 	public byte[] read( int offset, int size)
@@ -476,7 +478,7 @@ public class DiskAllocator
 		randomFile.writeInt( initialRegionSize);
 		if ( lastFreeRegionOffset!=0)
 		{
-			randomFile.writeInt( fileSize-usedLength);
+			randomFile.writeInt( -( fileSize-usedLength));
 			/* No other free regions */
 			randomFile.writeInt( 0);
 			randomFile.writeInt( 0);
