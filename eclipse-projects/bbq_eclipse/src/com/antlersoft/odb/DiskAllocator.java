@@ -408,8 +408,6 @@ public class DiskAllocator
 	public void write( int offset, byte[] toWrite)
 		throws IOException, DiskAllocatorException
 	{
-if ( offset==704)
-    System.out.println( "Here");
 		int size=toWrite.length;
 		if ( offset<initialRegionOffset || offset>fileSize)
 			throw new DiskAllocatorException( "Not a region");
@@ -476,6 +474,18 @@ if ( offset==704)
 		}
 		ps.println( stats.toString());
 	}
+
+    public void walkRegions( PrintStream ps)
+        throws IOException, DiskAllocatorException
+    {
+        Statistics stats=new Statistics();
+
+        for ( Iterator i=iterator(); i.hasNext();)
+        {
+            stats.addValue( getRegionSize( ((Integer)i.next()).intValue()));
+        }
+        ps.println( stats.toString());
+    }
 
 	private static final int OVERHEAD_SIZE=20;
 	private static final int REGION_OVERHEAD_SIZE=8;
@@ -621,6 +631,8 @@ if ( offset==704)
 			int size= -randomFile.readInt();
 			if ( size<=0)
 				throw new DiskAllocatorException( "Free list corrupt reading structure");
+            if ( size>largestFreeRegion)
+                largestFreeRegion=size;
 			freeList.add( new FreeRegion( nextFreeRegion, size));
 			nextFreeRegion=randomFile.readInt();
 		}

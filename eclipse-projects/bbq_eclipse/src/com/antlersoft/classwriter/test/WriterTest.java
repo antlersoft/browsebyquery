@@ -13,6 +13,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 import com.antlersoft.classwriter.*;
+import com.antlersoft.odb.DiskAllocator;
 import com.antlersoft.util.NetByte;
 
 public class WriterTest
@@ -140,6 +141,18 @@ public class WriterTest
         System.arraycopy( args, 2, newArgs, 0, newArgs.length);
         Class.forName( args[0]).getMethod( args[1], parameterTypes).invoke(
             null, new Object[] { newArgs});
+    }
+
+    public static void walkFreeList( String[] args)
+        throws Throwable
+    {
+        DiskAllocator da=new DiskAllocator( new File( args[0]));
+        System.out.println( args[0]+" free:");
+        da.walkInternalFreeList( System.out);
+        System.out.println( args[0]+" used:");
+        da.walkRegions( System.out);
+
+        da.close();
     }
 
     public static void main( String[] args)
