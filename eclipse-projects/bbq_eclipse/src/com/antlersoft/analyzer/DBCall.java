@@ -2,7 +2,7 @@ package analyzer;
 
 import odb.ObjectRef;
 
-class DBCall extends DBReference
+public class DBCall extends DBReference
 {
     DBCall( DBMethod s, DBMethod t, int l)
     {
@@ -21,4 +21,22 @@ class DBCall extends DBReference
     {
 	return "Call to "+getTarget().toString()+" from "+getSource().toString()+" at line "+String.valueOf( lineNumber);
     }
+
+	public int hashCode()
+	{
+		return getSource().hashCode()^lineNumber^target.hashCode();
+	}
+
+	public boolean equals( Object toCompare)
+	{
+		if ( toCompare instanceof DBCall)
+		{
+			DBCall f=(DBCall)toCompare;
+
+			return f.getSource().equals( getSource()) && f.lineNumber==lineNumber &&
+				f.getTarget().equals( getTarget());
+		}
+		return false;
+	}
+
 }

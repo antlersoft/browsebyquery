@@ -25,4 +25,23 @@ public class DBFieldReference extends DBReference
     {
 		return ( writeReference ? "Write" : "Read")+" reference to "+getTarget().toString()+" from "+getSource().toString()+" at line "+String.valueOf( lineNumber);
     }
+
+	public int hashCode()
+	{
+		return getSource().hashCode()^lineNumber^target.hashCode()+( writeReference ? 0 : 63);
+	}
+
+	public boolean equals( Object toCompare)
+	{
+		if ( toCompare instanceof DBFieldReference)
+		{
+			DBFieldReference f=(DBFieldReference)toCompare;
+
+			return f.getSource().equals( getSource()) && f.lineNumber==lineNumber &&
+				( ( writeReference && f.writeReference) || 
+				! ( writeReference || f.writeReference))
+				&& f.getTarget().equals( getTarget());
+		}
+		return false;
+	}
 }
