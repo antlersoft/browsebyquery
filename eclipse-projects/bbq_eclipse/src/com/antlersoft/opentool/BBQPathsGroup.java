@@ -20,9 +20,15 @@ public class BBQPathsGroup implements PropertyGroup
 {
     private static String CATEGORY="com.antlersoft.bbq";
     private static String PATH_NAME="DBPath";
+    private static String CLASS_PATH="ClassPath";
+    private static String UPDATE_TIME="UpdateTime";
 
     static NodeProperty pathsProperty=new NodeProperty(
         CATEGORY, PATH_NAME, "");
+    static NodeProperty classPathProperty=new NodeProperty(
+        CATEGORY, CLASS_PATH, "");
+    static NodeProperty updateTimeProperty=new NodeProperty(
+        CATEGORY, UPDATE_TIME, "0");
 
     public BBQPathsGroup()
     {

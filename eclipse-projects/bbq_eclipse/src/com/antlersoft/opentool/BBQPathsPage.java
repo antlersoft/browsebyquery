@@ -34,6 +34,7 @@ class BBQPathsPage extends PropertyPage
 {
     private JLabel pathDisplay;
     private JFileChooser chooser;
+    private JTextField classEntry;
     private JButton setPath;
     private BBQNode node;
 
@@ -49,6 +50,9 @@ class BBQPathsPage extends PropertyPage
         pathDisplay=new JLabel();
         box.add( pathDisplay);
         box.add( setPath);
+        box.add( new JLabel( "Non-default class path:"));
+        classEntry=new JTextField( 60);
+        box.add( classEntry);
         add( box);
     }
 
@@ -61,10 +65,20 @@ class BBQPathsPage extends PropertyPage
                 "analyzer.pj").getPath();
         }
         pathDisplay.setText( path);
+        classEntry.setText( BBQPathsGroup.classPathProperty.getValue( node));
     }
 
     public boolean isValid()
     {
+        try
+        {
+            Url.parsePath( classEntry.getText());
+        }
+        catch ( Exception e)
+        {
+            reportValidationError( classEntry, e.getMessage());
+            return false;
+        }
         return true;
     }
 
@@ -76,6 +90,7 @@ class BBQPathsPage extends PropertyPage
     public void writeProperties()
     {
         node.getTool().setAnalyzerPath( node, pathDisplay.getText());
+        BBQPathsGroup.classPathProperty.setValue( node, classEntry.getText());
     }
 
     class SetPathListener implements ActionListener

@@ -14,6 +14,8 @@ import java.util.HashMap;
 
 import com.borland.primetime.PrimeTime;
 
+import com.borland.primetime.build.BuildProcess;
+
 import com.borland.primetime.ide.Browser;
 import com.borland.primetime.ide.NodeViewerFactory;
 import com.borland.primetime.ide.NodeViewer;
@@ -54,7 +56,8 @@ System.out.println( "createNodeViewer");
                     projectToAnalyzer.put( project, analyzer);
                 }
             }
-            return new ProjectBBQ( analyzer, parm1.getBrowser());
+            return new ProjectBBQ( analyzer, parm1.getBrowser(), (BBQNode)
+                parm1.getNode());
         }
         catch ( Exception e)
         {
@@ -92,6 +95,7 @@ System.out.println( "initOpenTool");
         BBQTool tool=new BBQTool();
         Browser.registerNodeViewerFactory( tool);
         Browser.addStaticBrowserListener( new BBQBrowserListener( tool));
+        BuildProcess.addStaticBuildListener( new BBQBuildListener( true));
         PropertyManager.registerPropertyGroup( new BBQPathsGroup());
     }
 

@@ -10,10 +10,21 @@
  */
 package com.antlersoft.opentool;
 
+import java.awt.EventQueue;
+
 import java.io.File;
+import java.io.BufferedInputStream;
+
+import java.util.Stack;
+
+import javax.swing.JButton;
 
 import com.borland.jbuilder.node.JBProject;
 
+import com.borland.primetime.vfs.Filesystem;
+import com.borland.primetime.vfs.Url;
+
+import com.antlersoft.analyzer.AnalyzeClass;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.ObjectAnalyzeDB;
 import com.antlersoft.analyzer.query.QueryParser;
@@ -48,14 +59,23 @@ System.out.println( "<init>ProjectAnalyzer");
         goodPath=analyzerFile.getCanonicalPath();
     }
 
-    void updateDB()
+    void updateDB( final BBQNode node, final JButton button)
         throws Exception
     {
-System.out.println( project.getPaths().getOutPath().getFileObject().getCanonicalPath());
-        DBClass.addFileToDB( project.getPaths().getOutPath().getFileObject(),
-            db);
-        db.closeDB();
-        db.openDB( goodPath);
+        long lastModified=Long.parseLong( BBQPathsGroup.updateTimeProperty.
+            getValue( node));
+        String classPath=BBQPathsGroup.classPathProperty.getValue( node);
+        Url classUrl;
+        if ( classPath.length()==0)
+        {
+            classUrl=project.getPaths().getOutPath();
+        }
+        else
+        {
+            classUrl=new Url( classPath);
+        }
+        button.setEnabled( false);
+        ( new UpdateDBThread( classUrl, button, lastModified, node)).start();
     }
 
     void setAnalyzerPath( BBQNode node, String newPath)
@@ -80,5 +100,81 @@ System.out.println( project.getPaths().getOutPath().getFileObject().getCanonical
         }
         BBQPathsGroup.pathsProperty.setValue( node, newPath);
         goodPath=testPath;
+    }
+
+    class UpdateDBThread extends Thread
+    {
+        private Url classUrl;
+        private JButton button;
+        private long lastModified;
+        private BBQNode node;
+
+        UpdateDBThread( Url url, JButton b, long l, BBQNode n)
+        {
+            classUrl=url;
+            button=b;
+            lastModified=l;
+            node=n;
+        }
+
+        public void run()
+        {
+            Stack directoryStack=new Stack();
+            directoryStack.push( classUrl);
+            Filesystem system=classUrl.getFilesystem();
+            final long startTime=System.currentTimeMillis();
+            try
+            {
+                while ( ! directoryStack.isEmpty())
+                {
+                    Url currentDirectory=(Url)directoryStack.pop();
+                    Url[] contents=system.getChildren( currentDirectory, null,
+                        Filesystem.TYPE_BOTH);
+                    for ( int i=0; i<contents.length; i++)
+                    {
+                        if ( system.isDirectory( contents[i]))
+                            directoryStack.push( contents[i]);
+                        else
+                        {
+                            if ( contents[i].getFileExtension().
+                                equals( "class") &&
+                                system.getLastModified( contents[i])>
+                                lastModified)
+                            {
+System.out.println( "Analyzing "+contents[i].toString());
+                                BufferedInputStream bis=
+                                    new BufferedInputStream(
+                                    system.getInputStream( contents[i]));
+                                DBClass.addClassToDB( new AnalyzeClass( bis),
+                                    db);
+                                bis.close();
+                            }
+                        }
+                    }
+                }
+                db.closeDB();
+                db.openDB( goodPath);
+                EventQueue.invokeLater( new Runnable() {
+                        public void run()
+                        {
+                            BBQPathsGroup.updateTimeProperty.setValue( node,
+                                Long.toString( startTime));
+                        }
+                    });
+            }
+            catch ( Exception ioe)
+            {
+ioe.printStackTrace();
+            }
+            finally
+            {
+                EventQueue.invokeLater( new Runnable() {
+                        public void run()
+                        {
+                            button.setEnabled( true);
+                        }
+                    });
+            }
+        }
     }
 }

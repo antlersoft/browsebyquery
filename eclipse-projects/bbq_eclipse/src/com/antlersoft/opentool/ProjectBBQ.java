@@ -57,11 +57,13 @@ public class ProjectBBQ implements NodeViewer
     private HistoryList historyList;
     private StoredValuesList storedValuesList;
     private Browser browser;
+    private BBQNode node;
 
-    ProjectBBQ( ProjectAnalyzer a, Browser b)
+    ProjectBBQ( ProjectAnalyzer a, Browser b, BBQNode n)
     {
         analyzer=a;
         browser=b;
+        node=n;
         component=createComponents();
     }
 
@@ -151,7 +153,7 @@ public class ProjectBBQ implements NodeViewer
     {
         // Create components
         JButton queryButton=new JButton( "Query");
-        JButton analyzeButton=new JButton( "Analyze");
+        final JButton analyzeButton=new JButton( "Analyze");
         Dimension buttonDimension=analyzeButton.getPreferredSize();
         queryButton.setMinimumSize( buttonDimension);
         queryButton.setMaximumSize( buttonDimension);
@@ -212,7 +214,7 @@ public class ProjectBBQ implements NodeViewer
                 {
                     try
                     {
-                        analyzer.updateDB();
+                        analyzer.updateDB( node, analyzeButton);
                     }
                     catch ( Exception e)
                     {
