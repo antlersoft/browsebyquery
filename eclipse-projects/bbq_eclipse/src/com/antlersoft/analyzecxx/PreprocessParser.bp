@@ -145,8 +145,14 @@ CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier OPT_WHITE_S
 return ((PreprocessParser)parser).defineObjectMacro( ((LexToken)valueStack.get( valueStack.size()-4)).value,
     (ArrayList)valueStack.get( valueStack.size()-2));
 }" .
-CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line .
-CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen OPT_WHITE_SPACE pp_rparen REPLACEMENT_LIST lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line "{
+return ((PreprocessParser)parser).defineFunctionMacro( ((LexToken)valueStack.get( valueStack.size()-7)).value,
+    (ArrayList)valueStack.get( valueStack.size()-5), (ArrayList)valueStack.get( valueStack.size()-2));
+}" .
+CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen OPT_WHITE_SPACE pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line "{
+return ((PreprocessParser)parser).defineFunctionMacro( ((LexToken)valueStack.get( valueStack.size()-7)).value,
+    new ArrayList(), (ArrayList)valueStack.get( valueStack.size()-2));
+}" .
 CONTROL_LINE : INITIAL_HASH pp_undef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line "{
 return ((PreprocessParser)parser).undefineMacro( ((LexToken)valueStack.get( valueStack.size()-3)).value);
 }" .

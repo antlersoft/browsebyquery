@@ -5,5 +5,10 @@ package com.antlersoft.analyzecxx;
  * when defining macros
  */
 interface ConcatenatedTokenPairReplacer {
+	/**
+	 * Returns a token that will replace a pair of tokens with a
+	 * concatenation operator between them in a token list.  May return
+	 * null if no suitable replacement token is found.
+	 */
 	LexToken replacePair( LexToken first, LexToken second);
 }

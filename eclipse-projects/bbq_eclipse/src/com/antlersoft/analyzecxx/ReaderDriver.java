@@ -16,5 +16,5 @@ interface ReaderDriver
 	/**
 	 * Support pragma once
 	 */
-	void dontRepeat( String file);
+	void dontRepeat( CxxReader reader);
 }

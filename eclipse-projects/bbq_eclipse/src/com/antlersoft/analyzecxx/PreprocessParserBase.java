@@ -133,8 +133,6 @@ e.printStackTrace();
 	final Object defineObjectMacro( String name, ArrayList replacement_list)
 	throws RuleActionException
 	{
-		normalizeWhitespace( replacement_list);
-
 		Macro macro=(Macro)m_macros.get( name);
 		if ( macro!=null)
 		{
@@ -148,7 +146,70 @@ e.printStackTrace();
 			else
 				throw new RuleActionException( "Redefining function macro "+name+" as object macro.");
 		}
+		normalizeReplacementTokens( replacement_list);
+		replaceConcat( replacement_list,
+					   new ConcatenatedTokenPairReplacer() {
+			public LexToken replacePair( LexToken a, LexToken b)
+			{
+				return concatenateTokens( a, b);
+			}
+		});
+
 		m_macros.put( name, new ObjectMacro( name, replacement_list));
+		return "";
+	}
+
+	final Object defineFunctionMacro( String name, ArrayList identifier_list, ArrayList replacement_list)
+	throws RuleActionException
+	{
+		HashMap identifier_names=new HashMap( identifier_list.size());
+		int identifier_count=0;
+		for ( Iterator i=identifier_list.iterator(); i.hasNext();)
+		{
+			identifier_names.put( ((LexToken)i.next()).value, new Integer( identifier_count++));
+		}
+		if ( identifier_names.size()!=identifier_list.size())
+			throw new RuleActionException( "Error defining macro: "+name+".  Duplicate parameter names.");
+		normalizeReplacementTokens( replacement_list);
+		int len=replacement_list.size();
+		// Look for parameters and stringized parameters in the replacement list
+		for ( int i=0; i<len; ++i)
+		{
+			LexToken token=(LexToken)replacement_list.get( i);
+			if ( token.symbol==PreprocessParser.lex_identifier)
+			{
+				Integer arg_index=(Integer)identifier_names.get( token.value);
+				if ( arg_index!=null)
+				{
+					// Look for stringize operator
+					int candidate_stringize=isStringize( replacement_list, i-1);
+					if ( candidate_stringize>=0)
+					{
+						LexToken string_expander=new StringExpander( arg_index.intValue(),
+							((AltSymbolToken)replacement_list.get( candidate_stringize)).m_alt_symbol==
+							PreprocessParser.pp_wide_stringize);
+						while ( i-- >candidate_stringize)
+						{
+							replacement_list.remove( candidate_stringize);
+							len--;
+						}
+						replacement_list.set( i, string_expander);
+					}
+					else
+					{
+						replacement_list.set( i, new ParameterExpander( arg_index.intValue()));
+					}
+				}
+			}
+		}
+		// Look for and replace concatenation operators in the replacement list
+		replaceConcat( replacement_list, new ConcatenatedTokenPairReplacer () {
+			public LexToken replacePair( LexToken a, LexToken b)
+			{
+				return new ConcatExpander( PreprocessParserBase.this, a, b);
+			}
+		});
+		m_macros.put( name, new FunctionMacro( name, identifier_count, replacement_list));
 		return "";
 	}
 
@@ -162,8 +223,7 @@ e.printStackTrace();
 	 * Remove trailing whitespace and convert repeated whitespace to
 	 * single whitespace in list of tokens
 	 */
-	private void normalizeWhitespace( ArrayList tokens)
-	throws RuleActionException
+	final static void normalizeWhitespace( ArrayList tokens)
 	{
 		boolean whitespace_last=false;
 		for ( Iterator i=tokens.iterator(); i.hasNext();)
@@ -183,14 +243,67 @@ e.printStackTrace();
 		{
 			tokens.remove( tokens.size()-1);
 		}
-		if ( tokens.size()>0)
+	}
+
+	/**
+	 * Concatenate two lex tokens as with the ## operator; if no single
+	 * valid token results, return null
+	 */
+	final LexToken concatenateTokens( LexToken a, LexToken b)
+	{
+		String value=(a.value==null ? a.symbol.toString() : a.value)+
+		(b.value==null ? b.symbol.toString() : b.value);
+	    int len=value.length();
+		try
 		{
-			confirmNotConcatenate( (LexToken)tokens.get(0));
-			confirmNotConcatenate( (LexToken)tokens.get( tokens.size()-1));
+			InitialMacroReader reader = new InitialMacroReader();
+			LexState initial_tokens = new PreprocessorTokens(reader, this);
+			for (int i = 0; i < len; ++i) {
+				initial_tokens = initial_tokens.nextCharacter(value.charAt(
+					i));
+			}
+			initial_tokens=initial_tokens.endOfFile();
+			ArrayList result=reader.getTokens();
+			if ( result.size()==1)
+				return (LexToken)result.get(0);
+		}
+		catch ( Exception e)
+		{
+System.err.println( "Exception parsing concatenated token: "+value);
+e.printStackTrace();
+		}
+		return null;
+	}
+
+	private static int isStringize( ArrayList tokens, int start)
+	{
+		if ( start<0)
+			return -1;
+		if ( start>=tokens.size())
+			return -1;
+		LexToken token=(LexToken)tokens.get( start);
+		if ( token.symbol==PreprocessParser.lex_white_space)
+			return isStringize( tokens, start-1);
+		if ( token instanceof AltSymbolToken)
+		{
+			Symbol alt=((AltSymbolToken)token).m_alt_symbol;
+			if ( alt==PreprocessParser.pp_hash || alt==PreprocessParser.pp_wide_stringize)
+				return start;
+		}
+		return -1;
+	}
+
+	private static void normalizeReplacementTokens( ArrayList tokens)
+	throws RuleActionException
+	{
+		normalizeWhitespace( tokens);
+		if (tokens.size() > 0) {
+			confirmNotConcatenate( (LexToken) tokens.get(0));
+			confirmNotConcatenate( (LexToken) tokens.get(tokens.size() - 1));
 		}
 	}
 
-	private void confirmNotConcatenate( LexToken token)
+	private static void confirmNotConcatenate( LexToken token)
 	throws RuleActionException
 	{
 		if ( token instanceof PunctuationToken)
@@ -198,6 +311,55 @@ e.printStackTrace();
 			if ( ((PunctuationToken)token).m_alt_symbol==
 				PreprocessParser.pp_token_concat)
 			   throw new RuleActionException( "## must not be the first or last token in a replacement list");
+		}
+	}
+
+	private static void replaceConcat( ArrayList tokens, ConcatenatedTokenPairReplacer replacer)
+	{
+		int len=tokens.size()-1;
+		for ( int i=1; i<len; ++i)
+		{
+			LexToken token=(LexToken)tokens.get( i);
+			if ( token instanceof AltSymbolToken && ((AltSymbolToken)token).m_alt_symbol==
+				 PreprocessParser.pp_token_concat)
+			{
+				int previous_token_index=i-1;
+				if ( ((LexToken)tokens.get( previous_token_index)).symbol==
+					 PreprocessParser.lex_white_space)
+				{
+					if ( previous_token_index==0)
+						continue;
+					--previous_token_index;
+				}
+				int next_token_index=i+1;
+				if ( ((LexToken)tokens.get( next_token_index)).symbol==
+					 PreprocessParser.lex_white_space)
+				{
+					if ( next_token_index==len)
+						break;
+					++next_token_index;
+				}
+				LexToken replacement=replacer.replacePair(
+								(LexToken)tokens.get( previous_token_index),
+								(LexToken)tokens.get( next_token_index));
+				if ( replacement!=null)
+				{
+					int removed=next_token_index-previous_token_index+1;
+					while ( 0<removed--)
+					{
+						tokens.remove( previous_token_index);
+					}
+					tokens.add( previous_token_index, replacement);
+					len-=next_token_index-previous_token_index;
+					i=previous_token_index;
+				}
+				else
+				{
+					tokens.remove(i);
+					--len;
+					--i;
+				}
+			}
 		}
 	}
 

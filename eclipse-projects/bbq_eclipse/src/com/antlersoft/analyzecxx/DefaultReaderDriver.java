@@ -43,6 +43,7 @@ public class DefaultReaderDriver implements ReaderDriver
 		m_include_paths=new ArrayList( include_paths);
 		m_initial_defines=initial_defines;
 		m_include_stack=new Stack();
+		m_no_repeat_files=new HashSet();
 		/*
 		#define __linux__ 1
 		#define linux 1
@@ -71,6 +72,7 @@ public class DefaultReaderDriver implements ReaderDriver
 	throws IOException, RuleActionException, LexException
 	{
 		m_include_stack.clear();
+		m_no_repeat_files.clear();
 		ReaderFile reader_file=new ReaderFile();
 		reader_file.m_file=translation_unit;
 		reader_file.m_line=1;
@@ -112,9 +114,17 @@ public class DefaultReaderDriver implements ReaderDriver
 		}
     }
 
-	public void dontRepeat( String file)
+	public void dontRepeat( CxxReader reader)
 	{
-		m_no_repeat_files.add( file);
+		try
+		{
+			m_no_repeat_files.add( ( (ReaderFile) m_include_stack.peek()).
+								  m_file.getCanonicalPath());
+		}
+		catch ( IOException ioe)
+		{
+			ioe.printStackTrace();
+		}
 	}
 
 	public static void main( String args[])
