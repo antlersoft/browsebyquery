@@ -6,7 +6,7 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-class DBMethod implements Serializable, Cloneable
+public class DBMethod implements Serializable, Cloneable
 {
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
@@ -17,9 +17,10 @@ class DBMethod implements Serializable, Cloneable
     String signature;
     Vector calls;
     Vector calledBy;
+    Vector fieldReferences;
 
     private boolean resolved;
-    static Vector emptyVector=new Vector();
+    static public Vector emptyVector=new Vector();
 
     public DBMethod( String key, AnalyzerDB db)
 	throws Exception
@@ -44,7 +45,7 @@ class DBMethod implements Serializable, Cloneable
 	    return resolved ? REAL : VIRTUAL;
     }
 
-    static String makeKey( String className, String methodName, String descriptor)
+    public static String makeKey( String className, String methodName, String descriptor)
     {
 	StringBuffer sb=new StringBuffer();
 	sb.append( className);
@@ -74,6 +75,15 @@ class DBMethod implements Serializable, Cloneable
     {
 	if ( calls!=null)
 	    return calls.elements();
+	return emptyVector.elements();
+    }
+
+    public Enumeration getReferences()
+    {
+	if ( fieldReferences!=null)
+	{
+	    return fieldReferences.elements();
+	}
 	return emptyVector.elements();
     }
 
@@ -107,7 +117,9 @@ class DBMethod implements Serializable, Cloneable
 	}
     }
 
-    public void setFromAnalyzeClass( AnalyzeClass ac, int methodIndex, AnalyzerDB db)
+    public void setFromAnalyzeClass( final AnalyzeClass ac, int methodIndex,
+	final AnalyzerDB db)
+	throws CodeReader.BadInstructionException
     {
 	calls=null;
 	AnalyzeClass.FieldInfo mi=ac.methods[methodIndex];
@@ -119,7 +131,59 @@ class DBMethod implements Serializable, Cloneable
 		    calls=new Vector();
 		else
 		    calls.removeAllElements();
-		new CodeReader( this, ac, (AnalyzeClass.CodeAttribute)mi.attributes[i].value, db).processOpCodes();
+		if ( fieldReferences==null)
+		    fieldReferences=new Vector();
+		else
+		    fieldReferences.removeAllElements();
+		CodeReader cr=new CodeReader( (AnalyzeClass.CodeAttribute)mi.attributes[i].value);
+		cr.setMethodInvokeCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
+		{
+		    public void processReference( CodeReader.OpCode read, int position,
+			int cpOffset, int lineNumber)
+		    {
+			try
+			{
+			    AnalyzeClass.CPTypeRef methodRef=(AnalyzeClass.CPTypeRef)ac.constantPool[cpOffset];
+			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
+			    calls.addElement( new DBCall(
+				DBMethod.this,
+				(DBMethod)db.getWithKey( "analyzer.DBMethod",
+				DBMethod.makeKey(
+				ac.getClassName( methodRef.classIndex),
+				ac.getString( nameAndType.nameIndex),
+				ac.getString( nameAndType.descriptorIndex)
+				)), lineNumber));
+			}
+			catch ( Exception e)
+			{
+			    e.printStackTrace();
+			}	
+		    }
+		} );
+		cr.setFieldReferenceCallback( new CodeReader.ReferenceCallback() // CodeReader.MethodInvokeCallback contract
+		{
+		    public void processReference( CodeReader.OpCode read, int position,
+			int cpOffset, int lineNumber)
+		    {
+			try
+			{
+			    AnalyzeClass.CPTypeRef methodRef=(AnalyzeClass.CPTypeRef)ac.constantPool[cpOffset];
+			    AnalyzeClass.CPNameAndType nameAndType=(AnalyzeClass.CPNameAndType)ac.constantPool[methodRef.nameAndTypeIndex];
+			    fieldReferences.addElement( new DBFieldReference(
+				DBMethod.this,
+				(DBField)db.getWithKey( "analyzer.DBField",
+				DBField.makeKey(
+				ac.getClassName( methodRef.classIndex),
+				ac.getString( nameAndType.nameIndex)
+				)), lineNumber, read.mnemonic.substring( 0, 3).equals( "put")));
+			}
+			catch ( Exception e)
+			{
+			    e.printStackTrace();
+			}	
+		    }
+		} );
+		cr.processOpCodes();
 		Hashtable calledTable=new Hashtable();
 		Enumeration e;
 		for ( e=calls.elements(); e.hasMoreElements(); )
@@ -138,8 +202,26 @@ class DBMethod implements Serializable, Cloneable
 		    DBMethod called=(DBMethod)e.nextElement();
 		    called.addCalledBy( this, (Vector)calledTable.get( called));
 		}
+		calledTable.clear();
+		for ( e=fieldReferences.elements(); e.hasMoreElements(); )
+		{
+		    DBFieldReference reference=(DBFieldReference)e.nextElement();
+		    Vector calledByMethod=(Vector)calledTable.get( reference.target);
+		    if ( calledByMethod==null)
+		    {
+			calledByMethod=new Vector();
+			calledTable.put( reference.target, calledByMethod);
+		    }
+		    calledByMethod.addElement( reference);
+		}
+		for ( e=calledTable.keys(); e.hasMoreElements(); )
+		{
+		    DBField called=(DBField)e.nextElement();
+		    called.addReferencedBy( this, (Vector)calledTable.get( called));
+		}
 		break;
 	    }
 	}
     }
+
 }
