@@ -1,0 +1,12 @@
+package com.antlersoft.analyzecxx;
+
+import java.util.*;
+
+import com.antlersoft.parser.*;
+
+class ConstExprParser extends ConstExprParserBase
+{
+    ConstExprParser()
+    {
+        super( parseStates);
+    }

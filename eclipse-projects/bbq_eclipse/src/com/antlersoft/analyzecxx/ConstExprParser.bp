@@ -1,0 +1,23 @@
+reserved cep_exclamation "!"
+reserved cep_not_eq "!="
+reserved cep_eq "=="
+reserved cep_lt "<"
+reserved cep_lt_eq "<="
+reserved cep_gt ">"
+reserved cep_gt_eq ">="
+reserved cep_lparen "("
+reserved cep_rparen ")"
+reserved cep_number
+
+symbol CEP_VALUE
+symbol CEP_UNARY_OP
+symbol CEP_BINARY_OP
+
+CEP_VALUE : cep_number "{ return valueStack.get( valueStack.size()-1); }" .
+CEP_VALUE : cep_lparen CEP_VALUE cep_rparen "{ return valueStack.get( valueStack.size()-2); }" .
+CEP_VALUE : CEP_UNARY_OP CEP_VALUE .
+CEP_VALUE : CEP_VALUE CEP_BINARY_OP CEP_VALUE .
+
+CEP_UNARY_OP : cep_exclamation .
+
+CEP_BINARY_OP : cep_eq .

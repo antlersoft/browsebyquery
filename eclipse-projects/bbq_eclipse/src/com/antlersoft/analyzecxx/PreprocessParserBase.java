@@ -93,13 +93,14 @@ class PreprocessParserBase extends Parser {
 
 	final boolean evaluateConstantExpression( ArrayList tokens)
 	{
-		normalizeWhitespace( tokens);
+
 		return false;
 	}
 
 	private ArrayList expandToArray( ArrayList tokens)
 	throws RuleActionException
 	{
+		normalizeWhitespace( tokens);
 		InitialMacroReader reader=new InitialMacroReader();
 		MacroExpander expander=new MacroExpander( m_macros, reader);
 		for ( Iterator i=tokens.iterator(); i.hasNext();)
@@ -315,6 +316,7 @@ e.printStackTrace();
 	{
 		if ( m_skipping)
 			return WhiteSpace.m_white_space_token;
+		tokens=expandToArray( tokens);
 		normalizeWhitespace( tokens);
 		LexToken first_token=(LexToken)tokens.get(0);
 		if ( first_token.symbol==PreprocessParser.lex_string_literal &&
