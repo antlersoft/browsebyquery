@@ -2,7 +2,7 @@ package com.antlersoft.analyzer.query;
 
 public class ParseException extends Exception
 {
-    static String parseMessage( QueryParser qp)
+    static String parseMessage( QueryParserBase qp)
     {
         StringBuffer retval=new StringBuffer();
 
@@ -25,7 +25,7 @@ public class ParseException extends Exception
         return retval.toString();
     }
 
-    ParseException( QueryParser qp)
+    ParseException( QueryParserBase qp)
     {
         super( parseMessage( qp));
     }

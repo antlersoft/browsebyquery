@@ -82,7 +82,7 @@ Filter : exists leftParen Transform rightParen "{
     }" .
 
 Filter : Filter LogicalOperator Filter "{
-    return new LogicalOpFilter( (QueryParser.ReservedWord)valueStack.get( valueStack.size()-2),
+    return new LogicalOpFilter( (ReservedWord)valueStack.get( valueStack.size()-2),
         (Filter)valueStack.get( valueStack.size()-3),
         (Filter)valueStack.get( valueStack.size()-1));
     }" 4 .
