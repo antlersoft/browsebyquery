@@ -150,6 +150,16 @@ public class CodeAttribute implements Attribute
                     +ip.currentPos);
             }
         }
+        int max_stack=0;
+        for ( int i=0; i<stackArray.length; i++)
+        {
+            if ( stackArray[i]==null)
+                throw new CodeCheckException( "Unvisited opcode at offset "+
+                    ((Instruction)instructions.get( i)).instructionStart);
+            if ( stackArray[i].size()>max_stack)
+                max_stack=stackArray[i].size();
+        }
+        maxStack=max_stack;
     }
 
  	public int indexAtOffset( InstructionPointer ip)
