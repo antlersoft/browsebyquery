@@ -1,0 +1,19 @@
+package com.antlersoft.query;
+
+import java.text.DateFormat;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.antlersoft.parser.*;
+
+
+/**
+ * A test class, since the basic vocab can't do much
+ */
+public class Basic extends BasicBase
+{
+public Basic()
+{
+super( parseStates);
+}

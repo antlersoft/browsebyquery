@@ -11,6 +11,14 @@ public abstract class SetOperator implements Enumeration {
 	public static final int WITHOUT=3;
 	public static final int DEINTERSECTION=4;
 
+	private static final String[] m_type_names=new String[] {
+		null,
+		"union",
+		"intersection",
+		"without",
+		"deintersection"
+	};
+
 	public SetOperator( Comparator comp, Enumeration a, Enumeration b)
 	{
 		m_comp=comp;
@@ -61,6 +69,14 @@ public abstract class SetOperator implements Enumeration {
 			throw new NoSuchElementException();
 		}
 		return result;
+	}
+
+	public static int getType( String type_name)
+	{
+		int i;
+		for ( i=1; i<m_type_names.length &&
+			  ! type_name.equals( m_type_names[i]); ++i);
+		return i;
 	}
 
 	protected abstract Object determineNext();
