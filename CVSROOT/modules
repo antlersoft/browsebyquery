@@ -38,3 +38,5 @@ mars_mola_viewer -a mars_mola_viewer_ref \
 	humus_demos/libs
 
 mars_mola_viewer_ref -d humus_demos/Framework/antlersoft cppquery/com/antlersoft RefObject.cpp RefObject.h RefPtr.h
+
+cpp_home cppquery com
