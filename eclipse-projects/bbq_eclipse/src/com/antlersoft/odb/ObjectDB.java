@@ -119,7 +119,6 @@ public class ObjectDB
     				{
     	    			store.update( impl.objectKey, toCommit);
     				}
-                    impl.obsolete=true;
     			}
     		}
         }
@@ -135,9 +134,16 @@ public class ObjectDB
                     "Error cleaning up failed commit",
                     new ObjectStoreException( ose.getMessage(), e));
             }
-            throw new ObjectStoreException( "Commit failed", e);
+            throw new ObjectDBException( "Commit failed", e);
         }
 		store.sync();
+        for ( Iterator i=cachedObjects.values().iterator();
+            i.hasNext();)
+        {
+            PersistentImpl impl=((Persistent)i.next())._getPersistentImpl();
+            impl.cachedReference=null;
+            impl.obsolete=true;
+        }
 		cachedObjects.clear();
 	}
 
