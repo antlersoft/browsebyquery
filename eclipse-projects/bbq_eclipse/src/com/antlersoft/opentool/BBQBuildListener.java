@@ -15,7 +15,7 @@ import com.borland.primetime.build.BuildProcess;
 import com.borland.primetime.node.Project;
 import com.borland.primetime.vfs.Url;
 
-public class BBQBuildListener implements BuildListener
+public class BBQBuildListener extends BuildListener
 {
     private boolean _isStatic;
 
