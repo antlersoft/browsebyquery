@@ -24,4 +24,6 @@ public interface ObjectStore
 		throws ObjectStoreException;
     public void sync()
 		throws ObjectStoreException;
+    public void rollback()
+        throws ObjectStoreException;
 }

@@ -193,6 +193,13 @@ public class DiskAllocatorStore implements ObjectStore
 		}
 	}
 
+    public void rollback()
+        throws ObjectStoreException
+    {
+        throw new ObjectStoreException(
+            "DiskAllocatorStore does not support rollback");
+    }
+
 	private DiskAllocator allocator;
 	private StoreState storeState;
 	private int stateRegion;

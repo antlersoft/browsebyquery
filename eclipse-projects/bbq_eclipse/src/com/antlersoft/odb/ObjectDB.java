@@ -7,7 +7,7 @@ import java.util.Iterator;
  * Works in concert with ObjectRef and PersistentImpl objects to provide caching,
  * object tracking, and transaction semantics, and all client-visible
  * persistence functionality.   Written to make use of an object that
- * implements the ObjectStore interface. 
+ * implements the ObjectStore interface.
  */
 public class ObjectDB
 {
@@ -83,7 +83,7 @@ public class ObjectDB
 
 	public ObjectKey getObjectKey( Object object)
 	{
-		return ((Persistent)object)._getPersistentImpl().objectKey;	
+		return ((Persistent)object)._getPersistentImpl().objectKey;
 	}
 
 	public synchronized void makeRootObject( String key, Object object)
@@ -98,20 +98,42 @@ public class ObjectDB
 
     public synchronized void commit()
     {
-		for ( Iterator i=cachedObjects.values().iterator(); i.hasNext();)
-		{
-			Persistent toCommit=(Persistent)i.next();
-			synchronized ( toCommit)
-			{
-				PersistentImpl impl=toCommit._getPersistentImpl();
-				if ( impl.dirty)
-				{
-	    			store.update( impl.objectKey, toCommit);
-					impl.dirty=false;
-				}
-			}
-		}
+        try
+        {
+    		for ( Iterator i=cachedObjects.values().iterator(); i.hasNext();)
+    		{
+    			Persistent toCommit=(Persistent)i.next();
+    			synchronized ( toCommit)
+    			{
+    				PersistentImpl impl=toCommit._getPersistentImpl();
+    				if ( impl.dirty)
+    				{
+    	    			store.update( impl.objectKey, toCommit);
+    					impl.dirty=false;
+    				}
+    			}
+    		}
+        }
+        catch ( Exception e)
+        {
+            try
+            {
+                store.rollback();
+            }
+            catch ( ObjectStoreException ose)
+            {
+                throw new ObjectStoreException(
+                    "Error cleaning up failed commit",
+                    new ObjectStoreException( ose.getMessage(), e));
+            }
+            throw new ObjectStoreException( "Commit failed", e);
+        }
 		store.sync();
 		cachedObjects.clear();
 	}
+
+    public synchronized void rollback()
+    {
+        cachedObjects.clear();
+    }
 }
