@@ -11,12 +11,13 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-public class DBField implements Persistent, Cloneable, SourceObject
+public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 {
     ObjectRef dbclass;
     String name;
     String descriptor;
     Vector referencedBy;
+    int accessFlags;
 
     private transient PersistentImpl _persistentImpl;
 
@@ -75,6 +76,11 @@ public class DBField implements Persistent, Cloneable, SourceObject
     {
 	descriptor=s;
 	ObjectDB.makeDirty( this);
+    }
+
+    public int getAccessFlags()
+    {
+        return accessFlags;
     }
 
     public DBClass getDBClass()

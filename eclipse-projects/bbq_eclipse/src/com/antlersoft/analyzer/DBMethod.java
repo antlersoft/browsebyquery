@@ -16,7 +16,7 @@ import com.antlersoft.odb.PersistentImpl;
 
 import com.antlersoft.util.NetByte;
 
-public class DBMethod implements Persistent, Cloneable, SourceObject
+public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlags
 {
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
@@ -29,6 +29,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
     Vector calledBy;
     Vector fieldReferences;
     Vector stringReferences;
+    int accessFlags;
 
     private boolean resolved;
     private int lineNumber;
@@ -161,10 +162,16 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
 		}
     }
 
+    public int getAccessFlags()
+    {
+        return accessFlags;
+    }
+
     public void setFromClassWriter( final ClassWriter ac, MethodInfo mi,
 		final AnalyzerDB db)
 		throws CodeCheckException
     {
+        accessFlags=mi.getFlags();
 		CodeAttribute codeAttribute=mi.getCodeAttribute();
 		if ( codeAttribute==null)
 		{

@@ -21,7 +21,7 @@ import com.antlersoft.odb.PersistentImpl;
 
 import com.antlersoft.classwriter.*;
 
-public class DBClass implements Persistent, Cloneable, SourceObject
+public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 {
     String name;
     Vector superClasses;
@@ -29,6 +29,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject
     private Hashtable fields;
     Vector derivedClasses;
     private boolean resolved;
+    int accessFlags;
 
 		private transient PersistentImpl _persistentImpl;
 
@@ -61,7 +62,12 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 		return resolved;
     }
 
-    public Enumeration getMethods()
+    public int getAccessFlags()
+    {
+       return accessFlags;
+    }
+
+   public Enumeration getMethods()
     {
 		return new FromRefEnumeration( methods.elements());
     }
@@ -151,6 +157,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 		dbc.clearSuperClasses();
 		dbc.clearFields();
 		dbc.resolved=true;
+        dbc.accessFlags=ac.getFlags();
 		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{
@@ -163,8 +170,11 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 		}
 		for ( i=ac.getFields().iterator(); i.hasNext();)
 		{
-		    dbc.addField( (DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-				DBField.makeKey( dbc.name, ((FieldInfo)i.next()).getName())));
+            FieldInfo fi=(FieldInfo)i.next();
+            DBField new_field=(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
+				DBField.makeKey( dbc.name, fi.getName()));
+            new_field.accessFlags=fi.getFlags();
+            dbc.addField( new_field);
 		}
 		for ( i=ac.getMethods().iterator(); i.hasNext();)
 		{
