@@ -125,7 +125,7 @@ class TransformTransform extends TransformImpl
 					overlay.appliesTo().getName());
 			}
 		}
-		_result=overlay.resultClass();
+		_applies=base.appliesTo();
 	}
 
 	class OverlayEnumeration extends QueryParser.BiEnumeration
