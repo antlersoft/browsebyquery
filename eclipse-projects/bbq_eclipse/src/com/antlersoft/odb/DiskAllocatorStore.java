@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.HashMap;
 
+import com.antlersoft.util.RandomInputStream;
+import com.antlersoft.util.RandomOutputStream;
+
 public class DiskAllocatorStore implements ObjectStore
 {
 	// TODO: Make synchronization allow more concurrency
