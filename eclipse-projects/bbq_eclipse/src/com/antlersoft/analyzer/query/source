@@ -4,12 +4,12 @@ symbol CompleteQuery
 symbol Filter
 symbol UncalledPolymorphic
 symbol Identity
-symbol MethodExpression
 symbol SetOperator
 symbol Reference
 symbol LogicalOperator
+
 reserved all
-reserved and
+reserved and 4 left
 reserved are
 reserved base
 reserved by
@@ -18,21 +18,23 @@ reserved calls
 reserved Class "class"
 reserved classes
 reserved containing
-reserved deintersection
+reserved count
+reserved deintersection 2 left
 reserved derived
 reserved execute
+reserved exists
 reserved fields
 reserved finalToken
 reserved from
 reserved in
 reserved is
-reserved intersection
+reserved intersection 2 left
 reserved leftParen "("
 reserved matching
 reserved methodcast
 reserved methods
-reserved NOT "not"
-reserved or
+reserved NOT "not" 5 right
+reserved or 4 left
 reserved of
 reserved polymorphic
 reserved previous
@@ -46,8 +48,8 @@ reserved set
 reserved that
 reserved to
 reserved uncalled
-reserved union
-reserved without
+reserved union 2 left
+reserved without 2 left
 reserved write
 
 CompleteQuery : SetExpression finalToken "{
@@ -67,11 +69,15 @@ SetOperator : without "{ return without; }" .
 LogicalOperator : and "{ return and; }" .
 LogicalOperator : or "{ return or; }" .
 
+Filter : exists leftParen Transform rightParen "{
+    return new Existing( (Transform)valueStack.get( valueStack.size()-2));
+    }" .
+
 Filter : Filter LogicalOperator Filter "{
     return new LogicalOpFilter( (QueryParser.ReservedWord)valueStack.get( valueStack.size()-2),
         (Filter)valueStack.get( valueStack.size()-3),
         (Filter)valueStack.get( valueStack.size()-1));
-    }" .
+    }" 4 .
 Filter : leftParen Filter rightParen  "{
 	return (Filter)valueStack.get( valueStack.size()-2);
 	}" .
@@ -88,14 +94,14 @@ Transform : Transform Transform "{
 	int size=valueStack.size();
 	return new TransformTransform( (Transform)valueStack.get( valueStack.size()-2),
 		(Transform)valueStack.get( valueStack.size()-1));
-	}" .
+	}"  3 .
 Transform : Filter "{
 	return new FilterTransform( (Filter)valueStack.get( valueStack.size()-1)); }" .
 Transform : Transform SetOperator Transform "{
 	int size=valueStack.size();
 	return new SetOpTransform( (ReservedWord)valueStack.get( size-2),
 		(Transform)valueStack.get( size-3), (Transform)valueStack.get( size-1));
-	}" .
+	}" 2 .
 Transform : Transform that Identity Filter "{
 	int size=valueStack.size();
 	return new TransformTransform(
@@ -105,12 +111,13 @@ Transform : Transform that Identity Filter "{
 Transform : leftParen Transform rightParen  "{
 	return (Transform)valueStack.get( valueStack.size()-2);
 	}" .
+Transform : count "{ return new Count(); }" .
 
 SetExpression : Transform SetExpression "{
 	int size=valueStack.size();
 	return new TransformSet( (SetExpression)valueStack.get( size-1),
 		(Transform)valueStack.get( size-2));
-	}" .
+	}" 3 .
 
 SetExpression : execute SetExpression "{
 	return new ExecuteExpression( (SetExpression)valueStack.get(
@@ -131,7 +138,7 @@ SetExpression : SetExpression SetOperator SetExpression "{
 	int size=valueStack.size();
 	return new SetOpExpression( (ReservedWord)valueStack.get( size-2),
 		(SetExpression)valueStack.get( size-3), (SetExpression)valueStack.get( size-1));
-	}" .
+	}" 2 .
 
 SetExpression : previous "{
 	QueryParser qp=(QueryParser)parser;
@@ -175,21 +182,10 @@ SetExpression : set nameSymbol to SetExpression "{
     qp.storedValues.put( valueName, se);
 	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
 //System.out.println( qp.storedValuesSupport.hasListeners( \"storedValues\") ? \"Has listeners\" : \"No listeners\");
-    return se; }" .
+    return se; }" 1 .
 SetExpression : nameSymbol "{ QueryParser qp=(QueryParser)parser;
     SetExpression retVal=(SetExpression)qp.storedValues.get(
 	    valueStack.get( valueStack.size()-1));
     if ( retVal==null)
 	    throw new RuleActionException( \"Unknown name: \"+valueStack.get( valueStack.size()-1));
     return retVal; }" .
-
-MethodExpression : SetExpression methodcast "{
-	parser.clearRecovery();
-    return (SetExpression)valueStack.get(valueStack.size()-2);
-    }" .
-
-SetExpression : SetExpression errorSymbol "{
-	SetExpression oe=(SetExpression)valueStack.get( valueStack.size()-2);
-	((QueryParser)parser).pushCastToken( oe);
-	return oe;
-	}" .
