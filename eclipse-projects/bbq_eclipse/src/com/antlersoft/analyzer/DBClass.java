@@ -150,9 +150,9 @@ public class DBClass implements Persistent, Cloneable
 	}
 	for ( i=0; i<ac.fields.length; i++)
 	{
-	    db.getWithKey( "com.antlersoft.analyzer.DBField",
+	    dbc.addField( (DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
 		DBField.makeKey( dbc.name, ac.getString(
-            ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex)));
+            ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex))));
 	}
 	for ( i=0; i<ac.methods.length; i++)
 	{
@@ -162,6 +162,7 @@ public class DBClass implements Persistent, Cloneable
 		ac.getString( mi.nameIndex),
 		ac.getString( mi.descriptorIndex)
 		));
+        dbc.addMethod( method);
 	    method.setFromAnalyzeClass( ac, i, db);
 	}
     }
