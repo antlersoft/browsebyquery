@@ -28,6 +28,7 @@ mars_mola_viewer -a mars_mola_viewer_ref \
 	com/antlersoft/warroom/MapCanvas.java \
 	com/antlersoft/warroom/MapTransform.java \
 	com/antlersoft/warroom/DimensionsConsumer.java \
+	com/antlersoft/warroom/DateTimeField.java \
 	com/antlersoft/appcontext \
 	com/antlersoft/demo3d \
 	com/antlersoft/util/URLFrame.java \
