@@ -1,25 +1,19 @@
 package analyzer.query;
 
 import java.util.Enumeration;
+import analyzer.DBFieldReference;
 import analyzer.DBField;
-import analyzer.AnalyzerDB;
 
-class FieldReferencesTo implements QueryParser.FieldReferenceSet
+class FieldReferencesTo extends TransformImpl
 {
-	private QueryParser.FieldSet _fields;
-	FieldReferencesTo( QueryParser.FieldSet fields)
+	FieldReferencesTo()
 	{
-		_fields=fields;
+		super( DBField.class, DBFieldReference.class);
 	}
 
-	public Enumeration execute( AnalyzerDB db)
+	public Enumeration transform( Object base)
 		throws Exception
 	{
-		return new QueryParser.BiEnumeration( _fields.execute( db)) {
-			public Enumeration getNextCurrent( Object base)
-			{
-				return ((DBField)base).getReferencedBy();
-			}
-		};
+		return ((DBField)base).getReferencedBy();
 	}
 }
