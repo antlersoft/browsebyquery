@@ -37,12 +37,17 @@ public class PersistentHashtable extends Hashtable implements Persistent
 		ObjectDB.setPersistent( this);
 	}
 
-	public PersistentImpl _getPersistentImpl()
+	public synchronized PersistentImpl _getPersistentImpl()
 	{
 		return persistentImpl;
 	}
 
-	//public synchronized void clear();
+	public synchronized void clear()
+	{
+		ObjectDB.makeDirty( this);
+		clear();
+	}
+
     public synchronized java.lang.Object clone()
 	{
 		return new PersistentHashtable( this);
@@ -57,7 +62,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
     public java.util.Set entrySet()
 	{
-		return new FromRefEntrySet( super.entrySet()); 
+		return new FromRefEntrySet( this, super.entrySet()); 
 	}
 
     //public synchronized boolean equals(java.lang.Object);
@@ -70,7 +75,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
     //public boolean isEmpty();
     public java.util.Set keySet()
 	{
-		return new FromRefSet( super.keySet());
+		return new FromRefSet( this, super.keySet());
 	}
 
     public synchronized java.util.Enumeration keys()
@@ -80,6 +85,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
     public synchronized java.lang.Object put( Object key, Object value)
     {
+		ObjectDB.makeDirty( this);
 		return ((ObjectRef)super.put( new DualRef( key), new DualRef( value))).
 			getReferenced();
 	}
@@ -98,12 +104,13 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
     public synchronized java.lang.Object remove( Object key)
 	{
+		ObjectDB.makeDirty( this);
 		return ((ObjectRef)super.get( key)).getReferenced();
 	}
 
     //public int size();
     public java.util.Collection values()
 	{
-		return new FromRefCollection( super.values());
+		return new FromRefCollection( this, super.values());
 	}
 }

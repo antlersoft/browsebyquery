@@ -5,8 +5,8 @@ import java.util.Set;
 
 class FromRefSet extends FromRefCollection implements Set
 {
-	FromRefSet( Set s)
-	{
-		super( s);
-	}
+    FromRefSet( Persistent containing, Set s)
+    {
+        super( containing, s);
+    }
 }

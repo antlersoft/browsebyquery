@@ -42,9 +42,9 @@ public class ObjectDB
 		return current;
     }
 
-	public static void makeDirty( Persistent toDirty)
+	public static void makeDirty( Object toDirty)
 	{
-		toDirty._getPersistentImpl().dirty=true;
+		((Persistent)toDirty)._getPersistentImpl().dirty=true;
 	}
 
 	public synchronized void makePersistent( Object toStore)

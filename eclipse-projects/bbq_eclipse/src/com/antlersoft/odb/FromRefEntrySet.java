@@ -7,10 +7,12 @@ import java.util.Iterator;
 class FromRefEntrySet implements java.util.Set 
 {
     private Set _fromMap;
+    private ObjectRef _containing;
 
-    FromRefEntrySet( Set fromMap)
+    FromRefEntrySet( Persistent containing, Set fromMap)
     {
 	_fromMap=fromMap;
+	_containing=new ObjectRef( containing);
     }
 
     // Not supported so we don't have to change
@@ -27,6 +29,7 @@ class FromRefEntrySet implements java.util.Set
 
     public void clear()
     {
+	ObjectDB.makeDirty( _containing.getReferenced());
 	_fromMap.clear();
     }
 
@@ -57,21 +60,24 @@ class FromRefEntrySet implements java.util.Set
 
     public java.util.Iterator iterator()
     {
-	return new EntrySetIterator( _fromMap.iterator());
+	return new EntrySetIterator( _containing, _fromMap.iterator());
     }
 
     public boolean remove(java.lang.Object o)
     {
+	ObjectDB.makeDirty( _containing.getReferenced());
 	return _fromMap.remove( o);
     }
 
     public boolean removeAll(java.util.Collection c)
     {
+	ObjectDB.makeDirty( _containing.getReferenced());
 	return _fromMap.removeAll( c);
     }
 
     public boolean retainAll(java.util.Collection c)
     {
+	ObjectDB.makeDirty( _containing.getReferenced());
 	return _fromMap.retainAll( c);
     }
 
@@ -124,10 +130,12 @@ class FromRefEntrySet implements java.util.Set
     static class EntrySetIterator implements java.util.Iterator 
     {
 	private Iterator _base;
+	private ObjectRef _containing;
 
-	EntrySetIterator( Iterator base)
+	EntrySetIterator( ObjectRef containing, Iterator base)
 	{
 	    _base=base;
+	    _containing=containing;
 	}
 	public boolean hasNext()
 	{ return _base.hasNext(); }
@@ -135,6 +143,7 @@ class FromRefEntrySet implements java.util.Set
 	{ return new Entry( (java.util.Map.Entry)_base.next()); }
 	public void remove()
 	{
+	    ObjectDB.makeDirty( _containing.getReferenced());
 	    _base.remove();
 	}
     }
