@@ -85,4 +85,12 @@ public class SymbolFinder
 	{
 		return m_remainder.toString();
 	}
+	
+	/**
+	 * Return true if there is a remainder
+	 */
+	public final boolean isRemainder()
+	{
+		return m_remainder.length()>0;
+	}
 }

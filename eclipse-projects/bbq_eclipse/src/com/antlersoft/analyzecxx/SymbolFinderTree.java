@@ -1,6 +1,7 @@
 package com.antlersoft.analyzecxx;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 
 import com.antlersoft.parser.Symbol;
@@ -48,7 +49,7 @@ public class SymbolFinderTree
 			int i=0;
 			for ( Iterator it=m_tree.entrySet().iterator(); it.hasNext(); ++i)
 			{
-				TreeMap.Entry entry=(TreeMap.Entry)it.next();
+				Map.Entry entry=(Map.Entry)it.next();
 				result.m_links[i].m_match=((Character)entry.getKey()).charValue();
 				result.m_links[i].m_next=((BuildNode)entry.getValue()).makeNode();
 			}

@@ -1,6 +1,7 @@
 package com.antlersoft.analyzecxx;
 
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.Symbol;
 import java.io.IOException;
 
 public class LexPunctuation implements LexState {
@@ -27,7 +28,10 @@ public class LexPunctuation implements LexState {
 
     public LexState nextCharacter(char c) throws IOException, RuleActionException, LexException {
 		if ( ! CharClass.isOperator( c))
+		{
+			cleanRemainder();
 			return m_caller.nextCharacter( c);
+		}
 		addCharacter( c);
 		return this;
     }
@@ -41,12 +45,61 @@ public class LexPunctuation implements LexState {
 	{
 		if ( ! m_finder.accept( c))
 		{
+			rescan();
 		}
 		else
 		{
 			if ( ! m_finder.canGrow())
 			{
-				m_reader.m_lex_to_preprocess( new LexToken
+				Symbol s=m_finder.currentSymbol();
+				m_reader.m_lex_to_preprocess.processToken( new PunctuationToken(
+						s.toString(), s));
+				m_finder.reset();
+			}
+		}
+	}
+	
+	private void rescan()
+	{
+		Symbol s=m_finder.currentSymbol();
+		if ( s!=null)
+		{
+			m_reader.m_lex_to_preprocess.processToken( new PunctuationToken(
+					s.toString(), s));
+		}
+		String r=null;
+		if ( m_finder.isRemainder())
+		{
+			r=m_finder.getRemainder();
+		}
+		m_finder.reset();
+		if ( r!=null)
+		{
+			int remainder_length=r.length();
+			int start_index=0;
+			if ( s==null)
+			{
+				start_index=1;
+				m_reader.m_lex_to_preprocess.processToken( new PunctuationToken( r.substring( 0,1),
+					null));
+			}
+			for ( ; start_index<remainder_length; ++start_index)
+				addCharacter( r.charAt( start_index));
+		}
+	}
+	
+	private void cleanRemainder()
+	{
+		rescan();
+		if ( m_finder.isRemainder())
+		{
+			String r=m_finder.getRemainder();
+			m_finder.reset();
+			int remainder_length=r.length();
+			for ( int i=0; i<remainder_length; ++i)
+			{
+				m_reader.m_lex_to_preprocess.processToken(
+						new PunctuationToken( r.substring( i, i+1), null));
 			}
 		}
 	}
