@@ -102,7 +102,7 @@ public class ClassWriter implements Cloneable
 		int methodsCount=classStream.readUnsignedShort();
 		for ( i=0; i<methodsCount; i++)
 		{
-		    methods.add( readFieldInfo( classStream));
+		    methods.add( readMethodInfo( classStream));
 		}
   		attributes.read( classStream);
     }
@@ -406,10 +406,16 @@ public class ClassWriter implements Cloneable
         }
     }
 
-    FieldInfo readFieldInfo( DataInputStream classStream)
+    private FieldInfo readFieldInfo( DataInputStream classStream)
     	throws IOException
     {
     	return new FieldInfo( classStream, this);
+    }
+
+    private MethodInfo readMethodInfo( DataInputStream classStream)
+    	throws IOException
+    {
+    	return new MethodInfo( classStream, this);
     }
 
 }

@@ -34,6 +34,19 @@ public class AttributeList implements Cloneable
     	return (Collection)attributes.clone();
     }
 
+    public Attribute getAttributeByType( String type)
+    {
+    	for ( Iterator i=attributes.iterator(); i.hasNext();)
+        {
+        	Attribute next=(Attribute)i.next();
+         	if ( next.getTypeString().equals( type))
+            {
+            	return next;
+            }
+        }
+        return null;
+    }
+
     public void read( DataInputStream classStream)
     	throws IOException
     {
