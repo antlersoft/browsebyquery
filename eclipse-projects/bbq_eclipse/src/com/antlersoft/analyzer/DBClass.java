@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -17,6 +18,8 @@ import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
+
+import com.antlersoft.classwriter.*;
 
 public class DBClass implements Persistent, Cloneable, SourceObject
 {
@@ -139,47 +142,47 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 		ObjectDB.makeDirty( this);
     }
 
-    public static void addClassToDB( AnalyzeClass ac, AnalyzerDB db)
+    public static void addClassToDB( ClassWriter ac, AnalyzerDB db)
 		throws Exception
     {
 		DBClass dbc=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass",
-		    ac.getClassName( ac.thisClassIndex));
+		    ac.getClassName( ac.getCurrentClassIndex()));
 		dbc.clearMethods();
 		dbc.clearSuperClasses();
 		dbc.clearFields();
 		dbc.resolved=true;
-		int superClassIndex=ac.superClassIndex;
+		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{
 		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName( superClassIndex)));
 		}
-		int i;
-		for ( i=0; i<ac.interfaces.length; i++)
+		Iterator i;
+		for ( i=ac.getInterfaces().iterator(); i.hasNext();)
 		{
-		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName(ac.interfaces[i])));
+		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName(((Integer)i.next()).intValue())));
 		}
-		for ( i=0; i<ac.fields.length; i++)
+		for ( i=ac.getFields().iterator(); i.hasNext();)
 		{
 		    dbc.addField( (DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-				DBField.makeKey( dbc.name, ac.getString(
-            ((AnalyzeClass.FieldInfo)ac.fields[i]).nameIndex))));
+				DBField.makeKey( dbc.name, ((FieldInfo)i.next()).getName())));
 		}
-		for ( i=0; i<ac.methods.length; i++)
+		for ( i=ac.getMethods().iterator(); i.hasNext();)
 		{
-		    AnalyzeClass.FieldInfo mi=ac.methods[i];
+		    MethodInfo mi=(MethodInfo)i.next();
 		    DBMethod method=(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
 				DBMethod.makeKey( dbc.name,
-				ac.getString( mi.nameIndex),
-				ac.getString( mi.descriptorIndex)
+				mi.getName(),
+				mi.getType()
 				));
-        dbc.addMethod( method);
-		    method.setFromAnalyzeClass( ac, i, db);
+			dbc.addMethod( method);
+		    method.setFromClassWriter( ac, mi, db);
 		}
     }
 
     public static void addFileToDB( File file, AnalyzerDB db)
 		throws Exception
     {
+    	ClassWriter cl=new ClassWriter();
 		if ( file.isDirectory())
 		{
 		    File[] listFiles;
@@ -211,7 +214,8 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 				{
 				    try
 				    {
-						addClassToDB( new AnalyzeClass( zip.getInputStream( entry)), db);
+						cl.readClass( zip.getInputStream( entry));
+						addClassToDB( cl, db);
 				    }
 				    // If it is not a class file, don't fret it
 				    catch ( IllegalStateException ise)
@@ -220,7 +224,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 				    catch ( IOException ioe)
 				    {
 				    }
-				    catch ( CodeReader.BadInstructionException bie)
+				    catch ( CodeCheckException bie)
 				    {
 						System.out.println( bie.getMessage());
 						System.out.println( "In "+file.getCanonicalPath()+"/"+entryName);
@@ -241,10 +245,10 @@ public class DBClass implements Persistent, Cloneable, SourceObject
 		{
 		    try
 		    {
-				addClassToDB(
-				    new AnalyzeClass( new BufferedInputStream( new FileInputStream( file))), db);
+				cl.readClass( new BufferedInputStream( new FileInputStream( file)));
+				addClassToDB( cl, db);
 		    }
-		    catch ( CodeReader.BadInstructionException bie)
+		    catch ( CodeCheckException bie)
 		    {
 				System.out.println( bie.getMessage());
 				System.out.println( "In "+file.getCanonicalPath());

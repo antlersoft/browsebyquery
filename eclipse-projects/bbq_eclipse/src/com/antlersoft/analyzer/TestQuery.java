@@ -16,7 +16,7 @@ public class TestQuery
 	throws Exception
     {
 	int i=0;
-	SimpleAnalyzerDB sadb=new SimpleAnalyzerDB();
+	IndexAnalyzeDB sadb=new IndexAnalyzeDB();
 	BufferedReader in=new BufferedReader( new InputStreamReader( System.in));
 	sadb.openDB( argv[0]);
 	QueryParser qp=new QueryParser();
