@@ -1,0 +1,1144 @@
+package analyzer;
+
+import java.util.Hashtable;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
+import java.io.PrintStream;
+
+class QueryParser
+{
+    Token[] tokens;
+    int currentIndex;
+    int maxIndex;
+    SetExpression previousSet;
+
+    public QueryParser( String toParse)
+    {
+	this();
+	setLine( toParse);
+    }
+
+    public QueryParser()
+    {
+	tokens=null;
+	previousSet=null;
+    }
+
+    public void setLine( String toParse)
+    {
+	tokens=tokenize( toParse);
+    }
+
+    public
+    Token nextToken()
+    {
+	Token retval=currentToken();
+	incrementIndex();
+	return retval;
+    }
+
+    Token currentToken()
+    {
+	if ( currentIndex==tokens.length)
+	{
+	    return null;
+	}
+	return tokens[currentIndex];
+    }
+
+    void setIndex( int i)
+    {
+	if ( i>currentIndex)
+	    throw new IllegalStateException();
+	currentIndex=i;
+    }
+
+    void incrementIndex()
+    {
+	if ( currentIndex<tokens.length)
+	{
+	    currentIndex++;
+	    if ( currentIndex>maxIndex)
+		maxIndex=currentIndex;
+	}
+    }
+
+    SetExpression getExpression()
+	throws ParseException
+    {
+	currentIndex=0;
+	maxIndex=0;
+	previousSet=parse( this);
+	return previousSet;
+    }
+
+    final static ReservedWord CLASS=new ReservedWord( "class");
+    final static ReservedWord CLASSES=new ReservedWord( "classes");
+    final static ReservedWord BASE=new ReservedWord( "base");
+    final static ReservedWord DERIVED=new ReservedWord( "derived");
+    final static ReservedWord OF=new ReservedWord( "of");
+    final static ReservedWord MATCHING=new ReservedWord( "matching");
+    final static ReservedWord METHODS=new ReservedWord( "methods");
+    final static ReservedWord IN=new ReservedWord( "in");
+    final static ReservedWord UNCALLED=new ReservedWord( "uncalled");
+    final static ReservedWord POLYMORPHIC=new ReservedWord( "polymorphic");
+    final static ReservedWord RECURSIVE=new ReservedWord( "recursive");
+    final static ReservedWord CALLS=new ReservedWord( "calls");
+    final static ReservedWord TO=new ReservedWord( "to");
+    final static ReservedWord ALL=new ReservedWord( "all");
+    final static ReservedWord PREVIOUS=new ReservedWord( "previous");
+
+    static abstract class Token
+    {
+    }
+
+    static class ReservedWord extends Token
+    {
+	String word;
+	static Hashtable wordList=new Hashtable();
+	ReservedWord( String w)
+	{
+	    word=w;
+	    wordList.put( word, this);
+	}
+
+	public String toString()
+	{
+	    return word;
+	}
+    }
+
+    static class Literal extends Token
+    {
+	String value;
+	Literal( String v)
+	{
+	    value=v;
+	}
+	public String toString()
+	{
+	    return "\""+value+"\"";
+	}
+    }
+
+    static Token[] tokenize( String toTokenize)
+    {
+	char[] chars=toTokenize.toCharArray();
+	Vector tokens=new Vector();
+	StringBuffer currentString=new StringBuffer();
+	int i=0;
+	boolean inQuoted=false;
+	for ( ; i<=chars.length; i++)
+	{
+	    char c;
+	    if ( i==chars.length)
+	    {
+		if ( inQuoted)
+		    c='"';
+		else
+		    c='\n';
+	    }
+	    else
+	    {
+		c=chars[i];
+	    }
+	    if ( inQuoted)
+	    {
+		if ( c=='"')
+		{
+		    tokens.addElement( new Literal( currentString.toString()));
+		    currentString.setLength(0);
+		    inQuoted=false;
+		}
+		else
+		    currentString.append( c);
+	    }
+	    else
+	    {
+		switch ( c)
+		{
+		case ' ' :
+		case '\r' :
+		case '\n' :
+		case '\t' :
+		case '"' :
+		    if ( currentString.length()>0)
+		    {
+			String cs=currentString.toString().toLowerCase();
+			currentString.setLength(0);
+			ReservedWord rw=(ReservedWord)ReservedWord.wordList.get( cs);
+			if ( rw==null)
+			{
+			    tokens.addElement( new Literal( cs));
+			}
+			else
+			{
+			    tokens.addElement( rw);
+			}
+		    }
+		    if ( c=='"')
+		    {
+			inQuoted=true;
+		    }
+		    break;
+
+		default :
+		    currentString.append( c);
+		}
+	    }
+	}
+
+	Token[] retval=new Token[tokens.size()];
+	tokens.copyInto( retval);
+	return retval;
+    }
+
+    static class ParseException extends Exception
+    {
+	static String parseMessage( QueryParser qp)
+	{
+	    StringBuffer retval=new StringBuffer();
+
+	    int i;
+	    for ( i=0; i<qp.tokens.length; i++)
+	    {
+		retval.append( qp.tokens[i].toString());
+		if ( i==qp.maxIndex)
+		    retval.append( "<<here>>");
+		retval.append( ' ');
+	    }
+	    if ( i==qp.maxIndex)
+		retval.append( "<<here>>");
+	    return retval.toString();
+	}
+
+	ParseException( QueryParser qp)
+	{
+	    super( parseMessage( qp));
+	}
+    }
+
+    static interface SetExpression
+    {
+	public abstract Enumeration execute( AnalyzerDB db)
+	    throws Exception;
+    }
+
+    static interface CallSet extends SetExpression
+    {
+    }
+
+    static interface ClassSet extends SetExpression
+    {
+    }
+
+    static interface MethodSet extends SetExpression
+    {
+    }
+
+    /* SetExpression : ClassSet
+		     | MethodSet
+		     | CallSet */
+    static SetExpression parse( QueryParser qp)
+	throws ParseException
+    {
+	int pos=qp.currentIndex;
+	qp.currentIndex=pos;
+	SetExpression retval=parseClassSet( qp);
+	if ( retval==null)
+	{
+	    qp.currentIndex=pos;
+	    retval=parseCallSet( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.currentIndex=pos;
+	    retval=parseMethodSet( qp);
+	}
+	if ( retval==null)
+	{
+	    throw new ParseException( qp);
+	}
+	return retval;
+    }
+
+    static SetExpression parseOperatorExpression( QueryParser qp)
+    {
+	if ( qp.nextToken()==PREVIOUS)
+	{
+	    return qp.previousSet;
+	}
+	return null;
+    }
+
+    static SetExpression parseCallSet( QueryParser qp)
+    {
+	int pos=qp.currentIndex;
+	SetExpression retval=parseOperatorExpression( qp);
+	if ( retval==null || ! ( retval instanceof CallSet))
+	{
+	    qp.setIndex( pos);
+	    retval=CallsTo.parse( qp);
+	}
+	return retval;
+    }
+
+    static class CallsTo implements CallSet
+    {
+	private MethodSet _methods;
+
+	CallsTo( MethodSet methods)
+	{
+	    _methods=methods;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    return new BiEnumeration( _methods.execute( db)) {
+		protected Enumeration getNextCurrent( Object next)
+		{
+		    return ((DBMethod)next).getCalledBy();
+		}
+	    };
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    SetExpression retval=null;
+
+	    if ( qp.nextToken()==CALLS && qp.nextToken()==TO)
+	    {
+		retval=parseMethodSet( qp);
+		if ( retval!=null)
+		    retval=new CallsTo( (MethodSet)retval);
+	    }
+	    return retval;
+	}
+    }
+
+    /*
+     ClassSet : Class "x"
+	      | All Classes
+	      | Base Classes of ClassSet
+	      | Recursive Base Classes of ClassSet
+	      | Derived From ClassSet
+	      | Recursive Derived From ClassSet
+	      | Class of MethodSet
+	      | ClassSet matching "x"
+     */
+    static SetExpression parseClassSet( QueryParser qp)
+    {
+	int pos=qp.currentIndex;
+	SetExpression retval=parseOperatorExpression( qp);
+	if ( retval==null || ! ( retval instanceof ClassSet))
+	{
+	    qp.setIndex( pos);
+	    retval=ClassGet.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=ClassesGet.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=BaseClasses.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=RecursiveBaseClasses.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=DerivedClasses.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=RecursiveDerivedClasses.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=ClassOfMethod.parse( qp);
+	}
+	// Support head recursion
+	if ( retval!=null)
+	{
+	    pos=qp.currentIndex;
+	    if ( qp.nextToken()==MATCHING && qp.currentToken()
+		instanceof Literal)
+	    {
+		retval=new ClassMatching( (ClassSet)retval, (Literal)qp.nextToken());
+	    }
+	    else
+		qp.setIndex( pos);
+	}
+
+	return retval;
+    }
+
+    static class ClassGet implements ClassSet
+    {
+	private String _className;
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    ClassSet retval=null;
+	    if ( qp.nextToken()==CLASS && qp.currentToken()
+		instanceof Literal)
+	    {
+		Literal className=(Literal)qp.nextToken();
+		if ( className!=null)
+		{
+		    retval=new ClassGet( className.value);
+		}
+	    }
+	    return retval;
+	}
+
+	ClassGet( String className)
+	{
+	    _className=className;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    Vector tmp=new Vector( 1);
+	    Object q=db.findWithKey( "analyzer.DBClass", _className);
+	    if ( q!=null)
+		tmp.addElement( q);
+	    return tmp.elements();
+	}
+    }
+
+    static class ClassesGet implements ClassSet
+    {
+	static SetExpression parse( QueryParser qp)
+	{
+	    ClassSet retval=null;
+	    if ( qp.nextToken()==ALL && qp.nextToken()==CLASSES)
+	    {
+		retval=new ClassesGet();
+	    }
+	    return retval;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    return db.getAll( "analyzer.DBClass");
+	}
+    }
+
+    static class BaseClasses implements ClassSet
+    {
+	ClassSet _next;
+
+	BaseClasses( ClassSet nextSet)
+	{
+	    _next=nextSet;
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    ClassSet retval=null;
+	    if ( qp.nextToken()==BASE && qp.nextToken()==CLASSES
+		&& qp.nextToken()==OF)
+	    {
+		ClassSet nextSet=(ClassSet)parseClassSet( qp);
+		if ( nextSet!=null)
+		    retval=new BaseClasses( nextSet);
+	    }
+	    return retval;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    Hashtable ht=new Hashtable();
+	    for ( Enumeration e=_next.execute( db); e.hasMoreElements();)
+	    {
+		DBClass c=(DBClass)e.nextElement();
+		Enumeration superEnum=c.superClasses.elements();
+		while ( superEnum.hasMoreElements())
+		{
+		    DBClass superClass=(DBClass)superEnum.nextElement();
+		    ht.put( superClass, superClass);
+		}
+	    }
+	    return ht.keys();
+	}
+    }
+
+    static class DerivedClasses implements ClassSet
+    {
+	ClassSet _next;
+
+	DerivedClasses( ClassSet nextSet)
+	{
+	    _next=nextSet;
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    ClassSet retval=null;
+	    if ( qp.nextToken()==DERIVED && qp.nextToken()==CLASSES
+		&& qp.nextToken()==OF)
+	    {
+		ClassSet nextSet=(ClassSet)parseClassSet( qp);
+		if ( nextSet!=null)
+		    retval=new DerivedClasses( nextSet);
+	    }
+	    return retval;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    Hashtable ht=new Hashtable();
+	    for ( Enumeration e=_next.execute( db); e.hasMoreElements();)
+	    {
+		DBClass c=(DBClass)e.nextElement();
+		Enumeration superEnum=c.derivedClasses.elements();
+		while ( superEnum.hasMoreElements())
+		{
+		    DBClass superClass=(DBClass)superEnum.nextElement();
+		    ht.put( superClass, superClass);
+		}
+	    }
+	    return ht.keys();
+	}
+    }
+
+    static class RecursiveBaseClasses extends BaseClasses
+    {
+	RecursiveBaseClasses( ClassSet nextSet)
+	{
+	    super( nextSet);
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    ClassSet retval=null;
+	    if ( qp.nextToken()==RECURSIVE &&
+		qp.nextToken()==BASE && qp.nextToken()==CLASSES
+		&& qp.nextToken()==OF)
+	    {
+		ClassSet nextSet=(ClassSet)parseClassSet( qp);
+		if ( nextSet!=null)
+		    retval=new RecursiveBaseClasses( nextSet);
+	    }
+	    return retval;
+	}
+
+	private static void addSuperClasses( DBClass current, Hashtable ht)
+	{
+	    Enumeration superEnum=current.superClasses.elements();
+	    while ( superEnum.hasMoreElements())
+	    {
+		DBClass superClass=(DBClass)superEnum.nextElement();
+		if ( ht.get( superClass)==null)
+		{
+		    ht.put( superClass, superClass);
+		    addSuperClasses( superClass, ht);
+		}
+	    }
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    Hashtable ht=new Hashtable();
+	    for ( Enumeration e=_next.execute( db); e.hasMoreElements();)
+	    {
+		addSuperClasses( (DBClass)e.nextElement(), ht);
+	    }
+	    return ht.keys();
+	}
+    }
+
+    static class RecursiveDerivedClasses extends BaseClasses
+    {
+	RecursiveDerivedClasses( ClassSet nextSet)
+	{
+	    super( nextSet);
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    ClassSet retval=null;
+	    if ( qp.nextToken()==RECURSIVE &&
+		qp.nextToken()==DERIVED && qp.nextToken()==CLASSES
+		&& qp.nextToken()==OF)
+	    {
+		ClassSet nextSet=(ClassSet)parseClassSet( qp);
+		if ( nextSet!=null)
+		    retval=new RecursiveDerivedClasses( nextSet);
+	    }
+	    return retval;
+	}
+
+	private static void addSuperClasses( DBClass current, Hashtable ht)
+	{
+	    Enumeration superEnum=current.derivedClasses.elements();
+	    while ( superEnum.hasMoreElements())
+	    {
+		DBClass superClass=(DBClass)superEnum.nextElement();
+		if ( ht.get( superClass)==null)
+		{
+		    ht.put( superClass, superClass);
+		    addSuperClasses( superClass, ht);
+		}
+	    }
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    Hashtable ht=new Hashtable();
+	    for ( Enumeration e=_next.execute( db); e.hasMoreElements();)
+	    {
+		addSuperClasses( (DBClass)e.nextElement(), ht);
+	    }
+	    return ht.keys();
+	}
+    }
+
+    static class ClassOfMethod implements ClassSet
+    {
+	private MethodSet _methodSet;
+	ClassOfMethod( MethodSet nextSet)
+	{
+	    _methodSet=nextSet;
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    ClassSet retval=null;
+	    if ( qp.nextToken()==CLASS &&
+		qp.nextToken()==OF)
+	    {
+		MethodSet nextSet=(MethodSet)parseMethodSet( qp);
+		if ( nextSet!=null)
+		    retval=new ClassOfMethod( nextSet);
+	    }
+	    return retval;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    Hashtable ht=new Hashtable();
+	    for ( Enumeration e=_methodSet.execute( db);
+		e.hasMoreElements();)
+	    {
+		DBClass c=((DBMethod)e.nextElement()).getDBClass();
+		ht.put( c, c);
+	    }
+	    return ht.keys();
+	}
+    }
+
+    static class ClassMatching implements ClassSet
+    {
+	ClassSet _toFilter;
+	String _filterString;
+
+	ClassMatching( ClassSet toFilter, Literal filterString)
+	{
+	    _toFilter=toFilter;
+	    _filterString=filterString.value;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    return new FilterEnumeration( _toFilter.execute( db)) {
+		protected Object filterObject( Object next)
+		{
+		    Object retVal=null;
+		    if ( ((DBClass)next).getName().indexOf(
+			_filterString)!= -1)
+			retVal=next;
+		    return retVal;
+		}
+	    };
+	}
+    }
+
+    static class SingleClass implements ClassSet
+    {
+	DBClass _class;
+
+	SingleClass( DBClass c)
+	{
+	    _class=c;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	{
+	    return enumFromObject( _class);
+	}
+    }
+
+    /*
+      MethodSet : methods in ClassSet
+		| polymorphic MethodSet
+		| matching "x" MethodSet
+		| uncalled MethodSet
+		| uncalled polymorphic MethodSet
+     */
+    static SetExpression parseMethodSet( QueryParser qp)
+    {
+	int pos=qp.currentIndex;
+	SetExpression retval=parseOperatorExpression( qp);
+	if ( retval==null || ! ( retval instanceof MethodSet))
+	{
+	    qp.setIndex( pos);
+	    retval=MethodsIn.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=Polymorphic.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=MethodMatching.parse( qp);
+	}
+	if ( retval==null)
+	{
+	    qp.setIndex( pos);
+	    retval=UncalledMethod.parse( qp);
+	}
+	return retval;
+    }
+
+    static class MethodsIn implements MethodSet
+    {
+	private ClassSet _classSet;
+	private MethodsIn( ClassSet classes)
+	{
+	    _classSet=classes;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    return new BiEnumeration( _classSet.execute( db)) {
+		protected Enumeration getNextCurrent( Object nextBase)
+		{
+		    return ((DBClass)nextBase).methods.elements();
+		}
+	    };
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    MethodSet retval=null;
+	    if ( qp.nextToken()==METHODS && qp.nextToken()==IN)
+	    {
+		ClassSet classes=(ClassSet)parseClassSet( qp);
+		if ( classes!=null)
+		{
+		    retval=new MethodsIn( classes);
+		}
+	    }
+	    return retval;
+	}
+    }
+
+    static class Polymorphic implements MethodSet
+    {
+	MethodSet _methods;
+
+	Polymorphic( MethodSet methods) {
+	    _methods=methods;
+	}
+
+	public Enumeration execute( final AnalyzerDB db)
+	    throws Exception
+	{
+	    return new PolyEnumeration( db, _methods.execute( db));
+	}
+
+	/* Can't be a local class due to compiler bug --
+	 * can't find superclass [blank] of local class */
+	static class PolyEnumeration extends BiEnumeration
+	{
+	    DBMethod soughtMethod;
+	    AnalyzerDB db;
+
+	    PolyEnumeration( AnalyzerDB adb, Enumeration methods)
+	    {
+		super( methods);
+		db=adb;
+	    }
+
+	    protected Enumeration getNextCurrent( Object next)
+	    {
+		soughtMethod=(DBMethod)next;
+		DBClass c=soughtMethod.getDBClass();
+		try
+		{
+		    Enumeration fromBase=new FilterEnumeration( 
+			( new RecursiveBaseClasses( new
+			    SingleClass( c))).execute( db)) {
+			protected Object filterObject( Object base)
+			{
+			    DBClass filterc=(DBClass)base;
+			    try
+			    {
+			    return db.findWithKey( "analyzer.DBMethod",
+				DBMethod.makeKey( filterc.getName(),
+				soughtMethod.getName(),
+				soughtMethod.getSignature()));
+			    }
+			    catch ( Exception e)
+			    {
+				throw new NoSuchElementException(
+				    e.getMessage());
+			    }
+			}
+		    };
+		Enumeration fromDerived=new GoodBase( c, db);
+		return new ComboEnumeration( enumFromObject(
+		    soughtMethod), new ComboEnumeration( fromBase,
+		    fromDerived));
+		}
+		catch ( Exception e)
+		{
+		    throw new NoSuchElementException( e.getMessage());
+		}
+	    }
+
+	    class GoodBase extends BiEnumeration {
+		AnalyzerDB _adb;
+		GoodBase( DBClass fromHere, AnalyzerDB adb)
+		    throws Exception
+		{
+		    super( ( new DerivedClasses( new
+			SingleClass( fromHere))).
+			execute( adb));
+		    _adb=adb;
+		}
+
+		protected Enumeration getNextCurrent(
+		    Object base)
+		{
+		    DBClass c=(DBClass)base;
+		    try
+		    {
+			DBMethod candidate=(DBMethod)
+			    _adb.findWithKey( "analyzer.DBMethod",
+			    DBMethod.makeKey( c.getName(),
+			    soughtMethod.getName(),
+			    soughtMethod.getSignature()));
+			if ( candidate==null || !
+			    ( candidate.methodStatus()==
+			    DBMethod.REAL))
+			{
+			    return candidate==null ?
+				(Enumeration)new GoodBase( c, _adb) :
+				(Enumeration)new ComboEnumeration(
+				enumFromObject( candidate),
+				new GoodBase( c, _adb));
+			}
+			else
+			{
+			    return DBMethod.emptyVector.elements();
+			}
+		    }
+		    catch ( Exception e)
+		    {
+			throw new NoSuchElementException(
+			    e.getMessage());
+		    }
+		}
+	    }
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    SetExpression retval=null;
+	    if ( qp.nextToken()==POLYMORPHIC)
+	    {
+		retval=parseMethodSet( qp);
+		if ( retval!=null)
+		{
+		    return new Polymorphic( (MethodSet)retval);
+		}
+	    }
+	    return retval;
+	}
+    }
+
+    static class MethodMatching implements MethodSet
+    {
+	MethodSet _toFilter;
+	String _filterString;
+
+	MethodMatching( MethodSet toFilter, Literal filterString)
+	{
+	    _toFilter=toFilter;
+	    _filterString=filterString.value;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    return new FilterEnumeration( _toFilter.execute( db)) {
+		protected Object filterObject( Object next)
+		{
+		    Object retVal=null;
+		    if ( ((DBMethod)next).getName().indexOf(
+			_filterString)!= -1)
+			retVal=next;
+		    return retVal;
+		}
+	    };
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    SetExpression retval=null;
+	    if ( qp.nextToken()==MATCHING &&
+		qp.currentToken() instanceof Literal)
+	    {
+		Literal toMatch=(Literal)qp.nextToken();
+		retval=(MethodSet)parseMethodSet( qp);
+		if ( retval!=null)
+		    retval=new MethodMatching( (MethodSet)retval,
+			toMatch);
+	    }
+	    return retval;
+	}
+    }
+
+    static class UncalledMethod implements MethodSet
+    {
+	protected MethodSet _toFilter;
+
+	UncalledMethod( MethodSet toFilter)
+	{
+	    _toFilter=toFilter;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	    throws Exception
+	{
+	    return new FilterEnumeration( _toFilter.execute( db)) {
+		protected Object filterObject( Object next)
+		{
+		    DBMethod method=(DBMethod)next;
+		    if ( method.getCalledBy().hasMoreElements())
+			method=null;
+		    return method;
+		}
+	    };
+	}
+
+	static SetExpression parse( QueryParser qp)
+	{
+	    boolean polymorphic=false;
+	    SetExpression retval=null;
+	    if ( qp.nextToken()==UNCALLED)
+	    {
+		if ( qp.currentToken()==POLYMORPHIC)
+		{
+		    polymorphic=true;
+		    qp.nextToken();
+		}
+		MethodSet methods=(MethodSet)parseMethodSet( qp);
+		if ( methods!=null)
+		{
+		    retval=( polymorphic ? new UncalledPolymorphic( methods) : new UncalledMethod( methods));
+		}
+	    }
+	    return retval;
+	}
+
+	static class UncalledPolymorphic extends UncalledMethod
+	{
+	    UncalledPolymorphic( MethodSet toFilter)
+	    {
+		super( toFilter);
+	    }
+
+	    public Enumeration execute( final AnalyzerDB db)
+		throws Exception
+	    {
+		return new FilterEnumeration( _toFilter.execute(db)) {
+		    protected Object filterObject( Object next)
+		    {
+			DBMethod method=(DBMethod)next;
+			try
+			{
+			    for ( Enumeration e=(new Polymorphic( new SingleMethod( method))).execute( db); e.hasMoreElements() && method!=null;)
+			    {
+				if ( ((DBMethod)e.nextElement()).
+				    getCalledBy().hasMoreElements())
+				    method=null;
+			    }
+			}
+			catch ( Exception e)
+			{
+			}
+			return method;
+		    }
+		};
+	    }
+	}
+    }
+
+    static class SingleMethod implements MethodSet
+    {
+	DBMethod _method;
+
+	SingleMethod( DBMethod c)
+	{
+	    _method=c;
+	}
+
+	public Enumeration execute( AnalyzerDB db)
+	{
+	    return enumFromObject( _method);
+	}
+    }
+
+    static public class ComboEnumeration extends BiEnumeration
+    {
+	private static Enumeration combined( Enumeration e1,
+	    Enumeration e2)
+	{
+	    Vector tmp=new Vector( 2);
+	    tmp.addElement( e1);
+	    tmp.addElement( e2);
+	    return tmp.elements();
+	}
+
+	ComboEnumeration( Enumeration e1, Enumeration e2)
+	{
+	    super( combined( e1, e2));
+	}
+
+	protected Enumeration getNextCurrent( Object base)
+	{
+	    return (Enumeration)base;
+	}
+    }
+
+    static public Enumeration enumFromObject( Object o1)
+    {
+if ( o1==null)
+throw new IllegalStateException( "null passed to enumFromObject");
+	Vector tmp=new Vector(1);
+	tmp.addElement( o1);
+	return tmp.elements();
+    }
+
+    static public abstract class FilterEnumeration implements Enumeration
+    {
+	private Enumeration _baseEnumeration;
+	private Object next;
+	// Kludge because of compiler bug
+	private boolean initialized;
+
+	public FilterEnumeration( Enumeration base)
+	{
+	    _baseEnumeration=base;
+	    // Kludge because of compiler bug
+	    initialized=false;
+	}
+
+	abstract protected Object filterObject( Object next);
+
+	private void getNextObject()
+	{
+	    for ( next=null; next==null &&
+		_baseEnumeration.hasMoreElements();)
+	    {
+		next=filterObject( _baseEnumeration.nextElement());
+	    }
+	}
+
+	public boolean hasMoreElements()
+	{
+	    // Kludge because of compiler bug
+	    if ( ! initialized)
+	    {
+		getNextObject();
+		initialized=true;
+	    }
+	    return next!=null;
+	}
+
+	public Object nextElement()
+	{
+	    // Kludge because of compiler bug
+	    if ( ! initialized)
+	    {
+		getNextObject();
+		initialized=true;
+	    }
+	    if ( next==null)
+		throw new NoSuchElementException();
+	    Object retVal=next;
+	    getNextObject();
+	    return retVal;
+	}
+    }
+
+    static public abstract class BiEnumeration implements Enumeration
+    {
+	private Enumeration _baseEnumeration;
+	private Enumeration _currentEnumeration;
+
+	public BiEnumeration( Enumeration base)
+	{
+	    _baseEnumeration=base;
+	    _currentEnumeration=null;
+	}
+
+	private void setCurrentEnumeration()
+	{
+	    while (  _currentEnumeration==null
+		|| ! _currentEnumeration.hasMoreElements())
+	    {
+		if ( _baseEnumeration.hasMoreElements())
+		    _currentEnumeration=getNextCurrent( _baseEnumeration.nextElement());
+		else
+		{
+		    _currentEnumeration=null;
+		    break;
+		}
+	    }
+	}
+
+	protected abstract Enumeration getNextCurrent( Object base);
+
+	public boolean hasMoreElements()
+	{
+	    setCurrentEnumeration();
+	    return _currentEnumeration!=null;
+	}
+
+	public Object nextElement()
+	{
+	    setCurrentEnumeration();
+	    if ( _currentEnumeration==null)
+	    {
+		throw new NoSuchElementException();
+	    }
+	    return _currentEnumeration.nextElement();
+	}
+    }
+}
