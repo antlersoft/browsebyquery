@@ -88,7 +88,8 @@ public class CodeAttribute implements Attribute
     }
 
     /**
-     * Replaces oldLength instructions at index at with the instructions
+     * Replaces oldLength instructions at instruction pointer
+     * start with the instructions
      * in newInstructions.  instructionStarts for instructions after
      * the inserted instructions are adjusted for the difference in length
      * between the old instructions and the inserted instructions.
@@ -116,26 +117,29 @@ public class CodeAttribute implements Attribute
      * of the replaced range are removed so they don't end up pointing to a non-
      * instruction.
      */
-    public void insertInstructions( int at, int oldLength,
+    public void insertInstructions( int start, int oldLength,
         Collection newInstructions)
         throws CodeCheckException
     {
-        int start;
+        int at;
         int oldPostEnd;
         int newCount=newInstructions.size();
 
-        if ( at<0 || at+oldLength>instructions.size())
-            throw new CodeCheckException( "Bad instruction insertion point");
-        if ( at==0)
-        {
-            start=0;
-         }
+        if ( start==0)
+            at=0;
         else
         {
-            Instruction lastInstruction=(Instruction)instructions.get( at-1);
-            start=lastInstruction.instructionStart+
-                lastInstruction.getLength();
+            Instruction endInstruction=
+                (Instruction)instructions.get( instructions.size()-1);
+            if ( start==endInstruction.instructionStart+
+                endInstruction.getLength())
+                at=instructions.size();
+            else
+                at=indexAtOffset( new InstructionPointer( start));
         }
+
+        if ( at+oldLength>instructions.size())
+            throw new CodeCheckException( "Bad instruction insertion point");
         if ( oldLength==0)
         {
             oldPostEnd=start;

@@ -417,16 +417,15 @@ public class ClassWriter implements Cloneable
         return constantPool.size()-1;
     }
 
+    public String getInternalClassName( int classIndex)
+    {
+        return getString( ((CPClass)constantPool.get( classIndex)).nameIndex);
+    }
+
     public String getClassName( int classIndex)
     {
-		char[] nameBuffer=getString( ((CPClass)constantPool.
-  			get( classIndex)).nameIndex).toCharArray();
-		for ( int i=0; i<nameBuffer.length; i++)
-		{
-		    if ( nameBuffer[i]=='$' || nameBuffer[i]=='/')
-				nameBuffer[i]='.';
-		}
-		return new String( nameBuffer);
+		return TypeParse.convertFromInternalClassName(
+            getInternalClassName( classIndex));
     }
 
     public class CPTypeRef extends CPInfo

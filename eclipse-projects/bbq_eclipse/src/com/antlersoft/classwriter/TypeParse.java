@@ -55,6 +55,17 @@ public class TypeParse
         	new InstructionPointer( 0));
     }
 
+    public static String convertFromInternalClassName( String toConvert)
+    {
+		char[] nameBuffer=toConvert.toCharArray();
+		for ( int i=0; i<nameBuffer.length; i++)
+		{
+		    if ( nameBuffer[i]=='$' || nameBuffer[i]=='/')
+				nameBuffer[i]='.';
+		}
+		return new String( nameBuffer);
+    }
+
 	public static ArrayList parseMethodType( String methodType)
  		throws CodeCheckException
  	{
