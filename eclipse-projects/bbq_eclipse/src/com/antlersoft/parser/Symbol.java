@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 public class Symbol
 {
+	private String m_symbol_name;
+
     protected Symbol( String symbol_name)
 	throws DuplicateSymbolException
     {
@@ -11,8 +13,9 @@ public class Symbol
 		{
 			Symbol named=(Symbol)_scope.get( symbol_name);
 			if ( named!=null)
-				throw new DuplicateSymbolException( this);
+				throw new DuplicateSymbolException( named);
 			_scope.put( symbol_name, this);
+			m_symbol_name=symbol_name;
 		}
     }
 
@@ -38,4 +41,9 @@ public class Symbol
 			duplicate=dupl;
 		}
     }
+
+	public String toString()
+	{
+		return m_symbol_name;
+	}
 }

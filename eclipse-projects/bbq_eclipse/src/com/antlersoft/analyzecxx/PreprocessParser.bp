@@ -68,8 +68,10 @@ GROUP : GROUP GROUP_PART .
 #                  pp-tokensopt new-line
 #                  if-section
 #                  control-line
-GROUP_PART : lex_new_line .
+GROUP_PART : OPT_WHITE_SPACE lex_new_line .
+GROUP_PART : OPT_WHITE_SPACE PP_TOKENS lex_new_line .
 GROUP_PART : PP_TOKENS lex_new_line .
+GROUP_PART : lex_new_line .
 GROUP_PART : IF_SECTION .
 GROUP_PART : CONTROL_LINE .
 #          if-section:
@@ -86,8 +88,9 @@ INITIAL_HASH : pp_hash .
 INITIAL_HASH : INITIAL_HASH lex_white_space .
 OPT_WHITE_SPACE : OPT_WHITE_SPACE lex_white_space .
 OPT_WHITE_SPACE : .
+OPT_WHITE_SPACE : lex_white_space .
 IF_GROUP : IF_COND .
-IF_GROUP : IF_COND GROUP .
+IF_GROUP : IF_GROUP GROUP_PART .
 IF_COND : INITIAL_HASH pp_if CONSTANT_EXPRESSION lex_new_line .
 IF_COND : INITIAL_HASH pp_ifdef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line .
 IF_COND : INITIAL_HASH pp_ifndef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line .
@@ -99,11 +102,11 @@ ELIF_GROUPS : ELIF_GROUPS ELIF_GROUP .
 #          elif-group:
 #                  # elif   constant-expression new-line groupopt
 ELIF_COND : INITIAL_HASH pp_elif CONSTANT_EXPRESSION lex_new_line .
-ELIF_GROUP : ELIF_COND GROUP .
+ELIF_GROUP : ELIF_GROUP GROUP_PART .
 ELIF_GROUP : ELIF_COND .
 #          else-group:
 #                  # else   new-line groupopt
-ELSE_GROUP : ELSE_COND GROUP .
+ELSE_GROUP : ELSE_GROUP GROUP_PART .
 ELSE_GROUP : ELSE_COND .
 ELSE_COND : INITIAL_HASH pp_else OPT_WHITE_SPACE lex_new_line .
 #          endif-line:
@@ -122,7 +125,7 @@ INCLUDE_HEADER : lex_include_header .
 INCLUDE_HEADER : lex_include_header_with_current .
 INCLUDE_HEADER : PP_TOKENS "{ throw new RuleActionException( \"Unimplemented: Getting include header from substitution tokens\"); }" .
 CONTROL_LINE : INITIAL_HASH pp_include OPT_WHITE_SPACE INCLUDE_HEADER OPT_WHITE_SPACE lex_new_line "{
-System.out.println( \"Include file\"); return null;
+System.out.println( \"Include file\"); return new ArrayList();
 }" .
 CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line .
 CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line .
@@ -146,12 +149,12 @@ REPLACEMENT_LIST : PP_TOKENS .
 #                  the new-line character
 PP_TOKENS : PP_TOKEN .
 PP_TOKENS : PP_TOKENS PP_TOKEN .
+PP_TOKENS : PP_TOKENS lex_white_space .
 PP_TOKEN : lex_identifier .
 PP_TOKEN : lex_number .
 PP_TOKEN : lex_character_literal .
 PP_TOKEN : lex_string_literal .
 PP_TOKEN : lex_preprocessing_op_or_punc .
-PP_TOKEN : lex_white_space .
 
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE lex_identifier .
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE pp_lparen OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE pp_rparen .

@@ -26,14 +26,21 @@ class LexToPreprocess
 	void processToken( LexToken next_token)
 	{
 		if (m_start_of_line) {
-			if (next_token.symbol == PreprocessParser.pp_hash) {
+	System.out.println( next_token.value + " at line "+m_reader.m_line);
+			if ( ( next_token instanceof AltSymbolToken) && ((AltSymbolToken)next_token).m_alt_symbol == PreprocessParser.pp_hash) {
+System.out.println( "Preprocessor line");
 				m_preprocess_line = true;
+				m_start_of_line=false;
+				m_reader.m_preprocess_parser.parse( PreprocessParser.pp_hash, "#");
 			}
-			if (next_token.symbol != PreprocessParser.lex_new_line)
-				m_start_of_line = false;
-			if ( m_preprocess_line || ! m_skipping)
-				m_reader.m_preprocess_parser.parse( next_token.symbol,
-					next_token.getValue());
+			else
+			{
+				if (next_token.symbol != PreprocessParser.lex_new_line)
+					m_start_of_line = false;
+				if (!m_skipping)
+					m_reader.m_preprocess_parser.parse(next_token.symbol,
+						next_token.getValue());
+			}
 		}
 		else if ( next_token.symbol==PreprocessParser.lex_new_line)
 		{

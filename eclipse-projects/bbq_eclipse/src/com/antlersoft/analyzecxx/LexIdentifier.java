@@ -26,7 +26,9 @@ public class LexIdentifier implements LexState {
 		   "reinterpret_cast", "return",
 		   "short", "signed", "sizeof", "static", "static_cast", "struct",
 		   "switch", "template", "this", "throw", "true", "try", "typedef",
-		   "typeid", "typename", "union", "unsigned", "using", "virtual",
+		   "typeid", "typename",
+		   "undef",
+		   "union", "unsigned", "using", "virtual",
 		   "void", "volatile", "wchar_t", "while"
 		   }
 		   );

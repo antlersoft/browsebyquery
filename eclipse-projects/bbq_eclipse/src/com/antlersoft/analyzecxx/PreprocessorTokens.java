@@ -84,8 +84,12 @@ System.out.println( "Checking if we want include header at line "+m_reader.m_lin
 		for ( Enumeration e=m_reader.m_preprocess_parser.getExpectedSymbols();
 			  e.hasMoreElements();)
 		{
-			if ( ((Symbol)e.nextElement())==PreprocessParser.lex_include_header)
+			Symbol s=(Symbol)e.nextElement();
+			System.out.print( s.toString()+" ");
+			if ( s==PreprocessParser.lex_include_header)
 				return true;
+//			if ( ((Symbol)e.nextElement())==PreprocessParser.lex_include_header)
+//				return true;
 		}
 System.out.println( "Don't want include header "+m_reader.m_line);
 		return false;

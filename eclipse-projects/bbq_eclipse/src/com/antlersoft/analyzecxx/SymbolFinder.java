@@ -12,7 +12,6 @@ public class SymbolFinder
 	private SymbolFinderTree.Node m_node;
 	private Symbol m_last_symbol;
 	private StringBuffer m_remainder;
-	private String m_last_text;
 
 	public SymbolFinder( SymbolFinderTree tree)
 	{
@@ -31,18 +30,19 @@ public class SymbolFinder
 	 */
 	public final boolean accept( char c)
 	{
-		SymbolFinderTree.Node new_node=m_node.nextNode( c);
+		SymbolFinderTree.Node new_node=( m_node==null ? null : m_node.nextNode( c));
 		if ( new_node==null)
 		{
+			m_node=null;
 			m_remainder.append( c);
 			return false;
 		}
 		else
 		{
+			m_node=new_node;
 			if ( new_node.m_symbol!=null)
 			{
 				m_last_symbol=new_node.m_symbol;
-				m_last_text=new_node.m_text;
 				m_remainder.setLength( 0);
 			}
 			else
@@ -74,7 +74,7 @@ public class SymbolFinder
 	 */
 	String currentText()
 	{
-		return m_last_text;
+		return m_last_symbol.toString();
 	}
 
 	/**
@@ -83,7 +83,6 @@ public class SymbolFinder
 	public final void reset()
 	{
 		m_last_symbol=null;
-		m_last_text=null;
 		m_node=m_tree.m_root;
 		m_remainder.setLength( 0);
 	}

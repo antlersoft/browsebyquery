@@ -55,6 +55,10 @@ public abstract class Parser
 					}
 					else
 					{
+{
+ParseState ps=(ParseState)state_stack.get( state_stack.size()-1);
+for ( int k=0; k<parse_states.length; k++) if ( parse_states[k]==ps) System.out.println( "Error in state "+k+" on token "+next_symbol.toString());
+}
 						// Token forces error
 						cur=pushError();
 						erred_out=(cur==null);
@@ -66,6 +70,10 @@ public abstract class Parser
 			{
 				if ( cur.reduce_rule==null)
 				{
+{
+ParseState ps=(ParseState)state_stack.get( state_stack.size()-1);
+for ( int k=0; k<parse_states.length; k++) if ( parse_states[k]==ps) System.out.println( "Error in state "+k+" on token "+next_symbol.toString());
+}
 					// Can't shift and can't reduce
 					/* try to push error state */
 					cur=pushError();
@@ -187,9 +195,10 @@ public abstract class Parser
 			value_stack.add( to_push);
 		}
 		for ( int j=0; j<cur.reduce_rule.states_to_pop; j++)
-			state_stack.remove( state_stack.size()-1);
+			state_stack.remove(state_stack.size() - 1);
 
 		state_stack.add( parse_states[next.goto_rules[i].state_index]);
+System.out.println( "Go to "+next.goto_rules[i].state_index);
 		if ( state_stack.size()!=value_stack.size())
 		{
 			throw new IllegalStateException(

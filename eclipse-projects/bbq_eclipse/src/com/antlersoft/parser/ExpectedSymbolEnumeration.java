@@ -72,6 +72,8 @@ class ExpectedSymbolEnumeration implements Enumeration
 			if ( m_next_symbol==null)
 				throw new NoSuchElementException();
 		}
-		return m_next_symbol;
+		Symbol result= m_next_symbol;
+		m_next_symbol=null;
+		return result;
     }
 }

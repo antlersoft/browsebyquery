@@ -64,7 +64,7 @@ public class CxxReader
 		{
 			m_first_phase = m_first_phase.nextCharacter(c);
 		}
-		catch ( Exception e)
+		catch ( LexException e)
 		{
 			System.out.println( m_file+" at line "+m_line);
 			System.out.println( e.getMessage());
