@@ -1,0 +1,648 @@
+
+/**
+ * Title:        antlersoft java software<p>
+ * Description:  antlersoft Moose
+ * antlersoft BBQ<p>
+ * Copyright:    Copyright (c) Michael MacDonald<p>
+ * Company:      antlersoft<p>
+ * @author Michael MacDonald
+ * @version 1.0
+ */
+package com.antlersoft.odb.diralloc;
+
+import java.io.IOException;
+
+import com.antlersoft.odb.DiskAllocatorException;
+import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.ObjectStoreException;
+
+import com.antlersoft.util.Semaphore;
+
+class Index
+{
+    IndexEntry entry;
+    StreamPair streams;
+    DirectoryAllocator manager;
+    Semaphore indexModificationLock;
+    private IndexPageKey topKey;
+
+    Index( DirectoryAllocator m, IndexEntry e, StreamPair s)
+    {
+        manager=m;
+        entry=e;
+        streams=s;
+        topKey=new IndexPageKey( this, entry.startPageOffset, null);
+        indexModificationLock=new Semaphore();
+    }
+
+    IndexPage getChildPage( IndexPage parent, int offset)
+    {
+        IndexPageKey key=new IndexPageKey( this, offset, parent.thisPage);
+        return manager.getIndexPageByKey( key);
+    }
+
+    DAKey findObject( Comparable key)
+        throws ObjectStoreException
+    {
+        manager.startIndexPageNoFlush();
+        indexModificationLock.enterProtected();
+        try
+        {
+            Comparable origKey=key;
+            if ( ! entry.unique)
+                key=new UniqueKey( key, entry.descending ?
+                    UniqueKey.largestDAKey :
+                    UniqueKey.smallestDAKey);
+            FindResult fr=findKey( key);
+            if ( ! keyMatches( fr, origKey))
+                return null;
+            return new DAKey( fr.page.nextOffsetArray[fr.index],
+                fr.page.reuseArray[fr.index]);
+        }
+        finally
+        {
+            indexModificationLock.leaveProtected();
+            manager.endIndexPageNoFlush();
+        }
+    }
+
+    IndexIterator getIterator( Comparable key)
+        throws ObjectStoreException
+    {
+        manager.startIndexPageNoFlush();
+        indexModificationLock.enterProtected();
+        try
+        {
+            Comparable origKey=key;
+            if ( ! entry.unique)
+                key=new UniqueKey( key, entry.descending ?
+                    UniqueKey.largestDAKey :
+                    UniqueKey.smallestDAKey);
+            FindResult fr=findKey( key);
+            return new IndexIterator( this, fr.page, fr.index,
+                keyMatches( fr, origKey));
+        }
+        finally
+        {
+            indexModificationLock.leaveProtected();
+            manager.endIndexPageNoFlush();
+        }
+    }
+
+    /** Must be called when classChangeLock is protected */
+    void removeKey( DAKey objectRef, Object toRemove)
+        throws ObjectStoreException
+    {
+        Comparable key=entry.generator.generateKey( toRemove);
+        if ( key==null)
+            return;
+        if ( ! entry.unique)
+        {
+            key=new UniqueKey( key, objectRef);
+        }
+        manager.startIndexPageNoFlush();
+        indexModificationLock.enterCritical();
+        try
+        {
+            removeKey( objectRef, key);
+        }
+        finally
+        {
+            indexModificationLock.leaveCritical();
+            manager.endIndexPageNoFlush();
+        }
+    }
+
+    /** Must be called when classChangeLock is protected */
+    void insertKey( DAKey objectRef, Object toInsert)
+        throws ObjectStoreException
+    {
+        Comparable key=entry.generator.generateKey( toInsert);
+        if ( key==null)
+            return;
+        if ( ! entry.unique)
+        {
+            key=new UniqueKey( key, objectRef);
+        }
+        manager.startIndexPageNoFlush();
+        indexModificationLock.enterCritical();
+        try
+        {
+            insertKey( objectRef, key);
+        }
+        finally
+        {
+            indexModificationLock.leaveCritical();
+            manager.endIndexPageNoFlush();
+        }
+    }
+
+    /** Must be called when class change lock is protected */
+    void updateKey( DAKey objectRef, Object oldVersion, Object newVersion)
+        throws ObjectStoreException
+    {
+        Comparable oldKey=entry.generator.generateKey( oldVersion);
+        Comparable newKey=entry.generator.generateKey( newVersion);
+        if ( oldKey==null && newKey==null)
+            return;
+        if ( oldKey!=null && newKey!=null && oldKey.compareTo( newKey)==0)
+            return;
+        manager.startIndexPageNoFlush();
+        indexModificationLock.enterCritical();
+        try
+        {
+            if ( oldKey!=null)
+            {
+                if ( ! entry.unique)
+                {
+                    oldKey=new UniqueKey( oldKey, objectRef);
+                }
+                removeKey( objectRef, oldKey);
+            }
+            if ( newKey!=null)
+            {
+                if ( ! entry.unique)
+                {
+                    newKey=new UniqueKey( oldKey, objectRef);
+                }
+                insertKey( objectRef, newKey);
+            }
+        }
+        finally
+        {
+            indexModificationLock.leaveCritical();
+            manager.endIndexPageNoFlush();
+        }
+    }
+
+    int binarySearch(Comparable[] a, int low, int high,
+        Comparable key)
+    {
+        int cmp;
+    	while (low <= high)
+        {
+    	    int mid =(low + high)/2;
+    	    Comparable midVal = a[mid];
+    	    cmp = midVal.compareTo(key);
+            if ( entry.descending)
+                cmp= -cmp;
+
+    	    if (cmp < 0)
+    		low = mid + 1;
+    	    else if (cmp > 0)
+    		high = mid - 1;
+    	    else
+    		return mid;
+    	}
+    	return -(low + 1);
+    }
+
+    static IndexEntry createIndexEntry( String indexName, KeyGenerator keyGen,
+        boolean descending, boolean unique, DirectoryAllocator manager,
+        StreamPair streams)
+        throws ObjectStoreException
+    {
+        IndexEntry entry=new IndexEntry();
+        entry.descending=descending;
+        entry.generator=keyGen;
+        entry.indexName=indexName;
+        entry.unique=unique;
+        entry.pageCount=200;    // A number pulled from the air
+        IndexPage startPage=new IndexPage();
+        startPage.size=0;
+        startPage.nextOffsetArray=new int[entry.pageCount];
+        startPage.modified=false;
+        startPage.keyArray=new Comparable[entry.pageCount];
+        startPage.reuseArray=new int[entry.pageCount];
+        try
+        {
+            entry.startPageOffset=streams.writeObject( startPage, 0);
+        }
+        catch ( IOException ioe)
+        {
+            throw new ObjectStoreException( "I/O error creating index start page",
+                ioe);
+        }
+        catch ( DiskAllocatorException dae)
+        {
+            throw new ObjectStoreException( "Error creating index start page:",
+                dae);
+        }
+        entry.index=new Index( manager, entry, streams);
+        startPage.thisPage=entry.index.getTopKey();
+        manager.addNewIndexPageToCache( startPage);
+        return entry;
+    }
+
+    /**
+     * These private methods live in a happy world where all indexes are
+     * unique, no index pages are ever flushed, and no other thread is
+     * accessing the index.
+     */
+    private void insertKey( DAKey objectRef, Comparable key)
+        throws ObjectStoreException
+    {
+        FindResult fr=findKey( key);
+        if ( fr.compareResult>=0)
+            throw new ObjectStoreException( "Duplicate value for index: "
+                +entry.indexName);
+        if ( fr.index==0)
+            fixParentKey( fr.page, key);
+        System.arraycopy( fr.page.nextOffsetArray, fr.index,
+            fr.page.nextOffsetArray, fr.index+1, fr.page.size-fr.index);
+        System.arraycopy( fr.page.reuseArray, fr.index,
+            fr.page.reuseArray, fr.index+1, fr.page.size-fr.index);
+        System.arraycopy( fr.page.keyArray, fr.index,
+            fr.page.keyArray, fr.index+1, fr.page.size-fr.index);
+        fr.page.size++;
+        fr.page.nextOffsetArray[fr.index]=objectRef.index;
+        fr.page.reuseArray[fr.index]=objectRef.reuseCount;
+        fr.page.keyArray[fr.index]=key;
+        fr.page.modified=true;
+        if ( fr.page.size>=entry.pageCount)
+        {
+            splitPage( fr.page);
+        }
+    }
+
+    void splitPage( IndexPage toSplit)
+        throws ObjectStoreException
+    {
+        IndexPage parent;
+        int splitParentPosition;
+
+        if ( toSplit.thisPage.parent==null)
+        {
+            parent=new IndexPage();
+            parent.nextOffsetArray=new int[entry.pageCount];
+            parent.keyArray=new Comparable[entry.pageCount];
+            parent.reuseArray=null;
+            parent.size=1;
+            parent.nextOffsetArray[0]=toSplit.thisPage.offset;
+            parent.keyArray[0]=toSplit.keyArray[0];
+            parent.modified=true;
+            try
+            {
+                parent.thisPage=new IndexPageKey( this,
+                    streams.writeObject( parent, 0), null);
+            }
+            catch ( IOException ioe)
+            {
+                throw new ObjectStoreException( "I/O error creating index page",
+                    ioe);
+            }
+            catch ( DiskAllocatorException dae)
+            {
+                throw new ObjectStoreException( "Error creating index page:",
+                    dae);
+            }
+            toSplit.thisPage.parent=parent.thisPage;
+            entry.startPageOffset=parent.thisPage.offset;
+            manager.dirtyClassList();
+            manager.addNewIndexPageToCache( parent);
+
+            splitParentPosition=0;
+        }
+        else
+        {
+            parent=manager.getIndexPageByKey( toSplit.thisPage.parent);
+            splitParentPosition=binarySearch( parent.keyArray, 0, parent.size-1,
+                toSplit.keyArray[0]);
+        }
+        int splitPosition=toSplit.size/2;
+        IndexPage newPage=new IndexPage();
+        newPage.nextOffsetArray=new int[entry.pageCount];
+        System.arraycopy( toSplit.nextOffsetArray, splitPosition,
+            newPage.nextOffsetArray, 0, toSplit.size-splitPosition);
+        newPage.keyArray=new Comparable[entry.pageCount];
+        System.arraycopy( toSplit.keyArray, splitPosition,
+            newPage.keyArray, 0, toSplit.size-splitPosition);
+        if ( toSplit.reuseArray==null)
+            newPage.reuseArray=null;
+        else
+        {
+            newPage.reuseArray=new int[entry.pageCount];
+            System.arraycopy( toSplit.reuseArray, splitPosition,
+                newPage.reuseArray, 0, toSplit.size-splitPosition);
+        }
+        newPage.size=toSplit.size-splitPosition;
+        newPage.modified=true;
+        try
+        {
+            newPage.thisPage=new IndexPageKey( this,
+                streams.writeObject( newPage, 0), toSplit.thisPage.parent);
+        }
+        catch ( IOException ioe)
+        {
+            throw new ObjectStoreException( "I/O error creating index page",
+                ioe);
+        }
+        catch ( DiskAllocatorException dae)
+        {
+            throw new ObjectStoreException( "Error creating index page:",
+                dae);
+        }
+
+        toSplit.size=splitPosition;
+        for ( int i=splitPosition; i<entry.pageCount; i++)
+        {
+            toSplit.keyArray[i]=null;
+            toSplit.nextOffsetArray[i]=0;
+            if ( toSplit.reuseArray!=null)
+                toSplit.reuseArray[i]=0;
+        }
+        manager.addNewIndexPageToCache( newPage);
+        System.arraycopy( parent.nextOffsetArray, splitParentPosition,
+            parent.nextOffsetArray, splitParentPosition+1,
+            parent.size-splitParentPosition);
+        System.arraycopy( parent.keyArray, splitParentPosition,
+            parent.keyArray, splitParentPosition+1,
+            parent.size-splitParentPosition);
+        parent.size++;
+        parent.nextOffsetArray[splitParentPosition]=0;
+        parent.keyArray[splitParentPosition]=newPage.keyArray[0];
+        parent.modified=true;
+        // If this is not a leaf index node, each index page key in the
+        // page cache that points to this node may need to be changed
+        if ( newPage.reuseArray==null)
+        {
+            manager.fixIndexPageParent( newPage.thisPage,
+                newPage.nextOffsetArray, 0, newPage.size);
+        }
+        if ( parent.size>=entry.pageCount)
+            splitPage( parent);
+    }
+
+    private void removeKey( DAKey objectRef, Comparable key)
+        throws ObjectStoreException
+    {
+        FindResult fr=findKey( key);
+        if ( fr.compareResult<0)
+            throw new ObjectStoreException( "Missing value for index: "
+                +entry.indexName);
+        if ( fr.index==0 && fr.page.thisPage.parent!=null)
+        {
+            if ( fr.page.size==1)
+            {
+                // This should happen seldom, since merges can prevent this
+                emptyPage( fr.page);
+                return;
+            }
+            else
+            {
+                // Fix parent page so key for this page points to next value,
+                // on up the line
+                fixParentKey( fr.page, fr.page.keyArray[1]);
+            }
+        }
+        if ( fr.index+1<fr.page.size)
+        {
+            System.arraycopy( fr.page.nextOffsetArray, fr.index+1,
+                fr.page.nextOffsetArray, fr.index, fr.page.size-fr.index-1);
+            System.arraycopy( fr.page.reuseArray, fr.index+1,
+                fr.page.reuseArray, fr.index, fr.page.size-fr.index-1);
+            System.arraycopy( fr.page.keyArray, fr.index+1,
+                fr.page.keyArray, fr.index, fr.page.size-fr.index-1);
+        }
+        fr.page.size--;
+        fr.page.keyArray[fr.page.size]=null; // Don't keep unneeded key around
+        fr.page.modified=true;
+        if ( fr.page.size<entry.pageCount/4)
+        {
+            mergePage( fr.page);
+        }
+    }
+
+    /**
+     * Fix key value in parent pages, recursively, when initial value
+     * in a child page changes
+     */
+    private void fixParentKey( IndexPage newInitial, Comparable newStartValue)
+        throws ObjectStoreException
+    {
+        if ( newInitial.thisPage.parent!=null)
+        {
+            IndexPage parent=manager.getIndexPageByKey(
+                newInitial.thisPage.parent);
+            int parentPosition=binarySearch( parent.keyArray, 0,
+                parent.size-1, newInitial.keyArray[0]);
+            if ( parentPosition<0)
+                throw new ObjectStoreException(
+                    "Index corrupt when changing initial value");
+            parent.keyArray[parentPosition]=newStartValue;
+            parent.modified=true;
+            if ( parentPosition==0)
+            {
+                fixParentKey( parent, newStartValue);
+            }
+        }
+    }
+
+    /**
+     * Called when a removal would make an IndexPage empty.  This can
+     * never be called on the top page, because it is never called by
+     * removeKey for a page that is top, and a non-leaf
+     * top page is removed
+     * by mergePage when it gets to a size of 1.
+     */
+    private void emptyPage( IndexPage toEmpty)
+        throws ObjectStoreException
+    {
+        IndexPage parent=manager.getIndexPageByKey( toEmpty.thisPage.parent);
+        manager.freeIndexPage( toEmpty);
+        if ( parent.size==1)
+        {
+            emptyPage( parent);
+        }
+        else
+        {
+            int parentPosition=binarySearch( parent.keyArray, 0, parent.size-1,
+                toEmpty.keyArray[0]);
+            if ( parentPosition<0)
+                throw new ObjectStoreException( "Index corrupt in emptyPage");
+            if ( parentPosition==0)
+                fixParentKey( parent, parent.keyArray[1]);
+            if ( parentPosition+1<parent.size)
+            {
+                System.arraycopy( parent.nextOffsetArray, parentPosition+1,
+                    parent.nextOffsetArray, parentPosition, parent.size-parentPosition-1);
+                System.arraycopy( parent.reuseArray, parentPosition+1,
+                    parent.reuseArray, parentPosition, parent.size-parentPosition-1);
+                System.arraycopy( parent.keyArray, parentPosition+1,
+                    parent.keyArray, parentPosition, parent.size-parentPosition-1);
+            }
+            parent.size--;
+            parent.keyArray[parent.size]=null; // Don't keep unneeded key around
+            parent.modified=true;
+            if ( parent.size<entry.pageCount/4)
+            {
+                mergePage( parent);
+            }
+        }
+    }
+
+    /**
+     * Called whenever a removal makes an index page smaller than the
+     * low water mark (pageCount/4).  This will recursively merge pages
+     * up the tree if the situation warrants it.  If the top page is non-leaf
+     * and gets to a size of one, it is removed.  This is the only way levels
+     * are removed from the tree.  In particular, a non-leaf page that is
+     * not the top page and is size 1 is not removed until there are zero
+     * index entries beneath it (by empty page).
+     */
+    private void mergePage( IndexPage toMerge)
+        throws ObjectStoreException
+    {
+        // If this is the top page, don't do anything until it can
+        // disappear entirely
+        if ( toMerge.thisPage.parent==null)
+        {
+            if ( toMerge.size==1 && toMerge.reuseArray==null)
+            {
+                IndexPage newTop=getChildPage( toMerge,
+                    toMerge.nextOffsetArray[0]);
+                entry.startPageOffset=newTop.thisPage.offset;
+                topKey=newTop.thisPage;
+                topKey.parent=null;
+                manager.freeIndexPage( toMerge);
+                manager.dirtyClassList();
+                // Theoretically, you could lose several index levels at once
+                if ( newTop.size==1)
+                    mergePage( newTop);
+            }
+        }
+        else
+        {
+            IndexPage parent=manager.getIndexPageByKey(
+                toMerge.thisPage.parent);
+            int parentPosition=binarySearch( parent.keyArray, 0, parent.size-1,
+                toMerge.keyArray[0]);
+            if ( parentPosition<0)
+                throw new ObjectStoreException( "Index corrupt merging pages");
+            IndexPage leftPage=null;
+            if ( parentPosition>0)
+                leftPage=getChildPage( parent, parentPosition-1);
+            IndexPage rightPage=null;
+            if ( parentPosition<parent.size-1)
+                rightPage=getChildPage( parent, parentPosition+1);
+            if ( leftPage!=null && rightPage!=null)
+            {
+                if ( leftPage.size<=rightPage.size)
+                {
+                    if ( leftPage.size+toMerge.size<entry.pageCount)
+                        mergeLeft( leftPage, toMerge, parent, parentPosition);
+                }
+                else
+                {
+                    if ( rightPage.size+toMerge.size<entry.pageCount)
+                        mergeLeft( toMerge, rightPage, parent,
+                            parentPosition+1);
+                }
+            }
+            else
+            {
+                if ( leftPage!=null)
+                {
+                    if ( leftPage.size+toMerge.size<entry.pageCount)
+                        mergeLeft( leftPage, toMerge, parent, parentPosition);
+                }
+                else
+                {
+                    if ( rightPage!=null && rightPage.size+toMerge.size<
+                        entry.pageCount)
+                        mergeLeft( toMerge, rightPage, parent,
+                            parentPosition+1);
+                }
+            }
+        }
+    }
+
+    /**
+     * Called from mergePage when it has figured out all the merge parameters
+     * to merge two index pages
+     */
+    private void mergeLeft( IndexPage leftPage, IndexPage rightPage,
+        IndexPage parent, int rightPosition)
+        throws ObjectStoreException
+    {
+        leftPage.modified=true;
+        System.arraycopy( rightPage.nextOffsetArray, 0,
+            leftPage.nextOffsetArray, leftPage.size, rightPage.size);
+        System.arraycopy( rightPage.keyArray, 0,
+            leftPage.keyArray, leftPage.size, rightPage.size);
+        if ( leftPage.reuseArray!=null)
+            System.arraycopy( rightPage.nextOffsetArray, 0,
+                leftPage.nextOffsetArray, leftPage.size, rightPage.size);
+        else
+            manager.fixIndexPageParent( leftPage.thisPage,
+                rightPage.nextOffsetArray, 0, rightPage.size);
+        leftPage.size+=rightPage.size;
+        manager.freeIndexPage( rightPage);
+        parent.modified=true;
+        if ( rightPosition+1<parent.size)
+        {
+            System.arraycopy( parent.nextOffsetArray, rightPosition+1,
+                parent.nextOffsetArray, rightPosition,
+                parent.size-rightPosition-1);
+            System.arraycopy( parent.keyArray, rightPosition+1,
+                parent.keyArray, rightPosition,
+                parent.size-rightPosition-1);
+        }
+        parent.size--;
+        if ( parent.size<entry.pageCount/4)
+            mergePage( parent);
+    }
+
+    private IndexPageKey getTopKey()
+    {
+        topKey.offset=entry.startPageOffset;
+        return topKey;
+    }
+
+    private FindResult findKey( Comparable key)
+    {
+        IndexPage currentPage=manager.getIndexPageByKey( getTopKey());
+        int difference;
+        while ( true)
+        {
+            difference=binarySearch( currentPage.keyArray, 0,
+                currentPage.size-1, key);
+            if ( currentPage.reuseArray!=null)
+            {
+                return new FindResult( currentPage, difference);
+            }
+            else
+            {
+                if ( difference<0)
+                    difference= -difference-1;
+                if ( difference>=currentPage.size)
+                    difference=currentPage.size-1;
+                currentPage=getChildPage( currentPage, difference);
+            }
+        }
+    }
+
+    private boolean keyMatches( FindResult fr, Comparable key)
+    {
+        if ( entry.unique)
+            return fr.compareResult>=0;
+        return key.compareTo( ((UniqueKey)fr.page.keyArray[fr.index]).base)==0;
+    }
+
+    static class FindResult
+    {
+        FindResult( IndexPage p, int d)
+        {
+            page=p;
+            if ( d<0)
+                index= -d-1;
+            else
+                index=d;
+            compareResult=d;
+        }
+
+        IndexPage page;
+        int index;
+        int compareResult;
+    }
+}

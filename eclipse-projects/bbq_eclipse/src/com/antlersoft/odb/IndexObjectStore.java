@@ -20,6 +20,8 @@ public interface IndexObjectStore extends ObjectStore
 {
     public static final boolean ASCENDING=false;
     public static final boolean DESCENDING=true;
+    public static final boolean UNIQUE=true;
+    public static final boolean DUPLICATES=false;
 
     /**
      * Returns an iterator of ObjectKey values for all stored objects of the
@@ -27,6 +29,7 @@ public interface IndexObjectStore extends ObjectStore
      */
     public Iterator getAll( Class toRetrieve)
         throws ObjectStoreException;
+
     /**
      * Defines an index with the given name and KeyGenerator on the class.
      * If the descending flag is true, the natural ordering of the values
@@ -54,11 +57,20 @@ public interface IndexObjectStore extends ObjectStore
         throws ObjectStoreException;
 
     /**
-     * Returns an iterator over Map.Entry objects for the index
-     * where the key>=toFind.  The value is the ObjectKey of the
-     * object that produced the key from the index' KeyGenerator.
+     * Returns the ObjectKey of an object that exactly matches the search
+     * key, or null if no such object exists.
      */
-    public Iterator greaterThanOrEqualEntries( String indexName,
+    public ObjectKey findObject( String indexName, Comparable toFind)
+        throws ObjectStoreException;
+
+    /**
+     * Returns an iterator over ObjectKey objects for the index
+     * where the key>=toFind.  The value is the ObjectKey of the
+     * object that produced the key from the index KeyGenerator.
+     * If the index is defined in descending order, this iterator
+     * with give less than or equal keys in descending order.
+     */
+    public IndexIterator greaterThanOrEqualEntries( String indexName,
         Comparable toFind)
         throws ObjectStoreException;
 }
