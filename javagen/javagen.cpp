@@ -17,7 +17,7 @@ public :
 	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		string word= *static_cast<const SeqString*>( value_stack.last());
-		cout<<"static ReservedWord "<<word<<"=ReservedWord.getReserved( \""<<word<<"\");\n";
+		cout<<"static Symbol "<<word<<"=ReservedWord.getReserved( \""<<word<<"\");\n";
 		Symbol scope_symbol( terminal_scope, word);
 		return new TerminalSymbol( word);
 	}
@@ -31,7 +31,7 @@ public :
 		string text= *static_cast<const SeqString*>( value_stack.last());
 		value_stack=value_stack.butLast();
 		string word= *static_cast<const SeqString*>( value_stack.last());
-		cout<<"static ReservedWord "<<word<<"=ReservedWord.getReserved( \""<<text<<"\");\n";
+		cout<<"static Symbol "<<word<<"=ReservedWord.getReserved( \""<<text<<"\");\n";
 		Symbol scope_symbol( terminal_scope, word);
 		return new TerminalSymbol( word);
 	}
