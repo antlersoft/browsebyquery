@@ -6,10 +6,10 @@ import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.RuleActionException;
 
 class InitialSlash implements LexState {
-	private CxxReader m_reader;
+	private LexReader m_reader;
 	private LexState m_caller;
 
-	InitialSlash( CxxReader reader, LexState caller)
+	InitialSlash( LexReader reader, LexState caller)
 	{
 		m_reader=reader;
 		m_caller=caller;

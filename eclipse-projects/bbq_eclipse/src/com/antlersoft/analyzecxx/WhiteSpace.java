@@ -12,11 +12,11 @@ public class WhiteSpace implements LexState
 {
 	private boolean m_is_new_line;
 	private LexState m_caller;
-	private LexToPreprocess m_lex;
+	private LexReader m_lex;
 	static LexToken m_white_space_token=new LexToken( PreprocessParser.lex_white_space, "");
 	static LexToken m_new_line_token=new LexToken( PreprocessParser.lex_new_line, "");
 
-	WhiteSpace( LexToPreprocess lex, LexState caller, char c)
+	WhiteSpace( LexReader lex, LexState caller, char c)
 		throws RuleActionException, IOException, LexException
 	{
 		m_lex=lex;

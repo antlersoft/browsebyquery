@@ -26,7 +26,8 @@ class LineSplicer implements LexState
 	LineSplicer( CxxReader reader)
 	{
 		m_reader=reader;
-		m_preprocessor_state=new PreprocessorTokens( reader);
+		m_preprocessor_state=new PreprocessorTokens( reader.m_lex_to_preprocess,
+			reader.m_preprocess_parser);
 		m_eol_backslash_state=false;
 	}
 

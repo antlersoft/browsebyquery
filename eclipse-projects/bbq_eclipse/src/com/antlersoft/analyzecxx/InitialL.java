@@ -5,10 +5,10 @@ import java.io.IOException;
 
 class InitialL implements LexState {
 
-	private CxxReader m_reader;
+	private LexReader m_reader;
 	private LexState m_caller;
 
-	InitialL( CxxReader reader, LexState caller)
+	InitialL( LexReader reader, LexState caller)
 	{
 		m_reader=reader;
 		m_caller=caller;
@@ -21,11 +21,11 @@ class InitialL implements LexState {
 		{
 			case '\'' :
 				result=new QuotedLiteral( m_reader, this, c,
-						  new LexToken( PreprocessParser.lex_character_literal, null), false);
+						  new CharacterLiteral( null, true));
 			break;
 			case '"' :
 				result=new QuotedLiteral( m_reader, this, c,
-						  new LexToken( PreprocessParser.lex_string_literal, null), true);
+						  new StringLiteral( null, true));
 			break;
 			default : result=new LexIdentifier( m_reader, m_caller, 'L');
 				result=result.nextCharacter( c);

@@ -1,6 +1,7 @@
 package com.antlersoft.analyzecxx;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -8,7 +9,13 @@ import com.antlersoft.parser.*;
 
 class PreprocessParser extends Parser
 {
+    HashMap m_macros;
+    boolean m_skipping;
+    int m_skip_depth;
+
     PreprocessParser( Properties initial_defines)
     {
 	    super( parseStates);
+        m_skipping=false;
+        m_skip_depth=0;
     }

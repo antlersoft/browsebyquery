@@ -8,22 +8,21 @@ import com.antlersoft.parser.Symbol;
  * Takes lex tokens, examines their sequence, converts them into pp tokens
  * (where appropriate) and passes them on to the preprocessor
  */
-class LexToPreprocess
+class LexToPreprocess implements LexReader
 {
 	private CxxReader m_reader;
 	private boolean m_start_of_line;
-	private boolean m_skipping;
 	private boolean m_preprocess_line;
 
 	LexToPreprocess( CxxReader reader)
 	{
 		m_reader=reader;
 		m_start_of_line=true;
-		m_skipping=false;
 		m_preprocess_line=false;
 	}
 
-	void processToken( LexToken next_token)
+	public void processToken( LexToken next_token)
+	throws com.antlersoft.parser.RuleActionException, LexException
 	{
 		if (m_start_of_line) {
 	System.out.println( next_token.value + " at line "+m_reader.m_line);
@@ -37,16 +36,16 @@ System.out.println( "Preprocessor line");
 			{
 				if (next_token.symbol != PreprocessParser.lex_new_line)
 					m_start_of_line = false;
-				if (!m_skipping)
+				if (!m_reader.m_preprocess_parser.m_skipping)
 					m_reader.m_preprocess_parser.parse(next_token.symbol,
-						next_token.getValue());
+						next_token);
 			}
 		}
 		else if ( next_token.symbol==PreprocessParser.lex_new_line)
 		{
 			m_start_of_line = true;
 			m_preprocess_line = false;
-			if ( ! m_skipping)
+			if ( ! m_reader.m_preprocess_parser.m_skipping)
 				m_reader.m_preprocess_parser.parse( next_token.symbol);
 		}
 		else if ( m_preprocess_line)
@@ -74,13 +73,13 @@ System.out.println( "Preprocessor line");
 			else
 			{
 				m_reader.m_preprocess_parser.parse( next_token.symbol,
-					next_token.getValue());
+					next_token);
 			}
 		}
-		else if ( ! m_skipping)
+		else if ( ! m_reader.m_preprocess_parser.m_skipping)
 		{
 			m_reader.m_preprocess_parser.parse( next_token.symbol,
-												next_token.getValue());
+												next_token);
 		}
 	}
 }

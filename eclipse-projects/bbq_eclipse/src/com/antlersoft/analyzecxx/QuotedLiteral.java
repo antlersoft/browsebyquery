@@ -5,16 +5,15 @@ import java.io.IOException;
 
 public class QuotedLiteral implements LexState
 {
-	private CxxReader m_reader;
+	private LexReader m_reader;
 	private LexState m_caller;
 	private char m_closing_quote;
 	private boolean m_is_escaped;
 	private LexToken m_token_to_send;
 	private StringBuffer m_buffer;
-	private boolean m_wide;
 
-	QuotedLiteral( CxxReader reader, LexState caller, char closing_quote,
-	LexToken token_to_send, boolean wide)
+	QuotedLiteral( LexReader reader, LexState caller, char closing_quote,
+	LexToken token_to_send)
 	{
 		m_reader=reader;
 		m_caller=caller;
@@ -28,7 +27,7 @@ public class QuotedLiteral implements LexState
 		if ( c==m_closing_quote && ! m_is_escaped)
 		{
 			m_token_to_send.value=m_buffer.toString();
-			m_reader.m_lex_to_preprocess.processToken( m_token_to_send);
+			m_reader.processToken( m_token_to_send);
 			result=m_caller;
 		}
 		else if ( c=='\n')

@@ -5,10 +5,10 @@ import java.io.IOException;
 
 class InitialPeriod implements LexState {
 
-	private CxxReader m_reader;
+	private LexReader m_reader;
 	private LexState m_caller;
 
-	InitialPeriod( CxxReader reader, LexState caller)
+	InitialPeriod( LexReader reader, LexState caller)
 	{
 		m_reader=reader;
 		m_caller=caller;

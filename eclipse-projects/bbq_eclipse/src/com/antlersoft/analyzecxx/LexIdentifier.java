@@ -6,7 +6,7 @@ import com.antlersoft.parser.Symbol;
 import java.io.IOException;
 
 public class LexIdentifier implements LexState {
-	private CxxReader m_reader;
+	private LexReader m_reader;
 	private LexState m_caller;
 	private StringBuffer m_buffer;
 	private SymbolFinder m_finder;
@@ -33,7 +33,7 @@ public class LexIdentifier implements LexState {
 		   }
 		   );
 
-	LexIdentifier( CxxReader reader, LexState caller, char initial)
+	LexIdentifier( LexReader reader, LexState caller, char initial)
 	{
 		m_reader=reader;
 		m_caller=caller;
@@ -52,15 +52,15 @@ public class LexIdentifier implements LexState {
 			{
 				Symbol s=m_finder.currentSymbol();
 				if ( s==null)
-					m_reader.m_lex_to_preprocess.processToken(
+					m_reader.processToken(
 					new LexToken( PreprocessParser.lex_identifier, m_finder.getRemainder()));
 				else
-					m_reader.m_lex_to_preprocess.processToken(
+					m_reader.processToken(
 						new AltSymbolToken( PreprocessParser.lex_identifier,
 						s.toString(), s));
 			}
 			else
-				m_reader.m_lex_to_preprocess.processToken( new LexToken(
+				m_reader.processToken( new LexToken(
 				    PreprocessParser.lex_identifier, m_buffer.toString()));
 			result=m_caller.nextCharacter( c);
 		}

@@ -13,21 +13,24 @@ class LexNumber implements LexState {
 	static final int OCTAL_DIGITS=6;
 	static final int INT_SUFFIX=7;
 
-	private CxxReader m_reader;
+	private LexReader m_reader;
 	private LexState m_caller;
 	private int m_state;
 	private StringBuffer m_buffer;
+	private NumericLiteral m_token;
 
-	LexNumber( CxxReader reader, LexState caller, char c)
+	LexNumber( LexReader reader, LexState caller, char c)
 	{
 		m_reader=reader;
 		m_caller=caller;
+		m_token=new NumericLiteral();
 
 		switch ( c)
 		{
 		case '0' : m_state=INITIAL_ZERO;
 						break;
 		case '.' : m_state=FLOAT_FRACTION;
+						m_token.setType( NumericLiteral.FLOAT);
 						break;
 		default :
 			m_state=INITIAL_DIGIT;
@@ -42,9 +45,12 @@ class LexNumber implements LexState {
 			case INITIAL_DIGIT :
 				switch ( comp_c)
 				{
-					case '.' : m_state=FLOAT_FRACTION; break;
+					case '.' : m_state=FLOAT_FRACTION;
+					m_token.setType( NumericLiteral.FLOAT);
+					break;
 					case 'L' :
-					case 'U' : m_state=INT_SUFFIX; break;
+					case 'U' : m_state=INT_SUFFIX; m_token.setFlag( comp_c);
+					break;
 					case 'E' : m_state=EXPONENT_SIGN; break;
 					default :
 						if ( ! CharClass.isDigit( comp_c))
@@ -58,15 +64,21 @@ class LexNumber implements LexState {
 			case INITIAL_ZERO :
 				switch ( comp_c)
 				{
-					case '.' : m_state=FLOAT_FRACTION; break;
+					case '.' :
+						m_state=FLOAT_FRACTION;
+						m_token.setType( NumericLiteral.FLOAT);
+						break;
 				case 'L':
 				case 'U':
+					m_token.setFlag( comp_c);
 					m_state = INT_SUFFIX;
 					break;
 				case 'E':
+					m_token.setType( NumericLiteral.FLOAT);
 					m_state = EXPONENT_SIGN;
 					break;
 				case 'X' :
+					m_token.setType( NumericLiteral.HEX);
 					m_state=HEX_DIGITS;
 					break;
 				default :
@@ -74,6 +86,7 @@ class LexNumber implements LexState {
 					{
 						if ( ! CharClass.isOctalDigit( comp_c))
 							throw new LexException( "Bad octal number!");
+						m_token.setType( NumericLiteral.OCTAL);
 						m_state=OCTAL_DIGITS;
 					}
 					else
@@ -90,6 +103,7 @@ class LexNumber implements LexState {
 					case 'L' :
 					case 'F' :
 						m_buffer.append( comp_c);
+						m_token.setFlag( comp_c);
 						finish();
 						return m_caller;
 					case 'E' :
@@ -118,6 +132,7 @@ class LexNumber implements LexState {
 				{
 					case 'L' :
 					case 'F' :
+						m_token.setFlag( comp_c);
 						m_buffer.append( comp_c);
 						finish();
 						return m_caller;
@@ -135,6 +150,7 @@ class LexNumber implements LexState {
 				{
 					case 'U' :
 					case 'L' :
+						m_token.setFlag( comp_c);
 						m_state=INT_SUFFIX;
 						break;
 					default :
@@ -151,6 +167,7 @@ class LexNumber implements LexState {
 				{
 					case 'U' :
 					case 'L' :
+						m_token.setFlag( comp_c);
 						m_state=INT_SUFFIX;
 						break;
 					default :
@@ -166,6 +183,7 @@ class LexNumber implements LexState {
 				if ( comp_c=='U' || comp_c=='L' &&
 				comp_c!=m_buffer.charAt( m_buffer.length()-1))
 		   {
+			   m_token.setFlag( comp_c);
 			   m_buffer.append( comp_c);
 			   finish();
 			   return m_caller;
@@ -179,9 +197,10 @@ class LexNumber implements LexState {
 	/**@todo Implement this com.antlersoft.analyzecxx.LexState method*/
 	throw new java.lang.UnsupportedOperationException("Method endOfFile() not yet implemented.");
     }
-	void finish()
+	private void finish()
+	throws RuleActionException, LexException
 	{
-		m_reader.m_lex_to_preprocess.processToken( new LexToken( PreprocessParser.lex_number,
-			m_buffer.toString()));
+		m_token.setRepresentation( m_buffer.toString());
+		m_reader.processToken( m_token);
 	}
 }

@@ -5,7 +5,7 @@ import com.antlersoft.parser.Symbol;
 import java.io.IOException;
 
 public class LexPunctuation implements LexState {
-	private CxxReader m_reader;
+	private LexReader m_reader;
 	private LexState m_caller;
 	private static SymbolFinderTree m_tree=new SymbolFinderTree(
 		   new String[] {
@@ -18,7 +18,8 @@ public class LexPunctuation implements LexState {
 		   });
 	SymbolFinder m_finder;
 
-	LexPunctuation( CxxReader reader, LexState caller, char initial)
+	LexPunctuation( LexReader reader, LexState caller, char initial)
+		throws RuleActionException, LexException
 	{
 		m_reader=reader;
 		m_caller=caller;
@@ -42,6 +43,7 @@ public class LexPunctuation implements LexState {
     }
 
 	private void addCharacter( char c)
+	throws RuleActionException, LexException
 	{
 		if ( ! m_finder.accept( c))
 		{
@@ -52,7 +54,7 @@ public class LexPunctuation implements LexState {
 			if ( ! m_finder.canGrow())
 			{
 				Symbol s=m_finder.currentSymbol();
-				m_reader.m_lex_to_preprocess.processToken( new PunctuationToken(
+				m_reader.processToken( new PunctuationToken(
 						m_finder.currentText(), s));
 				m_finder.reset();
 			}
@@ -60,11 +62,12 @@ public class LexPunctuation implements LexState {
 	}
 
 	private void rescan()
+	throws RuleActionException, LexException
 	{
 		Symbol s=m_finder.currentSymbol();
 		if ( s!=null)
 		{
-			m_reader.m_lex_to_preprocess.processToken( new PunctuationToken(
+			m_reader.processToken( new PunctuationToken(
 					m_finder.currentText(), s));
 		}
 		String r=null;
@@ -80,7 +83,7 @@ public class LexPunctuation implements LexState {
 			if ( s==null)
 			{
 				start_index=1;
-				m_reader.m_lex_to_preprocess.processToken( new PunctuationToken( r.substring( 0,1),
+				m_reader.processToken( new PunctuationToken( r.substring( 0,1),
 					null));
 			}
 			for ( ; start_index<remainder_length; ++start_index)
@@ -89,6 +92,7 @@ public class LexPunctuation implements LexState {
 	}
 
 	private void cleanRemainder()
+	throws RuleActionException, LexException
 	{
 		rescan();
 		if ( m_finder.isRemainder())
@@ -98,7 +102,7 @@ public class LexPunctuation implements LexState {
 			int remainder_length=r.length();
 			for ( int i=0; i<remainder_length; ++i)
 			{
-				m_reader.m_lex_to_preprocess.processToken(
+				m_reader.processToken(
 						new PunctuationToken( r.substring( i, i+1), null));
 			}
 		}

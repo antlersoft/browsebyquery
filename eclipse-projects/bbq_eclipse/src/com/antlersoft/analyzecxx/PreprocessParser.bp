@@ -148,19 +148,31 @@ REPLACEMENT_LIST : PP_TOKENS .
 #          new-line:
 #                  the new-line character
 PP_TOKENS : PP_TOKEN .
-PP_TOKENS : PP_TOKENS PP_TOKEN .
-PP_TOKENS : PP_TOKENS lex_white_space .
-PP_TOKEN : lex_identifier .
-PP_TOKEN : lex_number .
-PP_TOKEN : lex_character_literal .
-PP_TOKEN : lex_string_literal .
-PP_TOKEN : lex_preprocessing_op_or_punc .
+PP_TOKENS : PP_TOKENS PP_TOKEN "{
+    ArrayList result=(ArrayList)valueStack.get( valueStack.size()-2);
+    result.add( valueStack.get( valueStack.size()-1));
+    return result;
+}" .
+PP_TOKENS : PP_TOKENS lex_white_space "{
+    ArrayList result=(ArrayList)valueStack.get( valueStack.size()-2);
+    result.add( valueStack.get( valueStack.size()-1));
+    return result;
+}" .
+PP_TOKEN : lex_identifier "{ return valueStack.get( valueStack.size()-1); }" .
+PP_TOKEN : lex_number "{ return valueStack.get( valueStack.size()-1); }" .
+PP_TOKEN : lex_character_literal "{ return valueStack.get( valueStack.size()-1); }" .
+PP_TOKEN : lex_string_literal "{ return valueStack.get( valueStack.size()-1); }" .
+PP_TOKEN : lex_preprocessing_op_or_punc "{ return valueStack.get( valueStack.size()-1); }" .
 
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE lex_identifier .
 CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE pp_lparen OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE pp_rparen .
-CONSTANT_TOKEN : PP_TOKEN .
+CONSTANT_TOKEN : PP_TOKEN "{ return valueStack.get( valueStack.size()-1); }" .
 CONSTANT_EXPRESSION : CONSTANT_TOKEN .
-CONSTANT_EXPRESSION : CONSTANT_EXPRESSION CONSTANT_TOKEN .
+CONSTANT_EXPRESSION : CONSTANT_EXPRESSION CONSTANT_TOKEN "{
+    ArrayList result=(ArrayList)valueStack.get( valueStack.size()-2);
+    result.add( valueStack.get( valueStack.size()-1));
+    return result;
+}" .
 
-IDENTIFIER_LIST : OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE .
+IDENTIFIER_LIST : lex_identifier OPT_WHITE_SPACE .
 IDENTIFIER_LIST : IDENTIFIER_LIST pp_comma OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE .

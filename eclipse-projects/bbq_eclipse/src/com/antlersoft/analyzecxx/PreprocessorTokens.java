@@ -14,11 +14,13 @@ import com.antlersoft.parser.Symbol;
  */
 class PreprocessorTokens implements LexState
 {
-	private CxxReader m_reader;
+	private LexReader m_reader;
+	private PreprocessParser m_parser;
 
-	PreprocessorTokens( CxxReader reader)
+	PreprocessorTokens( LexReader reader, PreprocessParser parser)
 	{
 		m_reader=reader;
+		m_parser=parser;
 	}
 
 	public LexState nextCharacter( char c)
@@ -38,20 +40,19 @@ class PreprocessorTokens implements LexState
 				break;
 			case '\'' :
 				result=new QuotedLiteral( m_reader, this, c,
-						  new LexToken( PreprocessParser.lex_character_literal, null), false);
+						  new CharacterLiteral(  null, false));
 				break;
 			case '"' :
 			    result=new QuotedLiteral( m_reader, this, c,
-						  new LexToken( isExpectingIncludeHeader()
-						  ? PreprocessParser.lex_include_header
-						  : PreprocessParser.lex_string_literal, null), false);
+						  isExpectingIncludeHeader()
+						  ? new LexToken( PreprocessParser.lex_include_header, null)
+						  : new StringLiteral( null, false));
 				break;
 			case '<' :
 							if ( isExpectingIncludeHeader())
 							{
 								result=new QuotedLiteral( m_reader, this, '>',
-								new LexToken( PreprocessParser.lex_include_header, null),
-								false);
+								new LexToken( PreprocessParser.lex_include_header, null));
 							}
 							else
 							{
@@ -62,7 +63,7 @@ class PreprocessorTokens implements LexState
 				throw new LexException( "Unsupported: naked backslash or universal character name");
 			default :
 				if ( CharClass.isWhiteSpace( c))
-					result=new  WhiteSpace( m_reader.m_lex_to_preprocess, this, c);
+					result=new  WhiteSpace( m_reader, this, c);
 				else if ( CharClass.isDigit( c))
 					result=new LexNumber( m_reader, this, c);
 				else if ( CharClass.isIdentifierStart(c))
@@ -80,18 +81,12 @@ class PreprocessorTokens implements LexState
 
 	private boolean isExpectingIncludeHeader()
 	{
-System.out.println( "Checking if we want include header at line "+m_reader.m_line);
-		for ( Enumeration e=m_reader.m_preprocess_parser.getExpectedSymbols();
+		for ( Enumeration e=m_parser.getExpectedSymbols();
 			  e.hasMoreElements();)
 		{
-			Symbol s=(Symbol)e.nextElement();
-			System.out.print( s.toString()+" ");
-			if ( s==PreprocessParser.lex_include_header)
+			if ( ((Symbol)e.nextElement())==PreprocessParser.lex_include_header)
 				return true;
-//			if ( ((Symbol)e.nextElement())==PreprocessParser.lex_include_header)
-//				return true;
 		}
-System.out.println( "Don't want include header "+m_reader.m_line);
 		return false;
 	}
 }
