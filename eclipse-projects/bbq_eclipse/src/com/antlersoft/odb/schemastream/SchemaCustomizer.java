@@ -75,10 +75,12 @@ System.out.println( "Failed to find "+cnfe.getMessage());
 
     private static String[] baseClasses={
         "java.lang.Object",
+		"java.lang.String",
         "java.io.Serializable",
         "java.io.Externalizable",
         "[Ljava.lang.Object;",
         "java.util.Vector",
+		"java.util.Date",
         "java.util.Collection",
         "java.util.AbstractCollection",
         "java.util.AbstractList",
@@ -90,9 +92,8 @@ System.out.println( "Failed to find "+cnfe.getMessage());
         "com.antlersoft.odb.ObjectRef",
         "com.antlersoft.odb.DualRef",
         "com.antlersoft.odb.ObjectKey",
+		"com.antlersoft.odb.ObjectRefKey",
         "com.antlersoft.odb.Persistent",
-        "com.antlersoft.odb.PersistentHashtable",
-        "com.antlersoft.odb.transp.AuxBase",
-        "com.antlersoft.odb.transp.TransparentBase"
+        "com.antlersoft.odb.PersistentHashtable"
         };
 }
