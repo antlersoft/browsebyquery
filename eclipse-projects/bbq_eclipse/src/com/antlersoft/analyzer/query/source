@@ -7,6 +7,7 @@ symbol Identity
 symbol MethodExpression
 symbol SetOperator
 symbol Reference
+symbol LogicalOperator
 reserved all
 reserved and
 reserved are
@@ -63,11 +64,17 @@ SetOperator : intersection "{ return intersection; }" .
 SetOperator : deintersection "{ return deintersection; }" .
 SetOperator : without "{ return without; }" .
 
-Filter : Filter and Filter .
+LogicalOperator : and "{ return and; }" .
+LogicalOperator : or "{ return or; }" .
+
+Filter : Filter LogicalOperator Filter "{
+    return new LogicalOpFilter( (QueryParser.ReservedWord)valueStack.get( valueStack.size()-2),
+        (Filter)valueStack.get( valueStack.size()-3),
+        (Filter)valueStack.get( valueStack.size()-1));
+    }" .
 Filter : leftParen Filter rightParen  "{
 	return (Filter)valueStack.get( valueStack.size()-2);
 	}" .
-Filter : Filter or Filter .
 Filter : NOT Filter "{
 	Filter filter=(Filter)valueStack.get( valueStack.size()-1);
 	filter.setNot();
