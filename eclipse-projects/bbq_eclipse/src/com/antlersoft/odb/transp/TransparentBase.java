@@ -16,6 +16,20 @@ import java.io.Serializable;
 
 public abstract class TransparentBase implements Serializable
 {
+    public int hashCode()
+    {
+        return _odb_ref.hashCode();
+    }
+
+    public boolean equals( Object toCompare)
+    {
+        if ( toCompare instanceof TransparentBase)
+        {
+            toCompare=((TransparentBase)toCompare)._odb_ref;
+        }
+        return _odb_ref.equals( toCompare);
+    }
+
     protected ObjectRef _odb_ref;
 
     protected TransparentBase()
