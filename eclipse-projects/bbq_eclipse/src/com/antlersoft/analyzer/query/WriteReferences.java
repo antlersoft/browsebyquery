@@ -1,26 +1,17 @@
 package analyzer.query;
 
-import java.util.Enumeration;
-import analyzer.AnalyzerDB;
 import analyzer.DBFieldReference;
 
-class WriteReferences implements QueryParser.FieldReferenceSet
+class WriteReferences extends Filter
 {
-	private QueryParser.FieldReferenceSet _base;
-
-	WriteReferences( QueryParser.FieldReferenceSet base)
+	WriteReferences()
 	{
-		_base=base;
+		super( DBFieldReference.class);
 	}
 
-	public Enumeration execute( AnalyzerDB db)
+	protected boolean include( Object toFilter)
 		throws Exception
 	{
-		return new QueryParser.FilterEnumeration( _base.execute( db)) {
-			public Object filterObject( Object toFilter)
-			{
-				return ((DBFieldReference)toFilter).isWrite()?toFilter:null;
-			}
-		};
+		return ((DBFieldReference)toFilter).isWrite();
 	}
 }

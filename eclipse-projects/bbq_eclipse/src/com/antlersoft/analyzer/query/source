@@ -1,90 +1,154 @@
-
-reserved fields
-reserved field
-reserved of
-reserved classes
-reserved base
-reserved derived
-reserved recursive
-reserved all
-reserved Class "class"
-reserved previous
-reserved set
-reserved to
-reserved methods
-reserved in
-reserved calls
-reserved from
-reserved containing
-reserved left_paren "("
-reserved right_paren ")"
-reserved NOT "not"
-reserved and
-reserved classcast
-reserved fieldcast
-reserved methodcast
-reserved fieldrefcast
-reserved callcast
-reserved matching
-reserved reference
-reserved finalToken
-reserved uncalled
-reserved polymorphic
-reserved write
-symbol CompleteQuery
 symbol SetExpression
-symbol ClassSet
-symbol ReferenceSet
-symbol CallSet
-symbol FieldSet
-symbol FieldReferenceSet
-symbol MethodSet
-symbol OperatorExpression
-symbol UncalledPoly
+symbol Transform
+symbol CompleteQuery
+symbol Filter
+symbol UncalledPolymorphic
+symbol Identity
+symbol MethodExpression
+symbol SetOperator
+symbol Reference
+reserved all
+reserved and
+reserved are
+reserved base
+reserved calls
+reserved Class "class"
+reserved classes
+reserved containing
+reserved deintersection
+reserved derived
+reserved execute
+reserved fields
+reserved finalToken
+reserved from
+reserved in
+reserved is
+reserved intersection
+reserved leftParen "("
+reserved matching
+reserved methodcast
+reserved methods
+reserved NOT "not"
+reserved or
+reserved of
+reserved polymorphic
+reserved previous
+reserved recursive
+reserved references
+reserved reference
+reserved rightParen ")"
+reserved same
+reserved set
+reserved that
+reserved to
+reserved uncalled
+reserved union
+reserved without
+reserved write
+
 CompleteQuery : SetExpression finalToken "{
     QueryParser qp=(QueryParser)parser;
     qp.previousSet=(SetExpression)valueStack.get(valueStack.size()-2);
     return qp.previousSet;
     }" .
-SetExpression : ClassSet "{
-    return (SetExpression)valueStack.get(valueStack.size()-1);
-    }" .
-SetExpression : ReferenceSet "{
-    return (SetExpression)valueStack.get(valueStack.size()-1);
-    }" .
-SetExpression : FieldSet "{
-    return (SetExpression)valueStack.get(valueStack.size()-1);
-    }" .
-SetExpression : MethodSet "{
-     return (SetExpression)valueStack.get(valueStack.size()-1);
-    }" .
-ClassSet : OperatorExpression classcast "{
-	parser.clearRecovery();
-    return (SetExpression)valueStack.get(valueStack.size()-2);
-    }" .
-FieldSet : OperatorExpression fieldcast "{
-	parser.clearRecovery();
-    return (SetExpression)valueStack.get(valueStack.size()-2);
-    }" .
-MethodSet : OperatorExpression methodcast "{
-	parser.clearRecovery();
-    return (SetExpression)valueStack.get(valueStack.size()-2);
-    }" .
-FieldReferenceSet : OperatorExpression fieldrefcast "{
-	parser.clearRecovery();
-    return (SetExpression)valueStack.get(valueStack.size()-2);
-    }" .
-ReferenceSet : CallSet "{
-	return valueStack.get(valueStack.size()-1);
+
+Identity : is .
+Identity : are .
+
+SetOperator : union "{ return union; }" .
+SetOperator : intersection "{ return intersection; }" .
+SetOperator : deintersection "{ return deintersection; }" .
+SetOperator : without "{ return without; }" .
+
+Filter : Filter and Filter .
+Filter : leftParen Filter rightParen  "{
+	return (Filter)valueStack.get( valueStack.size()-2);
 	}" .
-ReferenceSet : FieldReferenceSet "{
-	return valueStack.get(valueStack.size()-1);
+Filter : Filter or Filter .
+Filter : NOT Filter "{
+	Filter filter=(Filter)valueStack.get( valueStack.size()-1);
+	filter.setNot();
+	return filter;
 	}" .
-FieldSet : fields in ClassSet "{
-    return new FieldsIn( (ClassSet)valueStack.get( valueStack.size()-1));
-    }" .
-FieldSet : field literalString .
-OperatorExpression : set nameSymbol to SetExpression "{
+Filter : matching literalString "{
+	return new MatchFilter( (String)valueStack.get( valueStack.size()-1));
+	}" .
+Filter : write "{ return new WriteReferences(); }" .
+Transform : Transform Transform "{
+	int size=valueStack.size();
+	return new TransformTransform( (Transform)valueStack.get( valueStack.size()-2),
+		(Transform)valueStack.get( valueStack.size()-1));
+	}" .
+Transform : Filter "{
+	return new FilterTransform( (Filter)valueStack.get( valueStack.size()-1)); }" .
+Transform : Transform SetOperator Transform "{
+	int size=valueStack.size();
+	return new SetOpTransform( (ReservedWord)valueStack.get( size-2),
+		(Transform)valueStack.get( size-3), (Transform)valueStack.get( size-1));
+	}" .
+Transform : Transform that Identity Filter "{
+	int size=valueStack.size();
+	return new TransformTransform(
+		new FilterTransform((Filter)valueStack.get( valueStack.size()-1)),
+		(Transform)valueStack.get( valueStack.size()-4));
+	};" .
+Transform : leftParen Transform rightParen  "{
+	return (Transform)valueStack.get( valueStack.size()-2);
+	}" .
+
+SetExpression : Transform SetExpression "{
+	int size=valueStack.size();
+	return new TransformSet( (SetExpression)valueStack.get( size-1),
+		(Transform)valueStack.get( size-2));
+	}" .
+
+SetExpression : execute SetExpression .
+
+SetExpression : leftParen SetExpression rightParen "{
+	return (SetExpression)valueStack.get( valueStack.size()-2);
+	}" .
+
+SetExpression : SetExpression that Identity Filter "{
+	int size=valueStack.size();
+	return new TransformSet( (SetExpression)valueStack.get( size-4),
+		new FilterTransform( (Filter)valueStack.get( size-1)));
+	}" .
+
+SetExpression : SetExpression SetOperator SetExpression .
+
+SetExpression : previous "{
+	QueryParser qp=(QueryParser)parser;
+	return qp.previousSet;
+	}" .
+
+SetExpression : Class literalString "{
+	return new ClassGet( (String)valueStack.get( valueStack.size()-1));
+	}" .
+
+SetExpression : all classes "{
+	return new ClassesGet();
+	}" .
+
+Transform : base classes of "{ return new BaseClasses(); }" .
+Transform : recursive base classes of "{ return new RecursiveBaseClasses(); }" .
+Transform : derived classes of "{ return new DerivedClasses(); }" .
+Transform : recursive derived classes of "{ return new RecursiveDerivedClasses(); }" .
+Transform : same "{ return new SameTransform(); }" .
+Transform : methods in "{ return new MethodsIn(); }" .
+Transform : fields in "{ return new FieldsIn(); }" .
+Transform : polymorphic "{ return new Polymorphic(); }" .
+Transform : methods containing .
+Transform : classes containing "{ return new ClassOfMethod(); }" .
+Filter : uncalled "{ return new UncalledMethod(); }" .
+Transform : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
+Reference : reference .
+Reference : references .
+Transform : calls from "{ return new CallsFrom(); }" .
+Transform : Reference from "{ return new ReferenceFrom(); }" .
+Transform : Reference to "{ return new FieldReferencesTo(); }" .
+Transform : calls to "{ return new CallsTo(); }" .
+UncalledPolymorphic : uncalled polymorphic .
+SetExpression : set nameSymbol to SetExpression "{
     QueryParser qp=(QueryParser)parser;
     int size=valueStack.size();
     SetExpression se=(SetExpression)valueStack.get( size-1);
@@ -93,76 +157,20 @@ OperatorExpression : set nameSymbol to SetExpression "{
 	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
 //System.out.println( qp.storedValuesSupport.hasListeners( \"storedValues\") ? \"Has listeners\" : \"No listeners\");
     return se; }" .
-OperatorExpression : previous "{
-	QueryParser qp=(QueryParser)parser;
-	return qp.previousSet;
-	}" .
-OperatorExpression : nameSymbol "{ QueryParser qp=(QueryParser)parser;
+SetExpression : nameSymbol "{ QueryParser qp=(QueryParser)parser;
     SetExpression retVal=(SetExpression)qp.storedValues.get(
 	    valueStack.get( valueStack.size()-1));
     if ( retVal==null)
 	    throw new RuleActionException( \"Unknown name: \"+valueStack.get( valueStack.size()-1));
     return retVal; }" .
-OperatorExpression : left_paren SetExpression right_paren "{
-    SetExpression se=(SetExpression)valueStack.get(valueStack.size()-2);
-	return se;
+
+MethodExpression : SetExpression methodcast "{
+	parser.clearRecovery();
+    return (SetExpression)valueStack.get(valueStack.size()-2);
     }" .
-OperatorExpression : OperatorExpression errorSymbol "{
+
+SetExpression : SetExpression errorSymbol "{
 	SetExpression oe=(SetExpression)valueStack.get( valueStack.size()-2);
 	((QueryParser)parser).pushCastToken( oe);
 	return oe;
 	}" .
-OperatorExpression : OperatorExpression NOT in OperatorExpression .
-OperatorExpression : OperatorExpression and OperatorExpression .
-MethodSet : methods in ClassSet "{
-    return new MethodsIn( (ClassSet)valueStack.get( valueStack.size()-1));
-    }" .
-MethodSet : polymorphic MethodSet "{
-    return new Polymorphic( (MethodSet)valueStack.get( valueStack.size()-1));
-    }" .
-UncalledPoly : uncalled polymorphic .
-MethodSet : UncalledPoly MethodSet "{
-    return new UncalledMethod.UncalledPolymorphic( (MethodSet)valueStack.get( valueStack.size()-1));
-    }".
-MethodSet : matching literalString MethodSet "{
-    return new MethodMatching( (MethodSet)valueStack.get( valueStack.size()-1),
-	(String)valueStack.get( valueStack.size()-2)); }" .
-MethodSet : uncalled MethodSet "{
-    return new UncalledMethod( (MethodSet)valueStack.get( valueStack.size()-1));
-    }".
-MethodSet : methods containing ReferenceSet .
-FieldSet : matching literalString FieldSet .
-ClassSet : matching literalString ClassSet "{
-    return new ClassMatching( (ClassSet)valueStack.get( valueStack.size()-1),
-	(String)valueStack.get( valueStack.size()-2)); }" .
-ClassSet : base classes of ClassSet "{
-	return new BaseClasses( (ClassSet)valueStack.get( valueStack.size()-1));
-	}" .
-ClassSet : recursive base classes of ClassSet "{
-	return new RecursiveBaseClasses( (ClassSet)valueStack.get( valueStack.size()-1));
-	}" .
-ClassSet : derived classes of ClassSet "{
-	return new DerivedClasses( (ClassSet)valueStack.get( valueStack.size()-1));
-	}" .
-ClassSet : recursive derived classes of ClassSet "{
-	return new RecursiveDerivedClasses( (ClassSet)valueStack.get( valueStack.size()-1));
-	}" .
-ClassSet : all classes "{
-    return new ClassesGet();
-    }" .
-ClassSet : Class literalString "{
-    return new ClassGet( (String)valueStack.get( valueStack.size()-1));
-    }" .
-ClassSet : classes containing MethodSet "{
-	return new ClassOfMethod( (MethodSet)valueStack.get( valueStack.size()-1));
-	}" .
-CallSet : calls to MethodSet "{
-    return new CallsTo( (MethodSet)valueStack.get( valueStack.size()-1));
-    }".
-ReferenceSet : ReferenceSet from MethodSet .
-FieldReferenceSet : reference to FieldSet "{
-    return new FieldReferencesTo( (FieldSet)valueStack.get( valueStack.size()-1));
-    }" .
-FieldReferenceSet : write FieldReferenceSet "{
-    return new WriteReferences( (FieldReferenceSet)valueStack.get( valueStack.size()-1));
-    }" .
