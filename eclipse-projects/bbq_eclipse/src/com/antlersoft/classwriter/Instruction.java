@@ -11,6 +11,8 @@ package com.antlersoft.classwriter;
 
 import java.util.List;
 
+import com.antlersoft.util.NetByte;
+
 public class Instruction
 {
 	OpCode opCode;
@@ -53,7 +55,7 @@ public class Instruction
         throws CodeCheckException
     {
         byte[] operands=new byte[2];
-        OpCode.intToPair( constIndex, operands, 0);
+        NetByte.intToPair( constIndex, operands, 0);
         addNextInstruction( instructionList, mnemonic, operands, false);
     }
 
@@ -72,9 +74,9 @@ public class Instruction
         {
             switch ( operands.length)
             {
-            case 1 : return OpCode.mU( operands[0]);
-            case 2 : return OpCode.pairToInt( operands, 0);
-            case 4 : return OpCode.quadToInt( operands, 0);
+            case 1 : return NetByte.mU( operands[0]);
+            case 2 : return NetByte.pairToInt( operands, 0);
+            case 4 : return NetByte.quadToInt( operands, 0);
             }
         }
         throw new CodeCheckException( "Operands not integer");
@@ -87,7 +89,7 @@ public class Instruction
     	throws CodeCheckException
     {
         return (ClassWriter.CPTypeRef)
-        	writer.constantPool.get( OpCode.pairToInt(
+        	writer.constantPool.get( NetByte.pairToInt(
          	operands, 0));
     }
 
@@ -99,10 +101,10 @@ public class Instruction
         int offset;
         if ( operands.length==4)
         {
-            offset=OpCode.quadToInt( operands, 0);
+            offset=NetByte.quadToInt( operands, 0);
         }
         else
-        	offset=OpCode.pairToInt( operands, 0);
+        	offset=NetByte.pairToInt( operands, 0);
         return instructionStart+offset;
     }
 
@@ -127,9 +129,9 @@ public class Instruction
             int newDestination=oldDestination+newPostEnd-oldPostEnd-
                 instructionStart;
             if ( operands.length==4)
-                OpCode.intToQuad( newDestination, operands, 0);
+                NetByte.intToQuad( newDestination, operands, 0);
             else
-                OpCode.intToPair( newDestination, operands, 0);
+                NetByte.intToPair( newDestination, operands, 0);
         }
     }
 
@@ -143,7 +145,7 @@ public class Instruction
         {
             mnemonic="ldc2_w";
             operands=new byte[2];
-            OpCode.intToPair( index, operands, 0);
+            NetByte.intToPair( index, operands, 0);
         }
         else
         {
@@ -157,7 +159,7 @@ public class Instruction
             {
                 mnemonic="ldc_w";
                 operands=new byte[2];
-                OpCode.intToPair( index, operands, 0);
+                NetByte.intToPair( index, operands, 0);
             }
         }
         return new Instruction( OpCode.getOpCodeByMnemonic( mnemonic), 0,

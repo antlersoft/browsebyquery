@@ -13,6 +13,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 import com.antlersoft.classwriter.*;
+import com.antlersoft.util.NetByte;
 
 public class WriterTest
 {
@@ -58,7 +59,7 @@ public class WriterTest
         byte[] operands;
 
         operands=new byte[2];
-        OpCode.intToPair( fieldRefIndex, operands, 0);
+        NetByte.intToPair( fieldRefIndex, operands, 0);
         instructions.add( new Instruction(
             OpCode.getOpCodeByMnemonic( "getstatic"), 0, operands, false));
         operands=new byte[1];
@@ -67,7 +68,7 @@ public class WriterTest
             0, operands, false));
 
         operands=new byte[2];
-        OpCode.intToPair( methodRefIndex, operands, 0);
+        NetByte.intToPair( methodRefIndex, operands, 0);
         instructions.add( new Instruction(
             OpCode.getOpCodeByMnemonic( "invokevirtual"), 0, operands, false));
 
@@ -107,20 +108,20 @@ public class WriterTest
             byte[] operands;
 
             operands=new byte[2];
-            OpCode.intToPair( fieldRefIndex, operands, 0);
+            NetByte.intToPair( fieldRefIndex, operands, 0);
             instructions.add( new Instruction(
                 OpCode.getOpCodeByMnemonic( "getstatic"), 0, operands, false));
             instructions.add( new Instruction(
                 OpCode.getOpCodeByMnemonic( "dup"), 0, null, false));
             instructions.add( Instruction.appropriateLdc( constantIndex, false));
             operands=new byte[2];
-            OpCode.intToPair( printRefIndex, operands, 0);
+            NetByte.intToPair( printRefIndex, operands, 0);
             instructions.add( new Instruction(
                 OpCode.getOpCodeByMnemonic( "invokevirtual"), 0, operands, false));
             instructions.add( Instruction.appropriateLdc(
                 writer.getStringConstantIndex( method.getName()), false));
             operands=new byte[2];
-            OpCode.intToPair( printlnRefIndex, operands, 0);
+            NetByte.intToPair( printlnRefIndex, operands, 0);
             instructions.add( new Instruction(
                 OpCode.getOpCodeByMnemonic( "invokevirtual"), 0, operands, false));
             attribute.insertInstructions( 0, 0, instructions);

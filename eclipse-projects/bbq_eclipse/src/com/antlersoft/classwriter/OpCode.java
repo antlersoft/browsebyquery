@@ -68,45 +68,6 @@ public abstract class OpCode
     	opCodes=new OpCode[256];
     }
 
-    public static final int mU( byte b)
-    {
-		int retval=b;
-		if ( retval<0)
-		{
-		    retval+=256;
-		}
-		return retval;
-    }
-
-    public static final void intToPair( int value, byte[] array, int offset)
-    {
-        array[offset+1]=(byte)(value&0xff);
-        value>>>=8;
-        array[offset]=(byte)value;
-    }
-
-    public static final void intToQuad( int value, byte[] array, int offset)
-    {
-        array[offset+3]=(byte)(value&0xff);
-        value>>>=8;
-        array[offset+2]=(byte)(value&0xff);
-        value>>>=8;
-        array[offset+1]=(byte)(value&0xff);
-        value>>>=8;
-        array[offset]=(byte)value;
-    }
-
-    public static final int pairToInt( byte[] array, int offset)
-    {
-        return (array[offset]<<8)|mU( array[offset+1]);
-    }
-
-    public static final int quadToInt( byte[] array, int offset)
-    {
-        return (array[offset]<<24)|( mU( array[offset+1])<<16)|
-        	( mU( array[offset+2])<<8)|mU( array[offset+3]);
-    }
-
     public static OpCode getOpCodeByMnemonic( String mnemonic)
         throws CodeCheckException
     {

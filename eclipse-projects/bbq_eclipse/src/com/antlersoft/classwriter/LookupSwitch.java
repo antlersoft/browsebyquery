@@ -12,6 +12,8 @@ package com.antlersoft.classwriter;
 import java.util.Collection;
 import java.util.Stack;
 
+import com.antlersoft.util.NetByte;
+
 class LookupSwitch extends OpCode
 {
 	LookupSwitch( int v, String m)
@@ -40,14 +42,14 @@ class LookupSwitch extends OpCode
      	throws CodeCheckException
     {
         int offset=instruction.operands.length%4;
-        next.add( new InstructionPointer( quadToInt( instruction.operands, offset)+
+        next.add( new InstructionPointer( NetByte.quadToInt( instruction.operands, offset)+
         	instruction.instructionStart));
         offset+=4;
-        int npairs=quadToInt( instruction.operands, offset);
+        int npairs=NetByte.quadToInt( instruction.operands, offset);
         offset+=8;
         for ( int i=0; i<npairs; i++)
         {
-            next.add( new InstructionPointer( quadToInt( instruction.operands, offset+8*i)+
+            next.add( new InstructionPointer( NetByte.quadToInt( instruction.operands, offset+8*i)+
             	instruction.instructionStart));
         }
     }
@@ -68,7 +70,8 @@ class LookupSwitch extends OpCode
 	     	int operandStart=cr.currentPos;
 		    cr.currentPos+=(4-( cr.currentPos%4))%4;
 		    cr.currentPos+=4;
-		    int npairs=( mU(code[cr.currentPos++])<<24)|(mU(code[cr.currentPos++])<<16)|(mU(code[cr.currentPos++])<<8)|mU(code[cr.currentPos++]);
+		    int npairs=( NetByte.mU(code[cr.currentPos++])<<24)|
+                (NetByte.mU(code[cr.currentPos++])<<16)|(NetByte.mU(code[cr.currentPos++])<<8)|NetByte.mU(code[cr.currentPos++]);
 		    cr.currentPos+=8*npairs;
 	     	return new Instruction( this, operandStart-1,
 	      		getSubArray( code, operandStart,

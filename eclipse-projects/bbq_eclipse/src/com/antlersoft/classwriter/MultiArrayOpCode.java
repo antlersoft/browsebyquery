@@ -11,6 +11,8 @@ package com.antlersoft.classwriter;
 
 import java.util.Stack;
 
+import com.antlersoft.util.NetByte;
+
 class MultiArrayOpCode extends SimpleOpCode
 {
 	MultiArrayOpCode( int v, int l, String m)
@@ -22,7 +24,7 @@ class MultiArrayOpCode extends SimpleOpCode
     	CodeAttribute attribute)
      	throws CodeCheckException
     {
-        int dimensions=mU( instruction.operands[2]);
+        int dimensions=NetByte.mU( instruction.operands[2]);
         Stack new_stack=(Stack)old_stack.clone();
         if ( new_stack.size()<dimensions)
         	throw new CodeCheckException(

@@ -12,6 +12,8 @@ package com.antlersoft.classwriter;
 import java.util.Collection;
 import java.util.Stack;
 
+import com.antlersoft.util.NetByte;
+
 public class TableSwitch extends OpCode
 {
 	TableSwitch( int v, String m)
@@ -40,16 +42,16 @@ public class TableSwitch extends OpCode
     	throws CodeCheckException
     {
         int offset=instruction.operands.length%4;
-        next.add( new InstructionPointer( quadToInt( instruction.operands, offset)+
+        next.add( new InstructionPointer( NetByte.quadToInt( instruction.operands, offset)+
         	instruction.instructionStart));
         offset+=4;
-        int lowend=quadToInt( instruction.operands, offset);
+        int lowend=NetByte.quadToInt( instruction.operands, offset);
         offset+=4;
-        int highend=quadToInt( instruction.operands, offset);
+        int highend=NetByte.quadToInt( instruction.operands, offset);
         offset+=4;
         for ( int i=lowend; i<=highend; i++)
         {
-            next.add( new InstructionPointer( quadToInt( instruction.operands, offset+4*(i-lowend))+
+            next.add( new InstructionPointer( NetByte.quadToInt( instruction.operands, offset+4*(i-lowend))+
             	instruction.instructionStart));
         }
     }
@@ -68,8 +70,8 @@ public class TableSwitch extends OpCode
      	int operandStart=cr.currentPos;
 	    cr.currentPos+=(4-( cr.currentPos%4))%4;
 	    cr.currentPos+=4;
-	    int lowend=( mU(code[cr.currentPos++])<<24)|(mU(code[cr.currentPos++])<<16)|(mU(code[cr.currentPos++])<<8)|mU(code[cr.currentPos++]);
-	    int highend=( mU(code[cr.currentPos++])<<24)|(mU(code[cr.currentPos++])<<16)|(mU(code[cr.currentPos++])<<8)|mU(code[cr.currentPos++]);
+	    int lowend=( NetByte.mU(code[cr.currentPos++])<<24)|(NetByte.mU(code[cr.currentPos++])<<16)|(NetByte.mU(code[cr.currentPos++])<<8)|NetByte.mU(code[cr.currentPos++]);
+	    int highend=( NetByte.mU(code[cr.currentPos++])<<24)|(NetByte.mU(code[cr.currentPos++])<<16)|(NetByte.mU(code[cr.currentPos++])<<8)|NetByte.mU(code[cr.currentPos++]);
 	    cr.currentPos+=4*(highend-lowend+1);
      	return new Instruction( this, operandStart-1, getSubArray( code,
       		operandStart, cr.currentPos-operandStart), false);

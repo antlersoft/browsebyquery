@@ -40,9 +40,13 @@ public class TranspBase implements QuestionBase
 
     public void openDB(String[] args)
     {
+/*
         db=new TransparentDB( SchemaAllocatorStore.
             getSchemaStore( new File( args[1]),
             java.util.Arrays.asList( classList)));
+*/
+        db=new TransparentDB( new com.antlersoft.odb.diralloc.DirectoryAllocator(
+            new File( args[1])));
     }
 
     public void closeDB()

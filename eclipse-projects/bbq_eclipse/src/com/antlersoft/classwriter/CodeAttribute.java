@@ -20,6 +20,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import com.antlersoft.util.NetByte;
+
 public class CodeAttribute implements Attribute
 {
 	public final static String typeString="Code";
@@ -53,7 +55,7 @@ public class CodeAttribute implements Attribute
         {
 	        while ( ip.currentPos<code.length)
 	        {
-	    		Instruction instr=OpCode.opCodes[OpCode.mU( code[ip.currentPos])].read( ip, code);
+	    		Instruction instr=OpCode.opCodes[NetByte.mU( code[ip.currentPos])].read( ip, code);
 	      		instructions.add( instr);
 	        	ip.wide=instr.opCode instanceof Wide;
 	        }
