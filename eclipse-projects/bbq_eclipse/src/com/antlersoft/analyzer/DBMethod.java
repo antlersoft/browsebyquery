@@ -262,7 +262,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject
         		    if ( calledByMethod==null)
         		    {
         			    calledByMethod=new Vector();
-        			    calledTable.put( reference.getTarget(), calledByMethod);
+        			    referencedTable.put( reference.getTarget(), calledByMethod);
         		    }
         		    calledByMethod.addElement( reference);
         		}
