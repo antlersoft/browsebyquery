@@ -58,10 +58,16 @@ public class UIQuery
         historyList=new HistoryList( queryArea);
         JScrollPane historyScroll=new JScrollPane( historyList);
         JScrollPane storedArea=new JScrollPane( new StoredValuesList());
+        Box buttonBox=Box.createVerticalBox();
+        buttonBox.add( queryButton);
+        buttonBox.add( Box.createVerticalGlue());
         Box upperPane=Box.createHorizontalBox();
-        upperPane.add( queryButton);
-        upperPane.add( new JSplitPane( JSplitPane.VERTICAL_SPLIT, queryScroll, historyScroll));
-        upperPane.add( storedArea);
+        upperPane.add( buttonBox);
+        Box textBox=Box.createVerticalBox();
+        textBox.add( new JSplitPane( JSplitPane.HORIZONTAL_SPLIT,
+            new JSplitPane( JSplitPane.VERTICAL_SPLIT, queryScroll,
+            historyScroll), storedArea));
+        upperPane.add( textBox);
         outputArea=new JTextArea( 16, 80);
         JScrollPane lowerPane=new JScrollPane( outputArea);
         JSplitPane mainPane=new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, lowerPane);
