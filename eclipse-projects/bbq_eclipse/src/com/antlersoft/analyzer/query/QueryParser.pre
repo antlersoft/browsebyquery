@@ -5,17 +5,14 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.HashMap;
+import java.util.List;
 import java.io.PrintStream;
 import analyzer.*;
+import parser.*;
 
-public class QueryParser
+public class QueryParser extends Parser
 {
-    Token[] tokens;
-    int currentIndex;
-    int maxIndex;
-    SetExpression previousSet;
-    HashMap storedValues; // String, SetExpression
-
+    // Public interface
     public QueryParser( String toParse)
     {
 	this();
@@ -24,9 +21,26 @@ public class QueryParser
 
     public QueryParser()
     {
+	super( parseStates);
 	tokens=null;
 	previousSet=null;
 	storedValues=new HashMap();
+    }
+  
+    public SetExpression getExpression()
+	throws ParseException
+    {
+	currentIndex=0;
+	boolean errorOut=false;
+	for (; ! errorOut && currentIndex<tokens.length; currentIndex++)
+	{
+	    errorOut=parse( tokens[currentIndex].symbol, tokens[currentIndex].value);
+	}
+	if ( errorOut)
+	{
+	    throw new ParseException( this);
+	}
+	return previousSet;
     }
 
     public void setLine( String toParse)
@@ -34,94 +48,62 @@ public class QueryParser
 	tokens=tokenize( toParse);
     }
 
-    public
-    Token nextToken()
-    {
-	Token retval=currentToken();
-	incrementIndex();
-	return retval;
-    }
+    // Package interface
+    Token[] tokens;
+    int currentIndex;
+    SetExpression previousSet;
+    HashMap storedValues; // String, SetExpression
 
-    Token currentToken()
+    static class Token
     {
-	if ( currentIndex==tokens.length)
+	public Symbol symbol;
+	public String value;
+
+	public Token( Symbol sym, String val)
 	{
-	    return null;
-	}
-	return tokens[currentIndex];
-    }
-
-    void setIndex( int i)
-    {
-	if ( i>currentIndex)
-	    throw new IllegalStateException();
-	currentIndex=i;
-    }
-
-    void incrementIndex()
-    {
-	if ( currentIndex<tokens.length)
-	{
-	    currentIndex++;
-	    if ( currentIndex>maxIndex)
-		maxIndex=currentIndex;
-	}
-    }
-
-    public SetExpression getExpression()
-	throws ParseException
-    {
-	currentIndex=0;
-	maxIndex=0;
-	previousSet=parse( this);
-	return previousSet;
-    }
-
-    final static ReservedWord CLASS=new ReservedWord( "class");
-    final static ReservedWord CLASSES=new ReservedWord( "classes");
-    final static ReservedWord BASE=new ReservedWord( "base");
-    final static ReservedWord DERIVED=new ReservedWord( "derived");
-    final static ReservedWord OF=new ReservedWord( "of");
-    final static ReservedWord MATCHING=new ReservedWord( "matching");
-    final static ReservedWord METHODS=new ReservedWord( "methods");
-    final static ReservedWord IN=new ReservedWord( "in");
-    final static ReservedWord UNCALLED=new ReservedWord( "uncalled");
-    final static ReservedWord POLYMORPHIC=new ReservedWord( "polymorphic");
-    final static ReservedWord RECURSIVE=new ReservedWord( "recursive");
-    final static ReservedWord CALLS=new ReservedWord( "calls");
-    final static ReservedWord TO=new ReservedWord( "to");
-    final static ReservedWord ALL=new ReservedWord( "all");
-    final static ReservedWord PREVIOUS=new ReservedWord( "previous");
-    final static ReservedWord SET=new ReservedWord( "set");
-    final static ReservedWord FROM=new ReservedWord( "from");
-
-    static abstract class Token
-    {
-    }
-
-    static class ReservedWord extends Token
-    {
-	String word;
-	static Hashtable wordList=new Hashtable();
-	ReservedWord( String w)
-	{
-	    word=w;
-	    wordList.put( word, this);
+	    symbol=sym;
+	    value=val;
 	}
 
 	public String toString()
 	{
-	    return word;
+	    return value;
 	}
     }
 
-    static class Literal extends Token
+    static Symbol literalString=Symbol.get( "_literalString");
+    static Symbol nameSymbol=Symbol.get( "_nameSymbol");
+
+    static class ReservedWord extends Symbol
     {
-	String value;
-	Literal( String v)
+	static Hashtable wordList=new Hashtable();
+	protected ReservedWord( String w)
+		throws Symbol.DuplicateSymbolException
 	{
-	    value=v;
+	    super( w);
+	    wordList.put( w, this);
 	}
+
+	static ReservedWord getReserved( String w)
+	{
+	    try
+	    {
+		return new ReservedWord( w);
+	    }
+	    catch ( Symbol.DuplicateSymbolException dse)
+	    {
+		return (ReservedWord)dse.duplicate;
+	    }
+	}
+    }
+
+    static class LiteralToken extends Token
+    {
+	LiteralToken( String val)
+	{
+	    super( literalString, val);
+	}
+
 	public String toString()
 	{
 	    return "\""+value+"\"";
@@ -153,7 +135,7 @@ public class QueryParser
 	    {
 		if ( c=='"')
 		{
-		    tokens.addElement( new Literal( currentString.toString()));
+		    tokens.addElement( new LiteralToken( currentString.toString()));
 		    currentString.setLength(0);
 		    inQuoted=false;
 		}
@@ -176,11 +158,11 @@ public class QueryParser
 			ReservedWord rw=(ReservedWord)ReservedWord.wordList.get( cs);
 			if ( rw==null)
 			{
-			    tokens.addElement( new Literal( cs));
+			    tokens.addElement( new Token( nameSymbol, cs));
 			}
 			else
 			{
-			    tokens.addElement( rw);
+			    tokens.addElement( new Token( rw, cs));
 			}
 		    }
 		    if ( c=='"')
@@ -194,10 +176,22 @@ public class QueryParser
 		}
 	    }
 	}
+	tokens.addElement( new Token( finalToken, ";"));
+	tokens.addElement( new Token( Parser._end_, ""));
 
 	Token[] retval=new Token[tokens.size()];
 	tokens.copyInto( retval);
 	return retval;
+    }
+
+    void pushCastToken( SetExpression se)
+    {
+	if ( se instanceof ClassSet)
+	    tokens[currentIndex--]=new Token( classcast, "");	    
+	else if ( se instanceof MethodSet)
+	    tokens[currentIndex--]=new Token( methodcast, "");	    
+	else if ( se instanceof CallSet)
+	    tokens[currentIndex--]=new Token( callcast, "");	    
     }
 
     public static interface SetExpression
@@ -216,93 +210,6 @@ public class QueryParser
 
     static interface MethodSet extends SetExpression
     {
-    }
-
-    /* SetExpression : ClassSet
-		     | MethodSet
-		     | CallSet
-		     | FieldSet
-		     | ReferenceSet  */
-    static SetExpression parse( QueryParser qp)
-	throws ParseException
-    {
-	int pos=qp.currentIndex;
-	qp.currentIndex=pos;
-	SetExpression retval=parseClassSet( qp);
-	if ( retval==null)
-	{
-	    qp.currentIndex=pos;
-	    retval=parseCallSet( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.currentIndex=pos;
-	    retval=parseMethodSet( qp);
-	}
-	if ( retval==null)
-	{
-	    throw new ParseException( qp);
-	}
-	return retval;
-    }
-
-    static SetExpression parseOperatorExpression( QueryParser qp)
-    {
-	int pos=qp.currentIndex;
-	Token nextToken=qp.nextToken();
-	SetExpression retVal=null;
-	if ( nextToken==PREVIOUS)
-	{
-	    retVal=qp.previousSet;
-	}
-	else if ( nextToken instanceof Literal)
-	{
-	    synchronized( qp.storedValues)
-	    {
-		retVal=(SetExpression)qp.storedValues.get( ((Literal)nextToken).value);
-	    }
-	}
-	else if ( nextToken==SET)
-	{
-	    nextToken=qp.nextToken();
-	    if ( nextToken instanceof Literal && qp.nextToken()==TO)
-	    {
-		try
-		{
-		    retVal=parse( qp);
-		}
-		catch ( ParseException pe)
-		{
-		    retVal=null;
-		}
-		if ( retVal!=null)   
-		{
-		    synchronized ( qp.storedValues)
-		    {
-			qp.storedValues.put( ((Literal)nextToken).value, retVal);
-		    }
-		}
-	    }
-	}
-	if ( retVal==null)
-	    qp.currentIndex=pos;
-	return retVal;
-    }
-
-    static SetExpression parseCallSet( QueryParser qp)
-    {
-	int pos=qp.currentIndex;
-	SetExpression retval=parseOperatorExpression( qp);
-	if ( retval==null || ! ( retval instanceof CallSet))
-	{
-	    qp.setIndex( pos);
-	    retval=CallsTo.parse( qp);
-/*
-	    if ( retval==null)
-	        retval=CallsFrom.parse( qp);
-*/
-	}
-	return retval;
     }
 
     static class CallsTo implements CallSet
@@ -324,19 +231,6 @@ public class QueryParser
 		}
 	    };
 	}
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    SetExpression retval=null;
-
-	    if ( qp.nextToken()==CALLS && qp.nextToken()==TO)
-	    {
-		retval=parseMethodSet( qp);
-		if ( retval!=null)
-		    retval=new CallsTo( (MethodSet)retval);
-	    }
-	    return retval;
-	}
     }
 
     /*
@@ -349,79 +243,9 @@ public class QueryParser
 	      | Class of MethodSet
 	      | ClassSet matching "x"
      */
-    static SetExpression parseClassSet( QueryParser qp)
-    {
-	int pos=qp.currentIndex;
-	SetExpression retval=parseOperatorExpression( qp);
-	if ( retval==null || ! ( retval instanceof ClassSet))
-	{
-	    qp.setIndex( pos);
-	    retval=ClassGet.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=ClassesGet.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=BaseClasses.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=RecursiveBaseClasses.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=DerivedClasses.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=RecursiveDerivedClasses.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=ClassOfMethod.parse( qp);
-	}
-	// Support head recursion
-	if ( retval!=null)
-	{
-	    pos=qp.currentIndex;
-	    if ( qp.nextToken()==MATCHING && qp.currentToken()
-		instanceof Literal)
-	    {
-		retval=new ClassMatching( (ClassSet)retval, (Literal)qp.nextToken());
-	    }
-	    else
-		qp.setIndex( pos);
-	}
-
-	return retval;
-    }
-
     static class ClassGet implements ClassSet
     {
 	private String _className;
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    ClassSet retval=null;
-	    if ( qp.nextToken()==CLASS && qp.currentToken()
-		instanceof Literal)
-	    {
-		Literal className=(Literal)qp.nextToken();
-		if ( className!=null)
-		{
-		    retval=new ClassGet( className.value);
-		}
-	    }
-	    return retval;
-	}
 
 	ClassGet( String className)
 	{
@@ -441,16 +265,6 @@ public class QueryParser
 
     static class ClassesGet implements ClassSet
     {
-	static SetExpression parse( QueryParser qp)
-	{
-	    ClassSet retval=null;
-	    if ( qp.nextToken()==ALL && qp.nextToken()==CLASSES)
-	    {
-		retval=new ClassesGet();
-	    }
-	    return retval;
-	}
-
 	public Enumeration execute( AnalyzerDB db)
 	    throws Exception
 	{
@@ -465,19 +279,6 @@ public class QueryParser
 	BaseClasses( ClassSet nextSet)
 	{
 	    _next=nextSet;
-	}
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    ClassSet retval=null;
-	    if ( qp.nextToken()==BASE && qp.nextToken()==CLASSES
-		&& qp.nextToken()==OF)
-	    {
-		ClassSet nextSet=(ClassSet)parseClassSet( qp);
-		if ( nextSet!=null)
-		    retval=new BaseClasses( nextSet);
-	    }
-	    return retval;
 	}
 
 	public Enumeration execute( AnalyzerDB db)
@@ -507,19 +308,6 @@ public class QueryParser
 	    _next=nextSet;
 	}
 
-	static SetExpression parse( QueryParser qp)
-	{
-	    ClassSet retval=null;
-	    if ( qp.nextToken()==DERIVED && qp.nextToken()==CLASSES
-		&& qp.nextToken()==OF)
-	    {
-		ClassSet nextSet=(ClassSet)parseClassSet( qp);
-		if ( nextSet!=null)
-		    retval=new DerivedClasses( nextSet);
-	    }
-	    return retval;
-	}
-
 	public Enumeration execute( AnalyzerDB db)
 	    throws Exception
 	{
@@ -545,19 +333,7 @@ public class QueryParser
 	    super( nextSet);
 	}
 
-	static SetExpression parse( QueryParser qp)
-	{
-	    ClassSet retval=null;
-	    if ( qp.nextToken()==RECURSIVE &&
-		qp.nextToken()==BASE && qp.nextToken()==CLASSES
-		&& qp.nextToken()==OF)
-	    {
-		ClassSet nextSet=(ClassSet)parseClassSet( qp);
-		if ( nextSet!=null)
-		    retval=new RecursiveBaseClasses( nextSet);
-	    }
-	    return retval;
-	}
+
 
 	private static void addSuperClasses( DBClass current, Hashtable ht)
 	{
@@ -590,20 +366,6 @@ public class QueryParser
 	RecursiveDerivedClasses( ClassSet nextSet)
 	{
 	    super( nextSet);
-	}
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    ClassSet retval=null;
-	    if ( qp.nextToken()==RECURSIVE &&
-		qp.nextToken()==DERIVED && qp.nextToken()==CLASSES
-		&& qp.nextToken()==OF)
-	    {
-		ClassSet nextSet=(ClassSet)parseClassSet( qp);
-		if ( nextSet!=null)
-		    retval=new RecursiveDerivedClasses( nextSet);
-	    }
-	    return retval;
 	}
 
 	private static void addSuperClasses( DBClass current, Hashtable ht)
@@ -640,19 +402,6 @@ public class QueryParser
 	    _methodSet=nextSet;
 	}
 
-	static SetExpression parse( QueryParser qp)
-	{
-	    ClassSet retval=null;
-	    if ( qp.nextToken()==CLASS &&
-		qp.nextToken()==OF)
-	    {
-		MethodSet nextSet=(MethodSet)parseMethodSet( qp);
-		if ( nextSet!=null)
-		    retval=new ClassOfMethod( nextSet);
-	    }
-	    return retval;
-	}
-
 	public Enumeration execute( AnalyzerDB db)
 	    throws Exception
 	{
@@ -672,10 +421,10 @@ public class QueryParser
 	ClassSet _toFilter;
 	String _filterString;
 
-	ClassMatching( ClassSet toFilter, Literal filterString)
+	ClassMatching( ClassSet toFilter, String filterString)
 	{
 	    _toFilter=toFilter;
-	    _filterString=filterString.value;
+	    _filterString=filterString;
 	}
 
 	public Enumeration execute( AnalyzerDB db)
@@ -716,37 +465,10 @@ public class QueryParser
 		| uncalled MethodSet
 		| uncalled polymorphic MethodSet
      */
-    static SetExpression parseMethodSet( QueryParser qp)
-    {
-	int pos=qp.currentIndex;
-	SetExpression retval=parseOperatorExpression( qp);
-	if ( retval==null || ! ( retval instanceof MethodSet))
-	{
-	    qp.setIndex( pos);
-	    retval=MethodsIn.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=Polymorphic.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=MethodMatching.parse( qp);
-	}
-	if ( retval==null)
-	{
-	    qp.setIndex( pos);
-	    retval=UncalledMethod.parse( qp);
-	}
-	return retval;
-    }
-
-    static class MethodsIn implements MethodSet
+     static class MethodsIn implements MethodSet
     {
 	private ClassSet _classSet;
-	private MethodsIn( ClassSet classes)
+	MethodsIn( ClassSet classes)
 	{
 	    _classSet=classes;
 	}
@@ -760,20 +482,6 @@ public class QueryParser
 		    return ((DBClass)nextBase).getMethods();
 		}
 	    };
-	}
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    MethodSet retval=null;
-	    if ( qp.nextToken()==METHODS && qp.nextToken()==IN)
-	    {
-		ClassSet classes=(ClassSet)parseClassSet( qp);
-		if ( classes!=null)
-		{
-		    retval=new MethodsIn( classes);
-		}
-	    }
-	    return retval;
 	}
     }
 
@@ -886,31 +594,17 @@ public class QueryParser
 		}
 	    }
 	}
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    SetExpression retval=null;
-	    if ( qp.nextToken()==POLYMORPHIC)
-	    {
-		retval=parseMethodSet( qp);
-		if ( retval!=null)
-		{
-		    return new Polymorphic( (MethodSet)retval);
-		}
-	    }
-	    return retval;
-	}
-    }
+   }
 
     static class MethodMatching implements MethodSet
     {
 	MethodSet _toFilter;
 	String _filterString;
 
-	MethodMatching( MethodSet toFilter, Literal filterString)
+	MethodMatching( MethodSet toFilter, String filterString)
 	{
 	    _toFilter=toFilter;
-	    _filterString=filterString.value;
+	    _filterString=filterString;
 	}
 
 	public Enumeration execute( AnalyzerDB db)
@@ -926,21 +620,6 @@ public class QueryParser
 		    return retVal;
 		}
 	    };
-	}
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    SetExpression retval=null;
-	    if ( qp.nextToken()==MATCHING &&
-		qp.currentToken() instanceof Literal)
-	    {
-		Literal toMatch=(Literal)qp.nextToken();
-		retval=(MethodSet)parseMethodSet( qp);
-		if ( retval!=null)
-		    retval=new MethodMatching( (MethodSet)retval,
-			toMatch);
-	    }
-	    return retval;
 	}
     }
 
@@ -965,26 +644,6 @@ public class QueryParser
 		    return method;
 		}
 	    };
-	}
-
-	static SetExpression parse( QueryParser qp)
-	{
-	    boolean polymorphic=false;
-	    SetExpression retval=null;
-	    if ( qp.nextToken()==UNCALLED)
-	    {
-		if ( qp.currentToken()==POLYMORPHIC)
-		{
-		    polymorphic=true;
-		    qp.nextToken();
-		}
-		MethodSet methods=(MethodSet)parseMethodSet( qp);
-		if ( methods!=null)
-		{
-		    retval=( polymorphic ? new UncalledPolymorphic( methods) : new UncalledMethod( methods));
-		}
-	    }
-	    return retval;
 	}
 
 	static class UncalledPolymorphic extends UncalledMethod
@@ -1162,4 +821,5 @@ throw new IllegalStateException( "null passed to enumFromObject");
 	    return _currentEnumeration.nextElement();
 	}
     }
-}
+
+// Include output here
