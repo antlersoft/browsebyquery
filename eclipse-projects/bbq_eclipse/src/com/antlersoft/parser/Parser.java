@@ -21,15 +21,25 @@ public abstract class Parser
 
 	public boolean parse( Symbol next_symbol, Object value)
 	{
-		ArrayList next_value=new ArrayList();
+		next_value.clear();
 		next_value.add( next_symbol);
 		next_value.add( value);
 		boolean erred_out=false;
 		ParseState cur=(ParseState)state_stack.get( state_stack.size()-1);
-			
+
 		while ( ! erred_out && ( next_value.size()>0 ||
 			cur.shift_rules.length==0))
 		{
+{
+for ( int q=0; q<parse_states.length; q++)
+{
+if ( parse_states[q]==cur)
+{
+System.out.println( "Parser examining state "+Integer.toString( q));
+break;
+}
+}
+}           
 			int sri;
 			int compare_length=cur.shift_rules.length;
 			for ( sri=0; sri<compare_length; sri++)
@@ -55,19 +65,8 @@ public abstract class Parser
 					else
 					{              
 						// Token forces error
-						/* If in recovery state, throw away token
-						 * silently */
-						if ( recovery_count!=0)
-						{
-							recovery_count=1;
-							next_value.clear();
-						}
-						else  
-						{        
-							/* Not in recovery state; try to shift
-							 * error token */
-							erred_out=pushError( next_value);
-						}
+						cur=pushError();
+						erred_out=(cur==null);
 					}
 					break;
 				}
@@ -77,29 +76,36 @@ public abstract class Parser
 				if ( cur.reduce_rule==null)
 				{
 					// Can't shift and can't reduce
-					/* If in recovery state, throw away token
-					 * silently */
-					if ( recovery_count!=0 && next_value.size()>0)
-					{
-						recovery_count=1;
-						next_value=new ArrayList();
-					}
-					else
 					/* try to push error state */
-					{
-						erred_out=pushError( next_value);
-					}
+					cur=pushError();
+					erred_out=(cur==null);
 				}
 				else
-					if ( tryReduce())
-					{	
-						reset();
-						return false;
+				{
+					try
+					{
+						if ( tryReduce())
+						{
+							// If try reduce returns true, we are done; reset parser and return	
+							reset();
+							return false;
+						}
+						else
+							cur=(ParseState)state_stack.get( state_stack.size()-1);
 					}
-					else
-						cur=(ParseState)state_stack.get( state_stack.size()-1);
+					catch ( RuleActionException rae)
+					{
+						// Error firing the rule; interpret the same as no reduce rule at all
+
+						// Preserve the message that cause the exception
+						ruleMessage=rae.getMessage();
+						cur=pushError();
+						erred_out=(cur==null);
+					}
 				}
 			}
+		}
+System.out.println( "parse function returning");
 		return erred_out;
 	}
 
@@ -111,6 +117,12 @@ public abstract class Parser
 		state_stack.add( parse_states[0]);
 		value_stack.clear();
 		value_stack.add( new ArrayList());
+		ruleMessage=null;
+		recovery_count=0;
+	}
+
+	public void clearRecovery()
+	{
 		recovery_count=0;
 	}
 
@@ -130,12 +142,18 @@ public abstract class Parser
 		state_stack.add( parse_states[0]);
 		value_stack=new ArrayList();
 		value_stack.add( "");
+		next_value=new ArrayList(2);
+	}
+
+	protected void clearNextValue()
+	{
+		next_value.clear();
 	}
 
  	protected static Symbol _complete=Symbol.get( "_complete");
 
    // Private implementation
-	private boolean tryReduce()
+	private boolean tryReduce() throws RuleActionException
 	{
 		ParseState cur=(ParseState)state_stack.get( state_stack.size()-1);
 		if ( cur.reduce_rule==null)
@@ -148,9 +166,7 @@ public abstract class Parser
 		if ( result==_complete)
 			return true;
 		int i;
-		for ( i=0; i<cur.reduce_rule.states_to_pop; i++)
-			state_stack.remove( state_stack.size()-1);			
-		ParseState next=(ParseState)state_stack.get( state_stack.size()-1);
+		ParseState next=(ParseState)state_stack.get( state_stack.size()-1-cur.reduce_rule.states_to_pop);
 		for ( i=0; i<next.goto_rules.length; i++)
 			if ( next.goto_rules[i].looked_for==result)
 				break;
@@ -160,7 +176,7 @@ public abstract class Parser
 		
 		if ( cur.reduce_rule.reduce_action!=null)
 		{    
-			Object to_push=cur.reduce_rule.reduce_action.ruleFire( this);
+			Object to_push=cur.reduce_rule.reduce_action.ruleFire( this, getValueStack());
 			for ( int j=0; j<cur.reduce_rule.states_to_pop; j++)
 				value_stack.remove( value_stack.size()-1);
 			value_stack.add( to_push);
@@ -175,6 +191,8 @@ public abstract class Parser
 			}
 			value_stack.add( to_push);
 		}
+		for ( int j=0; j<cur.reduce_rule.states_to_pop; j++)
+			state_stack.remove( state_stack.size()-1);			
 	
 		state_stack.add( parse_states[next.goto_rules[i].state_index]);
 		if ( state_stack.size()!=value_stack.size())
@@ -191,35 +209,66 @@ public abstract class Parser
 	private ParseState[] parse_states;
 	private ArrayList value_stack;
 	private ArrayList state_stack;
-	private boolean pushError( ArrayList next_value)
+	private ArrayList next_value;
+	private ParseState pushError()
 	{
+System.out.println( "pushError called");
+		/* If in recovery state, throw away token
+		 * silently */
+		if ( recovery_count!=0 && next_value.size()>0)
+		{
+			/* If token is end token, can't throw it away.  If we are still
+			 * in recovery mode, getting the end token as an error is bad.
+			 * Force error handling.
+			 */
+			if ( next_value.get(0)==_end_)
+				return null;
+			recovery_count=1;
+			next_value.clear();
+System.out.println( "in recovery state-- throwing away token");
+			return (ParseState)state_stack.get( state_stack.size()-1);
+		}
 		while( state_stack.size()>0)
 		{
 			ParseState cur=(ParseState)state_stack.get( state_stack.size()-1);
 			
 			int sri;
+{
+for ( int q=0; q<parse_states.length; q++)
+{
+if ( parse_states[q]==cur)
+{
+System.out.println( "Push error examining state "+Integer.toString( q));
+break;
+}
+}
+}           
 			for ( sri=0; sri<cur.shift_rules.length; sri++)
 				{
-				if ( ! ( cur.shift_rules[sri].looked_for==Parser._error_))
-					{           
+				if ( cur.shift_rules[sri].looked_for==Parser._error_)
+					{
+System.out.println( "Error shift found");
+
 					if ( cur.shift_rules[sri].state_index<0)
 						throw new IllegalStateException( "Error recovery would force error");
 					recovery_count=1;
-					state_stack.add( parse_states[cur.shift_rules[sri].state_index]);
+					cur=parse_states[cur.shift_rules[sri].state_index];
+					state_stack.add( cur);
 					if ( next_value.size()>0)
 						value_stack.add( next_value.get( next_value.size()-1));
 					else
 						value_stack.add( new ArrayList());
-					return false;
+					return cur;
 					}        
-				}                 
+				}
+System.out.println( "Popping state off stack");               
 			state_stack.remove( state_stack.size()-1);
 			value_stack.remove( value_stack.size()-1);
 		}
 
-
-	// No recovery state found			                                                   
-	return true;			                                                 
+		// No recovery state found
+System.out.println( "pushError returns null");			                                                   
+		return null;			                                                 
 	}
 }
 
