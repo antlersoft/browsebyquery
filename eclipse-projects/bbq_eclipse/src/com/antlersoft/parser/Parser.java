@@ -1,8 +1,9 @@
 package com.antlersoft.parser;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
-       
+
 public abstract class Parser
 {
     // Public interface
@@ -37,7 +38,7 @@ public abstract class Parser
 				if ( cur.shift_rules[sri].looked_for==next_value.get(0))
 				{
 					if ( cur.shift_rules[sri].state_index>=0)
-					{   
+					{
 						/* If you are in error state, keep track
 						 * of how many tokens you've successfully
 						 * pushed after, up to max_recovery */
@@ -53,7 +54,7 @@ public abstract class Parser
 						next_value.clear();
 					}
 					else
-					{              
+					{
 						// Token forces error
 						cur=pushError();
 						erred_out=(cur==null);
@@ -76,7 +77,7 @@ public abstract class Parser
 					{
 						if ( tryReduce())
 						{
-							// If try reduce returns true, we are done; reset parser and return	
+							// If try reduce returns true, we are done; reset parser and return
 							reset();
 							return false;
 						}
@@ -115,8 +116,13 @@ public abstract class Parser
 		recovery_count=0;
 	}
 
+	public Enumeration getExpectedSymbols()
+	{
+		return new ExpectedSymbolEnumeration( parse_states, state_stack);
+	}
+
 	// Accessor methods for creating parser generators
-	public ParseState[] getParseStates() 
+	public ParseState[] getParseStates()
 	{
 		return parse_states;
 	}
@@ -162,34 +168,34 @@ public abstract class Parser
 		if ( i==next.goto_rules.length)
 			throw new IllegalStateException(
 				"Reduced symbol not found in goto list");
-		
+
 		if ( cur.reduce_rule.reduce_action!=null)
-		{    
+		{
 			Object to_push=cur.reduce_rule.reduce_action.ruleFire( this, getValueStack());
 			for ( int j=0; j<cur.reduce_rule.states_to_pop; j++)
 				value_stack.remove( value_stack.size()-1);
 			value_stack.add( to_push);
-		}              
+		}
 		else
 		{
 			ArrayList to_push=new ArrayList( cur.reduce_rule.states_to_pop);
 			for ( int j=0; j<cur.reduce_rule.states_to_pop; j++)
 			{
 				to_push.add( 0, value_stack.get( value_stack.size()-1));
-				value_stack.remove( value_stack.size()-1);             
+				value_stack.remove( value_stack.size()-1);
 			}
 			value_stack.add( to_push);
 		}
 		for ( int j=0; j<cur.reduce_rule.states_to_pop; j++)
-			state_stack.remove( state_stack.size()-1);			
-	
+			state_stack.remove( state_stack.size()-1);
+
 		state_stack.add( parse_states[next.goto_rules[i].state_index]);
 		if ( state_stack.size()!=value_stack.size())
 		{
 			throw new IllegalStateException(
 				"state_stack has different number of elements than value stack");
 		}
-	
+
 		return false;
 	}
 
@@ -218,7 +224,7 @@ public abstract class Parser
 		while( state_stack.size()>0)
 		{
 			ParseState cur=(ParseState)state_stack.get( state_stack.size()-1);
-			
+
 			int sri;
 			for ( sri=0; sri<cur.shift_rules.length; sri++)
 				{
@@ -235,14 +241,14 @@ public abstract class Parser
 					else
 						value_stack.add( new ArrayList());
 					return cur;
-					}        
+					}
 				}
 			state_stack.remove( state_stack.size()-1);
 			value_stack.remove( value_stack.size()-1);
 		}
 
 		// No recovery state found
-		return null;			                                                 
+		return null;
 	}
 }
 
