@@ -1,4 +1,4 @@
-package analyzer;
+package analyzer.query;
 
 import java.util.Hashtable;
 import java.util.Vector;
@@ -6,8 +6,9 @@ import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.HashMap;
 import java.io.PrintStream;
+import analyzer.*;
 
-class QueryParser
+public class QueryParser
 {
     Token[] tokens;
     int currentIndex;
@@ -67,7 +68,7 @@ class QueryParser
 	}
     }
 
-    SetExpression getExpression()
+    public SetExpression getExpression()
 	throws ParseException
     {
 	currentIndex=0;
@@ -92,6 +93,7 @@ class QueryParser
     final static ReservedWord ALL=new ReservedWord( "all");
     final static ReservedWord PREVIOUS=new ReservedWord( "previous");
     final static ReservedWord SET=new ReservedWord( "set");
+    final static ReservedWord FROM=new ReservedWord( "from");
 
     static abstract class Token
     {
@@ -198,32 +200,7 @@ class QueryParser
 	return retval;
     }
 
-    static class ParseException extends Exception
-    {
-	static String parseMessage( QueryParser qp)
-	{
-	    StringBuffer retval=new StringBuffer();
-
-	    int i;
-	    for ( i=0; i<qp.tokens.length; i++)
-	    {
-		retval.append( qp.tokens[i].toString());
-		if ( i==qp.maxIndex)
-		    retval.append( "<<here>>");
-		retval.append( ' ');
-	    }
-	    if ( i==qp.maxIndex)
-		retval.append( "<<here>>");
-	    return retval.toString();
-	}
-
-	ParseException( QueryParser qp)
-	{
-	    super( parseMessage( qp));
-	}
-    }
-
-    static interface SetExpression
+    public static interface SetExpression
     {
 	public abstract Enumeration execute( AnalyzerDB db)
 	    throws Exception;
@@ -243,7 +220,9 @@ class QueryParser
 
     /* SetExpression : ClassSet
 		     | MethodSet
-		     | CallSet */
+		     | CallSet
+		     | FieldSet
+		     | ReferenceSet  */
     static SetExpression parse( QueryParser qp)
 	throws ParseException
     {
@@ -318,6 +297,10 @@ class QueryParser
 	{
 	    qp.setIndex( pos);
 	    retval=CallsTo.parse( qp);
+/*
+	    if ( retval==null)
+	        retval=CallsFrom.parse( qp);
+*/
 	}
 	return retval;
     }
@@ -504,7 +487,7 @@ class QueryParser
 	    for ( Enumeration e=_next.execute( db); e.hasMoreElements();)
 	    {
 		DBClass c=(DBClass)e.nextElement();
-		Enumeration superEnum=c.superClasses.elements();
+		Enumeration superEnum=c.getSuperClasses();
 		while ( superEnum.hasMoreElements())
 		{
 		    DBClass superClass=(DBClass)superEnum.nextElement();
@@ -544,7 +527,7 @@ class QueryParser
 	    for ( Enumeration e=_next.execute( db); e.hasMoreElements();)
 	    {
 		DBClass c=(DBClass)e.nextElement();
-		Enumeration superEnum=c.derivedClasses.elements();
+		Enumeration superEnum=c.getDerivedClasses();
 		while ( superEnum.hasMoreElements())
 		{
 		    DBClass superClass=(DBClass)superEnum.nextElement();
@@ -578,7 +561,7 @@ class QueryParser
 
 	private static void addSuperClasses( DBClass current, Hashtable ht)
 	{
-	    Enumeration superEnum=current.superClasses.elements();
+	    Enumeration superEnum=current.getSuperClasses();
 	    while ( superEnum.hasMoreElements())
 	    {
 		DBClass superClass=(DBClass)superEnum.nextElement();
@@ -625,7 +608,7 @@ class QueryParser
 
 	private static void addSuperClasses( DBClass current, Hashtable ht)
 	{
-	    Enumeration superEnum=current.derivedClasses.elements();
+	    Enumeration superEnum=current.getDerivedClasses();
 	    while ( superEnum.hasMoreElements())
 	    {
 		DBClass superClass=(DBClass)superEnum.nextElement();
@@ -774,7 +757,7 @@ class QueryParser
 	    return new BiEnumeration( _classSet.execute( db)) {
 		protected Enumeration getNextCurrent( Object nextBase)
 		{
-		    return ((DBClass)nextBase).methods.elements();
+		    return ((DBClass)nextBase).getMethods();
 		}
 	    };
 	}
