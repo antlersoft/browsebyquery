@@ -478,6 +478,23 @@ public class ClassWriter
         return getString( ((CPClass)constantPool.get( classIndex)).nameIndex);
     }
 
+    public String getSourceFile()
+    {
+        SourceFileAttribute sfa=(SourceFileAttribute)attributes.getAttributeByType( SourceFileAttribute.typeString);
+        if ( sfa!=null)
+        {
+            return sfa.getSourceFile();
+        }
+        String internalName=getInternalClassName( getCurrentClassIndex());
+        int lastSlash=internalName.lastIndexOf( '/');
+        if ( lastSlash!= -1)
+            internalName=internalName.substring( lastSlash+1);
+        int firstPeriod=internalName.indexOf( '$');
+        if ( firstPeriod!= -1)
+            internalName=internalName.substring( 0, firstPeriod);
+        return internalName+".java";
+    }
+
     public String getClassName( int classIndex)
     {
 		return TypeParse.convertFromInternalClassName(

@@ -96,12 +96,11 @@ public class AttributeList implements Cloneable
 	    int length=classStream.readInt();
 	    String type=containing.getString( nameIndex);
      	Attribute value;
-/*
-	    if ( type.equals( "SourceFile"))
+	    if ( type.equals( SourceFileAttribute.typeString))
 	    {
-			value=getString(classStream.readUnsignedShort());
+			value=new SourceFileAttribute( classStream, containing);
 	    }
-	    else if ( type.equals( "ConstantValue"))
+	    else /* if ( type.equals( "ConstantValue"))
 	    {
 			value=constantPool[classStream.readUnsignedShort()];
 	    }
