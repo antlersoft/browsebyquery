@@ -80,8 +80,10 @@ class Index
                     UniqueKey.largestDAKey :
                     UniqueKey.smallestDAKey);
             FindResult fr=findKey( key);
-            return new IndexIterator( this, fr.page, fr.index,
-                keyMatches( fr, origKey));
+            return entry.unique ? new IndexIterator( this, fr.page, fr.index,
+                keyMatches( fr, origKey))
+				: new NonUniqueIndexIterator( this, fr.page, fr.index,
+				keyMatches( fr, origKey), origKey);
         }
         finally
         {

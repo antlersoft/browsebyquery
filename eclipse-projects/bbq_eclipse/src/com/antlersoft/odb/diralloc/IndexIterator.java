@@ -15,9 +15,9 @@ import java.util.NoSuchElementException;
 class IndexIterator implements com.antlersoft.odb.IndexIterator
 {
     private Index baseIndex;
-    private IndexPage currentPage;
-    private int currentOffset;
-    private boolean exactMatch;
+    IndexPage currentPage;
+    int currentOffset;
+    boolean exactMatch;
 
     IndexIterator( Index b, IndexPage p, int o, boolean m)
     {
@@ -39,6 +39,7 @@ class IndexIterator implements com.antlersoft.odb.IndexIterator
 
     public Object next()
     {
+		exactMatch=false;
         baseIndex.manager.startIndexPageNoFlush();
         baseIndex.indexModificationLock.enterProtected();
         try
