@@ -55,7 +55,7 @@ public class ObjectDB
 			PersistentImpl impl=((Persistent)toStore)._getPersistentImpl();
 			if ( impl.objectKey==null)
 			{
-				impl.objectKey=store.insert( new Integer(1));
+				impl.objectKey=store.insert( (Persistent)toStore);
 				impl.dirty=true;
 			}
 			cachedObjects.put( impl.objectKey, toStore);
