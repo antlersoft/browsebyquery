@@ -172,9 +172,7 @@ public class ClassWriter
 
     public void removeFromFields( Collection toRemove)
     {
-System.out.print( getClassName( thisClassIndex)+" "+fields.size()+" "+toRemove.size());
         fields.removeAll( toRemove);
-System.out.println( " "+fields.size());
     }
 
     public void setBase( String newBaseClass)
