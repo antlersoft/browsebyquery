@@ -6,15 +6,21 @@ public class ParseException extends Exception
     {
 	StringBuffer retval=new StringBuffer();
 
+	if ( qp.getRuleMessage()!=null)
+	{
+		retval.append( qp.getRuleMessage());
+		retval.append( ": ");
+	}
+
 	int i;
 	for ( i=0; i<qp.tokens.length; i++)
 	{
 	    retval.append( qp.tokens[i].toString());
-	    if ( i==qp.maxIndex)
+	    if ( i==qp.currentIndex)
 		retval.append( "<<here>>");
 	    retval.append( ' ');
 	}
-	if ( i==qp.maxIndex)
+	if ( i==qp.currentIndex)
 	    retval.append( "<<here>>");
 	return retval.toString();
     }
