@@ -13,27 +13,39 @@ package com.antlersoft.opentool;
 import java.io.File;
 
 import com.borland.jbuilder.node.JBProject;
-import com.borland.primetime.node.ProjectAdapter;
 
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.ObjectAnalyzeDB;
 import com.antlersoft.analyzer.query.QueryParser;
 
-class ProjectAnalyzer extends ProjectAdapter
+class ProjectAnalyzer
 {
     JBProject project;
     ObjectAnalyzeDB db;
     QueryParser qp;
+    private String goodPath;
 
-    ProjectAnalyzer( JBProject toAnalyze)
+    ProjectAnalyzer( BBQNode node)
         throws Exception
     {
 System.out.println( "<init>ProjectAnalyzer");
-        project=toAnalyze;
+        project=(JBProject)node.getProject();
         db=new ObjectAnalyzeDB();
-        db.openDB( new File( project.getUrl().getFileObject().getParent(),
-            "analyzer.pj").getCanonicalPath());
+        String dbPath=BBQPathsGroup.pathsProperty.getValue( node);
+        File analyzerFile;
+        if ( dbPath.length()==0)
+        {
+            analyzerFile=new File(
+                project.getProjectPath().getFileObject(), "analyzer.pj");
+            BBQPathsGroup.pathsProperty.setValue( node, analyzerFile.getPath());
+        }
+        else
+        {
+            analyzerFile=new File( dbPath);
+        }
+        db.openDB( analyzerFile.getCanonicalPath());
         qp=new QueryParser();
+        goodPath=analyzerFile.getCanonicalPath();
     }
 
     void updateDB()
@@ -43,7 +55,30 @@ System.out.println( project.getPaths().getOutPath().getFileObject().getCanonical
         DBClass.addFileToDB( project.getPaths().getOutPath().getFileObject(),
             db);
         db.closeDB();
-        db.openDB( new File( project.getUrl().getFileObject().getParent(),
-            "analyzer.pj").getCanonicalPath());
+        db.openDB( goodPath);
+    }
+
+    void setAnalyzerPath( BBQNode node, String newPath)
+    {
+        String testPath="";
+        try
+        {
+            testPath=new File( newPath).getCanonicalPath();
+            db.openDB( testPath);
+        }
+        catch ( Exception e)
+        {
+            try
+            {
+                db.openDB( goodPath);
+            }
+            catch ( Exception e2)
+            {
+                e2.printStackTrace();
+                db=null;
+            }
+        }
+        BBQPathsGroup.pathsProperty.setValue( node, newPath);
+        goodPath=testPath;
     }
 }

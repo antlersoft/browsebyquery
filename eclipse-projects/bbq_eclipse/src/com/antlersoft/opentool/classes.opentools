@@ -1,1 +1,1 @@
-OpenTools-Core: com.antlersoft.opentool.BBQTool
+OpenTools-UI: com.antlersoft.opentool.BBQTool com.antlersoft.rfs.RemoteFileSystem

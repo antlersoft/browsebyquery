@@ -92,7 +92,7 @@ public class ProjectBBQ implements NodeViewer
 
     public void viewerActivated(boolean parm1)
     {
-        //TODO: Implement this com.borland.primetime.ide.NodeViewer method
+        analyzer.db.makeCurrent();
     }
 
     public void viewerNodeChanged()
@@ -254,7 +254,7 @@ public class ProjectBBQ implements NodeViewer
             setVisibleRowCount(2);
             addMouseListener( new MouseAdapter() {
             	public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() == 2) {
+					if (e.getClickCount() >1) {
      					synchronized( dlm) {
 				        	int index = locationToIndex(e.getPoint());
 	            			text.setText( (String)dlm.elementAt(index));

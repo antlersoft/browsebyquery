@@ -19,7 +19,10 @@ import com.borland.primetime.ide.NodeViewerFactory;
 import com.borland.primetime.ide.NodeViewer;
 import com.borland.primetime.ide.Context;
 
+import com.borland.primetime.node.LightweightNode;
 import com.borland.primetime.node.Node;
+
+import com.borland.primetime.properties.PropertyManager;
 
 import com.borland.jbuilder.node.JBProject;
 
@@ -38,16 +41,17 @@ System.out.println( "createNodeViewer");
         try
         {
             ProjectAnalyzer analyzer;
-            if ( ! ( parm1.getNode() instanceof JBProject))
+            if ( ! ( parm1.getNode() instanceof BBQNode))
                 return null;
             synchronized ( projectToAnalyzer)
             {
+                JBProject project=(JBProject)parm1.getNode().getProject();
                 analyzer=(ProjectAnalyzer)projectToAnalyzer
-                    .get( (JBProject)parm1.getNode());
+                    .get( project);
                 if ( analyzer==null)
                 {
-                    analyzer=new ProjectAnalyzer( (JBProject)parm1.getNode());
-                    projectToAnalyzer.put( parm1.getNode(), analyzer);
+                    analyzer=new ProjectAnalyzer( (BBQNode)parm1.getNode());
+                    projectToAnalyzer.put( project, analyzer);
                 }
             }
             return new ProjectBBQ( analyzer, parm1.getBrowser());
@@ -61,7 +65,7 @@ System.out.println( "createNodeViewer");
     public boolean canDisplayNode(Node parm1)
     {
 System.out.println( "canDisplayNode");
-        return parm1 instanceof JBProject;
+        return parm1 instanceof BBQNode;
     }
 
     public static void initOpenTool(byte major,
@@ -83,6 +87,27 @@ System.out.println( "initOpenTool");
     }
   });
 */
-        Browser.registerNodeViewerFactory( new BBQTool());
+        LightweightNode.registerLightweightNodeClass( BBQNode.BBQ_NODE_TYPE,
+            BBQNode.class);
+        BBQTool tool=new BBQTool();
+        Browser.registerNodeViewerFactory( tool);
+        Browser.addStaticBrowserListener( new BBQBrowserListener( tool));
+        PropertyManager.registerPropertyGroup( new BBQPathsGroup());
+    }
+
+    void setAnalyzerPath( BBQNode node, String newPath)
+    {
+        synchronized ( projectToAnalyzer)
+        {
+            JBProject project=(JBProject)node.getProject();
+            ProjectAnalyzer analyzer=(ProjectAnalyzer)projectToAnalyzer
+                .get( project);
+            if ( analyzer==null)
+            {
+                BBQPathsGroup.pathsProperty.setValue( node, newPath);
+            }
+            else
+                analyzer.setAnalyzerPath( node, newPath);
+        }
     }
 }
