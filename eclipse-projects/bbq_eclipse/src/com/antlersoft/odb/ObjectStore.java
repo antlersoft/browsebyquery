@@ -26,4 +26,6 @@ public interface ObjectStore
 		throws ObjectStoreException;
     public void rollback()
         throws ObjectStoreException;
+    public void close()
+        throws ObjectStoreException;
 }
