@@ -6,11 +6,14 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.ClassNotFoundException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.HashMap;
 
 public class DiskAllocatorStore implements ObjectStore
 {
@@ -24,9 +27,10 @@ public class DiskAllocatorStore implements ObjectStore
 	{
 		try
 		{
-			byteOutputStream=new ByteArrayOutputStream();
-			objectOutputStream=new ObjectOutputStream( byteOutputStream);
-			dataOutputStream=new DataOutputStream( byteOutputStream);
+			RandomOutputStream dataStream=new RandomOutputStream();
+			dataOutputStream=new StreamPair( new DataOutputStream( dataStream), dataStream);
+			inputStreams=new HashMap();
+			outputStreams=new HashMap();
 
 			allocator=new DiskAllocator( file, 4, 504, 102400, 0);
 		}
@@ -65,32 +69,8 @@ public class DiskAllocatorStore implements ObjectStore
 		try
 		{
 			storeState.dirty=true;
-			objectOutputStream.writeObject( insertObject);
-			objectOutputStream.flush();
-			byte[] insertBuffer=byteOutputStream.toByteArray();
-			byteOutputStream.reset();
-			objectOutputStream=new ObjectOutputStream( byteOutputStream);
-			int region=allocator.allocate( insertBuffer.length);
-			allocator.write( region, insertBuffer);
-			Entry entry;
-			int index;
-			if ( storeState.freeEntries.size()>0)
-			{
-				index=((Integer)storeState.freeEntries.getFirst()).intValue();
-				storeState.freeEntries.removeFirst();
-				entry=(Entry)storeState.entries.get( index);
-				if ( entry.region>0)
-					throw new ObjectStoreException( "Bad entry free list");
-				entry.size=insertBuffer.length;
-				entry.reuseCount++;
-			}
-			else
-			{
-				entry=new Entry( region, insertBuffer.length);
-				index=storeState.entries.size();
-				storeState.entries.add( entry);
-			}
-			return new DAKey( index, entry.reuseCount);
+			StreamPair sp=outputStreamForObject( insertObject);
+			return getNewObjectKey( sp.writeObject( insertObject), insertObject.getClass().getName());
 		}
 		catch ( DiskAllocatorException dae)
 		{
@@ -108,13 +88,20 @@ public class DiskAllocatorStore implements ObjectStore
 		Entry entry=getEntry( retrieveKey);
 		try
 		{
-			return (Serializable)( new ObjectInputStream(
-				new ByteArrayInputStream( allocator.read( entry.region,
-				entry.size)))).readObject();
+			return (Serializable)( inputStreamForClassName( entry.className).readObject(
+				allocator.read( entry.region, entry.size)));
 		}
-		catch ( Exception dae)
+		catch ( DiskAllocatorException dae)
 		{
 			throw new ObjectStoreException( "Retrieving object", dae);
+		}
+		catch ( IOException ioe)
+		{
+			throw new ObjectStoreException( "Retrieving object", ioe);
+		}
+		catch ( ClassNotFoundException cnf)
+		{
+			throw new ObjectStoreException( "Retrieving object", cnf);
 		}
 	}
 
@@ -124,11 +111,7 @@ public class DiskAllocatorStore implements ObjectStore
 		Entry entry=getEntry( replaceKey);
 		try
 		{
-			objectOutputStream.writeObject( toReplace);
-			objectOutputStream.flush();
-			byte[] replaceBuffer=byteOutputStream.toByteArray();
-			byteOutputStream.reset();
-			objectOutputStream=new ObjectOutputStream( byteOutputStream);
+			byte[] replaceBuffer=outputStreamForObject( toReplace).writeObject( toReplace);
 			if ( replaceBuffer.length>entry.size ||
 				replaceBuffer.length<=entry.size/2
 				&& entry.size>=32)
@@ -140,9 +123,13 @@ public class DiskAllocatorStore implements ObjectStore
 			}
 			allocator.write( entry.region, replaceBuffer);
 		}
-		catch ( Exception e)
+		catch ( IOException ioe)
 		{
-			throw new ObjectStoreException( "Update: ", e);
+			throw new ObjectStoreException( "Update: ", ioe);
+		}
+		catch ( DiskAllocatorException dae)
+		{
+			throw new ObjectStoreException( "Update: ", dae);
 		}
 	}
 
@@ -184,17 +171,16 @@ public class DiskAllocatorStore implements ObjectStore
 			{
 				if ( stateRegion!=0)
 					allocator.free( stateRegion);
-				objectOutputStream.writeObject( storeState);
-				objectOutputStream.flush();
-				byte[] storeBuffer=byteOutputStream.toByteArray();
+				RandomOutputStream randomOut=new RandomOutputStream();
+				StreamPair stateStreams=new StreamPair( new ObjectOutputStream( randomOut), randomOut);
+				byte[] storeBuffer=stateStreams.writeObject( storeState);
 				stateRegion=allocator.allocate( storeBuffer.length);
 				allocator.write( stateRegion, storeBuffer);
-				byteOutputStream.reset();
-				dataOutputStream.writeInt( stateRegion);
-				dataOutputStream.flush();
-				allocator.write( allocator.getInitialRegion(), byteOutputStream.toByteArray());
-				byteOutputStream.reset();
-				objectOutputStream=new ObjectOutputStream( byteOutputStream);
+
+				((DataOutputStream)dataOutputStream.objectStream).writeInt( stateRegion);
+				((DataOutputStream)dataOutputStream.objectStream).flush();
+				allocator.write( allocator.getInitialRegion(),
+					((RandomOutputStream)dataOutputStream.randomStream).getWrittenBytes());
 				storeState.dirty=false;
 			}
 			allocator.sync();
@@ -208,9 +194,10 @@ public class DiskAllocatorStore implements ObjectStore
 	private DiskAllocator allocator;
 	private StoreState storeState;
 	private int stateRegion;
-	private ObjectOutputStream objectOutputStream;
-	private ByteArrayOutputStream byteOutputStream;
-	private DataOutputStream dataOutputStream;
+	private StreamPair dataOutputStream;
+	private HashMap inputStreams; // String, StreamPair
+	private HashMap outputStreams; // String, StreamPair
+	private static final int SIZE_INCREMENT=1024;
 
 	private Entry getEntry( ObjectKey ok)
 		throws ObjectStoreException
@@ -227,6 +214,112 @@ public class DiskAllocatorStore implements ObjectStore
 		return entry;
 	}
 
+	private DAKey getNewObjectKey( byte[] insertBuffer, String className)
+		throws ObjectStoreException, DiskAllocatorException, IOException
+	{
+		int region=allocator.allocate( insertBuffer.length);
+		allocator.write( region, insertBuffer);
+
+		Entry entry;
+		int index;
+		if ( storeState.freeEntries.size()>0)
+		{
+			index=((Integer)storeState.freeEntries.getFirst()).intValue();
+			storeState.freeEntries.removeFirst();
+			entry=(Entry)storeState.entries.get( index);
+			if ( entry.region>0)
+				throw new ObjectStoreException( "Bad entry free list");
+			entry.size=insertBuffer.length;
+			entry.region=region;
+			entry.reuseCount++;
+			entry.className=className;
+		}
+		else
+		{
+			entry=new Entry( region, insertBuffer.length, className);
+			index=storeState.entries.size();
+			storeState.entries.add( entry);
+		}
+		return new DAKey( index, entry.reuseCount);
+	}
+
+	private StreamPair inputStreamForClassName( String className)
+		throws ObjectStoreException, DiskAllocatorException, IOException
+	{
+		StreamPair retval=(StreamPair)inputStreams.get( className);
+		if ( retval==null)
+		{
+			DAKey initialObjectKey=(DAKey)storeState.initialObjects.get( className);
+			if ( initialObjectKey==null)
+			{
+				throw new ObjectStoreException( "No initial object for "+className);
+			}
+			Entry entry=getEntry( initialObjectKey);
+			RandomInputStream inputStream=new RandomInputStream();
+			inputStream.emptyAddBytes( allocator.read( entry.region, entry.size));
+			ObjectInputStream objectStream=new ObjectInputStream( inputStream);
+			retval=new StreamPair( objectStream, inputStream);
+			inputStreams.put( className, retval);
+		}
+
+		return retval;
+	}
+
+	private StreamPair outputStreamForObject( Serializable toFind)
+		throws ObjectStoreException, DiskAllocatorException, IOException
+	{
+		String className=toFind.getClass().getName();
+		StreamPair retval=(StreamPair)outputStreams.get( className);
+		if ( retval==null)
+		{
+			RandomOutputStream outputStream=new RandomOutputStream();
+			ObjectOutputStream objectStream=new ObjectOutputStream( outputStream);
+			objectStream.writeObject( toFind);
+			objectStream.flush();
+			byte[] objectBuffer=outputStream.getWrittenBytes();
+			DAKey initialObjectKey=(DAKey)storeState.initialObjects.get( className);
+			if ( initialObjectKey==null)
+			{
+				initialObjectKey=getNewObjectKey( objectBuffer, className);
+				storeState.dirty=true;
+				storeState.initialObjects.put( className, initialObjectKey);					
+			}
+			retval=new StreamPair( objectStream, outputStream);
+			outputStreams.put( className, retval);
+		}
+		return retval;
+	}
+
+	static class StreamPair
+	{
+		Object objectStream;
+		Object randomStream;
+
+		StreamPair( Object o, Object r)
+		{
+			objectStream=o;
+			randomStream=r;
+		}
+
+		byte[] writeObject( Object toWrite)
+			throws IOException
+		{
+			ObjectOutputStream oos=(ObjectOutputStream)objectStream;
+			oos.reset();
+			oos.writeObject( toWrite);
+			oos.flush();
+			return ((RandomOutputStream)randomStream).getWrittenBytes();
+		}
+
+		Object readObject( byte[] readBytes)
+			throws IOException, ClassNotFoundException
+		{
+			ObjectInputStream ois=(ObjectInputStream)objectStream;
+			((RandomInputStream)randomStream).emptyAddBytes( readBytes);
+			return ois.readObject();
+		}
+	}
+
 	static class StoreState implements Serializable
 	{
 		// TODO: Support multiple entries lists, and ideally
@@ -235,6 +328,7 @@ public class DiskAllocatorStore implements ObjectStore
 		LinkedList freeEntries;
 		boolean dirty;
 		Serializable rootObject;
+		HashMap initialObjects; // String, DAKey
 
 		StoreState()
 		{
@@ -242,6 +336,7 @@ public class DiskAllocatorStore implements ObjectStore
 			freeEntries=new LinkedList();
 			dirty=true;
 			rootObject=null;
+			initialObjects=new HashMap();
 		}
 	}
 
@@ -251,11 +346,13 @@ public class DiskAllocatorStore implements ObjectStore
 		int region;
 		int size;
 		int reuseCount;
+		String className;
 
-		Entry( int r, int s)
+		Entry( int r, int s, String cn)
 		{
 			region=r;
 			size=s;
+			className=cn;
 			reuseCount=0;
 		}
 	}
@@ -285,6 +382,115 @@ public class DiskAllocatorStore implements ObjectStore
 		public boolean equals( Object t)
 		{
 			return ( ( t instanceof DAKey) && ((DAKey)t).index==index && ((DAKey)t).reuseCount==reuseCount);
+		}
+	}
+
+	// DiskAllocatorStore's implementation of InputStream
+	static class RandomInputStream extends InputStream
+	{
+		RandomInputStream()
+		{
+			position=0;
+			count=0;
+			buffer=new byte[SIZE_INCREMENT];
+		}
+
+		synchronized void emptyAddBytes( byte[] toAdd)
+		{
+			position=0;
+			count=0;
+			addBytes( toAdd);
+		}
+
+		synchronized void addBytes( byte[] toAdd)
+		{
+			if ( toAdd.length+count>buffer.length)
+			{
+				int newSize=( ( ( toAdd.length+count)/SIZE_INCREMENT)+1)*SIZE_INCREMENT;
+				byte[] newBuffer=new byte[newSize];
+				System.arraycopy( buffer, 0, newBuffer, 0, count);
+				buffer=newBuffer;
+			}
+			System.arraycopy( toAdd, 0, buffer, count, toAdd.length);
+			count+=toAdd.length;
+		}
+
+		private void packBuffer()
+		{
+			if ( position==count)
+			{
+				position=0;
+				count=0;
+			}
+		}
+
+		synchronized public int read()
+			throws IOException
+		{
+			int retVal= -1;
+			if ( position<count)
+			{
+				retVal=buffer[position++];
+				if ( retVal<0)
+					retVal+=256;
+				packBuffer();
+			}
+
+			return retVal;
+		}
+
+		synchronized public int read( byte[] dest, int offset, int len)
+			throws IOException
+		{
+			int retval= -1;
+			if ( position<count)
+			{
+				if ( len>count-position)
+					len=count-position;
+				retval=len;
+				System.arraycopy( buffer, position, dest, offset, len);
+				position+=len;
+				packBuffer();
+			}
+			return retval;
+		}
+
+		synchronized public long skip( long n)
+			throws IOException
+		{
+			if ( n>count-position)
+				n=count-position;
+			position+=n;
+			packBuffer();
+
+			return n;
+		}
+
+		public int available()
+		    throws IOException
+		{
+			return count-position;
+		}
+
+		private int position;
+		private int count;
+		private byte[] buffer;
+	}
+
+	// DiskAllocatorStore's implementation of OutputStream
+	static class RandomOutputStream extends ByteArrayOutputStream
+	{
+		RandomOutputStream()
+		{
+			super( SIZE_INCREMENT);
+		}
+
+		byte[] getWrittenBytes()
+			throws IOException
+		{
+			byte[] retVal=toByteArray();
+			reset();
+			return retVal;
 		}
 	}
 }
