@@ -30,7 +30,7 @@ import java.util.Stack;
 
 import com.antlersoft.util.NetByte;
 
-public class TableSwitch extends OpCode
+public class TableSwitch extends SwitchOpCode
 {
 	TableSwitch( int v, String m)
 	{
@@ -76,6 +76,17 @@ public class TableSwitch extends OpCode
         int start, int oldPostEnd, int newPostEnd)
         throws CodeCheckException
     {
+        int offset=instruction.operands.length%4;
+        offset+=4;
+        int lowend=NetByte.quadToInt( instruction.operands, offset);
+        offset+=4;
+        int highend=NetByte.quadToInt( instruction.operands, offset);
+        offset+=4;
+        for ( int i=lowend; i<=highend; i++)
+        {
+            fixSwitchDestination( instruction, offset+(i-lowend)*4,
+                                  oldPostEnd, newPostEnd);
+        }
         throw new CodeCheckException( "Unsupported address fix-up- tableswitch");
     }
 

@@ -30,7 +30,7 @@ import java.util.Stack;
 
 import com.antlersoft.util.NetByte;
 
-class LookupSwitch extends OpCode
+class LookupSwitch extends SwitchOpCode
 {
 	LookupSwitch( int v, String m)
 	{
@@ -74,7 +74,14 @@ class LookupSwitch extends OpCode
         int start, int oldPostEnd, int newPostEnd)
         throws CodeCheckException
     {
-        throw new CodeCheckException( "Unsupported address fix-up- lookupswitch");
+        int offset=instruction.operands.length%4;
+        offset+=4;
+        int npairs=NetByte.quadToInt( instruction.operands, offset);
+        offset+=8;
+        for ( int i=0; i<npairs; i++)
+        {
+            fixSwitchDestination( instruction, offset+8*i, oldPostEnd, newPostEnd);
+        }
     }
 
 	Instruction read( InstructionPointer cr, byte[] code)

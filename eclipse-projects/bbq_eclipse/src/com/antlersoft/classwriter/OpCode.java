@@ -66,13 +66,39 @@ public abstract class OpCode
         return true;
     }
 
-    void fixDestinationAddress( Instruction instruction,
+    void fixStartAddress( Instruction instruction,
         int start, int oldPostEnd, int newPostEnd)
-        throws CodeCheckException
     {
         if ( instruction.instructionStart>=oldPostEnd)
             instruction.instructionStart+=newPostEnd-oldPostEnd;
     }
+
+    /**
+     * Fix operands to reflect changed code positions;
+     * no op except for instructions that jump or branch
+     */
+    void fixDestinationAddress( Instruction instruction,
+                                         int start,
+                                         int oldPostEnd,
+                                         int newPostEnd)
+        throws CodeCheckException
+    {
+
+    }
+
+    /**
+     * When a method is edited, *Switch instructions may have to end up
+     * with different operand lengths because they are supposed to be
+     * padded to a 4 byte boundary.  This method returns null for
+     * regular instructions; for repaddable instructions it returns a
+     * new instruction with the operands updated to reflect the correct
+     * padding.
+     */
+	Instruction repadInstruction( Instruction to_repad)
+        throws CodeCheckException
+	{
+		return null;
+	}
 
  	void write( DataOutputStream out, Instruction instruction)
   		throws IOException

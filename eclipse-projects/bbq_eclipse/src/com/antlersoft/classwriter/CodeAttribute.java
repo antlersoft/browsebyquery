@@ -186,6 +186,11 @@ public class CodeAttribute implements Attribute
         {
             int index=i.nextIndex();
             Instruction current=(Instruction)i.next();
+            if ( index>=at+newCount)
+                current.opCode.fixStartAddress( current,
+                                                start,
+                                                oldPostEnd,
+                                                newPostEnd);
             if ( index<at || index>=at+newCount)
                 current.opCode.fixDestinationAddress( current,
                     start, oldPostEnd, newPostEnd);
@@ -222,6 +227,40 @@ public class CodeAttribute implements Attribute
         LineNumberTableAttribute lineTable=getLineNumberAttribute();
         if ( lineTable!=null)
             lineTable.fixOffsets( start, oldPostEnd, newPostEnd);
+
+        /* At this point everything is fixed, with the significant
+         * exception of *Switch instructions.  They now may
+         * have an incorrect operand length because the operands
+         * are padded to be on a 4-byte boundary.  We now
+         * look for a *Switch after the code change.  The first one
+         * we find, we tell it to produce an Instruction that
+         * contains the operands it would have if it were correctly
+         * padded.  Then we call ourselves (tail recursion,
+         * actually) replacing the current, incorrect instruction
+         * with the new, correct one with a different length.
+         *
+         * Note that jump destinations in the code originally
+         * inserted does not have to and must not take this
+         * repad step into account.
+         */
+        for ( ListIterator i=instructions.listIterator(); i.hasNext();)
+        {
+            int index=i.nextIndex();
+            Instruction current=(Instruction)i.next();
+            if ( index>=at+newCount)
+            {
+            	Instruction repadded=current.opCode.repadInstruction(
+            		current);
+                if ( repadded!=null)
+                {
+					ArrayList repad_collection=new ArrayList(1);
+					repad_collection.add( repadded);
+					insertInstructions( current.instructionStart, 1,
+					 repad_collection);
+        			break;
+        		}
+        	}
+        }
     }
 
  	/**

@@ -128,16 +128,13 @@ public class Instruction
     }
 
     /**
-     *  Update offset destination
+     *  Fix operands for "regular" jump or branch instructions when
+     * code has moved.
      */
     void fixDestinationAddress( int start, int oldPostEnd, int newPostEnd)
         throws CodeCheckException
     {
         int oldDestination=getOffsetDestination();
-        if ( instructionStart>=oldPostEnd)
-        {
-            instructionStart+=newPostEnd-oldPostEnd;
-        }
         if ( oldDestination>start && oldDestination<oldPostEnd)
         {
             throw new CodeCheckException(
