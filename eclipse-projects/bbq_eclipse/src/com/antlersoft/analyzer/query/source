@@ -6,6 +6,7 @@ symbol UncalledPolymorphic
 symbol Identity
 symbol SetOperator
 symbol Reference
+symbol StringConstant
 symbol LogicalOperator
 
 reserved all
@@ -45,6 +46,8 @@ reserved referenced
 reserved rightParen ")"
 reserved same
 reserved set
+reserved stringconstant "string"
+reserved stringconstants "strings"
 reserved that
 reserved to
 reserved uncalled
@@ -159,6 +162,14 @@ SetExpression : all classes "{
 	return new ClassesGet();
 	}" .
 
+SetExpression : all StringConstant "{
+    return new StringsGet();
+    }" .
+
+SetExpression : stringconstant literalString "{
+	return new StringGet( (String)valueStack.get( valueStack.size()-1));
+	}" .
+
 Transform : base classes of "{ return new BaseClasses(); }" .
 Transform : recursive base classes of "{ return new RecursiveBaseClasses(); }" .
 Transform : derived classes of "{ return new DerivedClasses(); }" .
@@ -169,15 +180,19 @@ Transform : fields in "{ return new FieldsIn(); }" .
 Transform : polymorphic "{ return new Polymorphic(); }" .
 Transform : methods called by "{ return new MethodsOf(); }" .
 Transform : fields referenced by "{ return new FieldsOf(); }" .
+Transform : StringConstant referenced by "{ return new StringsOf(); }" .
 Transform : methods containing "{ return new MethodsContaining(); }" .
 Transform : classes containing "{ return new ClassOf(); }" .
 Filter : uncalled "{ return new UncalledMethod(); }" .
 Filter : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
 Reference : reference .
 Reference : references .
+StringConstant : stringconstant .
+StringConstant : stringconstants .
 Transform : calls from "{ return new CallsFrom(); }" .
 Transform : Reference from "{ return new ReferenceFrom(); }" .
-Transform : Reference to "{ return new FieldReferencesTo(); }" .
+Transform : StringConstant Reference from "{ return new StringReferenceFrom(); }" .
+Transform : Reference to "{ return new ReferencesTo(); }" .
 Transform : calls to "{ return new CallsTo(); }" .
 UncalledPolymorphic : uncalled polymorphic .
 SetExpression : set nameSymbol to SetExpression "{
@@ -187,7 +202,6 @@ SetExpression : set nameSymbol to SetExpression "{
     String valueName=(String)valueStack.get( size-3);
     qp.storedValues.put( valueName, se);
 	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
-//System.out.println( qp.storedValuesSupport.hasListeners( \"storedValues\") ? \"Has listeners\" : \"No listeners\");
     return se; }" 1 .
 SetExpression : nameSymbol "{ QueryParser qp=(QueryParser)parser;
     SetExpression retVal=(SetExpression)qp.storedValues.get(
