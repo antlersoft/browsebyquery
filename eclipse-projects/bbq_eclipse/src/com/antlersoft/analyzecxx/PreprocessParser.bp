@@ -10,28 +10,27 @@ reserved lex_new_line
 reserved lex_number
 
 # Recognized from lexer tokens on input to preprocessor
-reserved pp_comma
-reserved pp_define
-reserved pp_defined
+reserved pp_comma ","
+reserved pp_define "define"
+reserved pp_defined "defined"
 
 # Note that when a preprocessor token can end a skipped section, it is
 # detected together with the '#'
-reserved pp_elif
-reserved pp_else
-reserved pp_endif
+reserved pp_elif "elif"
+reserved pp_else "else"
+reserved pp_endif "endif"
 
-reserved pp_error
+reserved pp_error "error"
 reserved pp_hash "#"
-reserved pp_if
-reserved pp_ifdef
-reserved pp_ifndef
-reserved pp_include
-reserved pp_left_paren
-reserved pp_line
-reserved pp_lparen
-reserved pp_pragma
-reserved pp_rparen
-reserved pp_undef
+reserved pp_if "if"
+reserved pp_ifdef "ifdef"
+reserved pp_ifndef "ifndef"
+reserved pp_include "include"
+reserved pp_line "line"
+reserved pp_lparen "("
+reserved pp_pragma "pragma"
+reserved pp_rparen ")"
+reserved pp_undef "undef"
 
 symbol CONSTANT_EXPRESSION
 symbol CONSTANT_TOKEN
@@ -49,6 +48,8 @@ symbol IF_COND
 symbol IF_GROUP
 symbol IF_SECTION
 symbol INCLUDE_HEADER
+symbol INITIAL_HASH
+symbol OPT_WHITE_SPACE
 symbol PP_FILE
 symbol PP_TOKEN
 symbol PP_TOKENS
@@ -81,11 +82,15 @@ IF_SECTION : IF_GROUP ELIF_GROUPS ENDIF_LINE .
 #                  # if     constant-expression new-line groupopt
 #                  # ifdef  identifier new-line groupopt
 #                  # ifndef identifier new-line groupopt
+INITIAL_HASH : pp_hash .
+INITIAL_HASH : INITIAL_HASH lex_white_space .
+OPT_WHITE_SPACE : OPT_WHITE_SPACE lex_white_space .
+OPT_WHITE_SPACE : .
 IF_GROUP : IF_COND .
 IF_GROUP : IF_COND GROUP .
-IF_COND : pp_hash pp_if CONSTANT_EXPRESSION lex_new_line .
-IF_COND : pp_hash pp_ifdef lex_identifier lex_new_line .
-IF_COND : pp_hash pp_ifndef lex_identifier lex_new_line .
+IF_COND : INITIAL_HASH pp_if CONSTANT_EXPRESSION lex_new_line .
+IF_COND : INITIAL_HASH pp_ifdef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line .
+IF_COND : INITIAL_HASH pp_ifndef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line .
 #          elif-groups:
 #                  elif-group
 #                  elif-groups elif-group
@@ -93,17 +98,17 @@ ELIF_GROUPS : ELIF_GROUP .
 ELIF_GROUPS : ELIF_GROUPS ELIF_GROUP .
 #          elif-group:
 #                  # elif   constant-expression new-line groupopt
-ELIF_COND : pp_elif CONSTANT_EXPRESSION lex_new_line .
+ELIF_COND : INITIAL_HASH pp_elif CONSTANT_EXPRESSION lex_new_line .
 ELIF_GROUP : ELIF_COND GROUP .
 ELIF_GROUP : ELIF_COND .
 #          else-group:
 #                  # else   new-line groupopt
-ELSE_GROUP : pp_else lex_new_line GROUP .
+ELSE_GROUP : ELSE_COND GROUP .
 ELSE_GROUP : ELSE_COND .
-ELSE_COND : pp_hash pp_else lex_new_line .
+ELSE_COND : INITIAL_HASH pp_else OPT_WHITE_SPACE lex_new_line .
 #          endif-line:
 #                  # endif  new-line
-ENDIF_LINE : pp_endif lex_new_line .
+ENDIF_LINE : INITIAL_HASH pp_endif OPT_WHITE_SPACE lex_new_line .
 #          control-line:
 #                  # include pp-tokens new-line
 #                  # define  identifier replacement-list new-line
@@ -116,16 +121,16 @@ ENDIF_LINE : pp_endif lex_new_line .
 INCLUDE_HEADER : lex_include_header .
 INCLUDE_HEADER : lex_include_header_with_current .
 INCLUDE_HEADER : PP_TOKENS "{ throw new RuleActionException( \"Unimplemented: Getting include header from substitution tokens\"); }" .
-CONTROL_LINE : pp_hash pp_include INCLUDE_HEADER lex_new_line .
-CONTROL_LINE : pp_hash pp_define lex_identifier REPLACEMENT_LIST lex_new_line .
-CONTROL_LINE : pp_hash pp_define lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen REPLACEMENT_LIST lex_new_line .
-CONTROL_LINE : pp_hash pp_define lex_identifier pp_lparen pp_rparen REPLACEMENT_LIST lex_new_line .
-CONTROL_LINE : pp_hash pp_undef lex_identifier lex_new_line .
-CONTROL_LINE : pp_hash pp_line PP_TOKENS lex_new_line .
-CONTROL_LINE : pp_hash pp_error PP_TOKENS lex_new_line .
-CONTROL_LINE : pp_hash pp_error lex_new_line .
-CONTROL_LINE : pp_hash pp_pragma PP_TOKENS lex_new_line .
-CONTROL_LINE : pp_hash lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_include OPT_WHITE_SPACE INCLUDE_HEADER OPT_WHITE_SPACE lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen IDENTIFIER_LIST pp_rparen OPT_WHITE_SPACE REPLACEMENT_LIST lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_define OPT_WHITE_SPACE lex_identifier pp_lparen OPT_WHITE_SPACE pp_rparen REPLACEMENT_LIST lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_undef OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_line PP_TOKENS lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_error PP_TOKENS lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_error lex_new_line .
+CONTROL_LINE : INITIAL_HASH pp_pragma PP_TOKENS lex_new_line .
+CONTROL_LINE : INITIAL_HASH lex_new_line .
 #          lparen:
 #                  the left-parenthesis character without preceding white-space
 #          replacement-list:
@@ -144,12 +149,13 @@ PP_TOKEN : lex_number .
 PP_TOKEN : lex_character_literal .
 PP_TOKEN : lex_string_literal .
 PP_TOKEN : lex_preprocessing_op_or_punc .
+PP_TOKEN : lex_white_space .
 
-CONSTANT_TOKEN : pp_defined lex_identifier .
-CONSTANT_TOKEN : pp_defined pp_left_paren lex_identifier pp_rparen .
+CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE lex_identifier .
+CONSTANT_TOKEN : pp_defined OPT_WHITE_SPACE pp_lparen OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE pp_rparen .
 CONSTANT_TOKEN : PP_TOKEN .
 CONSTANT_EXPRESSION : CONSTANT_TOKEN .
 CONSTANT_EXPRESSION : CONSTANT_EXPRESSION CONSTANT_TOKEN .
 
-IDENTIFIER_LIST : lex_identifier .
-IDENTIFIER_LIST : IDENTIFIER_LIST pp_comma lex_identifier .
+IDENTIFIER_LIST : OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE .
+IDENTIFIER_LIST : IDENTIFIER_LIST pp_comma OPT_WHITE_SPACE lex_identifier OPT_WHITE_SPACE .
