@@ -295,6 +295,7 @@ int main( int argc, char* argv[])
 	x.addRule( Rule( Defs, CompareSequence( Defs)|ReservedWordDef));
 	x.addRule( Rule( Defs, CompareSequence( Defs)|SymbolDef));
 	x.addRule( Rule( CompleteParser, CompareSequence( Defs)|Rules));
+	x.addRule( Rule( CompleteParser, CompareSequence( CompleteParser)|Defs|Rules));
 	x.setGoal( CompleteParser);
 	Parser* parser=x.build(cerr);
 	LexScan lex_scan(
