@@ -18,6 +18,7 @@ public class ObjectStoreException extends RuntimeException
     {
 	super( msg+":"+cause.getMessage());
 	underlying=cause;
+cause.printStackTrace();
     }
 
     public Exception getUnderlying()
