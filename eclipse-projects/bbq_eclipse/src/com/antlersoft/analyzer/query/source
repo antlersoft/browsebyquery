@@ -48,6 +48,7 @@ reserved set
 reserved that
 reserved to
 reserved uncalled
+reserved uncorrelated
 reserved union 2 left
 reserved without 2 left
 reserved write
@@ -108,10 +109,15 @@ Transform : Transform that Identity Filter "{
 		new FilterTransform((Filter)valueStack.get( valueStack.size()-1)),
 		(Transform)valueStack.get( valueStack.size()-4));
 	};" .
-Transform : leftParen Transform rightParen  "{
+Transform : leftParen Transform rightParen "{
 	return (Transform)valueStack.get( valueStack.size()-2);
 	}" .
 Transform : count "{ return new Count(); }" .
+
+Transform : uncorrelated leftParen SetExpression rightParen "{
+	return new UncorrelatedSet( (SetExpression)
+            valueStack.get( valueStack.size()-2));
+	}" .
 
 SetExpression : Transform SetExpression "{
 	int size=valueStack.size();
