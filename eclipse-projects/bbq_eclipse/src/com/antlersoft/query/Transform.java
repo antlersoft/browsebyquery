@@ -1,5 +1,6 @@
 package com.antlersoft.query;
 
+import java.util.Comparator;
 import java.util.Enumeration;
 
 public abstract class Transform implements Bindable {
@@ -8,7 +9,7 @@ public abstract class Transform implements Bindable {
 	public abstract Enumeration finishEvaluation( DataSource source);
 	public boolean isAbleToUseMore()
 	{ return true; }
-    public Ordering getOrdering( Ordering base)
+    public Comparator getOrdering( Comparator base)
 	{
 		return null;
 	}

@@ -1,10 +1,11 @@
 package com.antlersoft.query;
 
+import java.util.Comparator;
 import java.util.Enumeration;
 
 public abstract class SetExpression {
 	public abstract Class getResultClass();
-	public Ordering getOrdering()
+	public Comparator getOrdering()
 	{
 		return null;
 	}
