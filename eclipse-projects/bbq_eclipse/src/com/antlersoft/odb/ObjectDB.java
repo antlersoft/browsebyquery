@@ -101,7 +101,7 @@ public class ObjectDB
         return getObjectByKey( key);
     }
 
-	public ObjectKey getObjectKey( Object object)
+	static public ObjectKey getObjectKey( Object object)
 	{
 		return ((Persistent)object)._getPersistentImpl().objectKey;
 	}
