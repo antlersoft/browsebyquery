@@ -1,0 +1,4 @@
+To build this you will need the buildparse library
+(http://buildparse.sourceforge.net)
+
+Checkout the buildparselib module from buildparse CVS
