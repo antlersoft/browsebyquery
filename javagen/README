@@ -1,4 +1,6 @@
+Converts parser grammars into fragments of java source files
+
 To build this you will need the buildparse library
 (http://buildparse.sourceforge.net)
 
-Checkout the buildparselib module from buildparse CVS
+Checkout the buildparselib module from the SourceForge buildparse CVS
