@@ -1,3 +1,22 @@
+package com.antlersoft.analyzecxx.db;
+
+import com.antlersoft.odb.CompoundKey;
+import com.antlersoft.odb.IndexObjectDB;
+import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
+import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.PersistentImpl;
+
+import java.util.Date;
+import java.util.HashSet;
+
+public class UnitEntry implements Persistent {
+	private transient PersistentImpl _persistentImpl;
+    public PersistentImpl _getPersistentImpl() {
+		if ( _persistentImpl==null)
+				_persistentImpl=new PersistentImpl();
 		return _persistentImpl;
     }
 

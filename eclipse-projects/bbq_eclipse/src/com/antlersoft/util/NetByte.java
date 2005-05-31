@@ -2,7 +2,7 @@
 /**
  * Title:        <p>
  * Description:  Java object database; also code analysis tool<p>
- * <p>Copyright (c) 2003  Michael A. MacDonald<p>
+ * <p>Copyright (c) 2000-2005  Michael A. MacDonald<p>
  * ----- - - -- - - --
  * <p>
  *     This package is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ package com.antlersoft.util;
  * in network byte-order, as you might obtain from network communication
  * protocols or Java class files.
  *
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  * @author     Michael MacDonald
  */
 
@@ -45,7 +45,7 @@ public final class NetByte
     //-------------------------------------------------------------------
     // attributes
     //-------------------------------------------------------------------
-    public static final String _ID_ = "$Id: NetByte.java,v 1.2 2003/10/06 17:54:01 mike Exp $";
+    public static final String _ID_ = "$Id: NetByte.java,v 1.3 2005/05/31 18:09:07 mike Exp $";
 
     //-------------------------------------------------------------------
     // public interface

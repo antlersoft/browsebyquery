@@ -2,7 +2,7 @@
 /**
  * Title:        <p>
  * Description:  Java object database; also code analysis tool<p>
- * <p>Copyright (c) 2000, 2003  Michael A. MacDonald<p>
+ * <p>Copyright (c) 2000-2005  Michael A. MacDonald<p>
  * ----- - - -- - - --
  * <p>
  *     This package is free software; you can redistribute it and/or modify
