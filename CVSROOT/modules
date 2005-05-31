@@ -47,4 +47,5 @@ stdio_tunnel_cpp_ref -d stdio_tunnel/src/com/antlersoft -l cppquery/com/antlerso
 stdio_tunnel_cpp2_ref -d stdio_tunnel/src/com/antlersoft cppquery/com/antlersoft stdio_tunnel net
 stdio_tunnel -a stdio_tunnel_ref stdio_tunnel_cpp_ref stdio_tunnel_cpp2_ref
 
-bbq -a com/antlersoft/classwriter com/antlersoft/analyzer com/antlersoft/opentool com/antlersoft/analyzecxx com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query
+bbq_ref -a com/antlersoft/classwriter com/antlersoft/analyzer com/antlersoft/opentool com/antlersoft/analyzecxx com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query
+bbq &bbq_ref
