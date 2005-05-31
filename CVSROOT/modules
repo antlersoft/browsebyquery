@@ -49,7 +49,12 @@ mars_mola_viewer_src -a mars_mola_viewer_ref \
 	com/antlersoft/demo3d \
 	com/antlersoft/util/URLFrame.java \
 	humus_demos/Framework \
-	humus_demos/MarsDemo \
+	humus_demos/MarsDemo/FileMapper.cpp \
+	humus_demos/MarsDemo/FileMapper.h \
+	humus_demos/MarsDemo/Main.cpp \
+	humus_demos/MarsDemo/Makefile \
+	humus_demos/MarsDemo/MarsDemo.dsp \
+	humus_demos/MarsDemo/MarsDemo.dsw \
 	humus_demos/libs
 
 cpp_home cppquery com
