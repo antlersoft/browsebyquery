@@ -1,0 +1,27 @@
+<!--
+Copyright 2005 Michael A. MacDonald
+Please make changes to the bbq_ant.properties file
+-->
+<project name="bbq" default="bbqopentool">
+	<property file="bbq_ant.properties"/>
+	<target name="bbqopentool" depends="buildopentool">
+		<mkdir dir="dist"/>
+		<jar destfile="dist/bbqopentool.jar" basedir="classes" manifest="com/antlersoft/opentool/classes.opentools" includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/opentool/** com/antlersoft/parser/** com/antlersoft/classwriter/**">
+		</jar>
+	</target>
+	<target name="buildcommon">
+		<mkdir dir="classes"/>
+		<javac sourcepath="." destdir="classes">
+			<src path="com/antlersoft/odb;com/antlersoft/analyzer;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/classwriter"/>
+		</javac>
+	</target>
+	<target name="buildopentool" depends="buildcommon">
+		<javac sourcepath="." destdir="classes" classpath="${classpath};${opentoolpath}">
+			<src path="com/antlersoft/opentool"/>
+		</javac>
+	</target>
+	<target name="clean">
+		<delete dir="classes"/>
+		<delete dir="dist"/>
+	</target>
+</project>
