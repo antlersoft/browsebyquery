@@ -24,6 +24,9 @@ Requires ant 1.6+
 		<javac sourcepath="." destdir="classes" classpath="${classpath};${opentoolpath}">
 			<src path="com/antlersoft/opentool"/>
 		</javac>
+		<copy todir="classes/com/antlersoft/opentool">
+			<fileset dir="com/antlersoft/opentool" includes="**/*.gif"/>
+		</copy>
 	</target>
 	<target name="clean">
 		<delete dir="classes"/>
