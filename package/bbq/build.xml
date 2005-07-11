@@ -1,6 +1,8 @@
 <!--
 Copyright 2005 Michael A. MacDonald
 Please make changes to the bbq_ant.properties file
+
+Requires ant 1.6+
 -->
 <project name="bbq" default="bbqopentool">
 	<property file="bbq_ant.properties"/>
@@ -11,6 +13,9 @@ Please make changes to the bbq_ant.properties file
 	</target>
 	<target name="buildcommon">
 		<mkdir dir="classes"/>
+		<exec executable="${genparserpath}">
+			<arg file="com/antlersoft/analyzer/query/QueryParser.pre"/>
+		</exec>
 		<javac sourcepath="." destdir="classes">
 			<src path="com/antlersoft/odb;com/antlersoft/analyzer;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/classwriter"/>
 		</javac>
