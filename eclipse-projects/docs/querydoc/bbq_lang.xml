@@ -1,0 +1,1479 @@
+<!DOCTYPE book SYSTEM "file:///opt/kde/share/apps/ksgmltools2/docbook/xml-dtd-4.1.2/docbookx.dtd" [
+<!ENTITY p-bbq "BBQ">
+]>
+<book>
+  <title>The Browse-By-Query Query Language, ver. 1 (Java)</title>
+  <bookinfo>
+    <author>
+      <firstname>Michael</firstname>
+      <surname>MacDonald</surname>
+      <affiliation>
+        <orgname>antlersoft</orgname>
+        <address>
+          <email>mars@antlersoft.com</email>
+        </address>
+      </affiliation>
+    </author>
+  </bookinfo>
+  <preface>
+    <title>A Note on the Language</title>
+    <para>This document described the &p-bbq; language
+for querying Java systems as it exists in early 2005.  The concepts
+embodied by this language are, I hope, more important
+than the details of the language itself
+and will outlast any particular implementation.
+Aspects of the language (particularly the order
+in which query elements are assembled) may
+be revised dramatically in the near future.</para>
+  </preface>
+  <chapter>
+    <title>Overview</title>
+    <para>
+Like a conventional browser,
+&p-bbq; helps you find things in your code.
+What &p-bbq; lets you do that a conventional
+browser does not is specify just what you want to find
+with as much precision and complexity as you desire; it
+will then find just the spots in your code in which you're interested.
+When you are developing a program, you have a mental model of what
+will need to be changed next: &p-bbq; is intended to make it possible
+to express that mental model and get a view of just those aspects
+of your system in which you are interested.
+The bigger the system, or the more unfamiliar with it you are,
+the more valuable &p-bbq; will be.
+</para>
+<para>
+    To make this possible for you, &p-bbq; introduces a new language, a
+language specialized
+for finding things in your code.
+The assumption is that programmers are use to expressing complex ideas
+by composing expressions--why not let them use this skill to more
+effectively navigate their code base?
+Most database programmers wouldn't dream of working without the
+ability to compose <foreignphrase>ad hoc</foreignphrase> SQL
+queries to show what is in the database.
+Why shouldn't you use a similar facility to help
+you work with the thousands
+of classes, variables and methods in your system?
+</para>
+    <sect1>
+      <title>Set Expressions</title>
+<para>
+The purpose of &p-bbq; is to easily find constructs in your code, any of the things &p-bbq; keeps track of: class definitions, method definitions, field definitions, method calls, field references, or string constant references.
+The language is intended to allow you to express what you are interested in,
+if not in plain english, at least in a form that is reasonably close to
+how you might think.
+You write an expression, a <firstterm>set expression</firstterm>, that defines the set of program constructs you want to see.<footnote id="fn-regexp">
+	<para>Those familiar with regular expressions may find that &p-bbq;
+set expressions are analogous; instead of finding instances of matching
+character strings, set expressions let you find instances of matching program
+constructs.</para>
+      </footnote>
+&p-bbq; then finds all the parts of your code that match the
+expression. Typically, &p-bbq; will have read your code (known as the <firstterm>analyzed system</firstterm>)
+into an object-oriented database.
+The set expression specifies a query on this database.
+</para>
+<para>
+One of a few <firstterm><link linkend="r-simplesetexpressions">simple set expressions</link></firstterm> forms the basis
+for any query.  These are simple noun phrases that describe
+a set of program constructs: <userinput>all classes</userinput> represents
+all the classes in your program; <userinput>class "java.util.ArrayList"</userinput> represents a single class.</para>
+<para>
+You go from the simple set expressions to the exact set expression you want
+by applying modifiers to the simple expression.
+&p-bbq; has a library of built-in modifiers--<firstterm>transforms</firstterm>
+and <firstterm>filters</firstterm><footnote><para>
+	 This terminology is generic and might be confusing to those familiar
+with Unix shell programming, since a &p-bbq; transform
+is in fact comparable to a Unix filter command,
+while a &p-bbq; filter is more specialized.</para>
+	</footnote>--that represent the relationships between
+program objects.  Using these modifiers
+in the set expression tells &p-bbq; how to follow these relationships
+to retrieve the desired results.
+</para>
+</sect1>
+<sect1>
+<title>Transforms</title>
+<para>
+A commonly used transform is <userinput>methods in</userinput>,
+which reflects one relationship between methods and classes: methods
+are defined within classes.
+You apply this transform to a set expression that represents
+a set of classes,
+and the resulting set expression represents the
+methods that are defined in those classes.
+So the set expression <userinput>methods in class "java.util.ArrayList"</userinput>
+returns, well, just what you'd expect.
+</para>
+<para>
+In general, a transform changes the result of a set expression into another set;
+this is a very flexible concept,
+and you can do all sorts of processing with transforms.
+You apply a transform by prepending it to a set expression;
+the result is a new set expression that returns the result of
+the original set expression transformed.
+</para>
+<para>
+The language provides a selection of built-in transforms that
+reflect the relationships
+among the program objects in the &p-bbq; database; they're listed in the <link linkend="r-transforms">reference</link>.
+You'll often use these transforms in series to get the results you want.
+For example <userinput>calls to</userinput>
+is a transform that takes a set of methods and is often used
+with the <userinput>methods in</userinput> transform;
+the set expression <userinput>calls to methods in class "java.util.ArrayList</userinput>
+returns all the calls, from anywhere in the analyzed system,
+to methods in the ArrayList class.
+A series of transforms can be regarded as a single transform
+that combines their effects: <userinput>( calls to methods in )</userinput>
+is a transform that turns a set of classes into the set of all the calls
+to the methods defined in the set of classes.
+</para>
+<para>
+You might think that putting the transform in front of the set expression is
+confusing.  The rationale is this: a set expression should read like
+a noun phrase in English, and filters and transforms, like adjectives,
+precede the things they modify.
+When you read a set expression, you can picture the data flowing
+from the simple set expression through the transforms from right to left.
+</para>
+</sect1>
+<sect1>
+<title>Filters</title>
+<para>
+A filter is a special kind of transform which changes the
+set only by excluding some of its members.
+One common filter might be <userinput>public</userinput>,
+which can be applied to a set expression that returns
+classes, methods, or fields and keeps only
+those that are declared public.  So again,
+<userinput>public methods in class "java.util.ArrayList"</userinput>
+will return just what it says.
+The language implements many filters, described in the
+<link linkend="r-filters">reference</link>.
+</para>
+<para>
+Filters represent a boolean condition, and so you can combine them
+with boolean operators (not, and, or) to create a more complex filter.
+<userinput>( public or protected ) methods in class "java.util.ArrayList"</userinput>
+will give the list of all the methods in the class that are visible outside
+its package.
+</para>
+</sect1>
+      <sect1>
+	<title>Set Operators</title>
+	<para>As you might expect from a language that deals with
+set expressions, &p-bbq; uses set operators: union, intersection,
+deintersection, without.
+You can use these operators to combine two set expressions.
+An equivalent expression to the previous example could be written
+<userinput>( public methods in class "java.util.ArrayList" ) union
+( private methods in class "java.util.ArrayList" )</userinput>.
+</para>
+<para>
+What may be less obvious is that set expressions can also be used
+to combine transforms.  A commonly used transform that can be
+applied to classes
+is <userinput>( calls to methods in ) union ( references to fields
+in )</userinput>.  The union of two transforms applied to a set expression Foo
+is equivalent to the union of the two set expressions that would
+be obtained by applying each transform to Foo; the
+same goes for the other set operators.
+As you become
+experienced with &p-bbq;,
+you will much more commonly use the set operators
+with transforms than with set expressions, because the
+resulting set expressions are more compact with less duplication:
+You would prefer
+<userinput>( calls to methods in ) union ( references to fields in )
+class "java.util.ArrayList"</userinput>
+to
+<userinput>( calls to methods in class "java.util.ArrayList" )
+union ( references to fields in class "java.util.ArrayList" )
+</userinput>
+</para>
+      </sect1>
+      <sect1>
+	<title>Types</title>
+<para>
+We've discussed filters and transforms as applying to specific
+kinds of set expressions: those returning classes, or those
+returning methods.
+This concept is expressed more formally in the language
+with <firstterm>expression types</firstterm>.
+A set expression has a type, which represents the type of objects that
+the expression returns (this type is distinct from any type within the
+program &p-bbq; is examining.)
+&p-bbq; supports a hierarchy of types that is fully described in the
+<link linkend="r-types">reference</link>:
+it includes: classes, methods, fields, method calls, field references,
+and strings and numbers in expressions.
+</para>
+<para>
+Most transforms can only be applied to certain types:
+for example, <userinput>methods in</userinput>
+can only be applied to a set expression with type <link linkend="r-type-class">class</link>, and the resulting expression
+has type <link linkend="r-type-method">method</link>.
+The reference page for each transform lists the types to which the transform
+may be applied, as well as the type that will result from applying
+the transform.
+</para>
+<para>
+Similarly, most filters may only be applied to certain types,
+which are listed on the reference page for the filter.
+From the definition of filters you can see
+that the output type of a filter is always identical
+to its input type.
+</para>
+<para>
+When you combine two set expressions with an operator,
+the resulting expression is assigned the most specific type
+that is a base type of both the constituent expressions.
+Similarly, &p-bbq; has rules for determining the applicable
+and result types of
+complex transforms and filters.
+You probably don't need to know the details of the rules, but
+&p-bbq; uses them to determine if the expressions you
+write make sense.
+For example, the transform
+<userinput>calls to intersection fields in</userinput>
+can't work
+because it
+is combining the two transforms
+<userinput>calls to</userinput>
+and <userinput>fields in</userinput>;the <userinput>calls to</userinput>
+transform applies to methods
+while the <userinput>fields in</userinput>
+transform applies only to classes.
+There is no set expression type
+to which both transforms could sensible be applied.
+If you are using &p-bbq; and receive an error message
+about <errorname>Incompatible types</errorname>,
+you've probably made this type of mistake in
+writing your set expression.
+The complete type resolution rules are listed in the
+<link linkend="r-types">reference</link>.
+</para>
+    </sect1>
+    </chapter>
+  <chapter>
+    <title>Language Reference</title>
+    <para>
+The interpreter accepts requests and returns sets of objects.
+A request contains one or more set expressions; if a request
+contains multiple set expressions they are separated by
+semi-colons [<userinput>;</userinput>].
+The details of how the objects are returned
+for each set expression depend on
+the environment.
+    </para>
+    <sect1>
+      <title>Language Elements</title>
+<para>A set expression consists of a sequence of tokens
+separated by white space.
+A token may be punctuation, a constant, a name, or a reserved
+word.
+Names and reserved words consist of a string of alphanumeric
+characters or underscores starting with a letter or underscore.
+The only permissable punctuation within a set expression
+are parentheses, which are used for grouping in set expressions,
+filters or transforms.</para>
+<para>
+A sequence of one or more reserved words represents a
+set operator, a logical operator,
+a simple set expression,
+a filter or a transform.
+</para>
+<para>
+Constants are strings enclosed in double quotation marks;
+double quotation marks or backslashes within a string
+must be escaped by a backslash.
+</para>
+<para>
+Names are words that must not conflict
+with any of the reserved words, and must reference
+an expression previously defined with the <link linkend="r-setcommand">set command</link>.</para>
+<para>
+A valid set expression consists of one of the set expressions defined
+in the language,
+a name,
+a set expression with a transform prepended,
+ two set expressions joined by one of the set operators,
+or a set expression enclosed within parentheses.
+</para>
+<para>
+A transform is one of the transforms defined by the language,
+a transform with another transform appended,
+two transforms joined by one of the set operators,
+a filter,
+or a transform enclosed within parentheses.
+</para>
+<para>
+A filter is one of the filters defined in the language,
+a filter with the reserved word <userinput>not</userinput> prepended,
+two filters joined by the logical operators <userinput>and</userinput> or
+ <userinput>or</userinput>,
+or a filter enclosed within parentheses.
+</para>
+<simpara>Reserved Words:</simpara>
+      <simplelist>
+	<member>abstract</member>
+	<member>all</member>
+	<member>and</member>
+	<member>are</member>
+	<member>base</member>
+	<member>by</member>
+	<member>called</member>
+	<member>calls</member>
+	<member>class</member>
+	<member>classes</member>
+	<member>containing</member>
+	<member>count</member>
+	<member>deintersection</member>
+<member>derived</member>
+<member>execute</member>
+<member>exists</member>
+<member>fields</member>
+<member>finalToken</member>
+<member>from</member>
+<member>import</member>
+<member>in</member>
+<member>is</member>
+<member>intersection</member>
+<member>interface</member>
+<member>matching</member>
+<member>methodcast</member>
+<member>methods</member>
+<member>not</member>
+<member>or</member>
+<member>of</member>
+<member>package</member>
+<member>polymorphic</member>
+<member>previous</member>
+<member>protected</member>
+<member>private</member>
+<member>public</member>
+<member>recursive</member>
+<member>references</member>
+<member>reference</member>
+<member>referenced</member>
+<member>same</member>
+<member>set</member>
+<member>string</member>
+<member>strings</member>
+<member>that</member>
+<member>to</member>
+<member>uncalled</member>
+<member>uncorrelated</member>
+<member>union</member>
+<member>without</member>
+<member>write</member>
+      </simplelist>
+    </sect1>
+    <sect1 id="r-types">
+      <title>Types</title>
+      <para>&p-bbq; supports several data types, which are arranged
+in a derivation hierarchy.
+All types are derived, directly or indirectly,
+from the base type <link linkend="r-type-object">object</link>.</para>
+<mediaobject>
+<imageobject>
+<imagedata fileref="../image/bbq/TypeHierarchy.png"/>
+</imageobject>
+<textobject><phrase>(Diagram illustrating type hierarchy)</phrase></textobject>
+</mediaobject>
+<para>
+Set expressions have a type, which is the most-derived common type
+of all the objects in the resulting set.  Filters
+and transforms may be applicable to only some types;
+&p-bbq; determines the type of the expression
+at every point of transform using these rules:
+</para>
+<para>
+Combining expressions with set operators produces a compound expression;
+if the two set expressions have different types than the type
+of the compound expression is the most-derived type that is the
+ancestor of both constituent types in the set expression.
+</para>
+<para>
+Similarly, combining filters with a logical expression produces a compound
+filter.
+If the two filters are applicable to different types, the applicable
+type for one of the filters must be derived from the applicable
+type of the other filter,
+and the applicable type of the compound filter is the most-derived
+type.
+</para>
+<para>
+When you combine two transforms with a logical operator,
+both kinds of type resolution may happen.
+If the transforms have different applicable types,
+one must derive from the other and the applicable type
+of the compound transform is the most derived type.
+If the transforms have different result types,
+the result type of the compound transform is the most-derived
+type that is an ancestor of each of the constituent result types.
+</para>
+      <refentry id="r-type-call">
+	<refnamediv>
+	  <refname>call</refname>
+	  <refpurpose>Represents a method call</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-reference">reference</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-class">
+	<refnamediv>
+	  <refname>class</refname>
+	  <refpurpose>Represents a Java class in the database</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Description</title>
+	  <para>In &p-bbq; both Java classes and interfaces
+	  are represented by this type.
+	  </para>
+	</refsect1>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-field">
+	<refnamediv>
+	  <refname>field</refname>
+	  <refpurpose>Represents a field in a Java class in the database</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-field-reference">
+	<refnamediv>
+	  <refname>field reference</refname>
+	  <refpurpose>Represents a reference within a method to a field</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-reference">reference</link></para>
+	</refsect1>
+      </refentry>
+      <refentry>
+	<refnamediv id="r-type-integer">
+	  <refname>integer</refname>
+	  <refpurpose>An integer numeric value</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-method">
+	<refnamediv>
+	  <refname>method</refname>
+	  <refpurpose>Represents a method in a Java class in the database</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Description</title>
+	  <para>Note that all executable entities in classes in the analyzed system are considered
+	  methods, including constructors and static initializers.
+	  </para>
+	</refsect1>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-object">
+	<refnamediv>
+	  <refname>object</refname>
+	  <refpurpose>The root of the type tree</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Description</title>
+	  <para>All other types are direct or indirect descendents of
+this type.</para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-reference">
+	<refnamediv>
+	  <refname>reference</refname>
+	  <refpurpose>Represents a reference to a program construct from within a Java class in the database</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-string">
+	<refnamediv>
+	  <refname>string</refname>
+	  <refpurpose>A string value</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Description</title>
+	  <para>Note that this represents the type of a string
+	  within &p-bbq;, rather than a string that appears
+	  within the analyzed system,
+	  which is an instance of the <link linkend="r-type-string-constant">
+	  string constant</link> type.
+	  </para>
+	</refsect1>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-string-constant">
+	<refnamediv>
+	  <refname>string constant</refname>
+	  <refpurpose>Represents a string constant that appears in one or more classes in the database</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Description</title>
+	  <para>
+	  A string constant represents the string itself, rather than
+	  any particular use of the string anywhere in the system
+	  you are examining.  Use the
+	  <userinput><link linkend="r-references-to">references to</link></userinput>
+	  transform to get the actual references to the strings
+	  returned by an expression of this type.
+	  </para>
+	</refsect1>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-string-constant-reference">
+	<refnamediv>
+	  <refname>string constant reference</refname>
+	  <refpurpose>Represents a reference within a method to a string constant</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-reference">reference</link></para>
+	</refsect1>
+      </refentry>
+    </sect1>
+    <sect1 id="r-setexpressions">
+      <title>Set Expressions</title>
+      <para>&p-bbq; supplies simple set expressions that provide
+the starting point for your queries, as well as some
+<firstterm>commands</firstterm>
+which are set expressions that let you access
+the interpreter's state..</para>
+    <sect2 id="r-simplesetexpressions">
+      <title>Simple Set Expressions</title>
+      <refentry>
+	<refnamediv>
+	  <refname>all classes</refname>
+	  <refpurpose>Returns all classes in the database</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+	  <synopsis><userinput>all classes</userinput></synopsis>
+	</refsynopsisdiv>
+	<refsect1>
+	  <title>Description</title>
+<para>
+Returns the complete set of all classes in the database; use this
+expression as a starting point when you are doing a global search
+of your system.
+</para>
+	</refsect1>
+	<refsect1>
+	  <title>Type</title>
+<para>
+<link linkend="r-type-class">class</link>
+</para>
+	</refsect1>
+      </refentry>
+	<refentry>
+	  <refnamediv>
+	    <refname>all strings</refname>
+	    <refpurpose>Return all the string constants defined in the database</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>all strings</synopsis>
+	    <synopsis>all string</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>Returns all the string constants in the database.
+You can use this as a starting point when you are doing a global
+search through the string constants.</para>
+	  </refsect1>
+	  <refsect1>
+	    <title>Type</title>
+	    <para><link linkend="r-type-string-constant">string constant</link></para>
+	  </refsect1>
+	</refentry>
+	<refentry id="r-class">
+	  <refnamediv>
+	    <refname>class "name"</refname>
+	    <refpurpose>Select a single class by name</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>class &lt;name&gt;</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>Use this expression to get a single class; useful
+when you are searching within one class.
+name is a quoted string with the name of the class
+as you would type it in a Java program; if you've use the import
+command to set import paths, they will be prepended to the
+name until a valid class is found.</para>
+	  </refsect1>
+	  <refsect1>
+	    <title>Type</title>
+	    <para><link linkend="r-type-class">Class</link></para>
+	  </refsect1>
+	</refentry>
+	<refentry>
+	  <refnamediv>
+	    <refname>strings "string"</refname>
+	    <refpurpose>Return a specific string constant</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>string &lt;string&gt;</synopsis>
+	    <synopsis>strings &lt;string&gt;</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>Returns the specific string constant
+with the value &lt;string&gt;.  Use this
+when you are looking for information about a specific
+string constant.</para>
+	  </refsect1>
+	  <refsect1>
+	    <title>Type</title>
+	    <para><link linkend="r-type-string-constant">string constant</link></para>
+	  </refsect1>
+	</refentry>
+    </sect2>
+      <sect2 id="r-commands">
+	<title>Commands and Miscellaneous Set Expressions</title>
+	<para>The interpreter can remember set expressions you've run,
+or the results of the set expressions, for you to use later
+for your convenience or for faster querying.  These
+special set expression commands let you work with the
+interpreter's state.
+</para>
+	<refentry>
+	  <refnamediv>
+	    <refname>execute</refname>
+	    <refpurpose>Convert a set expression to a set of objects</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>execute &lt;set expression&gt;</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>Sometimes you will end up needing the result of
+a set expression multiple times.
+If executing the set expression is resource intensive,
+you might want to avoid evaluating it multiple times.
+This operator executes a set expression once,
+and stores the resulting set of objects; the resulting
+set expression returns this set of objects.</para>
+	    <para>This operator will commonly be used in conjunction with
+the <link linkend="r-setcommand">set command</link>
+to save the result of a time-consuming query for use in
+later expressions.</para>
+	  </refsect1>
+	</refentry>
+	<refentry>
+	  <refnamediv>
+	    <refname>import</refname>
+	    <refpurpose>Set a list of packages to search for classes</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>import [set] [&lt;string 1&gt; &lt;string 2&gt;...&lt;string n&gt;</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>You will commonly use the <link linkend="r-class"><userinput>class</userinput></link>
+simple set expression as the foundation of your queries,
+and it can become tiresome to type the complete class name each time.
+You can use this command to specify a list of packages
+to search for a named class.  Each supplied &lt;string&gt; is
+a package name.  You can use the import command as many
+times as you want to add additional packages to the list;
+if you use the set keyword with the import command the
+list is cleared before packages are added.</para>
+<para>
+The result of the command is the set of strings (packages) that are in the list.
+</para>
+<para>
+Note that this command approximates a Java import statement only very roughly;
+it does not actually interpret the strings you supply as package names;
+it only preprends each in turn with a "." to the string you supply
+when looking for a class object with the class set expression.
+</para>
+	  </refsect1>
+	  <refsect1>
+	    <title>Type</title>
+	    <para><link linkend="r-type-string">string</link></para>
+	  </refsect1>
+	</refentry>
+	<refentry>
+	  <refnamediv>
+	    <refname>previous</refname>
+	    <refpurpose>Access the last set expression evaluated by
+the interpreter</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>previous</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>
+Use this reserved word anywhere a set expression is permitted, to
+reference the last set expression evaluated by the interpreter. If there has been
+no previous expression evaluated, a set expression representing the empty set
+is substituted.
+            </para>
+	  </refsect1>
+	</refentry>
+	<refentry id="r-setcommand">
+	  <refnamediv>
+	    <refname>set</refname>
+	    <refpurpose>Assign a name to a set expression</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>set &lt;name&gt; to &lt;set expression&gt;</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>The set expression is assigned to the name.
+The complete set expression can be referenced by using the name
+anywhere a set expression is permitted.
+The result of the operator is the assigned set expression,
+unchanged.</para>
+	  </refsect1>
+	</refentry>
+      </sect2>
+    </sect1>
+    <sect1 id="r-transforms">
+    	<title>Transforms</title>
+  		<para>Many transforms represent the relationships between
+objects in the &p-bbq; database;
+use these transforms to traverse the relationships
+to get to your desired object type.</para>
+<mediaobject>
+<imageobject>
+<imagedata fileref="../image/bbq/TransformRelationships.png"/>
+</imageobject>
+<textobject><phrase>(Diagram illustrating object relationships and transforms)</phrase></textobject>
+</mediaobject>
+		<refentry id="r-base-classes">
+		  <refnamediv>
+			<refname>base classes of</refname>
+			<refpurpose>Returns the base classes of the classes in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>base classes of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns the set of the immediate base
+			classes and implemented interfaces for the classes in the set.
+			It only looks back one level in the inheritance
+			hierarchy.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-calls-from">
+		  <refnamediv>
+			<refname>calls from</refname>
+			<refpurpose>Returns the set of all method calls found in a set of methods</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>calls from</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns all the method calls found
+in the methods
+in the set.
+If you have two sets of methods, <userinput>foo</userinput> and <userinput>bar</userinput>,
+and you want to identify all the places in foo
+where bar is called, you might use:
+<userinput>( calls from foo ) intersection ( calls to bar )</userinput>.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-call">call</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-calls-to">
+		  <refnamediv>
+			<refname>calls to</refname>
+			<refpurpose>Returns the set of all calls to methods in a set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>calls to</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns all the calls to methods
+in the set.
+If you have two sets of methods, <userinput>foo</userinput> and <userinput>bar</userinput>,
+and you want to identify all the places in foo
+where bar is called, you might use:
+<userinput>( calls from foo ) intersection ( calls to bar )</userinput>.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-call">call</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-classes-containing">
+		  <refnamediv>
+			<refname>classes containing</refname>
+			<refpurpose>Returns the classes that contain the class members in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>methods in</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to a set of methods, or a set of fields, this transform returns
+			the set of classes in which those methods or fields are defined.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-count">
+		  <refnamediv>
+			<refname>count</refname>
+			<refpurpose>return the number of items in the transformed set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>count</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This transform changes any set to a count of the number
+			of items in the set.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-integer">integer</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-derived-classes">
+		  <refnamediv>
+			<refname>derived classes of</refname>
+			<refpurpose>Returns the classes which are immediately
+			derived from the classes in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>derived classes of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns the set of classes or interfaces
+			that derive from, extend or implement
+			the classes and interfaces in the set.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-fields-in">
+		  <refnamediv>
+			<refname>fields in</refname>
+			<refpurpose>Returns the fields in the classes
+			in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>fields in</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to a set of classes, this transform returns
+			the set of fields defined in those classes.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-fields-referenced-by">
+		  <refnamediv>
+			<refname>fields referenced by</refname>
+			<refpurpose>Returns the fields referenced by a
+set of field references</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>fields referenced by</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a set of field reference objects, this transform returns the set of
+fields referenced.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-methods-called-by">
+		  <refnamediv>
+			<refname>methods called by</refname>
+			<refpurpose>Returns the methods called be a set of calls</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>methods called by</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a set of call objects, this transform returns the set of methods
+that are called.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-call">call</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-methods-containing">
+		  <refnamediv>
+			<refname>methods containing</refname>
+			<refpurpose>Returns the methods containing
+			a set of references</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>methods containing</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a set of reference objects, returns the set of methods
+where those references were found.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-reference">reference</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-methods-in">
+		  <refnamediv>
+			<refname>methods in</refname>
+			<refpurpose>Returns the methods in the classes
+			in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>methods in</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to a set of classes, this transform returns
+			the set of methods that those classes contain.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-polymorphic">
+		  <refnamediv>
+			<refname>polymorphic</refname>
+			<refpurpose>Returns the set of methods that map polymorphically
+to the input set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>polymorphic</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to a set of methods, this transform returns those
+methods in addition to methods with the same signature in base
+or derived classes, that may be called polymorphically with the
+input methods.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-recursive-base-classes">
+		  <refnamediv>
+			<refname>recursive base classes of</refname>
+			<refpurpose>Returns the base classes of the classes in the set,
+			and the base classes of those classes,
+			to the root of the inheritance hierarchy</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>recursive base classes of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns the set of the base
+			classes and implemented interfaces for the classes in the set,
+			as well as the base classes of those classes
+			and the interfaces extended by those interfaces,
+			recursively.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-recursive-derived-classes">
+		  <refnamediv>
+			<refname>recursive derived classes of</refname>
+			<refpurpose>Returns the derived classes of the classes in the set,
+			and the derived classes of those classes,
+			recursively</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>recursive derived classes of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This transform results in all the classes
+			that extend or implement classes or interfaces in the original
+			set, or in the derived classes.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-references-from">
+		  <refnamediv>
+			<refname>references from</refname>
+			<refpurpose>Returns the set of all field references found in a set of methods</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>references from</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns all the field references found
+in the methods
+in the set.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-references-to">
+		  <refnamediv>
+			<refname>references to</refname>
+			<refpurpose>Return references to a string constant or a field</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>references to</synopsis>
+			<synopsis>reference to</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This transform can be used on <link linkend="r-type-field">fields</link> to return references to those fields;
+			alternatively, it can be used on <link linkend="r-type-string-constant">string constants</link> to return references to those constants.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-string-constant">string constant</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-same">
+		  <refnamediv>
+			<refname>same</refname>
+			<refpurpose>A transform that leaves the set unchanged</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>same</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+		  	<para>This transform is typically used
+		  	with the set operators to obtain compound transforms
+		  	that reference the original set.
+		  	For example, the <userinput>recursive base classes of</userinput>
+		  	transform does not include the original set in the output;
+		  	you can include the original set in the output with
+		  	this transform: <userinput>recursive base classes of union same</userinput>.
+		  	</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para>Any</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para>The result type is the type of the set expression
+		  	applied.
+		  	</para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-strings-referenced-by">
+		  <refnamediv>
+			<refname>strings referenced by</refname>
+			<refpurpose>Returns the strings referenced by a
+set of string references</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>strings referenced by</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a set of string constant reference objects, this transform returns the set of
+string constants referenced.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string-constant">string constant</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-string-constant-references-from">
+		  <refnamediv>
+			<refname>string references from</refname>
+			<refpurpose>Returns the set of all string constant references found in a set of methods</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>string references from</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns all the string constant references found
+in the methods
+in the set.
+If you have a set of methods foo, and a string constant "bar",
+you can find all the references to "bar" from the methods in foo
+with <userinput>( string references from foo ) intersection ( references to string "bar" )</userinput>.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-uncorrelated">
+		  <refnamediv>
+			<refname>uncorrelated</refname>
+			<refpurpose>Change a set to another, specified set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>uncorrelated ( &lt;set expression&gt; )</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+		  	<para>
+In special circumstances, you might wish to use a set expression
+where the language normally calls for a transform.
+This transform replaces any set with the result
+of the &lt;set expression&gt; argument provided.
+		  	</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para>Any</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para>The result type is the type of the supplied
+&lt;set expression&gt; argument.
+		  	</para>
+		  </refsect1>
+		</refentry>
+  	</sect1>
+    <sect1 id="r-filters">
+    	<title>Filters</title>
+  		<para>A filter transforms a set by applying a boolean check
+to each member of the set individually;
+if the check succeeds, the member is included in the
+result set.</para>
+		<refentry id="r-abstract">
+		  <refnamediv>
+			<refname>abstract</refname>
+			<refpurpose>Checks whether a class or method was declared
+abstract</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>abstract</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>These filters apply to class or method
+set expressions
+and let you test whether the set member was declared abstract.
+Note that all interfaces are implicitly abstract,
+so if you are really interested only in classes you have
+to explicitly exclude interfaces, as with
+the compound filter <userinput>not interface abstract</userinput>.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+        </refentry>
+		<refentry id="r-exists">
+		  <refnamediv>
+			<refname>exists</refname>
+			<refpurpose>Checks if a transform applied to each member of a set returns an empty set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>exists ( ^lt;transform&gt; )</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>To determine if an object
+passes the test it is first
+converted to a set
+containing only that object;
+the &lt;transform&gt; is applied to that set;
+the filter passes if the result of the transform has at least one member.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para>Any</para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-interface">
+		  <refnamediv>
+			<refname>interface</refname>
+			<refpurpose>Checks whether a class object is an interface</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>interface</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This filter tests whether a member of the set
+of <link linkend="r-type-class">class</link> objects is in fact
+an interface.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+        </refentry>
+		<refentry id="r-matching">
+		  <refnamediv>
+			<refname>matching</refname>
+			<refpurpose>Checks if a string matches the name of the object</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>matching &lt;string&gt;</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The test passes if &lt;string&gt; matches some part of the
+object's name.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  	<para><link linkend="r-type-string-constant">string constant</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-package-etc">
+		  <refnamediv>
+			<refname>package, private, protected, public</refname>
+			<refpurpose>Checks the visibility of a class/method/field</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>package</synopsis>
+			<synopsis>private</synopsis>
+			<synopsis>protected</synopsis>
+			<synopsis>public</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>These filters apply to class, method, or field types,
+and let you test the visibility with which the object was declared.
+Use <userinput>private</userinput>, <userinput>public</userinput>,
+or <userinput>protected</userinput> to test if the program
+object was declared with that visibility modifier,
+or use <userinput>package</userinput>
+to test if it was declared with the default visibility.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-uncalled">
+		  <refnamediv>
+			<refname>uncalled</refname>
+			<refpurpose>Checks if there is any call to the method</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>uncalled</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>A method passes this filter if there is no call to it in
+the analyzed system.  Equivalent to the filter <userinput>not exists ( calls to )</userinput>.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-uncalled-polymorphic">
+		  <refnamediv>
+			<refname>uncalled polymorphic</refname>
+			<refpurpose>Checks if there is any polymorphic call to the method</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>uncalled</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>A method passes this filter if there is no call to it,
+or any polymorphic method that might resolve to it, in
+the analyzed system.  Equivalent to the filter <userinput>not exists ( calls to polymorphic )</userinput>.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-write">
+		  <refnamediv>
+			<refname>matching</refname>
+			<refpurpose>Checks if a field reference is read or write</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>write</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The test passes if the field reference is a write reference:
+if it updates the value of the field.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  </refsect1>
+		</refentry>
+  	</sect1>
+  </chapter>
+</book>
