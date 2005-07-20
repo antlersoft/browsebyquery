@@ -130,4 +130,17 @@ System.out.println( "initOpenTool");
                 analyzer.setAnalyzerPath( node, newPath);
         }
     }
+
+    void clearDB( BBQNode node, String newPath)
+    throws Exception
+    {
+        synchronized ( projectToAnalyzer)
+        {
+            JBProject project=(JBProject)node.getProject();
+            ProjectAnalyzer analyzer=(ProjectAnalyzer)projectToAnalyzer
+                .get( project);
+            if ( analyzer!=null)
+                analyzer.clearDB( node, newPath);
+        }
+    }
 }

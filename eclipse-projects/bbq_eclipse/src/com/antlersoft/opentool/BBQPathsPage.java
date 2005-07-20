@@ -25,16 +25,20 @@
  */
 package com.antlersoft.opentool;
 
-import java.io.File;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 import com.borland.primetime.ide.Browser;
 import com.borland.primetime.properties.*;
@@ -69,6 +73,8 @@ class BBQPathsPage extends PropertyPage
         box.add( new JLabel( "Non-default class path:"));
         classEntry=new JTextField( 60);
         box.add( classEntry);
+        box.add( Box.createVerticalStrut(20));
+        box.add( new JButton( new ClearAction()));
         add( box);
     }
 
@@ -122,4 +128,29 @@ class BBQPathsPage extends PropertyPage
             }
         }
     }
+    class ClearAction extends AbstractAction
+    {
+        ClearAction() { super( "Clear Database"); }
+        public void actionPerformed( ActionEvent event)
+        {
+            try
+            {
+                if ( JOptionPane.showConfirmDialog( BBQPathsPage.this,
+                    "Are you sure you want to clear all the program data from the database?",
+                    "Confirm Clear Database", JOptionPane.YES_NO_OPTION)==
+                     JOptionPane.YES_OPTION)
+                    node.getTool().clearDB( node, pathDisplay.getText());
+            }
+            catch ( Exception e)
+            {
+                StringWriter sw=new StringWriter( 1000);
+                PrintWriter pw=new PrintWriter( sw);
+                e.printStackTrace( pw);
+                pw.close();
+                JOptionPane.showMessageDialog( BBQPathsPage.this, e.getMessage()+" \n"+sw.toString(),
+                    "Error clearing DB", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
 }

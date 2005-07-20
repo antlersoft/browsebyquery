@@ -46,6 +46,8 @@ import com.antlersoft.analyzer.query.QueryParser;
 
 import com.antlersoft.classwriter.ClassWriter;
 
+import com.antlersoft.odb.ObjectDBException;
+
 class ProjectAnalyzer
 {
     JBProject project;
@@ -70,9 +72,27 @@ class ProjectAnalyzer
         {
             analyzerFile=new File( dbPath);
         }
-        db.openDB( analyzerFile.getCanonicalPath());
+        String canonicalPath=analyzerFile.getCanonicalPath();
+        try
+        {
+            db.openDB( canonicalPath);
+        }
+        catch ( ObjectDBException odb)
+        {
+            if ( odb.getUnderlying() instanceof java.io.InvalidClassException)
+                clearDB( node, canonicalPath);
+            else
+                throw odb;
+        }
         qp=new QueryParser();
-        goodPath=analyzerFile.getCanonicalPath();
+        goodPath=canonicalPath;
+    }
+
+    void clearDB( BBQNode node, String canonicalPath)
+    throws Exception
+    {
+        db.clearDB( canonicalPath);
+        BBQPathsGroup.updateTimeProperty.setValue( node, "0");
     }
 
     void updateDB( final BBQNode node, final JButton button)
@@ -101,11 +121,14 @@ class ProjectAnalyzer
         {
             testPath=new File( newPath).getCanonicalPath();
             db.openDB( testPath);
+            BBQPathsGroup.updateTimeProperty.setValue( node, "0");
         }
         catch ( Exception e)
         {
             try
             {
+                testPath=goodPath;
+                newPath=BBQPathsGroup.pathsProperty.getValue( node);
                 db.openDB( goodPath);
             }
             catch ( Exception e2)

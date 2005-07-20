@@ -108,7 +108,7 @@ public class ProjectBBQ implements NodeViewer
 
         // Initialize the history list with the recent queries
         String[] recent_queries=BBQPathsGroup.recentQueriesProperty.getValues( n);
-        for ( int i=0; i<recent_queries.length; ++i)
+        for ( int i=recent_queries.length-1; i>=0; --i)
             historyList.addQuery( recent_queries[i]);
     }
 
