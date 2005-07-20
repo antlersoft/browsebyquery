@@ -33,4 +33,6 @@ public interface AnalyzerDB
 	throws Exception;
     public abstract Enumeration getAll( String type)
 	throws Exception;
+    public abstract void clearDB( String dbName)
+    throws Exception;
 }

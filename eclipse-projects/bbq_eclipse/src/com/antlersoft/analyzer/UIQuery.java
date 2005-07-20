@@ -30,7 +30,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
 import javax.swing.*;
-//import javax.swing.filechooser.ExtensionFileFilter;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -40,6 +39,10 @@ import com.antlersoft.analyzer.query.SetExpression;
 
 import com.antlersoft.analyzer.ui.HistoryList;
 import com.antlersoft.analyzer.ui.StoredValuesList;
+
+import com.antlersoft.odb.ObjectDBException;
+
+import com.antlersoft.util.ExtensionFileFilter;
 
 public class UIQuery
 {
@@ -58,12 +61,12 @@ public class UIQuery
         qp=new QueryParser();
         chooser=new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES);
-        //chooser.setMultiSelectionEnabled( true); // Doesn't work yet
-        //ExtensionFileFilter filter=new ExtensionFileFilter();
-        //filter.addExtension( "class");
-        //filter.addExtension( "zip");
-        //filter.addExtension( "jar");
-        //chooser.setFileFilter( filter);
+        chooser.setMultiSelectionEnabled( true);
+        ExtensionFileFilter filter=new ExtensionFileFilter( ".class files and jars");
+        filter.addExtension( "class");
+        filter.addExtension( "zip");
+        filter.addExtension( "jar");
+        chooser.setFileFilter( filter);
     }
 
     Component createComponents()
@@ -145,6 +148,10 @@ public class UIQuery
         // Create save action
         fileMenu.add( new SaveAction());
 
+        // Create clear action
+        fileMenu.addSeparator();
+        fileMenu.add( new ClearAction());
+
         // Create Exit action
         fileMenu.addSeparator();
         fileMenu.add( new ExitAction());
@@ -171,7 +178,17 @@ t.printStackTrace();
     {
         final UIQuery app = new UIQuery();
         app.analyzerDBOpenString=argv[0];
-        app.analyzerDB.openDB( app.analyzerDBOpenString);
+        try
+        {
+            app.analyzerDB.openDB(app.analyzerDBOpenString);
+        }
+        catch ( ObjectDBException odb)
+        {
+            if ( odb.getUnderlying() instanceof java.io.InvalidClassException)
+                app.analyzerDB.clearDB( app.analyzerDBOpenString);
+            else
+                throw odb;
+        }
 
         JFrame appFrame=new JFrame( "Querying "+argv[0]);
         app.frameWindow=appFrame;
@@ -225,6 +242,33 @@ t.printStackTrace();
                 catch ( Exception e)
                 {
                     displayException( "Save Error", e);
+                }
+            }
+        }
+    }
+
+    class ClearAction extends AbstractAction
+    {
+        ClearAction()
+        {
+            super( "Clear");
+        }
+
+        public void actionPerformed( ActionEvent event)
+        {
+            if ( analyzerDB!=null)
+            {
+                try
+                {
+                    if ( JOptionPane.showConfirmDialog( frameWindow,
+                        "Are you sure you want to clear all the program data from the database?",
+                        "Confirm Clear Database", JOptionPane.YES_NO_OPTION)==
+                         JOptionPane.YES_OPTION)
+                        analyzerDB.clearDB( analyzerDBOpenString);
+                }
+                catch ( Exception e)
+                {
+                    displayException( "Clear Error", e);
                 }
             }
         }

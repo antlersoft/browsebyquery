@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 
 public class EmptyEnumeration implements Enumeration
 {
-	static EmptyEnumeration emptyEnumeration=new EmptyEnumeration();
+	public static EmptyEnumeration emptyEnumeration=new EmptyEnumeration();
 
 	public boolean hasMoreElements()
 	{

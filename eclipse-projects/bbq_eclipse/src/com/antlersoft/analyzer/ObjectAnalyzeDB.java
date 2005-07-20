@@ -80,6 +80,24 @@ public class ObjectAnalyzeDB implements AnalyzerDB
 		_classHash=null;
     }
 
+    public synchronized void clearDB( String dbName)
+        throws Exception
+    {
+        // Ignore exceptions closing the database
+        try
+        {
+            if (_session != null)
+                closeDB();
+        }
+        catch ( Exception e)
+        {
+
+        }
+        File f=new File( dbName);
+        f.delete();
+        openDB( dbName);
+    }
+
     public synchronized Object getWithKey( String type, String key)
 	throws Exception
     {

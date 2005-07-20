@@ -42,8 +42,11 @@ import com.antlersoft.odb.PersistentImpl;
 
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
 import com.antlersoft.odb.diralloc.CustomizerFactory;
+import com.antlersoft.odb.diralloc.NoSuchClassException;
 
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
+
+import com.antlersoft.analyzer.query.EmptyEnumeration;
 
 import com.antlersoft.util.IteratorEnumeration;
 
@@ -75,6 +78,30 @@ public class IndexAnalyzeDB implements AnalyzerDB
     {
         _session.close();
         _session=null;
+    }
+
+    public synchronized void clearDB( String dbName)
+        throws Exception
+    {
+        // Ignore exceptions closing the database
+        try
+        {
+            if (_session != null)
+                closeDB();
+        }
+        catch ( Exception e)
+        {
+
+        }
+        File f=new File( dbName);
+        if ( f.exists())
+        {
+            File[] children=f.listFiles();
+            for ( int i=0; i<children.length; ++i)
+                children[i].delete();
+            f.delete();
+        }
+        openDB( dbName);
     }
 
     public Object getWithKey(String type, String key) throws Exception
@@ -114,7 +141,16 @@ ite.getTargetException().printStackTrace();
 
     public Enumeration getAll(String type) throws Exception
     {
-        return new IteratorEnumeration( _session.getAll( Class.forName( type)));
+        Enumeration result;
+        try
+        {
+            result = new IteratorEnumeration(_session.getAll(Class.forName(type)));
+        }
+        catch ( NoSuchClassException nsce)
+        {
+            result = com.antlersoft.analyzer.query.EmptyEnumeration.emptyEnumeration;
+        }
+        return result;
     }
 
     public synchronized void makeCurrent()
