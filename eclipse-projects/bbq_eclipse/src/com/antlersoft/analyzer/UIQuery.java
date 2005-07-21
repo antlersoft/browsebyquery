@@ -254,7 +254,7 @@ t.printStackTrace();
     {
         ClearAction()
         {
-            super( "Clear the Databas");
+            super( "Clear the Database");
         }
 
         public void actionPerformed( ActionEvent event)
