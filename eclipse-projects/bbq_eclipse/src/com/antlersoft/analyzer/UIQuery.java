@@ -177,7 +177,10 @@ t.printStackTrace();
         throws Exception
     {
         final UIQuery app = new UIQuery();
-        app.analyzerDBOpenString=argv[0];
+        if ( argv.length<=0)
+        	app.analyzerDBOpenString="test.bbq";
+		else
+			app.analyzerDBOpenString=argv[0];
         try
         {
             app.analyzerDB.openDB(app.analyzerDBOpenString);
@@ -190,7 +193,7 @@ t.printStackTrace();
                 throw odb;
         }
 
-        JFrame appFrame=new JFrame( "Querying "+argv[0]);
+        JFrame appFrame=new JFrame( (argv.length>0 ? "Querying " : "Querying default DB ")+app.analyzerDBOpenString );
         app.frameWindow=appFrame;
         Component contents = app.createComponents();
         appFrame.getContentPane().add(contents, BorderLayout.CENTER);
@@ -227,7 +230,7 @@ t.printStackTrace();
     {
         SaveAction()
         {
-            super( "Save");
+            super( "Save the Database");
         }
 
         public void actionPerformed( ActionEvent event)
@@ -251,7 +254,7 @@ t.printStackTrace();
     {
         ClearAction()
         {
-            super( "Clear");
+            super( "Clear the Databas");
         }
 
         public void actionPerformed( ActionEvent event)
@@ -278,7 +281,7 @@ t.printStackTrace();
     {
         AnalyzeAction()
         {
-            super( "Analyze");
+            super( "Analyze jar / directory / class files");
         }
 
         public void actionPerformed( ActionEvent event)
