@@ -62,7 +62,7 @@ public class UIQuery
         chooser=new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled( true);
-        ExtensionFileFilter filter=new ExtensionFileFilter( ".class files and jars");
+        ExtensionFileFilter filter=new ExtensionFileFilter( ".class files, dirs and jars");
         filter.addExtension( "class");
         filter.addExtension( "zip");
         filter.addExtension( "jar");
