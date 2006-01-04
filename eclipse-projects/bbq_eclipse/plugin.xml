@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+   <extension
+         id="com.antlersoft.bbqBuilder"
+         name="Browse-By-Query Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="com.antlersoft.bbq_eclipse.builder.BBQBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="com.antlersoft.bbqNature"
+         name="Browse-By-Query Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="com.antlersoft.bbq_eclipse.builder.BBQNature">
+         </run>
+      </runtime>
+      <builder
+            id="bbq_eclipse.com.antlersoft.bbqBuilder">
+      </builder>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            nameFilter="*"
+            id="bbq_eclipse.contribution1">
+         <action
+               label="Add/Remove Sample Nature"
+               class="com.antlersoft.bbq_eclipse.builder.ToggleNatureAction"
+               menubarPath="additions"
+               enablesFor="+"
+               id="bbq_eclipse.addRemoveNatureAction">
+         </action>
+      </objectContribution>
+   </extension>
+   <extension
+         id="xmlProblem"
+         name="XML Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+
+</plugin>
