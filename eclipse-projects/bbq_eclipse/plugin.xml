@@ -53,5 +53,42 @@
             value="true">
       </persistent>
    </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension targetID="org.eclipse.ui.resourcePerspective">
+         <view
+               id="com.antlersoft.bbq_eclipse.views.QueryView"
+               ratio="0.5"
+               relationship="right"
+               relative="org.eclipse.ui.views.TaskList"/>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="bbq_eclipse"
+            name="BBQ Category"/>
+      <view
+            allowMultiple="false"
+            category="bbq_eclipse"
+            class="com.antlersoft.bbq_eclipse.views.QueryView"
+            icon="icons/sample.gif"
+            id="com.antlersoft.bbq_eclipse.views.QueryView"
+            name="Browse-By-Query View"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.antlersoft.bbq_eclipse.preferences.PreferencePage"
+            id="com.antlersoft.bbq_eclipse.preferences.PreferencePage"
+            name="Browse-By-Query Preferences"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="com.antlersoft.bbq_eclipse.preferences.PreferenceInitializer"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.filebuffers.annotationModelCreation">
+   </extension>
 
 </plugin>
