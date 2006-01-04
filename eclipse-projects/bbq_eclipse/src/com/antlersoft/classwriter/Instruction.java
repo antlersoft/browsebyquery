@@ -135,6 +135,8 @@ public class Instruction
         throws CodeCheckException
     {
         int oldDestination=getOffsetDestination();
+        if ( instructionStart>=newPostEnd)
+        	oldDestination+=oldPostEnd-newPostEnd;
         if ( oldDestination>start && oldDestination<oldPostEnd)
         {
             throw new CodeCheckException(
@@ -148,6 +150,14 @@ public class Instruction
                 NetByte.intToQuad( newDestination, operands, 0);
             else
                 NetByte.intToPair( newDestination, operands, 0);
+        }
+        else if ( instructionStart>=newPostEnd)
+        {
+            int newDestination=oldDestination-instructionStart;
+	        if ( operands.length==4)
+	            NetByte.intToQuad( newDestination, operands, 0);
+	        else
+	            NetByte.intToPair( newDestination, operands, 0);      	
         }
     }
 
