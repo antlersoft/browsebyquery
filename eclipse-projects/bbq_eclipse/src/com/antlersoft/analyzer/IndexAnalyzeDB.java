@@ -123,7 +123,10 @@ ite.getTargetException().printStackTrace();
 			createCount++;
 			if ( createCount==1000)
 			{
-				_session.commitAndRetain();
+				if ( Runtime.getRuntime().freeMemory()>2000000l)
+                    _session.commitAndRetain();
+                else
+                    _session.commit();
 				createCount=0;
 			}
         }
