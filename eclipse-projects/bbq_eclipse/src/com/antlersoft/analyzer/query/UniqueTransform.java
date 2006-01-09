@@ -43,10 +43,10 @@ abstract class UniqueTransform extends TransformImpl
 		Object c=uniqueTransform( toTransform);
 		if ( c instanceof Enumeration)
 		{
-			Enumeration enum=(Enumeration)c;
-			while ( enum.hasMoreElements())
+			Enumeration ce=(Enumeration)c;
+			while ( ce.hasMoreElements())
 			{
-				Object e=enum.nextElement();
+				Object e=ce.nextElement();
 				ht.put( e, e);
 			}
 		}
