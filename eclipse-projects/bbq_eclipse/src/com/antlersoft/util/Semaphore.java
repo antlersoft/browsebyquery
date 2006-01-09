@@ -63,7 +63,7 @@ public class Semaphore
         Thread currentThread=Thread.currentThread();
         if ( inCritical && criticalThread==currentThread)
             return;
-        while ( protectedCount!=0 && inCritical)
+        while ( protectedCount!=0 || inCritical)
         {
             try
             {
