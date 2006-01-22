@@ -68,8 +68,12 @@ public class ObjectDB
         PersistentImpl impl=toDirty._getPersistentImpl();
         if ( ! impl.dirty)
         {
-            impl.dirty=true;
-            getObjectDB().dirtyObjects.add( toDirty);
+            ObjectDB db=getObjectDB();
+            synchronized(db)
+            {
+                impl.dirty = true;
+                db.dirtyObjects.add(toDirty);
+            }
         }
 	}
 
@@ -172,6 +176,7 @@ public class ObjectDB
         }
         catch ( Exception e)
         {
+e.printStackTrace();
             try
             {
                 store.rollback();
