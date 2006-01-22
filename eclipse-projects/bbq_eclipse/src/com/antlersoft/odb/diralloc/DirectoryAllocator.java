@@ -26,13 +26,16 @@
  */
 package com.antlersoft.odb.diralloc;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.antlersoft.odb.DiskAllocator;
 import com.antlersoft.odb.DiskAllocatorException;
@@ -68,15 +71,17 @@ import com.antlersoft.util.Semaphore;
  * as well as the root object,  was always kept in memory.  This became
  * impractical with large databases; not just because you
  * ran out of memory, but because the time required to sync
- * the in-memory state with the disk became too large. 
+ * the in-memory state with the disk became too large.
  * In the DirectoryAllocator,
  * only a small sub-set of this data needs to be cached in memory;
  * the rest is kept on the disk in the overhead allocator.
  *
- * The largest portion of the metadata 
+ * The largest portion of the metadata
  */
 public class DirectoryAllocator implements IndexObjectStore
 {
+    private static Logger logger=Logger.getLogger( DirectoryAllocator.class.getName());
+
     public DirectoryAllocator( File file, CustomizerFactory factory)
         throws ObjectStoreException
     {
@@ -496,6 +501,8 @@ ioe.printStackTrace();
     {
         synchronized ( indexPageMap)
         {
+            if ( logger.isLoggable(Level.FINE))
+                logger.fine( "new index page "+toAdd.thisPage.offset+( toAdd.thisPage.parent!=null ? " parent "+toAdd.thisPage.parent.offset : " top page"));
             indexPageMap.put( toAdd.thisPage, toAdd);
             indexPageLRU.add( toAdd);
         }
@@ -538,12 +545,18 @@ ioe.printStackTrace();
             for ( Iterator i=indexPageLRU.iterator(); i.hasNext();)
             {
                 IndexPage page=(IndexPage)i.next();
-                if ( page.thisPage.index==newParentKey.index)
+                if ( page.thisPage.index==newParentKey.index
+                     && page.thisPage!=newParentKey)
                 {
                     for ( int j=start; j<start+len; j++)
                     {
                         if ( offsets[j]==page.thisPage.offset)
                         {
+                            if ( logger.isLoggable( Level.FINER))
+                                logger.finer( "Change parent offset of page at "
+                                              +page.thisPage.offset+" from "+
+                                              page.thisPage.parent.offset+" to "
+                                              +newParentKey.offset);
                             page.thisPage.parent=newParentKey;
                             break;
                         }
@@ -590,6 +603,8 @@ ioe.printStackTrace();
             IndexPage result=(IndexPage)indexPageMap.get( key);
             if ( result==null)
             {
+                if ( logger.isLoggable( Level.FINE))
+                    logger.fine( "Read index page from store at "+key.offset+( key.parent!=null ? " parent "+key.parent.offset : " top page"));
                 result=(IndexPage)key.index.streams.readObject( key.offset);
                 result.modified=false;
                 result.thisPage=key;
@@ -624,9 +639,12 @@ ioe.printStackTrace();
                     toDump.thisPage.offset);
             if ( newOffset!=toDump.thisPage.offset)
             {
-                indexPageMap.remove( toDump.thisPage);
+                if ( logger.isLoggable( Level.FINE))
+                    logger.fine( "Write index page to "+newOffset+" was at "+toDump.thisPage.offset+( toDump.thisPage.parent!=null ? " parent "+toDump.thisPage.parent.offset : " top page"));
+                Object wasMapped=indexPageMap.remove( toDump.thisPage);
                 toDump.thisPage.offset=newOffset;
-                indexPageMap.put( toDump.thisPage, toDump);
+                if ( wasMapped!=null)
+                    indexPageMap.put( toDump.thisPage, toDump);
                 if ( toDump.thisPage.parent==null)
                 {
                     toDump.thisPage.index.entry.startPageOffset
