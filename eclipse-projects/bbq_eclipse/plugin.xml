@@ -34,11 +34,13 @@
             nameFilter="*"
             id="bbq_eclipse.contribution1">
          <action
-               label="Add/Remove Sample Nature"
                class="com.antlersoft.bbq_eclipse.builder.ToggleNatureAction"
-               menubarPath="additions"
                enablesFor="+"
-               id="bbq_eclipse.addRemoveNatureAction">
+               id="bbq_eclipse.addRemoveNatureAction"
+               label="Add/Remove Sample Nature"
+               menubarPath="additions"
+               state="false"
+               style="toggle">
          </action>
       </objectContribution>
    </extension>
@@ -89,6 +91,14 @@
    </extension>
    <extension
          point="org.eclipse.core.filebuffers.annotationModelCreation">
+   </extension>
+   <extension
+         id="QueryResultView"
+         point="org.eclipse.search.searchResultViewPages">
+         <viewPage
+         id="com.antlersoft.bbq_eclipse.searchresult.QueryResultView"
+         class="com.antlersoft.bbq_eclipse.searchresult.QueryResultView"
+         searchResultClass="com.antlersoft.bbq_eclipse.searchresult.QueryResult" />
    </extension>
 
 </plugin>
