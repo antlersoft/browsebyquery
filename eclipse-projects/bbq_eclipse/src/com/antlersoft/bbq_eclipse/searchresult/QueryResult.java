@@ -32,14 +32,20 @@ public class QueryResult implements ISearchResult {
 	 * @see org.eclipse.search.ui.ISearchResult#addListener(org.eclipse.search.ui.ISearchResultListener)
 	 */
 	public void addListener(ISearchResultListener l) {
-		_searchResultListeners.add( l);
+		synchronized ( _searchResultListeners)
+		{
+			_searchResultListeners.add( l);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.search.ui.ISearchResult#removeListener(org.eclipse.search.ui.ISearchResultListener)
 	 */
 	public void removeListener(ISearchResultListener l) {
-		_searchResultListeners.remove( l);
+		synchronized ( _searchResultListeners)
+		{
+			_searchResultListeners.remove( l);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -74,11 +80,14 @@ public class QueryResult implements ISearchResult {
 	void addResultItem( Object item)
 	{
 		_resultItems.add( item);
-		QueryResultEvent evt=new QueryResultEvent( this, QueryResultEvent.ADDED); 
-		for ( Iterator i=_searchResultListeners.iterator(); i.hasNext();)
+		synchronized ( _searchResultListeners)
 		{
-			ISearchResultListener listener=(ISearchResultListener)i.next();
-			listener.searchResultChanged( evt);
+			QueryResultEvent evt=new QueryResultEvent( QueryResult.this, QueryResultEvent.ADDED);
+			for ( Iterator i=_searchResultListeners.iterator(); i.hasNext();)
+			{
+				ISearchResultListener listener=(ISearchResultListener)i.next();
+				listener.searchResultChanged( evt);
+			}
 		}
 	}
 	

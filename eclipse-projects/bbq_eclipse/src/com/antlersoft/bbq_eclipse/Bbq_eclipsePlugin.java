@@ -14,6 +14,7 @@ import com.antlersoft.analyzer.query.QueryParser;
 
 import com.antlersoft.bbq_eclipse.preferences.PreferenceConstants;
 
+import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.ObjectDBException;
 
 /**
@@ -92,7 +93,8 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 		        }
 		        catch ( ObjectDBException odb)
 		        {
-		            if ( odb.getUnderlying() instanceof java.io.InvalidClassException)
+		            if ( odb.getUnderlying() instanceof java.io.InvalidClassException
+		            		|| odb.getUnderlying() instanceof DiskAllocatorException)
 		                m_db.clearDB( getDBPath());
 		            else
 		                throw odb;

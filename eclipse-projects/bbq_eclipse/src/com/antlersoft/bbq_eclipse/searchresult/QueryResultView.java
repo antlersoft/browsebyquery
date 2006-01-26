@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.SWT;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.ISearchResultPage;
@@ -12,6 +13,7 @@ import org.eclipse.search.ui.ISearchResultListener;
 import org.eclipse.search.ui.SearchResultEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TableColumn;
 
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.Page;
@@ -40,7 +42,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	 */
 	public Object getUIState() {
 		// TODO Auto-generated method stub
-		return null;
+		return _id;
 	}
 
 	/* (non-Javadoc)
@@ -70,16 +72,13 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	 * @see org.eclipse.search.ui.ISearchResultPage#setInput(org.eclipse.search.ui.ISearchResult, java.lang.Object)
 	 */
 	public void setInput(ISearchResult search, Object uiState) {
-		// TODO Auto-generated method stub
-		
+		_viewer.setInput( search);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.search.ui.ISearchResultPage#setViewPart(org.eclipse.search.ui.ISearchResultViewPart)
 	 */
 	public void setViewPart(ISearchResultViewPart part) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	/* (non-Javadoc)
@@ -90,7 +89,8 @@ public class QueryResultView extends Page implements ISearchResultPage {
 		_viewer.setContentProvider(new ViewContentProvider());
 		_viewer.setLabelProvider(new ViewLabelProvider());
 		_viewer.setSorter(new NameSorter());
-		//new TableColumn( _viewer.getTable());
+		_viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+		new TableColumn( _viewer.getTable(), SWT.LEFT);
 		//_viewer.setInput(getViewSite());	}
 		
 	}
@@ -120,18 +120,36 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	 */
 	 
 	class ViewContentProvider implements IStructuredContentProvider, ISearchResultListener {
-		public void inputChanged(Viewer v, Object oldInput, Object newInput) {
+		ArrayList _pendingAdds=new ArrayList();
+		
+		public synchronized void inputChanged(Viewer v, Object oldInput, Object newInput) {
 			if ( oldInput!=null)
 				((QueryResult)oldInput).removeListener( this);
 			if ( newInput!=null)
 				((QueryResult)newInput).addListener( this);
+			_pendingAdds.clear();
 		}
 		public void dispose() {
 		}
-		public void searchResultChanged( SearchResultEvent evt)
+		public synchronized void searchResultChanged( SearchResultEvent evt)
 		{
 			ArrayList l=((QueryResult)evt.getSearchResult()).getResultItems();
-			_viewer.add( l.get( l.size()-1));
+			_pendingAdds.add( l.get( l.size()-1));
+			if ( _pendingAdds.size()==1)
+			{
+				getSite().getShell().getDisplay().asyncExec( new Runnable() {
+					public void run() {
+						synchronized( ViewContentProvider.this) {
+							if ( _pendingAdds.size()>0)
+							{
+								//_viewer.add( _pendingAdds.toArray());
+								_pendingAdds.clear();
+								_viewer.refresh();
+							}
+						}
+					}
+				});
+			}
 		}
 		public Object[] getElements(Object parent) {
 			QueryResult result=(QueryResult)parent;
