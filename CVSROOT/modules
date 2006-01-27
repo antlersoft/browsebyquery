@@ -65,4 +65,4 @@ stdio_tunnel_cpp2_ref -d stdio_tunnel/src/com/antlersoft cppquery/com/antlersoft
 stdio_tunnel -a stdio_tunnel_ref stdio_tunnel_cpp_ref stdio_tunnel_cpp2_ref
 
 bbq_ref -a com/antlersoft/classwriter com/antlersoft/analyzer com/antlersoft/opentool com/antlersoft/analyzecxx com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query
-bbq -d bbq package/bbq &bbq_ref
+bbq -d bbq package/bbq &bbq_ref -d bbq -l eclipse-projects/bbq -d bbq eclipse-projects/bbq/src/com
