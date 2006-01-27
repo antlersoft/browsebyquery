@@ -68,4 +68,5 @@ bbq_ref -a com/antlersoft/classwriter com/antlersoft/analyzer com/antlersoft/ope
 bbq_ref2 -d bbq -l eclipse-projects/bbq_eclipse
 bbq_ref3 -d bbq eclipse-projects/bbq_eclipse/src
 bbq_ref4 -d bbq package/bbq &bbq_ref
-bbq -a bbq_ref2 bbq_ref3 bbq_ref4
+bbq_ref5 -d bbq/MANIFEST.MF eclipse-projects/bbq_eclipse/MANIFEST.MF
+bbq -a bbq_ref2 bbq_ref3 bbq_ref4 bbq_ref5
