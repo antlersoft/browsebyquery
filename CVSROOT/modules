@@ -65,7 +65,7 @@ stdio_tunnel_cpp2_ref -d stdio_tunnel/src/com/antlersoft cppquery/com/antlersoft
 stdio_tunnel -a stdio_tunnel_ref stdio_tunnel_cpp_ref stdio_tunnel_cpp2_ref
 
 bbq_ref -a com/antlersoft/classwriter com/antlersoft/analyzer com/antlersoft/opentool com/antlersoft/analyzecxx com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query
-bbq_ref2 -d bbq -l eclipse-projects/bbq
-bbq_ref3 -d bbq eclipse-projects/bbq/src
+bbq_ref2 -d bbq -l eclipse-projects/bbq_eclipse
+bbq_ref3 -d bbq eclipse-projects/bbq_eclipse/src
 bbq_ref4 -d bbq package/bbq &bbq_ref
 bbq -a bbq_ref2 bbq_ref3 bbq_ref4
