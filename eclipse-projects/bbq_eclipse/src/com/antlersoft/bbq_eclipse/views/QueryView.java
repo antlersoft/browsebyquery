@@ -137,6 +137,13 @@ public class QueryView extends ViewPart {
                 String line=_queryText.getText();
                 if ( line==null || line.length()==0)
                     return;
+                String[] lines=_historyList.getItems();
+                for ( int i=0; i<lines.length; ++i)
+                	if ( lines[i].equals( line))
+                	{
+                		_historyList.remove( i);
+                		break;
+                	}
                 QueryParser qp=Bbq_eclipsePlugin.getDefault().getQueryParser();
                 qp.setLine( line);
                 try

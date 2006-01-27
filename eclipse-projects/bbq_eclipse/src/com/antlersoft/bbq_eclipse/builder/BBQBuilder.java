@@ -95,7 +95,7 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 		if (resource instanceof IFile && resource.getName().endsWith(".class")) {
 			try
 			{
-				DBClass.addFileToDB(((IFile)resource).getFullPath().toFile(), Bbq_eclipsePlugin.getDefault().getDB());
+				DBClass.addFileToDB(((IFile)resource).getLocation().toFile(), Bbq_eclipsePlugin.getDefault().getDB());
 			}
 			catch ( Exception e)
 			{

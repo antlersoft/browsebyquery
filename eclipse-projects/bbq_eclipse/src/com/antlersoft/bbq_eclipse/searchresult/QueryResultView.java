@@ -90,8 +90,6 @@ public class QueryResultView extends Page implements ISearchResultPage {
 		_viewer.setLabelProvider(new ViewLabelProvider());
 		_viewer.setSorter(new NameSorter());
 		_viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-		new TableColumn( _viewer.getTable(), SWT.LEFT);
-		//_viewer.setInput(getViewSite());	}
 		
 	}
 
