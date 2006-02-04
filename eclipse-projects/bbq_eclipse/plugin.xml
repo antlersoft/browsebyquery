@@ -32,11 +32,11 @@
             adaptable="true"
             objectClass="org.eclipse.core.resources.IProject"
             nameFilter="*"
-            id="bbq_eclipse.contribution1">
+            id="com.antlersoft.bbq_eclipse.project_nature_contribution">
          <action
                class="com.antlersoft.bbq_eclipse.builder.ToggleNatureAction"
                enablesFor="+"
-               id="bbq_eclipse.addRemoveNatureAction"
+               id="com.antlersoft.bbq_eclipse.addRemoveNatureAction"
                label="Add/Remove Sample Nature"
                menubarPath="additions"
                state="false"

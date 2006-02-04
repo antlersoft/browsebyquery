@@ -12,5 +12,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text,
  org.eclipse.ui.editors,
  org.eclipse.ui.workbench.texteditor,
- org.eclipse.search
+ org.eclipse.search,
+ org.eclipse.jdt,
+ org.eclipse.jdt.ui,
+ org.eclipse.jdt.core
 Eclipse-AutoStart: true

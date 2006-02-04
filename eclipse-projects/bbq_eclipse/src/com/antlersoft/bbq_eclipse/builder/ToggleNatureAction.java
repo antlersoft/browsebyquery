@@ -34,7 +34,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 							.getAdapter(IProject.class);
 				}
 				if (project != null) {
-					toggleNature(project);
+					toggleNature(project, action);
 				}
 			}
 		}
@@ -47,7 +47,22 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 	 *      org.eclipse.jface.viewers.ISelection)
 	 */
 	public void selectionChanged(IAction action, ISelection selection) {
-		this.selection = selection;
+		if (selection instanceof IStructuredSelection) {
+			for (Iterator it = ((IStructuredSelection) selection).iterator(); it
+					.hasNext();) {
+				Object element = it.next();
+				IProject project = null;
+				if (element instanceof IProject) {
+					project = (IProject) element;
+				} else if (element instanceof IAdaptable) {
+					project = (IProject) ((IAdaptable) element)
+							.getAdapter(IProject.class);
+				}
+				if (project != null) {
+					setCheckmark( project, action);
+				}
+			}
+		}
 	}
 
 	/*
@@ -65,7 +80,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 	 * @param project
 	 *            to have sample nature added or removed
 	 */
-	private void toggleNature(IProject project) {
+	private void toggleNature(IProject project, IAction action) {
 		try {
 			IProjectDescription description = project.getDescription();
 			String[] natures = description.getNatureIds();
@@ -79,6 +94,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 							natures.length - i - 1);
 					description.setNatureIds(newNatures);
 					project.setDescription(description, null);
+					action.setChecked( false);
 					return;
 				}
 			}
@@ -89,8 +105,31 @@ public class ToggleNatureAction implements IObjectActionDelegate {
 			newNatures[natures.length] = BBQNature.NATURE_ID;
 			description.setNatureIds(newNatures);
 			project.setDescription(description, null);
+			action.setChecked( true);
 		} catch (CoreException e) {
 		}
 	}
 
+	/**
+	 * Sets checkmark appropriately for the project
+	 */
+	private void setCheckmark( IProject project, IAction action)
+	{
+		try
+		{
+			IProjectDescription description = project.getDescription();
+			String[] natures = description.getNatureIds();
+	
+			for (int i = 0; i < natures.length; ++i) {
+				if (BBQNature.NATURE_ID.equals(natures[i])) {
+					action.setChecked( true);
+					return;
+				}
+			}
+		} catch ( CoreException e) {
+			
+		}
+
+		action.setChecked( false);
+	}
 }

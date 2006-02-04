@@ -6,6 +6,8 @@ import org.eclipse.core.runtime.Status;
 
 import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.osgi.framework.BundleContext;
 
 import com.antlersoft.analyzer.IndexAnalyzeDB;
@@ -27,12 +29,14 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	
 	private IndexAnalyzeDB m_db;
 	private QueryParser m_qp;
+	boolean _pathChanged;
 	
 	/**
 	 * The constructor.
 	 */
 	public Bbq_eclipsePlugin() {
 		plugin = this;
+		_pathChanged=false;
 	}
 
 	/**
@@ -76,6 +80,23 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 		getLog().log( status);
 		throw new CoreException( status);
 	}
+
+	private void openDBAtCurrentPath() throws Exception
+	{
+        try
+        {
+            m_db.openDB( getDBPath());
+            _pathChanged=false;
+        }
+        catch ( ObjectDBException odb)
+        {
+            if ( odb.getUnderlying() instanceof java.io.InvalidClassException
+            		|| odb.getUnderlying() instanceof DiskAllocatorException)
+                m_db.clearDB( getDBPath());
+            else
+                throw odb;
+        }					
+	}
 	
 	/**
 	 * Return the database
@@ -84,21 +105,24 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	{
 		try
 		{
+			if ( _pathChanged)
+			{
+				m_db.closeDB();
+				openDBAtCurrentPath();
+			}
 			if ( m_db==null)
 			{
+				getPreferenceStore().addPropertyChangeListener( new IPropertyChangeListener() {
+					public void propertyChange( PropertyChangeEvent pce) {
+						if ( pce.getProperty().equals( PreferenceConstants.P_DB_PATH))
+							synchronized ( Bbq_eclipsePlugin.this)
+							{
+								_pathChanged=true;
+							}
+					}
+				});
 				m_db=new IndexAnalyzeDB();
-		        try
-		        {
-		            m_db.openDB( getDBPath());
-		        }
-		        catch ( ObjectDBException odb)
-		        {
-		            if ( odb.getUnderlying() instanceof java.io.InvalidClassException
-		            		|| odb.getUnderlying() instanceof DiskAllocatorException)
-		                m_db.clearDB( getDBPath());
-		            else
-		                throw odb;
-		        }			
+				openDBAtCurrentPath();
 			}
 		}
 		catch ( Exception e)

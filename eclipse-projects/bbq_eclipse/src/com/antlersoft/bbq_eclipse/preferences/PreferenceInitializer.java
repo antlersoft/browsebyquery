@@ -18,8 +18,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		
 		Bbq_eclipsePlugin plugin=Bbq_eclipsePlugin.getDefault();
-		IPreferenceStore store = Bbq_eclipsePlugin.getDefault()
-				.getPreferenceStore();
+		IPreferenceStore store = plugin.getPreferenceStore();
 		store.setDefault( PreferenceConstants.P_DB_PATH, plugin.getStateLocation().append( "bbq.pj").toOSString());
 	}
 
