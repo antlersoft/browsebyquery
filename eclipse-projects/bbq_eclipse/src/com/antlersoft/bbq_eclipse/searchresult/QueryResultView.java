@@ -162,7 +162,12 @@ public class QueryResultView extends Page implements ISearchResultPage {
 							return;
 						IWorkspaceRoot root=ResourcesPlugin.getWorkspace().getRoot();
 						IFile file=null;
-						Path sourcePath=new Path( source.getDBClass().getSourceFile());
+						String path=source.getDBClass().getInternalName();
+						int lastSlash=path.lastIndexOf( '/');
+						if ( lastSlash!= -1)
+							path=path.substring( 0, lastSlash+1);
+						path=path+selectedObject.getDBClass().getSourceFile();
+						Path sourcePath=new Path( path);
 						try
 						{
 							file=root.getFile( sourcePath);
@@ -172,7 +177,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 							Bbq_eclipsePlugin.getDefault().getLog()
 							.log( 
 									Bbq_eclipsePlugin.
-									createStatus( "Can't get file at "+sourcePath.toOSString()+" "+source.getDBClass().getSourceFile(),new Exception("benign"),
+									createStatus( "Can't get file at "+sourcePath.toOSString()+" "+path,new Exception("benign"),
 											org.eclipse.core.runtime.IStatus.INFO, 0));
 							IProject[] projects=root.getProjects();
 							for ( int i=0; i<projects.length && file==null; ++i)
