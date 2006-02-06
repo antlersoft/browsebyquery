@@ -172,7 +172,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 							Bbq_eclipsePlugin.getDefault().getLog()
 							.log( 
 									Bbq_eclipsePlugin.
-									createStatus( "Can't get file at "+sourcePath.toOSString(),new Exception("benign"),
+									createStatus( "Can't get file at "+sourcePath.toOSString()+" "+source.getDBClass().getSourceFile(),new Exception("benign"),
 											org.eclipse.core.runtime.IStatus.INFO, 0));
 							IProject[] projects=root.getProjects();
 							for ( int i=0; i<projects.length && file==null; ++i)
