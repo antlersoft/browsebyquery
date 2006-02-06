@@ -166,7 +166,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						int lastSlash=path.lastIndexOf( '/');
 						if ( lastSlash!= -1)
 							path=path.substring( 0, lastSlash+1);
-						path=path+selectedObject.getDBClass().getSourceFile();
+						path=path+source.getDBClass().getSourceFile();
 						Path sourcePath=new Path( path);
 						try
 						{
