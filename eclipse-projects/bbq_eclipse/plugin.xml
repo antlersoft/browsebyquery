@@ -37,7 +37,7 @@
                class="com.antlersoft.bbq_eclipse.builder.ToggleNatureAction"
                enablesFor="+"
                id="com.antlersoft.bbq_eclipse.addRemoveNatureAction"
-               label="Add/Remove Sample Nature"
+               label="Add/Remove BBQ Eclipse "
                menubarPath="additions"
                state="false"
                style="toggle">

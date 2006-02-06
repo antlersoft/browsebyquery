@@ -3,9 +3,6 @@ package com.antlersoft.bbq_eclipse.views;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.custom.SashForm;
@@ -86,14 +83,7 @@ public class QueryView extends ViewPart {
 		queryViewState.putInteger( "count", count);
 		for ( int i=0; i<count; ++i)
 		{
-			try
-			{
-				queryViewState.putString( Integer.toString( i), URLEncoder.encode( items[i], "UTF-8"));
-			}
-			catch ( UnsupportedEncodingException uee)
-			{
-				queryViewState.putString( Integer.toString(i), "Unsupported encoding");
-			}
+			queryViewState.putString( "a"+Integer.toString( i), items[i]);
 		}
 	}
 	
@@ -119,14 +109,7 @@ public class QueryView extends ViewPart {
 					_savedState=new String[count];
 					for ( int i=0; i<count; ++i)
 					{
-						try
-						{
-							_savedState[i]=queryViewState.getString( URLDecoder.decode( Integer.toString( i), "UTF-8"));
-						}
-						catch ( UnsupportedEncodingException uee)
-						{
-							throw new PartInitException( "Bad encoding");
-						}
+						_savedState[i]=queryViewState.getString( "a"+Integer.toString( i));
 						if ( _savedState[i]==null)
 							throw new PartInitException( "Text for "+i+" not found");
 					}

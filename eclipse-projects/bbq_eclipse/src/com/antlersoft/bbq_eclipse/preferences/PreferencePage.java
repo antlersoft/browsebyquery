@@ -26,7 +26,7 @@ public class PreferencePage
 	public PreferencePage() {
 		super(GRID);
 		setPreferenceStore(Bbq_eclipsePlugin.getDefault().getPreferenceStore());
-		setDescription("A demonstration of a preference page implementation");
+		setDescription("Browse-By-Query Preferences");
 	}
 	
 	/**

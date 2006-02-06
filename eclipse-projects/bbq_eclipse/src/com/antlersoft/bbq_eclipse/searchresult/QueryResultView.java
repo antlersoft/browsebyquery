@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.JavaUI;
 
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -28,6 +29,7 @@ import org.eclipse.search.ui.ISearchResultListener;
 import org.eclipse.search.ui.SearchResultEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.Page;
@@ -40,6 +42,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	private String _id="com.antlersoft.bbq_eclipse.searchresult.QueryResultView";
 	private TableViewer _viewer;
 	private ISelection _selection;
+	private IAction _selectAction;
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.search.ui.ISearchResultPage#getID()
@@ -113,9 +116,13 @@ public class QueryResultView extends Page implements ISearchResultPage {
 				_selection=evt.getSelection();
 			}
 		});
+		_selectAction=new SelectAction();
+		MenuManager manager=new MenuManager( "#PopupResult");
+		manager.add( _selectAction);
+		_viewer.getTable().setMenu( manager.createContextMenu( _viewer.getTable()));
 		_viewer.addDoubleClickListener( new IDoubleClickListener() {
 			public void doubleClick( DoubleClickEvent evt) {
-				openSelection();
+				_selectAction.run();
 			}
 		});
 		_viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -135,79 +142,85 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	public void setFocus() {
 		_viewer.getControl().setFocus();
 	}
-	
-	void openSelection()
+
+	class SelectAction extends Action
 	{
-		if ( _selection!=null && ! _selection.isEmpty() && _selection instanceof IStructuredSelection)
+		SelectAction()
 		{
-			Object selected=((IStructuredSelection)_selection).getFirstElement();
-			if ( selected instanceof SourceObject)
+			super( "Jump to");
+		}
+		public void run() {			
+			if ( _selection!=null && ! _selection.isEmpty() && _selection instanceof IStructuredSelection)
 			{
-				try
+				Object selected=((IStructuredSelection)_selection).getFirstElement();
+				if ( selected instanceof SourceObject)
 				{
-					SourceObject source=(SourceObject)selected;
-					if ( source.getDBClass().getSourceFile()==null)
-						return;
-					IWorkspaceRoot root=ResourcesPlugin.getWorkspace().getRoot();
-					IFile file=null;
-					Path sourcePath=new Path( source.getDBClass().getSourceFile());
 					try
 					{
-						file=root.getFile( sourcePath);
-					}
-					catch ( IllegalArgumentException iae)
-					{
-						IProject[] projects=root.getProjects();
-						for ( int i=0; i<projects.length && file==null; ++i)
+						SourceObject source=(SourceObject)selected;
+						if ( source.getDBClass().getSourceFile()==null)
+							return;
+						IWorkspaceRoot root=ResourcesPlugin.getWorkspace().getRoot();
+						IFile file=null;
+						Path sourcePath=new Path( source.getDBClass().getSourceFile());
+						try
 						{
-							IJavaProject project=JavaCore.create( projects[i]);
-							if ( project==null)
-								continue;
-							IPackageFragmentRoot[] fragments=project.getPackageFragmentRoots();
-							for ( int j=0; j<fragments.length; ++j)
+							file=root.getFile( sourcePath);
+						}
+						catch ( IllegalArgumentException iae)
+						{
+							IProject[] projects=root.getProjects();
+							for ( int i=0; i<projects.length && file==null; ++i)
 							{
-								if ( fragments[j].getKind()==IPackageFragmentRoot.K_SOURCE)
+								IJavaProject project=JavaCore.create( projects[i]);
+								if ( project==null)
+									continue;
+								IPackageFragmentRoot[] fragments=project.getPackageFragmentRoots();
+								for ( int j=0; j<fragments.length; ++j)
 								{
-									try
+									if ( fragments[j].getKind()==IPackageFragmentRoot.K_SOURCE)
 									{
-										file=root.getFile( fragments[j].getPath().append( sourcePath));
+										try
+										{
+											file=root.getFile( fragments[j].getPath().append( sourcePath));
+										}
+										catch ( IllegalArgumentException ae)
+										{
+											continue;
+										}
+										if ( file.exists())
+											break;
+										else
+											file=null;
 									}
-									catch ( IllegalArgumentException ae)
-									{
-										continue;
-									}
-									if ( file.exists())
-										break;
-									else
-										file=null;
 								}
 							}
 						}
-					}
-					if ( file==null)
-						return;
-					InputStreamReader input=new InputStreamReader( file.getContents());
-					int ch;
-					int offset=0;
-					try
-					{
-						for ( int currentLine=1; ( ch=input.read() )>0 && currentLine<source.getLineNumber(); offset++)
+						if ( file==null)
+							return;
+						InputStreamReader input=new InputStreamReader( file.getContents());
+						int ch;
+						int offset=0;
+						try
 						{
-							if ( ch=='\n')
-								currentLine++;
+							for ( int currentLine=1; ( ch=input.read() )>0 && currentLine<source.getLineNumber(); offset++)
+							{
+								if ( ch=='\n')
+									currentLine++;
+							}
+							input.close();
 						}
-						input.close();
+						catch ( IOException ioe)
+						{
+							Bbq_eclipsePlugin.getDefault().logError( "IO Error finding linenumber", ioe);
+						}
+						JavaUI.revealInEditor( JavaUI.openInEditor( JavaCore.create( file)),
+								new AnalyzerSourceReference( offset));
 					}
-					catch ( IOException ioe)
+					catch ( CoreException ce)
 					{
-						Bbq_eclipsePlugin.getDefault().logError( "IO Error finding linenumber", ioe);
+						Bbq_eclipsePlugin.getDefault().getLog().log( ce.getStatus());
 					}
-					JavaUI.revealInEditor( JavaUI.openInEditor( JavaCore.create( file)),
-							new AnalyzerSourceReference( offset));
-				}
-				catch ( CoreException ce)
-				{
-					Bbq_eclipsePlugin.getDefault().getLog().log( ce.getStatus());
 				}
 			}
 		}
