@@ -3,9 +3,14 @@ package com.antlersoft.bbq_eclipse.views;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
@@ -37,6 +42,10 @@ public class QueryView extends ViewPart {
 	private Action _queryAction;
 	private Action _selectAction;
 	private Action _deleteAction;
+	
+	private String[] _savedState;
+	
+	private final static String QUERY_VIEW_TYPE="com.antlersoft.bbq_eclipse.views.QueryView";
 
 	/**
 	 * The constructor.
@@ -54,12 +63,94 @@ public class QueryView extends ViewPart {
 		_queryArea.setLayout( new FillLayout( SWT.HORIZONTAL));
 		_historyList=new List( _sashForm, SWT.SINGLE|SWT.H_SCROLL|SWT.V_SCROLL);
 		_queryText=new Text( _queryArea, SWT.MULTI|SWT.H_SCROLL|SWT.V_SCROLL);
+		initializeHistoryList();
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
 	}
+	
+	/**
+	 * Save the state of this view, which is the history list
+	 *
+	 */
+	public void saveState( IMemento state)
+	{
+		super.saveState( state);
+		if ( _historyList==null)
+			return;
+		
+		IMemento queryViewState=state.createChild( QUERY_VIEW_TYPE);
+		int count=_historyList.getItemCount();
+		String[] items=_historyList.getItems();
+		queryViewState.putInteger( "count", count);
+		for ( int i=0; i<count; ++i)
+		{
+			try
+			{
+				queryViewState.putString( Integer.toString( i), URLEncoder.encode( items[i], "UTF-8"));
+			}
+			catch ( UnsupportedEncodingException uee)
+			{
+				queryViewState.putString( Integer.toString(i), "Unsupported encoding");
+			}
+		}
+	}
+	
+	public synchronized void init( IViewSite site, IMemento state)
+	throws PartInitException
+	{
+		super.init( site, state);
+		if ( state==null)
+			return;
+		try
+		{
+			IMemento queryViewState=state.getChild( QUERY_VIEW_TYPE);
+			if ( queryViewState!=null)
+			{
+				Integer ic=queryViewState.getInteger( "count");
+				if ( ic==null)
+					throw new PartInitException("count not found");
+				int count=ic.intValue();
+				if ( count<0)
+					throw new PartInitException( "count < 0");
+				if ( count>0)
+				{
+					_savedState=new String[count];
+					for ( int i=0; i<count; ++i)
+					{
+						try
+						{
+							_savedState[i]=queryViewState.getString( URLDecoder.decode( Integer.toString( i), "UTF-8"));
+						}
+						catch ( UnsupportedEncodingException uee)
+						{
+							throw new PartInitException( "Bad encoding");
+						}
+						if ( _savedState[i]==null)
+							throw new PartInitException( "Text for "+i+" not found");
+					}
+					initializeHistoryList();
+				}
+			}
+		}
+		catch ( PartInitException pie)
+		{
+			Bbq_eclipsePlugin.getDefault().getLog().log( pie.getStatus());
+			_savedState=null;
+		}
+	}
 
+	private synchronized void initializeHistoryList()
+	{
+		if ( _savedState!=null && _historyList!=null)
+		{
+			for ( int i=0; i<_savedState.length; ++i)
+				_historyList.add( _savedState[i]);
+			_savedState=null;
+		}
+	}
+	
 	private void hookContextMenu() {
 		MenuManager menuMgr = new MenuManager("#PopupMenu");
 		menuMgr.setRemoveAllWhenShown(true);
@@ -174,13 +265,12 @@ public class QueryView extends ViewPart {
     }
 
 	private void hookDoubleClickAction() {
-		/*
-		_historyList..addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				doubleClickAction.run();
+		_historyList.addMouseListener( new MouseAdapter() {
+			public void mouseDoubleClick( MouseEvent e)
+			{
+				_selectAction.run();
 			}
 		});
-		*/
 	}
 
 	/**
