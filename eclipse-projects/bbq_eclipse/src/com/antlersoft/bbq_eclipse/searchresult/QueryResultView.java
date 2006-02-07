@@ -171,8 +171,14 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						try
 						{
 							file=root.getFile( sourcePath);
+							if ( ! file.exists())
+								file=null;
 						}
 						catch ( IllegalArgumentException iae)
+						{
+							file=null;
+						}
+						if ( file==null)
 						{
 							Bbq_eclipsePlugin.getDefault().getLog()
 							.log( 
