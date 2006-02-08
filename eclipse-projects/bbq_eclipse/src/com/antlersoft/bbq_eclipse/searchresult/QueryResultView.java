@@ -12,8 +12,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.ISourceRange;
-import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.JavaUI;
 
@@ -29,10 +27,11 @@ import org.eclipse.search.ui.ISearchResultListener;
 import org.eclipse.search.ui.SearchResultEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
 
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.Page;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.antlersoft.analyzer.SourceObject;
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
@@ -258,8 +257,17 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						{
 							Bbq_eclipsePlugin.getDefault().logError( "IO Error finding linenumber", ioe);
 						}
-						JavaUI.revealInEditor( JavaUI.openInEditor( JavaCore.create( file)),
-								new AnalyzerSourceReference( offset, sb.toString()));
+						IEditorPart ep=JavaUI.openInEditor( JavaCore.create( file));
+						if ( ep instanceof ITextEditor)
+						{
+							((ITextEditor)ep).selectAndReveal( offset, sb.length());
+						}
+						else
+							Bbq_eclipsePlugin.getDefault().getLog()
+							.log( 
+									Bbq_eclipsePlugin.
+									createStatus( "editor part type is "+ep.getClass().getName(),new Exception("benign"),
+											org.eclipse.core.runtime.IStatus.INFO, 0));							
 					}
 					catch ( CoreException ce)
 					{
@@ -282,28 +290,6 @@ public class QueryResultView extends Page implements ISearchResultPage {
 		}
 	}
 	
-	static class AnalyzerSourceReference implements ISourceReference, ISourceRange
-	{
-		private int _offset;
-		private String _line;
-		
-		AnalyzerSourceReference( int offset, String line) {
-			_offset=offset; 
-			_line=line;
-			Bbq_eclipsePlugin.getDefault().getLog()
-			.log( 
-					Bbq_eclipsePlugin.
-					createStatus( "Select line at offset "+offset+"["+line+"]",new Exception("benign"),
-							org.eclipse.core.runtime.IStatus.INFO, 0));			
-		}
-		
-		public String getSource() { return _line; }
-		public boolean exists() { return true; }
-		public ISourceRange getSourceRange() { return this; }
-		public int getOffset() { return _offset; }
-		public int getLength() { return _line.length(); }
- 	}
-
 	/*
 	 * The content provider class is responsible for
 	 * providing objects to the view. It can wrap

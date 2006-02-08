@@ -20,16 +20,10 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
-		<buildCommand>
-			<name>bbq_eclipse.com.antlersoft.bbqBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
-		<nature>bbq_eclipse.com.antlersoft.bbqNature</nature>
 	</natures>
 	<linkedResources>
 		<link>
