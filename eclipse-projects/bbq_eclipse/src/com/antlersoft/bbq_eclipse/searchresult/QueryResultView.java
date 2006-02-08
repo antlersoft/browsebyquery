@@ -233,15 +233,24 @@ public class QueryResultView extends Page implements ISearchResultPage {
 											org.eclipse.core.runtime.IStatus.INFO, 0));
 							return;
 						}
-						InputStreamReader input=new InputStreamReader( file.getContents());
-						int ch;
+						int ch=0;
 						int offset=0;
+						StringBuffer sb=new StringBuffer();
 						try
 						{
-							for ( int currentLine=1; ( ch=input.read() )>0 && currentLine<source.getLineNumber(); offset++)
+							InputStreamReader input=new InputStreamReader( file.getContents(), "UTF-8");
+							for ( int currentLine=1; currentLine<source.getLineNumber() && ( ch=input.read())>=0; offset++)
 							{
 								if ( ch=='\n')
 									currentLine++;
+							}
+							if ( ch=='\n')
+							{
+								ch=0;
+								while ( ( ch=input.read())>=0 && ch!='\n')
+								{
+									sb.append((char)ch);
+								}
 							}
 							input.close();
 						}
@@ -250,7 +259,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 							Bbq_eclipsePlugin.getDefault().logError( "IO Error finding linenumber", ioe);
 						}
 						JavaUI.revealInEditor( JavaUI.openInEditor( JavaCore.create( file)),
-								new AnalyzerSourceReference( offset));
+								new AnalyzerSourceReference( offset, sb.toString()));
 					}
 					catch ( CoreException ce)
 					{
@@ -276,14 +285,23 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	static class AnalyzerSourceReference implements ISourceReference, ISourceRange
 	{
 		private int _offset;
+		private String _line;
 		
-		AnalyzerSourceReference( int offset) { _offset=offset; }
+		AnalyzerSourceReference( int offset, String line) {
+			_offset=offset; 
+			_line=line;
+			Bbq_eclipsePlugin.getDefault().getLog()
+			.log( 
+					Bbq_eclipsePlugin.
+					createStatus( "Select line at offset "+offset+"["+line+"]",new Exception("benign"),
+							org.eclipse.core.runtime.IStatus.INFO, 0));			
+		}
 		
-		public String getSource() { return ""; }
+		public String getSource() { return _line; }
 		public boolean exists() { return true; }
 		public ISourceRange getSourceRange() { return this; }
 		public int getOffset() { return _offset; }
-		public int getLength() { return 0; }
+		public int getLength() { return _line.length(); }
  	}
 
 	/*
