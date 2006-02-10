@@ -179,11 +179,14 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						}
 						if ( file==null)
 						{
+							/*
+		 
 							Bbq_eclipsePlugin.getDefault().getLog()
 							.log( 
 									Bbq_eclipsePlugin.
 									createStatus( "Can't get file at "+sourcePath.toOSString()+" "+path,new Exception("benign"),
 											org.eclipse.core.runtime.IStatus.INFO, 0));
+							 */
 							IProject[] projects=root.getProjects();
 							for ( int i=0; i<projects.length && file==null; ++i)
 							{
@@ -201,22 +204,26 @@ public class QueryResultView extends Page implements ISearchResultPage {
 										}
 										catch ( IllegalArgumentException ae)
 										{
+											/*
 											Bbq_eclipsePlugin.getDefault().getLog()
 											.log( 
 													Bbq_eclipsePlugin.
 													createStatus( "Can't get file at "+fragments[j].getPath().append( sourcePath).toOSString(),new Exception("benign"),
 															org.eclipse.core.runtime.IStatus.INFO, 0));
+											 */
 											continue;
 										}
 										if ( file.exists())
 											break;
 										else
 										{
+											/*
 											Bbq_eclipsePlugin.getDefault().getLog()
 											.log( 
 													Bbq_eclipsePlugin.
 													createStatus( "file "+file.getLocation().toOSString()+" does not exist",new Exception("benign"),
 															org.eclipse.core.runtime.IStatus.INFO, 0));
+											 */
 											file=null;
 										}
 									}
@@ -228,7 +235,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 							Bbq_eclipsePlugin.getDefault().getLog()
 							.log( 
 									Bbq_eclipsePlugin.
-									createStatus( "unable to find file",new Exception("benign"),
+									createStatus( "unable to find file: "+path,new Exception("benign"),
 											org.eclipse.core.runtime.IStatus.INFO, 0));
 							return;
 						}
@@ -274,19 +281,23 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						Bbq_eclipsePlugin.getDefault().getLog().log( ce.getStatus());
 					}
 				}
+				/*
 				else
 					Bbq_eclipsePlugin.getDefault().getLog()
 					.log( 
 							Bbq_eclipsePlugin.
 							createStatus( "selection not source object",new Exception("benign"),
 									org.eclipse.core.runtime.IStatus.INFO, 0));
+				 */
 			}
+			/*
 			else
 				Bbq_eclipsePlugin.getDefault().getLog()
 				.log( 
 						Bbq_eclipsePlugin.
 						createStatus( "null or empty selection",new Exception("benign"),
 								org.eclipse.core.runtime.IStatus.INFO, 0));
+			 */
 		}
 	}
 	

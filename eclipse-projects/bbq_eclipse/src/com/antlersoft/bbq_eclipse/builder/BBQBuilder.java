@@ -85,13 +85,6 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 							org.eclipse.core.runtime.IStatus.INFO, 0));
 			return;
 		}
-		Bbq_eclipsePlugin.getDefault().getLog()
-		.log( 
-				Bbq_eclipsePlugin.
-				createStatus( "visiting "+
-						resource.getFullPath().toOSString()+
-						resource.getClass().getName(),new Exception("benign"),
-						org.eclipse.core.runtime.IStatus.INFO, 0));
 		if (resource instanceof IFile && resource.getName().endsWith(".class")) {
 			try
 			{
