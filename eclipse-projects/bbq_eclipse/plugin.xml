@@ -62,7 +62,7 @@
             name="BBQ Category"/>
       <view
             allowMultiple="false"
-            category="bbq_eclipse"
+            category="com.antlersoft.bbq_eclipse.ViewCategory"
             class="com.antlersoft.bbq_eclipse.views.QueryView"
             icon="icons/weber.gif"
             id="com.antlersoft.bbq_eclipse.views.QueryView"
