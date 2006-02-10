@@ -52,7 +52,7 @@ Requires ant 1.6+
 		</javac>
 		<copy todir="classes" file="plugin.xml">
 		</copy>
-		<copy todir="classes">
+		<copy dir="." todir="classes">
 			<fileset includes="icons/*.gif"/>
 		</copy>
 	</target>
