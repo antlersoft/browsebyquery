@@ -6,7 +6,7 @@ Requires ant 1.6+
 -->
 <project name="bbq" default="all">
 	<property file="bbq_ant.properties"/>
-	<target name="all" depends="bbqopentool,bbqstandalone"/>
+	<target name="all" depends="bbqopentool,bbqstandalone,bbq_eclipse"/>
 	<target name="bbqopentool" depends="buildopentool">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/bbqopentool.jar" basedir="classes" manifest="com/antlersoft/opentool/classes.opentools" includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/opentool/** com/antlersoft/parser/** com/antlersoft/classwriter/**">
@@ -21,7 +21,7 @@ Requires ant 1.6+
 	<target name="bbq_eclipse" depends="buildeclipse">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/com.antlersoft.bbq_eclipse.jar" basedir="classes" manifest="META-INF/MANIFEST.MF"
-		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/bbq_eclipse/** plugin.xml"
+		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/bbq_eclipse/** icons/** plugin.xml"
 		/>
 	</target>
 	<target name="buildcommon">
@@ -51,6 +51,9 @@ Requires ant 1.6+
 			<src path="com/antlersoft/bbq_eclipse"/>
 		</javac>
 		<copy todir="classes" file="plugin.xml">
+		</copy>
+		<copy todir="classes">
+			<fileset includes="icons/*.gif"/>
 		</copy>
 	</target>
 </project>
