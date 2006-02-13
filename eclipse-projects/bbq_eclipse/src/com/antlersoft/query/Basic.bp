@@ -14,6 +14,7 @@ reserved of
 reserved Or "or" 3 left
 reserved recursive
 reserved same
+reserved uncorrelated
 reserved union 2 left
 reserved without 2 left
 reserved Xor "xor" 3 left
@@ -123,6 +124,8 @@ TRANSFORM : recursive TRANSFORM
 TRANSFORM : recursive TRANSFORM comma TRANSFORM
 "{ return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-3),
 (Transform)valueStack.get( valueStack.size()-1)); }" .
+TRANSFORM : uncorrelated left_paren SET_EXPRESSION right_paren
+"{ return new UncorrelatedSetTransform( (SetExpression)valueStack.get( valueStack.size()-2)); }" .
 
 GROUP_TRANSFORM : VALUE_LIST
 "{ return new ValueListGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" 1 .

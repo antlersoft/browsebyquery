@@ -66,12 +66,12 @@ public class ObjectDB
 	public static void makeDirty( Persistent toDirty)
 	{
         PersistentImpl impl=toDirty._getPersistentImpl();
-        if ( ! impl.dirty)
+        if ( ! impl.isDirty())
         {
             ObjectDB db=getObjectDB();
             synchronized(db)
             {
-                impl.dirty = true;
+                impl.makeDirty( toDirty);
                 db.dirtyObjects.add(toDirty);
             }
         }
@@ -89,9 +89,9 @@ public class ObjectDB
 		if ( impl.objectKey==null)
 		{
 			impl.objectKey=store.insert( (Persistent)toStore);
-    		if ( ! impl.dirty)
+    		if ( ! impl.isDirty())
             {
-                impl.dirty=true;
+                impl.makeDirty( (Persistent)toStore);
                 dirtyObjects.add( toStore);
             }
         }
@@ -112,7 +112,7 @@ public class ObjectDB
 			retVal=(Persistent)store.retrieve( key);
 			PersistentImpl impl=retVal._getPersistentImpl();
             impl.objectKey=key;
-            impl.cachedReference=retVal;
+            impl.setCached( retVal);
 			cachedObjects.put( key, retVal);
 		}
 
@@ -132,10 +132,10 @@ public class ObjectDB
     public void deleteObject( Object object)
     {
         PersistentImpl impl=((Persistent)object)._getPersistentImpl();
-        impl.deleted=true;
-        if ( ! impl.dirty)
+        boolean wasDirty=impl.isDirty();
+        impl.markDeleted( (Persistent)object);
+        if ( ! wasDirty)
         {
-            impl.dirty=true;
             dirtyObjects.add( object);
         }
     }
@@ -165,7 +165,7 @@ public class ObjectDB
     			synchronized ( toCommit)
     			{
     				PersistentImpl impl=toCommit._getPersistentImpl();
-                    if ( impl.deleted)
+                    if ( impl.isDeleted())
                         store.delete( impl.objectKey);
     				else
     				{
@@ -198,14 +198,13 @@ e.printStackTrace();
         for ( Iterator i=dirtyObjects.iterator(); i.hasNext();)
         {
             PersistentImpl impl=((Persistent)i.next())._getPersistentImpl();
-            impl.dirty=false;
+            impl.fromDirty();
         }
         // Remove reference to root objects hash so all unref'd objects
         // are clearable
         PersistentImpl impl=((Persistent)rootObjects.getReferenced()).
             _getPersistentImpl();
-        impl.cachedReference=null;
-        impl.obsolete=true;
+        impl.makeObsolete();
         dirtyObjects.clear();
     }
 
@@ -216,8 +215,7 @@ e.printStackTrace();
             i.hasNext();)
         {
             PersistentImpl impl=((Persistent)i.next())._getPersistentImpl();
-            impl.cachedReference=null;
-            impl.obsolete=true;
+            impl.makeObsolete();
         }
 		cachedObjects.clear();
         dirtyObjects.clear();

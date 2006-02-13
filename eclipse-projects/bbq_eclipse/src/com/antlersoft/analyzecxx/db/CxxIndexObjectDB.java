@@ -124,6 +124,7 @@ public class CxxIndexObjectDB implements DBDriver {
     }
 
     public void finishTranslationUnit() {
+		m_session.commit();
 		ArrayList entries=new ArrayList();
 		for ( IndexIterator ii=m_session.greaterThanOrEqualEntries(
 				  UnitEntry.UNIT_INDEX_NAME,

@@ -19,6 +19,8 @@
  */
 package com.antlersoft.odb;
 
+import java.lang.ref.SoftReference;
+
 /**
  * Publicly opaque class that is included in persistent objects to provide
  * support for persistence.
@@ -27,40 +29,86 @@ public class PersistentImpl
 {
 	public PersistentImpl()
 	{
-		dirty=false;
+		dirtyReference=null;
+		cachedReference=null;
 		objectKey=null;
-        obsolete=false;
         deleted=false;
-        cachedReference=null;
 	}
 
     public PersistentImpl( Persistent containing)
     {
-        super();
-        cachedReference=containing;
+        this();
+        cachedReference=new SoftReference( containing);
     }
 
-	boolean dirty;
+	private Persistent dirtyReference;
 	ObjectKey objectKey;
-    boolean obsolete;
-    boolean deleted;
-    Persistent cachedReference;
+    private boolean deleted;
+    private SoftReference cachedReference;
 
-    Object getCanonical( ObjectRef toUpdate)
+    final Object getCanonical( ObjectRef toUpdate)
     {
-        if ( obsolete || cachedReference==null)
+    	Persistent result=dirtyReference;
+    	if ( result==null)
+    	{
+    		if ( cachedReference!=null)
+    			result=(Persistent)cachedReference.get();
+    	}
+    	
+        if ( result==null)
         {
             if ( objectKey==null)
                 throw new ObjectDBException( "Internal: obsolete with no object key");
-            cachedReference=ObjectDB.getObjectDB().
+            result=ObjectDB.getObjectDB().
                 getObjectByKey( objectKey);
-            PersistentImpl newImpl=cachedReference._getPersistentImpl();
+            PersistentImpl newImpl=result._getPersistentImpl();
             synchronized( toUpdate)
             {
                 if ( toUpdate.impl==this)
                     toUpdate.impl=newImpl;
             }
         }
-        return cachedReference;
+        return result;
+    }
+    
+    final boolean isDirty()
+    {
+    	return dirtyReference!=null;
+    }
+    
+    final void makeDirty( Persistent p)
+    {
+    	dirtyReference=p;
+    	cachedReference=null;
+    }
+    
+    final void setCached( Persistent p)
+    {
+    	dirtyReference=null;
+    	cachedReference=new SoftReference( p);
+    }
+    
+    final void markDeleted( Persistent p)
+    {
+    	dirtyReference=p;
+    	deleted=true;
+    	cachedReference=null;
+    }
+    
+    final boolean isDeleted()
+    {
+    	return deleted;
+    }
+    
+    final void fromDirty()
+    {
+    	cachedReference=new SoftReference( dirtyReference);
+    	dirtyReference=null;
+    }
+    
+    final void makeObsolete()
+    {
+    	dirtyReference=null;
+    	cachedReference=null;
     }
 }

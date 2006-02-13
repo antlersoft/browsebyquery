@@ -66,7 +66,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
 	{
 		_session=null;
         createCount=0;
-		new MemoryRecoverer().start();
 	}
 
     public void openDB(String dbName) throws Exception
@@ -136,18 +135,6 @@ ite.getTargetException().printStackTrace();
 			createCount++;
 			if ( createCount==1000)
 			{
-/*
-				if ( Runtime.getRuntime().freeMemory()>20000000l)
-                    _session.commitAndRetain();
-                else
-				{
-System.err.println( "Commit rather than commit and retain "+Runtime.getRuntime().freeMemory());
-                    _session.commit();
-
-System.gc();
-System.err.println( "After gc in Commit rather than commit and retain "+Runtime.getRuntime().freeMemory());
-				}
-*/
 				_session.commitAndRetain();
 				createCount=0;
 			}
@@ -259,49 +246,6 @@ public static void printTypeKey( Comparable x)
         public Comparable generateKey( Object keyed)
         {
             return ((Lookup)keyed).key;
-        }
-    }
-
-
-    class MemoryRecoverer
-        extends Thread {
-        private SoftReference _r;
-        private ReferenceQueue _q;
-
-        MemoryRecoverer() {
-            _q = new ReferenceQueue();
-            setDaemon(true);
-            _r = new SoftReference(new char[20000000], _q);
-        }
-
-        public void run() {
-            try
-            {
-                for (; ; ) {
-                    try {
-                        _q.remove();
-                        if (_session != null)
-                        {
-                            synchronized (_session) {
-                                _session.commit();
-                                Runtime.getRuntime().gc();
-                                if ( _logger.isLoggable( Level.INFO))
-                                    _logger.info( "After forced gc: " +
-                                    Runtime.getRuntime().freeMemory());
-                                _r = new SoftReference(new char[20000000], _q);
-                            }
-                        }
-                    }
-                    catch (InterruptedException ie) {
-                        _r.clear();
-                    }
-                }
-            }
-            catch ( Throwable t)
-            {
-                System.err.println( "Memory recovery thread exiting "+t.getMessage());
-                t.printStackTrace();
-            }
         }
     }
 }

@@ -3,6 +3,7 @@
 reserved call
 reserved Class "rclass"
 reserved create
+reserved is
 reserved methods "rmethods"
 reserved name
 reserved item
@@ -12,10 +13,12 @@ symbol METHOD_NAME
 VALUE_EXPRESSION : create GROUP_TRANSFORM .
 VALUE_EXPRESSION : item METHOD_NAME GROUP_TRANSFORM .
 VALUE_EXPRESSION : call METHOD_NAME GROUP_TRANSFORM .
-VALUE_EXPRESSION : Class literalString .
+VALUE_EXPRESSION : Class "{ return new ClassExpression(); }" .
+
+FILTER : is METHOD_NAME GROUP_TRANSFORM .
 
 TRANSFORM : METHOD_NAME GROUP_TRANSFORM .
 TRANSFORM : methods .
 
-METHOD_NAME : nameSymbol .
-METHOD_NAME : name literalString .
+METHOD_NAME : nameSymbol "{ return valueStack.get( valueStack.size()-1).toString(); }" .
+METHOD_NAME : name literalString "{ return valueStack.get( valueStack.size()-1); }" .

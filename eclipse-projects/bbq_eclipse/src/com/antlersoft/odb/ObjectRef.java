@@ -98,7 +98,6 @@ public class ObjectRef implements Serializable
         {
             impl=new PersistentImpl();
             impl.objectKey=key;
-            impl.obsolete=true;
         }
     }
 
