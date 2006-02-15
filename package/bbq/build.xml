@@ -6,7 +6,7 @@ Requires ant 1.6+
 -->
 <project name="bbq" default="all">
 	<property file="bbq_ant.properties"/>
-	<target name="all" depends="bbqopentool,bbqstandalone,bbq_eclipse"/>
+	<target name="all" depends="bbqopentool,bbqstandalone,bbq_eclipse_site"/>
 	<target name="bbqopentool" depends="buildopentool">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/bbqopentool.jar" basedir="classes" manifest="com/antlersoft/opentool/classes.opentools" includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/opentool/** com/antlersoft/parser/** com/antlersoft/classwriter/**">
