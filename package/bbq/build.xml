@@ -20,9 +20,21 @@ Requires ant 1.6+
 	</target>
 	<target name="bbq_eclipse" depends="buildeclipse">
 		<mkdir dir="dist"/>
-		<jar destfile="dist/com.antlersoft.bbq_eclipse.jar" basedir="classes" manifest="META-INF/MANIFEST.MF"
+		<jar destfile="dist/com.antlersoft.bbq_eclipse_${bbq.version}.jar" basedir="classes" manifest="META-INF/MANIFEST.MF"
 		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/bbq_eclipse/** icons/** plugin.xml"
 		/>
+	</target>
+	<target name="bbq_eclipse_site" depends="bbq_eclipse">
+		<mkdir dir="dist/site"/>
+		<mkdir dir="dist/site/features"/>
+		<mkdir dir="dist/site/plugins" />
+		<copy todir="dist/site" file="site.xml" />
+		<copy todir="dist/site/plugins" file="dist/com.antlersoft.bbq_eclipse_${bbq.version}.jar" />
+		<jar destfile="dist/site/features/com.antlersoft.bbq_eclipse_${bbq.version}.jar"
+		basedir="."
+		includes="feature.xml"	
+		/> 
+		<jar destfile="dist/bbq_eclipse_site.jar" basedir="dist/site" includes="**" />
 	</target>
 	<target name="buildcommon">
 		<mkdir dir="classes"/>
