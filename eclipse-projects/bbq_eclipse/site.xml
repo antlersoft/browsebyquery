@@ -1,2 +1,8 @@
-<?xml encoding="UTF-8" ?>
-<site/>
+<?xml version="1.0" encoding="UTF-8" ?>
+<site>
+<description>
+Site created for adding or updating antlersoft Browse-by-Query
+in your Eclipse configuration.
+</description>
+<feature url="features/com.antlersoft.bbq_eclipse_0.3.0.jar"/>
+</site>
