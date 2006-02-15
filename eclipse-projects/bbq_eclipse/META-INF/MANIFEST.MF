@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Browse-By-Query Plug-in
-Bundle-SymbolicName: bbq_eclipse; singleton:=true
-Bundle-Version: 1.0.0
+Bundle-SymbolicName: com.antlersoft.bbq_eclipse; singleton:=true
+Bundle-Version: 0.3
 Bundle-Activator: com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin
 Bundle-Vendor: antlersoft
 Bundle-Localization: plugin

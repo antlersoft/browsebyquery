@@ -1,0 +1,10 @@
+<?xml encoding="UTF-8"?>
+<feature id="com.antlersoft.bbq_eclipse" version="0.3" label="Browse-By-Query">
+	<description>
+		A database and query engine for the program elements in your Java project.
+	</description>
+	<requires>
+		<import feature="org.eclipse.jdt"/>
+	</requires>
+	<plugin id="com.antlersoft.bbq_eclipse" version="0.3" />
+</feature>
