@@ -33,8 +33,9 @@ Requires ant 1.6+
 		<jar destfile="dist/site/features/com.antlersoft.bbq_eclipse_${bbq.version}.jar"
 		basedir="."
 		includes="feature.xml"	
+		filesonly="true"
 		/> 
-		<jar destfile="dist/bbq_eclipse_site.jar" basedir="dist/site" includes="**" />
+		<jar destfile="dist/bbq_eclipse_site.jar" basedir="dist/site" includes="**" filesonly="true" />
 	</target>
 	<target name="buildcommon">
 		<mkdir dir="classes"/>
