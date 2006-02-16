@@ -3,7 +3,7 @@
 <plugin>
 
    <extension
-         id="com.antlersoft.bbq_eclipse.builder.BBQBuilder"
+         id="com.antlersoft.BBQBuilder"
          name="Browse-By-Query Builder"
          point="org.eclipse.core.resources.builders">
       <builder
@@ -14,7 +14,7 @@
       </builder>
    </extension>
    <extension
-         id="com.antlersoft.bbq_eclipse.builder.BBQNature"
+         id="com.antlersoft.BBQNature"
          name="Browse-By-Query Project Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
@@ -23,7 +23,7 @@
          </run>
       </runtime>
       <builder
-            id="com.antlersoft.bbq_eclipse.builder.BBQBuilder">
+            id="com.antlersoft.BBQBuilder">
       </builder>
    </extension>
    <extension
@@ -36,7 +36,7 @@
          <action
                class="com.antlersoft.bbq_eclipse.builder.ToggleNatureAction"
                enablesFor="+"
-               icon="icons/weber.gif"
+               icon="icons/weber-small.gif"
                id="com.antlersoft.bbq_eclipse.addRemoveNatureAction"
                label="Include in Browse-By-Query DB"
                menubarPath="additions"

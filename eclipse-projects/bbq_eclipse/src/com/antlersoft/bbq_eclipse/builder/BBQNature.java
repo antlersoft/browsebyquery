@@ -11,7 +11,7 @@ public class BBQNature implements IProjectNature {
 	/**
 	 * ID of this project nature
 	 */
-	public static final String NATURE_ID = "com.antlersoft.bbq_eclipse.builder.BBQNature";
+	public static final String NATURE_ID = "com.antlersoft.BBQNature";
 
 	private IProject project;
 
