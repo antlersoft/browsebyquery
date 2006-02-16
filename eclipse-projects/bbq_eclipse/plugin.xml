@@ -14,7 +14,7 @@
       </builder>
    </extension>
    <extension
-         id="com.antlersoft.bbqNature"
+         id="com.antlersoft.bbq_eclipse.builder.BBQNature"
          name="Browse-By-Query Project Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
