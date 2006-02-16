@@ -2,7 +2,7 @@
 <feature
       id="com.antlersoft.bbq_eclipse"
       label="Browse-by-Query"
-      version="0.3.3">
+      version="0.3.4">
 
    <description>
       A database and query engine for the program elements in your Java project.

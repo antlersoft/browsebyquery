@@ -4,5 +4,5 @@
 Site created for adding or updating antlersoft Browse-by-Query
 in your Eclipse configuration.
 </description>
-<feature url="features/com.antlersoft.bbq_eclipse_0.3.3.jar"/>
+<feature url="features/com.antlersoft.bbq_eclipse_0.3.4.jar"/>
 </site>
