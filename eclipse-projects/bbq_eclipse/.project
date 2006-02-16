@@ -21,7 +21,7 @@
 			</arguments>
 		</buildCommand>
 		<buildCommand>
-			<name>bbq_eclipse.com.antlersoft.bbqBuilder</name>
+			<name>com.antlersoft.bbq_eclipse.builder.BBQBuilder</name>
 			<arguments>
 			</arguments>
 		</buildCommand>
@@ -29,6 +29,7 @@
 	<natures>
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>com.antlersoft.bbq_eclipse.builder.BBQNature</nature>
 	</natures>
 	<linkedResources>
 		<link>
