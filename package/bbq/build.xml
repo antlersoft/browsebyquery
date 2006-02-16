@@ -30,12 +30,11 @@ Requires ant 1.6+
 		<mkdir dir="dist/site/plugins" />
 		<copy todir="dist/site" file="site.xml" />
 		<copy todir="dist/site/plugins" file="dist/com.antlersoft.bbq_eclipse_${bbq.version}.jar" />
-		<jar destfile="dist/site/features/com.antlersoft.bbq_eclipse_${bbq.version}.jar"
+		<zip destfile="dist/site/features/com.antlersoft.bbq_eclipse_${bbq.version}.jar"
 		basedir="."
 		includes="feature.xml"	
-		filesonly="true"
 		/> 
-		<jar destfile="dist/bbq_eclipse_site.jar" basedir="dist/site" includes="**" filesonly="true" />
+		<zip destfile="dist/bbq_eclipse_site.jar" basedir="dist/site" includes="**"  />
 	</target>
 	<target name="buildcommon">
 		<mkdir dir="classes"/>
