@@ -52,7 +52,7 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 		}
 	}
 
-	public static final String BUILDER_ID = "com.antlersoft.BBQBuilder";
+	public static final String BUILDER_ID = "com.antlersoft.bbq_eclipse.BBQBuilder";
 
 	/*
 	 * (non-Javadoc)

@@ -2,7 +2,7 @@
 <feature
       id="com.antlersoft.bbq_eclipse"
       label="Browse-by-Query"
-      version="0.3.6">
+      version="7.007.007">
 
    <description>
       A database and query engine for the program elements in your Java project.
@@ -295,6 +295,16 @@ POSSIBILITY OF SUCH DAMAGES.
 
    <requires>
       <import feature="org.eclipse.jdt"/>
+      <import feature="org.eclipse.jdt"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.search"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.jdt.core"/>
    </requires>
 
    <plugin
