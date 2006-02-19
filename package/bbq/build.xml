@@ -29,7 +29,9 @@ Requires ant 1.6+
 		<mkdir dir="dist/site/features"/>
 		<mkdir dir="dist/site/plugins" />
 		<copy todir="dist/site" file="site.xml" />
+		<replace file="dist/site/site.xml" token="7.007.007" value="${bbq.version}"/>
 		<copy todir="dist/site/plugins" file="dist/com.antlersoft.bbq_eclipse_${bbq.version}.jar" />
+		<replace file="feature.xml" token="7.007.007" value="${bbq.version}"/>
 		<zip destfile="dist/site/features/com.antlersoft.bbq_eclipse_${bbq.version}.jar"
 		basedir="."
 		includes="feature.xml"	
@@ -67,5 +69,6 @@ Requires ant 1.6+
 		<copy todir="classes">
 			<fileset dir="." includes="icons/*.gif"/>
 		</copy>
+		<replace file="classes/plugin.xml" token="7.007.007" value="${bbq.version}"/>
 	</target>
 </project>
