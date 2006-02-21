@@ -69,6 +69,6 @@ Requires ant 1.6+
 		<copy todir="classes">
 			<fileset dir="." includes="icons/*.gif"/>
 		</copy>
-		<replace file="classes/plugin.xml" token="7.007.007" value="${bbq.version}"/>
+		<replace file="META-INF/MANIFEST.MF" token="7.007.007" value="${bbq.version}"/>
 	</target>
 </project>
