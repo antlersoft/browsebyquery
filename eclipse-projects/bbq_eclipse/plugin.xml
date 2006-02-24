@@ -23,7 +23,7 @@
          </run>
       </runtime>
       <builder
-            id="BBQBuilder">
+            id="com.antlersoft.bbq_eclipse.BBQBuilder">
       </builder>
    </extension>
    <extension
