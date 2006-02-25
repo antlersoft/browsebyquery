@@ -2,10 +2,12 @@
 <feature
       id="com.antlersoft.bbq_eclipse"
       label="Browse-by-Query"
-      version="7.007.007">
+      version="7.007.007"
+      provider-name="antlersoft">
 
-   <description>
-      A database and query engine for the program elements in your Java project.
+   <description url="http://browsebyquery.sourceforge.net">
+      A database and query engine for the program elements in your
+Java project.
    </description>
 
    <copyright>
@@ -292,6 +294,10 @@ YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
 PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGES.
    </license>
+
+   <url>
+      <update label="Browse-by-Query plugin Updates" url="http://browsebyquery.sourceforge.net/eclipse-site"/>
+   </url>
 
    <requires>
       <import feature="org.eclipse.jdt"/>
