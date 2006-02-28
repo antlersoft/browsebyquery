@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry excluding="classes/|com/antlersoft/chatclient/|com/antlersoft/chatserver/|com/antlersoft/deepblue/|com/antlersoft/forwarder/|com/antlersoft/opentool/|com/antlersoft/rfs/|com/antlersoft/serverdb/|com/antlersoft/warmisc/|com/antlersoft/warroom/|com/antlersoft/demo3d/|com/antlersoft/odb/transp/|com/antlersoft/classwriter/test/|newmap/com/antlersoft/warroom/maps/|newmap/com/antlersoft/warroom/|newmap/com/antlersoft/|newmap/com/|newmap/|stdmap/com/antlersoft/warroom/maps/|stdmap/com/antlersoft/warroom/|stdmap/com/antlersoft/|stdmap/com/|stdmap/|com/antlersoft/gztest/" kind="src" path="antlersoft"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/javaws"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

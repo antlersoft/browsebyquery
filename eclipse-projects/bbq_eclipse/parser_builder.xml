@@ -1,0 +1,28 @@
+<project name="parser_builder" default="all">
+	<target name="all" depends="QueryParser,Basic,PreprocessParser,ConstExprParser,Reflect"/>
+	<target name="QueryParser">
+		<exec executable="genparser.sh">
+			<arg file="src/com/antlersoft/analyzer/query/QueryParser.pre"/>
+		</exec>
+	</target>
+	<target name="Basic">
+		<exec executable="genparser.sh">
+			<arg file="src/com/antlersoft/query/Basic.pre"/>
+		</exec>
+	</target>
+	<target name="PreprocessParser">
+		<exec executable="genparser.sh">
+			<arg file="src/com/antlersoft/analyzecxx/PreprocessParser.pre"/>
+		</exec>
+	</target>
+	<target name="ConstExprParser">
+		<exec executable="genparser.sh">
+			<arg file="src/com/antlersoft/analyzecxx/ConstExprParser.pre"/>
+		</exec>
+	</target>
+	<target name="Reflect">
+		<exec executable="genparser.sh">
+			<arg file="src/com/antlersoft/query/reflect/Reflect.pre"/>
+		</exec>
+	</target>	
+</project>
