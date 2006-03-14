@@ -53,6 +53,12 @@ public class ApplicationContext implements AppContext
 			}
 		}
 	}
+	
+	public ApplicationContext( String app_class, String[] args)
+	{
+		this( args);
+		m_properties.setProperty( "app_class", app_class);
+	}
 
 	public Image getImage( URL url)
 	{
