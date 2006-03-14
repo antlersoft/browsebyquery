@@ -1457,7 +1457,7 @@ the analyzed system.  Equivalent to the filter <userinput>not exists ( calls to 
 		</refentry>
 		<refentry id="r-write">
 		  <refnamediv>
-			<refname>matching</refname>
+			<refname>write</refname>
 			<refpurpose>Checks if a field reference is read or write</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
