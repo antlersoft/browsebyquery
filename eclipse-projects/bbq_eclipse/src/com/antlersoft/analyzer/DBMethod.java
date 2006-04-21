@@ -40,14 +40,17 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
     public static final int REAL=3;
-
+    private static final long serialVersionUID = 7199971582900640229L;
+    
     ObjectRef dbclass;
+    ObjectRef returnType;
     String name;
     String signature;
     Vector calls;
     Vector calledBy;
     Vector fieldReferences;
     Vector stringReferences;
+    Vector arguments;
     int accessFlags;
 
     private boolean resolved;

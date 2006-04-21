@@ -33,11 +33,14 @@ import com.antlersoft.odb.PersistentImpl;
 public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 {
     ObjectRef dbclass;
+    ObjectRef dbtype;
     String name;
     String descriptor;
     Vector referencedBy;
     int accessFlags;
 
+    private static final long serialVersionUID = -2154296981139151800L;
+    
     private transient PersistentImpl _persistentImpl;
 
     public DBField( String key, AnalyzerDB db)
@@ -74,11 +77,11 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 
     static String makeKey( String className, String fieldName)
     {
-	StringBuffer sb=new StringBuffer();
-	sb.append( className);
-	sb.append( "\t");
-	sb.append( fieldName);
-	return sb.toString();
+		StringBuffer sb=new StringBuffer();
+		sb.append( className);
+		sb.append( "\t");
+		sb.append( fieldName);
+		return sb.toString();
     }
 
     public String getName()
@@ -88,13 +91,15 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 
     public String getDescriptor()
     {
-	return descriptor;
+    	return descriptor;
     }
 
-    public void setDescriptor( String s)
+    public void setTypeFromDescriptor( AnalyzerDB db, String s)
+    	throws Exception
     {
-	descriptor=s;
-	ObjectDB.makeDirty( this);
+    	dbtype.setReferenced( db.getWithKey( "com.antlersoft.analyzer.DBType", s));
+    	descriptor=s;
+    	ObjectDB.makeDirty( this);
     }
 
     public int getAccessFlags()

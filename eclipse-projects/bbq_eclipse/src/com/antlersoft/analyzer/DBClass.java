@@ -51,6 +51,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     private String internalName;
     private String sourceFile;
     int accessFlags;
+    private static final long serialVersionUID = 2812968988095700193L;
 
 		private transient PersistentImpl _persistentImpl;
 
@@ -207,6 +208,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
             DBField new_field=(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
 				DBField.makeKey( dbc.name, fi.getName()));
             new_field.accessFlags=fi.getFlags();
+            new_field.setTypeFromDescriptor( db, fi.getType());
             dbc.addField( new_field);
 		}
 		for ( i=ac.getMethods().iterator(); i.hasNext();)

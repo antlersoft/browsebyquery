@@ -21,22 +21,17 @@ package com.antlersoft.analyzer.query;
 
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.Stack;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.TreeSet;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.PrintStream;
 import com.antlersoft.analyzer.*;
 import com.antlersoft.parser.*;
 
-import com.antlersoft.classwriter.ClassWriter;
 
 class QueryParserBase extends Parser
 {
@@ -154,9 +149,11 @@ class QueryParserBase extends Parser
                 case '\n' :
                 case '\t' :
                 case '"' :
+                case '(' :
+                case ')' :
                     if ( currentString.length()>0)
                     {
-                        String cs=currentString.toString().toLowerCase();
+                        String cs=currentString.toString();
                         currentString.setLength(0);
                         ReservedWord rw=(ReservedWord)ReservedWord.wordList.get( cs);
                         if ( rw==null)
@@ -175,7 +172,7 @@ class QueryParserBase extends Parser
                     break;
 
                 default :
-                    currentString.append( c);
+	                currentString.append( c);
                 }
             }
         }

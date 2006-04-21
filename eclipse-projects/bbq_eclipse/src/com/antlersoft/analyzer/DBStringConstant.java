@@ -37,7 +37,8 @@ public class DBStringConstant implements Persistent, Cloneable
 {
     String constant;
     Vector referencedBy;
-
+    private static final long serialVersionUID = 8787076485629057077L;
+    
     private transient PersistentImpl _persistentImpl;
 
     public DBStringConstant( String key, AnalyzerDB db)

@@ -11,6 +11,8 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.ISearchResultListener;
 
+import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
+
 /**
  * @author mike
  *
@@ -66,8 +68,7 @@ public class QueryResult implements ISearchResult {
 	 * @see org.eclipse.search.ui.ISearchResult#getImageDescriptor()
 	 */
 	public ImageDescriptor getImageDescriptor() {
-		// TODO Auto-generated method stub
-		return null;
+		return Bbq_eclipsePlugin.getImageDescriptor( "icons/weber-small.gif");
 	}
 
 	/* (non-Javadoc)

@@ -70,7 +70,7 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	
 	public static IStatus createStatus( String message, Throwable ex, int severity, int code)
 	{
-		return new Status(severity, "bbq_eclipse", code, message, ex);
+		return new Status(severity, "com.antlersoft.bbq_eclipse", code, message, ex);
 	}
 	
 	public void logError( String message, Throwable ex)
@@ -152,6 +152,6 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("bbq_eclipse", path);
+		return AbstractUIPlugin.imageDescriptorFromPlugin("com.antlersoft.bbq_eclipse", path);
 	}
 }
