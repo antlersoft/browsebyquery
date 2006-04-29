@@ -10,20 +10,42 @@ import com.antlersoft.parser.RuleAction;
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.ShiftRule;
 import com.antlersoft.parser.Symbol;
+import com.antlersoft.parser.Token;
 
 import com.antlersoft.classwriter.ClassWriter;
 
 public class QueryParser extends QueryParserBase
 {
     // Public interface
-public QueryParser()
-{
-super( parseStates);
-}
+	public QueryParser()
+	{
+		super( parseStates);
+	}
+	
     public QueryParser( String toParse)
     {
         this();
         setLine( toParse);
+    }
+    
+ 	/**
+ 	 * Change a nameSymbol token to an appropriate type for the named object
+ 	 */
+    protected void massageToken( Token token)
+    {
+    	if ( token.symbol==nameSymbol && ! nameSymbolExpected())
+    	{
+    		String name=token.value;
+    		Object o=storedValues.get( name);
+    		if ( o instanceof Transform)
+    		{
+    			token.symbol=TransformSymbol;
+    		}
+    		else if ( o instanceof SetExpression)
+    		{
+    			token.symbol=SetExpressionSymbol;
+    		}
+    	}
     }
 
 

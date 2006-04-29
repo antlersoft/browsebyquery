@@ -25,7 +25,6 @@ import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.TreeSet;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -52,7 +51,9 @@ class QueryParserBase extends Parser
         boolean errorOut=false;
         for (; ! errorOut && currentIndex<tokens.length; currentIndex++)
         {
-            errorOut=parse( tokens[currentIndex].symbol, tokens[currentIndex].value);
+        	Token token=tokens[currentIndex];
+        	massageToken( token);
+            errorOut=parse( token.symbol, token.value);
         }
         if ( errorOut)
         {
@@ -84,6 +85,26 @@ class QueryParserBase extends Parser
         storedValuesSupport.removePropertyChangeListener( l);
     }
 
+    // Protected interface
+    
+    /**
+     * Anything a sub-class might want to do with a token
+     */
+    protected void massageToken( Token token)
+    {
+    
+    }
+    
+    protected final boolean nameSymbolExpected()
+    {
+    	for ( Enumeration e=getExpectedSymbols(); e.hasMoreElements();)
+    	{
+    		if ( e.nextElement()==nameSymbol)
+    			return true;
+    	}
+    	return false;
+    }
+
     // Package interface
     Token[] tokens;
     int currentIndex;
@@ -107,7 +128,25 @@ class QueryParserBase extends Parser
             return "\""+value+"\"";
         }
     }
-
+    
+    private static void addCurrentString( StringBuffer currentString, Vector tokens)
+    {
+        if ( currentString.length()>0)
+        {
+            String cs=currentString.toString();
+            currentString.setLength(0);
+            ReservedWord rw=(ReservedWord)ReservedWord.wordList.get( cs);
+            if ( rw==null)
+            {
+                tokens.addElement( new Token( nameSymbol, cs));
+            }
+            else
+            {
+                tokens.addElement( new Token( rw, cs));
+            }
+        }  	
+    }
+    
     static Token[] tokenize( String toTokenize)
     {
         char[] chars=toTokenize.toCharArray();
@@ -144,32 +183,31 @@ class QueryParserBase extends Parser
             {
                 switch ( c)
                 {
+                // Whitespace cases
                 case ' ' :
                 case '\r' :
                 case '\n' :
                 case '\t' :
+                	addCurrentString( currentString, tokens);
+                	break;
+                	
+                // Initial quote
                 case '"' :
-                case '(' :
-                case ')' :
-                    if ( currentString.length()>0)
-                    {
-                        String cs=currentString.toString();
-                        currentString.setLength(0);
-                        ReservedWord rw=(ReservedWord)ReservedWord.wordList.get( cs);
-                        if ( rw==null)
-                        {
-                            tokens.addElement( new Token( nameSymbol, cs));
-                        }
-                        else
-                        {
-                            tokens.addElement( new Token( rw, cs));
-                        }
-                    }
+                	addCurrentString( currentString, tokens);
                     if ( c=='"')
                     {
                         inQuoted=true;
                     }
                     break;
+                    
+                // Non-quote Punctuation-- only supports single char punctuation tokens
+                case ',' :
+                case '(' :
+                case ')' :
+                	addCurrentString( currentString, tokens);
+                	currentString.append( c);
+                	addCurrentString( currentString, tokens);
+                	break;
 
                 default :
 	                currentString.append( c);
@@ -182,36 +220,6 @@ class QueryParserBase extends Parser
         Token[] retval=new Token[tokens.size()];
         tokens.copyInto( retval);
         return retval;
-    }
-
-    void pushCastToken( SetExpression se)
-    {
-        Token castToken;
-        if ( se.getSetClass()==DBMethod.class)
-            castToken=new Token( QueryParser.methodcast, "");
-        else
-            castToken=new Token( QueryParser.references, "");
-/*
-        else if ( se instanceof MethodSet)
-            castToken=new Token( methodcast, "");
-        else if ( se instanceof CallSet)
-            castToken=new Token( callcast, "");
-        else
-            castToken=new Token( fieldcast, "");
-*/
-        ArrayList tokenList=new ArrayList( tokens.length+1);
-        for ( int i=0; i<tokens.length; i++)
-        {
-            if ( i==currentIndex)
-            {
-                tokenList.add( castToken);
-            }
-            tokenList.add( tokens[i]);
-        }
-        tokens=new Token[tokenList.size()];
-        tokens=(Token[])tokenList.toArray( tokens);
-        currentIndex--;
-        clearNextValue();
     }
 
     static class ReservedWord extends Symbol

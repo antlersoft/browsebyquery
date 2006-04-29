@@ -20,6 +20,7 @@ reserved called
 reserved calls
 reserved Class "class"
 reserved classes
+reserved comma "," 1 left
 reserved containing
 reserved count
 reserved deintersection 2 left
@@ -36,7 +37,6 @@ reserved intersection 2 left
 reserved Interface "interface"
 reserved leftParen "("
 reserved matching
-reserved methodcast
 reserved methods
 reserved NOT "not" 5 right
 reserved or 4 left
@@ -54,10 +54,12 @@ reserved referenced
 reserved rightParen ")"
 reserved same
 reserved set
+reserved SetExpressionSymbol "#1"
 reserved stringconstant "string"
 reserved stringconstants "strings"
 reserved that
 reserved to
+reserved TransformSymbol "#2"
 reserved uncalled
 reserved uncorrelated
 reserved union 2 left
@@ -129,8 +131,8 @@ Transform : Transform SetOperator Transform "{
 Transform : Transform that Identity Filter "{
 	int size=valueStack.size();
 	return new TransformTransform(
-		new FilterTransform((Filter)valueStack.get( valueStack.size()-1)),
-		(Transform)valueStack.get( valueStack.size()-4));
+		new FilterTransform((Filter)valueStack.get( size-1)),
+		(Transform)valueStack.get( size-4));
 	};" .
 Transform : leftParen Transform rightParen "{
 	return (Transform)valueStack.get( valueStack.size()-2);
@@ -140,6 +142,15 @@ Transform : count "{ return new Count(); }" .
 Transform : uncorrelated leftParen SetExpression rightParen "{
 	return new UncorrelatedSet( (SetExpression)
             valueStack.get( valueStack.size()-2));
+	}" .
+	
+Transform : recursive leftParen Transform rightParen "{
+	return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-2), null);
+	}" .
+
+Transform : recursive leftParen Transform comma Transform rightParen "{
+	int s=valueStack.size();
+	return new RecursiveTransform( (Transform)valueStack.get( s-4), (Transform)valueStack.get( s-2));
 	}" .
 
 SetExpression : Transform SetExpression "{
@@ -214,6 +225,7 @@ Transform : Reference from "{ return new ReferenceFrom(); }" .
 Transform : StringConstant Reference from "{ return new StringReferenceFrom(); }" .
 Transform : Reference to "{ return new ReferencesTo(); }" .
 Transform : calls to "{ return new CallsTo(); }" .
+Transform : TransformSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
 UncalledPolymorphic : uncalled polymorphic .
 SetExpression : set nameSymbol to SetExpression "{
     QueryParser qp=(QueryParser)parser;
@@ -223,12 +235,16 @@ SetExpression : set nameSymbol to SetExpression "{
     qp.storedValues.put( valueName, se);
 	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
     return se; }" 1 .
-SetExpression : nameSymbol "{ QueryParser qp=(QueryParser)parser;
-    SetExpression retVal=(SetExpression)qp.storedValues.get(
-	    valueStack.get( valueStack.size()-1));
-    if ( retVal==null)
-	    throw new RuleActionException( \"Unknown_name:\"+valueStack.get( valueStack.size()-1));
-    return retVal; }" .
+SetExpression : set nameSymbol to Transform "{
+    QueryParser qp=(QueryParser)parser;
+    int size=valueStack.size();
+    Transform se=(Transform)valueStack.get( size-1);
+    String valueName=(String)valueStack.get( size-3);
+    qp.storedValues.put( valueName, se);
+	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
+	return new EmptySetExpression();
+	}" 1 .
+SetExpression : SetExpressionSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
 
 ImportExpression : Import .
 ImportExpression : ImportExpression set "{
