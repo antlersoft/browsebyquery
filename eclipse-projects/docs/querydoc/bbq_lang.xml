@@ -324,6 +324,7 @@ or a set expression enclosed within parentheses.
 </para>
 <para>
 A transform is one of the transforms defined by the language,
+a name,
 a transform with another transform appended,
 two transforms joined by one of the set operators,
 a filter,
