@@ -1,4 +1,4 @@
-<!DOCTYPE book SYSTEM "file:///opt/kde/share/apps/ksgmltools2/docbook/xml-dtd-4.1.2/docbookx.dtd" [
+<!DOCTYPE book SYSTEM "file:///usr/kde/3.4/share/apps/ksgmltools2/docbook/xml-dtd-4.1.2/docbookx.dtd" [
 <!ENTITY p-bbq "BBQ">
 ]>
 <book>
@@ -18,7 +18,7 @@
   <preface>
     <title>A Note on the Language</title>
     <para>This document described the &p-bbq; language
-for querying Java systems as it exists in early 2005.  The concepts
+for querying Java systems as it exists in early 2006.  The concepts
 embodied by this language are, I hope, more important
 than the details of the language itself
 and will outlast any particular implementation.
@@ -97,6 +97,15 @@ to retrieve the desired results.
 <sect1>
 <title>Transforms</title>
 <para>
+In general, a transform changes the result of a set expression into another set;
+this is a very flexible concept,
+and you can do all sorts of processing with transforms.
+You apply a transform to a set expression just by writing the transform
+in front of the expression;
+the result is a new set expression that returns the result of
+the original set expression transformed.
+</para>
+<para>
 A commonly used transform is <userinput>methods in</userinput>,
 which reflects one relationship between methods and classes: methods
 are defined within classes.
@@ -108,18 +117,10 @@ So the set expression <userinput>methods in class "java.util.ArrayList"</userinp
 returns, well, just what you'd expect.
 </para>
 <para>
-In general, a transform changes the result of a set expression into another set;
-this is a very flexible concept,
-and you can do all sorts of processing with transforms.
-You apply a transform by prepending it to a set expression;
-the result is a new set expression that returns the result of
-the original set expression transformed.
-</para>
-<para>
 The language provides a selection of built-in transforms that
 reflect the relationships
 among the program objects in the &p-bbq; database; they're listed in the <link linkend="r-transforms">reference</link>.
-You'll often use these transforms in series to get the results you want.
+You'll often combine these transforms in a series to get the results you want.
 For example <userinput>calls to</userinput>
 is a transform that takes a set of methods and is often used
 with the <userinput>methods in</userinput> transform;
@@ -128,8 +129,9 @@ returns all the calls, from anywhere in the analyzed system,
 to methods in the ArrayList class.
 A series of transforms can be regarded as a single transform
 that combines their effects: <userinput>( calls to methods in )</userinput>
-is a transform that turns a set of classes into the set of all the calls
-to the methods defined in the set of classes.
+is a transform that turns a set expression representing a set of classes
+into a set expression for all the calls
+to any methods defined in those classes.
 </para>
 <para>
 You might think that putting the transform in front of the set expression is
@@ -139,6 +141,18 @@ precede the things they modify.
 When you read a set expression, you can picture the data flowing
 from the simple set expression through the transforms from right to left.
 </para>
+<sect2 id="r-stateless">
+<title>Stateless Transforms</title>
+In general, all the results of a transform may depend on any of the elements
+in the set being transformed.
+However, some transforms have the property of being <firstterm>stateless</firstterm>.
+These transforms will return the same result for any given transformed object,
+regardless of the other elements in the set to be transformed.
+Because of this, stateless transforms behave more predictably in the context
+of some transform operators such as <link linkend="r-exists">exists</link>
+and <link linkend="r-recursive">recursive</link>.
+If a transform is stateless, that is noted in the synopsis for the transform in the <link linkend="r-transforms">reference</link>.
+</sect2>
 </sect1>
 <sect1>
 <title>Filters</title>
@@ -148,7 +162,7 @@ set only by excluding some of its members.
 One common filter might be <userinput>public</userinput>,
 which can be applied to a set expression that returns
 classes, methods, or fields and keeps only
-those that are declared public.  So again,
+those that are declared public.  So again, the set expression
 <userinput>public methods in class "java.util.ArrayList"</userinput>
 will return just what it says.
 The language implements many filters, described in the
@@ -160,6 +174,9 @@ with boolean operators (not, and, or) to create a more complex filter.
 <userinput>( public or protected ) methods in class "java.util.ArrayList"</userinput>
 will give the list of all the methods in the class that are visible outside
 its package.
+</para>
+<para>
+By definition, the transform represented by a filter is <link linkend="r-stateless">stateless</link>.
 </para>
 </sect1>
       <sect1>
@@ -205,7 +222,7 @@ This concept is expressed more formally in the language
 with <firstterm>expression types</firstterm>.
 A set expression has a type, which represents the type of objects that
 the expression returns (this type is distinct from any type within the
-program &p-bbq; is examining.)
+analyzed system.)
 &p-bbq; supports a hierarchy of types that is fully described in the
 <link linkend="r-types">reference</link>:
 it includes: classes, methods, fields, method calls, field references,
@@ -248,7 +265,7 @@ transform applies to methods
 while the <userinput>fields in</userinput>
 transform applies only to classes.
 There is no set expression type
-to which both transforms could sensible be applied.
+to which both transforms could sensibly be applied.
 If you are using &p-bbq; and receive an error message
 about <errorname>Incompatible types</errorname>,
 you've probably made this type of mistake in
@@ -279,7 +296,9 @@ Names and reserved words consist of a string of alphanumeric
 characters or underscores starting with a letter or underscore.
 The only permissable punctuation within a set expression
 are parentheses, which are used for grouping in set expressions,
-filters or transforms.</para>
+filters or transforms, and commas, which are used with certain
+operators.  Punctuation characters are recognized as tokens
+in themselves and don't have to be set off with spaces.</para>
 <para>
 A sequence of one or more reserved words represents a
 set operator, a logical operator,
@@ -294,7 +313,7 @@ must be escaped by a backslash.
 <para>
 Names are words that must not conflict
 with any of the reserved words, and must reference
-an expression previously defined with the <link linkend="r-setcommand">set command</link>.</para>
+an expression or transform previously defined with the <link linkend="r-setcommand">set command</link>.</para>
 <para>
 A valid set expression consists of one of the set expressions defined
 in the language,
@@ -429,7 +448,7 @@ type that is an ancestor of each of the constituent result types.
       <refentry id="r-type-class">
 	<refnamediv>
 	  <refname>class</refname>
-	  <refpurpose>Represents a Java class in the database</refpurpose>
+	  <refpurpose>Represents a Java class in the analyzed system</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Description</title>
@@ -445,7 +464,7 @@ type that is an ancestor of each of the constituent result types.
       <refentry id="r-type-field">
 	<refnamediv>
 	  <refname>field</refname>
-	  <refpurpose>Represents a field in a Java class in the database</refpurpose>
+	  <refpurpose>Represents a field in a Java class in the analyzed system</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Parent</title>
@@ -475,7 +494,7 @@ type that is an ancestor of each of the constituent result types.
       <refentry id="r-type-method">
 	<refnamediv>
 	  <refname>method</refname>
-	  <refpurpose>Represents a method in a Java class in the database</refpurpose>
+	  <refpurpose>Represents a method in a Java class in the analyzed system</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Description</title>
@@ -502,7 +521,7 @@ this type.</para>
       <refentry id="r-type-reference">
 	<refnamediv>
 	  <refname>reference</refname>
-	  <refpurpose>Represents a reference to a program construct from within a Java class in the database</refpurpose>
+	  <refpurpose>Represents a reference to a program construct from within a Java class in the analyzed system</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Parent</title>
@@ -531,7 +550,7 @@ this type.</para>
       <refentry id="r-type-string-constant">
 	<refnamediv>
 	  <refname>string constant</refname>
-	  <refpurpose>Represents a string constant that appears in one or more classes in the database</refpurpose>
+	  <refpurpose>Represents a string constant that appears in one or more classes in the analyzed system</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Description</title>
@@ -569,10 +588,11 @@ which are set expressions that let you access
 the interpreter's state..</para>
     <sect2 id="r-simplesetexpressions">
       <title>Simple Set Expressions</title>
+	</sect2>
       <refentry>
 	<refnamediv>
 	  <refname>all classes</refname>
-	  <refpurpose>Returns all classes in the database</refpurpose>
+	  <refpurpose>Returns all classes in the analyzed system</refpurpose>
 	</refnamediv>
 	<refsynopsisdiv>
 	  <synopsis><userinput>all classes</userinput></synopsis>
@@ -580,7 +600,7 @@ the interpreter's state..</para>
 	<refsect1>
 	  <title>Description</title>
 <para>
-Returns the complete set of all classes in the database; use this
+Returns the complete set of all classes in the analyzed system; use this
 expression as a starting point when you are doing a global search
 of your system.
 </para>
@@ -595,7 +615,7 @@ of your system.
 	<refentry>
 	  <refnamediv>
 	    <refname>all strings</refname>
-	    <refpurpose>Return all the string constants defined in the database</refpurpose>
+	    <refpurpose>Return all the string constants defined in the analyzed system</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
 	    <synopsis>all strings</synopsis>
@@ -603,7 +623,7 @@ of your system.
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
-	    <para>Returns all the string constants in the database.
+	    <para>Returns all the string constants in the analyzed system.
 You can use this as a starting point when you are doing a global
 search through the string constants.</para>
 	  </refsect1>
@@ -618,7 +638,7 @@ search through the string constants.</para>
 	    <refpurpose>Select a single class by name</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
-	    <synopsis>class &lt;name&gt;</synopsis>
+	    <synopsis>class <replaceable>name</replaceable></synopsis>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
@@ -640,13 +660,13 @@ name until a valid class is found.</para>
 	    <refpurpose>Return a specific string constant</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
-	    <synopsis>string &lt;string&gt;</synopsis>
-	    <synopsis>strings &lt;string&gt;</synopsis>
+	    <synopsis>string <replaceable>string</replaceable></synopsis>
+	    <synopsis>strings <replaceable>string</replaceable></synopsis>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
 	    <para>Returns the specific string constant
-with the value &lt;string&gt;.  Use this
+with the value <replaceable>string</replaceable>.  Use this
 when you are looking for information about a specific
 string constant.</para>
 	  </refsect1>
@@ -655,7 +675,6 @@ string constant.</para>
 	    <para><link linkend="r-type-string-constant">string constant</link></para>
 	  </refsect1>
 	</refentry>
-    </sect2>
       <sect2 id="r-commands">
 	<title>Commands and Miscellaneous Set Expressions</title>
 	<para>The interpreter can remember set expressions you've run,
@@ -664,13 +683,14 @@ for your convenience or for faster querying.  These
 special set expression commands let you work with the
 interpreter's state.
 </para>
+	</sect2>
 	<refentry>
 	  <refnamediv>
 	    <refname>execute</refname>
 	    <refpurpose>Convert a set expression to a set of objects</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
-	    <synopsis>execute &lt;set expression&gt;</synopsis>
+	    <synopsis>execute <replaceable>set expression</replaceable></synopsis>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
@@ -685,7 +705,7 @@ set expression returns this set of objects.</para>
 the <link linkend="r-setcommand">set command</link>
 to save the result of a time-consuming query for use in
 later expressions.</para>
-	  </refsect1>
+</refsect1>
 	</refentry>
 	<refentry>
 	  <refnamediv>
@@ -693,7 +713,7 @@ later expressions.</para>
 	    <refpurpose>Set a list of packages to search for classes</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
-	    <synopsis>import [set] [&lt;string 1&gt; &lt;string 2&gt;...&lt;string n&gt;</synopsis>
+	    <cmdsynopsis><command>import</command><arg choice="opt">set</arg><arg choice="opt" rep="repeat"><replaceable>string</replaceable></arg></cmdsynopsis>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
@@ -701,7 +721,7 @@ later expressions.</para>
 simple set expression as the foundation of your queries,
 and it can become tiresome to type the complete class name each time.
 You can use this command to specify a list of packages
-to search for a named class.  Each supplied &lt;string&gt; is
+to search for a named class.  Each supplied <replaceable>string</replaceable> is
 a package name.  You can use the import command as many
 times as you want to add additional packages to the list;
 if you use the set keyword with the import command the
@@ -743,21 +763,41 @@ is substituted.
 	<refentry id="r-setcommand">
 	  <refnamediv>
 	    <refname>set</refname>
-	    <refpurpose>Assign a name to a set expression</refpurpose>
+	    <refpurpose>Assign a name to a set expression or transform</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
-	    <synopsis>set &lt;name&gt; to &lt;set expression&gt;</synopsis>
+	    <cmdsynopsis><command>set</command><arg choice="plain"><replaceable>name</replaceable></arg><arg choice="plain">to</arg><arg choice="plain"><replaceable>set expression</replaceable></arg></cmdsynopsis>
+	    <cmdsynopsis><command>set</command><arg choice="plain"><replaceable>name</replaceable></arg><arg choice="plain">to</arg><arg choice="plain"><replaceable>transform</replaceable></arg></cmdsynopsis>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
-	    <para>The set expression is assigned to the name.
-The complete set expression can be referenced by using the name
-anywhere a set expression is permitted.
-The result of the operator is the assigned set expression,
-unchanged.</para>
+		<para>Sometimes, you'll want to refer to a single set
+		expression or transform again and again when constructing
+		other set expressions.  This command lets you assign
+		a name to a set expression or transform; you can then use
+		the name in other expressions
+		instead of writing out the whole transform or set expression
+		over again.
+		</para>
+		<para>&p-bbq; uses the same name space for both set expressions and
+		transforms; you can re-use to a given name,
+		but the name will only refer to either a set expression or a transform at
+		any one time.
+			<itemizedlist>
+				<listitem>In the first form, the <replaceable>set expression</replaceable> is assigned to the <replaceable>name</replaceable>.
+		The complete set expression can be referenced by using the name
+		anywhere a set expression is permitted.
+		The result of the command is the assigned set expression,
+		unchanged.</listitem>
+				<listitem>In the second form, the <replaceable>transform</replaceable> is assigned to the name.
+				The complete transform can be referenced by using the name
+				anywhere a transform is permitted.
+				The result of the command is an empty set expression.
+				</listitem>
+			</itemizedlist>
+	  	</para>
 	  </refsect1>
 	</refentry>
-      </sect2>
     </sect1>
     <sect1 id="r-transforms">
     	<title>Transforms</title>
@@ -803,6 +843,11 @@ to get to your desired object type.</para>
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>calls from</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -831,6 +876,11 @@ where bar is called, you might use:
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>calls to</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -857,7 +907,7 @@ where bar is called, you might use:
 			<refpurpose>Returns the classes that contain the class members in the set</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>methods in</synopsis>
+			<synopsis>classes containing</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -932,6 +982,11 @@ where bar is called, you might use:
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>fields in</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1031,6 +1086,11 @@ where those references were found.
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>methods in</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1073,6 +1133,75 @@ input methods.
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-recursive">
+		<refnamediv>
+			<refname>recursive</refname>
+			<refpurpose>
+			Recursively apply a transform,
+			and possibly a secondary transform
+			</refpurpose>
+		</refnamediv>
+		<refsynopsisdiv>
+		<synopsis>
+		recursive ( <replaceable>primary-transform</replaceable> )
+		</synopsis>
+		<synopsis>
+		recursive ( <replaceable>primary-transform</replaceable>, <replaceable>secondary-transform</replaceable> )
+		</synopsis>
+		</refsynopsisdiv>
+		<refsect1>
+			<title>Description</title>
+			<para>
+			Sometimes you would like a transform to return an entire sub-tree
+			of hierarchical data related to a program object.  &p-bbq; provides
+			some special-purpose transforms (such as <link linkend="r-recursive-derived-classes">recursive derived classes</link>) for this purpose; this transform operator
+			lets you recursively apply an arbitrary transform.
+			Use care when using this operator, since you might accidentally
+			specify a recursion that does not end (i.e. <userinput>recursive ( same )</userinput>).  This can cause the &p-bbq; environment to hang or crash.
+			</para>
+			<para>
+			The effect of this transform operator can be most concisely
+			described recursively:
+				<itemizedlist>
+					<listitem>
+					The result of applying the first form of this transform to a set is the result
+					of applying <replaceable>primary-transform</replaceable> to a set, combined with the result
+					of applying this transform to that result.
+					</listitem>
+					<listitem>
+					The result of applying the second form of this transform to a set
+					is the result of applying <replaceable>primary-transform</replaceable> to the set,
+					combined with the result of applying this transform to the result
+					of applying <replaceable>secondary-transform</replaceable> to the result of applying
+					<replaceable>primary-transform</replaceable> to the set.
+					</listitem>
+				</itemizedlist>
+			</para>
+			<refsect2>
+				<title>Example</title>
+				<para>
+				To see the complete call tree starting with a particular method,
+				use the transform:
+				</para>
+				<para>
+				<userinput>
+				recursive ( calls from, methods containing)
+				</userinput>
+				</para>
+			</refsect2>
+		</refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><replaceable>primary-transform</replaceable>'s Applies To type</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><replaceable>primary-transform</replaceable>'s Results type.  If this is not the
+			same as the <replaceable>primary-transform</replaceable>'s Applies To type, a
+			<replaceable>secondary-transform</replaceable> must be provided that applies to the Result type of <replaceable>primary-transform</replaceable> and results in its Applies To type.
+		  	</para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-recursive-base-classes">
@@ -1136,6 +1265,11 @@ input methods.
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>references from</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1161,6 +1295,11 @@ in the set.
 		  <refsynopsisdiv>
 			<synopsis>references to</synopsis>
 			<synopsis>reference to</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1186,6 +1325,11 @@ in the set.
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>same</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1241,6 +1385,11 @@ string constants referenced.
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>string references from</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1267,7 +1416,7 @@ with <userinput>( string references from foo ) intersection ( references to stri
 			<refpurpose>Change a set to another, specified set</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>uncorrelated ( &lt;set expression&gt; )</synopsis>
+			<synopsis>uncorrelated ( <replaceable>set expression</replaceable> )</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1275,7 +1424,7 @@ with <userinput>( string references from foo ) intersection ( references to stri
 In special circumstances, you might wish to use a set expression
 where the language normally calls for a transform.
 This transform replaces any set with the result
-of the &lt;set expression&gt; argument provided.
+of the <replaceable>set expression</replaceable> argument provided.
 		  	</para>
 		  </refsect1>
 		  <refsect1>
@@ -1285,7 +1434,7 @@ of the &lt;set expression&gt; argument provided.
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para>The result type is the type of the supplied
-&lt;set expression&gt; argument.
+<replaceable>set expression</replaceable> argument.
 		  	</para>
 		  </refsect1>
 		</refentry>
@@ -1328,7 +1477,7 @@ the compound filter <userinput>not interface abstract</userinput>.
 			<refpurpose>Checks if a transform applied to each member of a set returns an empty set</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>exists ( ^lt;transform&gt; )</synopsis>
+			<synopsis>exists ( <replaceable>transform</replaceable> )</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -1336,13 +1485,18 @@ the compound filter <userinput>not interface abstract</userinput>.
 passes the test it is first
 converted to a set
 containing only that object;
-the &lt;transform&gt; is applied to that set;
+the <replaceable>transform</replaceable> is applied to that set;
 the filter passes if the result of the transform has at least one member.
+			</para>
+			<para>
+			If <replaceable>transform</replaceable> is not <link linkend="r-stateless">stateless</link>
+			keep in mind that it will be applied as if each element filtered
+			comprises its own separate set.
 			</para>
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
-		  	<para>Any</para>
+		  	<para>The Applies To type of <replaceable>transform</replaceable></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-interface">
@@ -1371,11 +1525,11 @@ an interface.
 			<refpurpose>Checks if a string matches the name of the object</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>matching &lt;string&gt;</synopsis>
+			<synopsis>matching <replaceable>string</replaceable></synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
-			<para>The test passes if &lt;string&gt; matches some part of the
+			<para>The test passes if <replaceable>string</replaceable> matches some part of the
 object's name.
 			</para>
 		  </refsect1>
