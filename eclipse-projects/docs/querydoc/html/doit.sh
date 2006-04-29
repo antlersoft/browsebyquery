@@ -1,6 +1,7 @@
 #!/bin/sh
 
-xsltproc /opt/kde/share/apps/ksgmltools2/docbook/xsl/html/chunk.xsl $1
+#xsltproc /usr/kde/3.4/share/apps/ksgmltools2/docbook/xsl/html/chunk.xsl $1
+xsltproc --param generate.section.toc.level 1 /usr/share/sgml/docbook/xsl-stylesheets-1.68.1/html/chunk.xsl $1
 
 perl -pi -e '
 if ( /^(.*)(\<\/body\>.*)/ )
