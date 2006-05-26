@@ -116,12 +116,10 @@ public class AttributeList implements Cloneable
 	    {
 			value=new LineNumberTableAttribute( classStream);
 	    }
-	    /* Local variable table unimplemented as of now
-	    else if ( type.equals( "LocalVariableTable"))
+	    else if ( type.equals( LocalVariableTableAttribute.typeString))
 	    {
 			value=new LocalVariableTableAttribute( classStream);
 	    }
-	    * End of unimplemented type */
 	    else
 	    {
 			/* Unknown type -- pass through silently */

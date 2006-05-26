@@ -49,7 +49,7 @@ public class CodeAttribute implements Attribute
 	private ArrayList exceptions;
 	private AttributeList attributes;
 
-    CodeAttribute( ClassWriter contains)
+    public CodeAttribute( ClassWriter contains)
     {
         maxStack=0;
         maxLocals=0;
@@ -233,6 +233,11 @@ public class CodeAttribute implements Attribute
         LineNumberTableAttribute lineTable=getLineNumberAttribute();
         if ( lineTable!=null)
             lineTable.fixOffsets( start, oldPostEnd, newPostEnd);
+        
+        // Fix local variable table offsets
+        LocalVariableTableAttribute varTable=getLocalVariableTable();
+        if ( varTable!=null)
+        	varTable.fixOffsets( start, oldPostEnd, newPostEnd);
 
         /* At this point everything is fixed, with the significant
          * exception of *Switch instructions.  They now may
@@ -396,6 +401,12 @@ public class CodeAttribute implements Attribute
   		return (LineNumberTableAttribute)attributes.getAttributeByType(
     		LineNumberTableAttribute.typeString);
   	}
+	
+	public LocalVariableTableAttribute getLocalVariableTable()
+	{
+		return (LocalVariableTableAttribute)attributes.getAttributeByType(
+				LocalVariableTableAttribute.typeString);
+	}
 
 	public int getLineNumber( int pc)
 	{

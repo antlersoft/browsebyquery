@@ -73,6 +73,11 @@ public class FieldInfo
     {
         descriptorIndex=attributes.getCurrentClass().getStringIndex( newType);
     }
+    
+    public boolean isDeprecated()
+    {
+    	return attributes.getAttributeByType( DeprecatedAttribute.typeString)!=null;
+    }
 
 	void write( DataOutputStream classStream)
 		throws IOException

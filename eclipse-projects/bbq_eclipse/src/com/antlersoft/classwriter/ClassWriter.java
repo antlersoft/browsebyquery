@@ -242,6 +242,11 @@ public class ClassWriter
         return superClassIndex;
     }
 
+    public boolean isDeprecated()
+    {
+    	return attributes.getAttributeByType( DeprecatedAttribute.typeString)!=null;
+    }
+
     private void clearClass()
     {
     	constantPool=new ArrayList();
