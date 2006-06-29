@@ -19,21 +19,23 @@
  */
 package com.antlersoft.analyzer;
 
-import java.io.Serializable;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Enumeration;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.antlersoft.classwriter.*;
 
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
-
-import com.antlersoft.util.NetByte;
 
 public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlags
 {
@@ -41,6 +43,8 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     public static final int VIRTUAL=2;
     public static final int REAL=3;
     private static final long serialVersionUID = 7199971582900640229L;
+    private static Logger logger=Logger.getLogger( "com.antlersoft.analyzer.DBType");
+    static final String RETURN_TYPE_INDEX="MethodType";
     
     ObjectRef dbclass;
     ObjectRef returnType;
@@ -55,6 +59,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 
     private boolean resolved;
     private int lineNumber;
+    private boolean deprecated;
 
     static public Vector emptyVector=new Vector();
 
@@ -68,8 +73,10 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 		name=(String)st.nextElement();
 		signature=(String)st.nextElement();
 		resolved=false;
-    lineNumber=0;
+		deprecated=false;
+		lineNumber=0;
 		_persistentImpl=new PersistentImpl();
+		createArguments( db);
 		ObjectDB.makePersistent( this);
     ((DBClass)dbclass.getReferenced()).addMethod( this);
     }
@@ -161,10 +168,10 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     {
 		ObjectDB.makeDirty( this);
 		if ( calledBy==null)
-    {
+		{
 		    if ( ! callsFromCaller.isEmpty())
             calledBy=callsFromCaller;
-    }
+		}
 		else
 		    /* Remove calls from same method and append calls to list */
 		{
@@ -188,16 +195,46 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     {
         return accessFlags;
     }
+    
+    public boolean isDeprecated()
+    {
+    	return deprecated;
+    }
+    
+    private boolean isSpecialOrStatic()
+    {
+    	return (accessFlags & ClassWriter.ACC_STATIC)!=0 || name.startsWith("<");
+    }
 
     public void setFromClassWriter( final ClassWriter ac, MethodInfo mi,
 		final AnalyzerDB db)
 		throws CodeCheckException
     {
+    	ObjectDB.makeDirty( this);
         accessFlags=mi.getFlags();
+        deprecated=mi.isDeprecated();
 		CodeAttribute codeAttribute=mi.getCodeAttribute();
 		if ( codeAttribute==null)
 		{
 			return;
+		}
+		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+		{
+			createArguments( db);
+			LocalVariableTableAttribute locals=codeAttribute.getLocalVariableTable();
+			if ( locals!=null)
+			{
+				int variableOffset=isSpecialOrStatic() ? 0 : 1;
+				for ( Iterator i=arguments.iterator(); i.hasNext();)
+				{
+					DBArgument arg=(DBArgument)i.next();
+					String entry=locals.getLocalVariable( ac, 1, arg.getOrdinal()+variableOffset);
+					if ( entry!=null)
+					{
+						arg.setName( entry.substring( 0, entry.indexOf( '(')));
+					}
+				}
+			}
 		}
 		HashMap calledTable=new HashMap();
 		HashMap referencedTable=new HashMap();
@@ -368,4 +405,66 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 		}
 		stringReferenceTable.clear();
     }
+    
+    private void createArguments( AnalyzerDB db)
+    {
+    	if ( arguments==null && db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+    	{
+    		try
+    		{
+	      		char[] array=signature.toCharArray();
+	      		int argument_count=0;
+	      		int start_offset=1;
+	      		int current_offset=1;
+	      		arguments=new Vector();
+	        	try
+	         	{
+	    	    	if ( array.length<3 || array[0]!='(')
+	    	     	{
+	    				throw new CodeCheckException( "Bad method signature "+signature);
+	    	   		}
+	    	    	for ( char ch; ( ch=array[current_offset])!=')'; ++current_offset)
+	    	    	{
+	    	    		switch ( ch)
+	    	    		{
+	    	    		case 'L' :
+	    	    			for ( ++current_offset; array[current_offset]!=';'; ++current_offset);
+	    	    			break;
+	    	    		case '[' :
+	    	    			continue;
+	    	    		default :
+	    	    			break;
+	    	    		}
+	    	    		arguments.add( new DBArgument( this, argument_count++,
+	    	    				(DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
+	    	    						signature.substring( start_offset, current_offset-start_offset+1))));
+	    	    	}
+	    	    	returnType=new ObjectRef( (DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
+	    	    			signature.substring( ++current_offset)));
+	             }
+	             catch ( ArrayIndexOutOfBoundsException bounds)
+	             {
+	                 throw new CodeCheckException( "MethodType truncated");
+	             }
+    		}
+    		catch( Exception e)
+    		{
+    			logger.log( Level.WARNING, "Failed to process method signature "+signature, e);
+    		}
+    	}
+    }
+	
+	static class ReturnTypeKeyGenerator implements KeyGenerator
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7557620978003601485L;
+
+		public Comparable generateKey( Object obj)
+		{
+			DBMethod method=(DBMethod)obj;
+			return new ObjectRefKey( method.returnType);
+		}
+	}
 }

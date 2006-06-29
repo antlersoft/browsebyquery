@@ -25,8 +25,10 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
@@ -38,21 +40,24 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
     String descriptor;
     Vector referencedBy;
     int accessFlags;
+    private boolean deprecated;
 
     private static final long serialVersionUID = -2154296981139151800L;
+    static final String FIELD_TYPE_INDEX="FieldType";
     
     private transient PersistentImpl _persistentImpl;
 
     public DBField( String key, AnalyzerDB db)
 	throws Exception
     {
-	StringTokenizer st=new StringTokenizer( key, "\t");
-	dbclass=new ObjectRef( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", (String)st.nextElement()));
-	name=(String)st.nextElement();
-	descriptor=new String();
-	_persistentImpl=new PersistentImpl();
-	ObjectDB.makePersistent( this);
-    ((DBClass)dbclass.getReferenced()).addField( this);
+		StringTokenizer st=new StringTokenizer( key, "\t");
+		dbclass=new ObjectRef( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", (String)st.nextElement()));
+		name=(String)st.nextElement();
+		descriptor=new String();
+		_persistentImpl=new PersistentImpl();
+		dbtype=new ObjectRef();
+		ObjectDB.makePersistent( this);
+	    ((DBClass)dbclass.getReferenced()).addField( this);
     }
 
     public PersistentImpl _getPersistentImpl()
@@ -64,15 +69,15 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 
     public String toString()
     {
-	return ((DBClass)dbclass.getReferenced()).name+":"+name+descriptor;
+    	return ((DBClass)dbclass.getReferenced()).name+":"+name+descriptor;
     }
 
     public int fieldStatus()
     {
-	if ( ! ((DBClass)dbclass.getReferenced()).isResolved())
-	    return DBMethod.UNRESOLVED;
-	else
-	    return DBMethod.REAL;
+		if ( ! ((DBClass)dbclass.getReferenced()).isResolved())
+		    return DBMethod.UNRESOLVED;
+		else
+		    return DBMethod.REAL;
     }
 
     static String makeKey( String className, String fieldName)
@@ -86,7 +91,7 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 
     public String getName()
     {
-	return name;
+    	return name;
     }
 
     public String getDescriptor()
@@ -97,24 +102,36 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
     public void setTypeFromDescriptor( AnalyzerDB db, String s)
     	throws Exception
     {
-    	dbtype.setReferenced( db.getWithKey( "com.antlersoft.analyzer.DBType", s));
-    	descriptor=s;
-    	ObjectDB.makeDirty( this);
+    	if ( ! descriptor.equals(s))
+    	{
+	    	descriptor=s;
+	    	if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+	    	{
+	    		dbtype.setReferenced( db.getWithKey( "com.antlersoft.analyzer.DBType", s));
+	    	}
+    		ObjectDB.makeDirty( this);
+    	}
     }
 
     public int getAccessFlags()
     {
         return accessFlags;
     }
+    
+    public DBType getDBType()
+    {
+    	return (DBType)dbtype.getReferenced();
+    }
 
     public DBClass getDBClass()
     {
 	return (DBClass)dbclass.getReferenced();
     }
+   
 
     public int getLineNumber()
     {
-        return 1;
+        return getDBClass().getLineNumber();
     }
 
     public Enumeration getReferencedBy()
@@ -123,31 +140,56 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 	    return referencedBy.elements();
 	return DBMethod.emptyVector.elements();
     }
+    
+    void setDeprecated( boolean dep)
+    {
+    	deprecated=dep;
+    }
+    
+    public boolean isDeprecated()
+    {
+    	return deprecated;
+    }
 
     public void addReferencedBy( DBMethod caller, Vector callsFromCaller)
     {
-	ObjectDB.makeDirty( this);
-	if ( referencedBy==null)
-        {
-            if ( ! callsFromCaller.isEmpty())
-	        referencedBy=callsFromCaller;
-        }
-	else
-	    /* Remove calls from same method and append calls to list */
-	{
-	    int i;
-	    for ( i=0; i<referencedBy.size(); i++)
-	    {
-		if ( ((DBFieldReference)referencedBy.elementAt( i)).getSource()==caller)
+		ObjectDB.makeDirty( this);
+		if ( referencedBy==null)
+	        {
+	            if ( ! callsFromCaller.isEmpty())
+		        referencedBy=callsFromCaller;
+	        }
+		else
+		    /* Remove calls from same method and append calls to list */
 		{
-		    referencedBy.removeElementAt( i);
-		    i--;
+		    int i;
+		    for ( i=0; i<referencedBy.size(); i++)
+		    {
+			if ( ((DBFieldReference)referencedBy.elementAt( i)).getSource()==caller)
+			{
+			    referencedBy.removeElementAt( i);
+			    i--;
+			}
+		    }
+		    for ( i=0; i<callsFromCaller.size(); i++)
+		    {
+			referencedBy.addElement( callsFromCaller.elementAt( i));
+		    }
 		}
-	    }
-	    for ( i=0; i<callsFromCaller.size(); i++)
-	    {
-		referencedBy.addElement( callsFromCaller.elementAt( i));
-	    }
-	}
     }
+    
+	
+	static class FieldTypeKeyGenerator implements KeyGenerator
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 5048174276104569642L;
+
+		public Comparable generateKey( Object obj)
+		{
+			DBField field=(DBField)obj;
+			return new ObjectRefKey( field.dbtype);
+		}
+	}
 }

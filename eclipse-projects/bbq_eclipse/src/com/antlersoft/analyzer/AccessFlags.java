@@ -27,4 +27,5 @@ package com.antlersoft.analyzer;
 
 public interface AccessFlags {
     public int getAccessFlags();
+    public boolean isDeprecated();
 }

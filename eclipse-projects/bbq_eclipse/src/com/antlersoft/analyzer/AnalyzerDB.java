@@ -23,6 +23,8 @@ import java.util.Enumeration;
 
 public interface AnalyzerDB
 {
+	public static final int OPTIONAL_TYPE_INFO=1;
+	
     public abstract void openDB( String dbName)
 	throws Exception;
     public abstract void closeDB()
@@ -35,4 +37,5 @@ public interface AnalyzerDB
 	throws Exception;
     public abstract void clearDB( String dbName)
     throws Exception;
+    public abstract boolean captureOptional( int optional_type);
 }

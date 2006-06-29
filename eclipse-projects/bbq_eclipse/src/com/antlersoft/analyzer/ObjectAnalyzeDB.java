@@ -97,6 +97,11 @@ public class ObjectAnalyzeDB implements AnalyzerDB
         f.delete();
         openDB( dbName);
     }
+    
+    public boolean captureOptional( int flag)
+    {
+    	return false;
+    }
 
     public synchronized Object getWithKey( String type, String key)
 	throws Exception
@@ -156,6 +161,11 @@ public class ObjectAnalyzeDB implements AnalyzerDB
 
 	static private class ObjectVector implements Persistent
 	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 559757925872819383L;
+
 		private transient PersistentImpl _persistentImpl;
 
 		Vector v;

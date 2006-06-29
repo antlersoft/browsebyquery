@@ -51,32 +51,37 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     private String internalName;
     private String sourceFile;
     int accessFlags;
+    boolean deprecated;
+    int lineNumber;
+    
     private static final long serialVersionUID = 2812968988095700193L;
 
 		private transient PersistentImpl _persistentImpl;
 
     public DBClass( String key, AnalyzerDB db)
     {
-				name=key;
-				superClasses=new Vector();
-				derivedClasses=new Vector();
-				methods=new Hashtable();
-				fields=new Hashtable();
-				resolved=false;
-				_persistentImpl=new PersistentImpl();
-				ObjectDB.makePersistent( this);
+		name=key;
+		superClasses=new Vector();
+		derivedClasses=new Vector();
+		methods=new Hashtable();
+		fields=new Hashtable();
+		resolved=false;
+		deprecated=false;
+		_persistentImpl=new PersistentImpl();
+		lineNumber= -1;
+		ObjectDB.makePersistent( this);
     }
 
-		public PersistentImpl _getPersistentImpl()
-		{
-				if ( _persistentImpl==null)
-						_persistentImpl=new PersistentImpl();
-				return _persistentImpl;
-		}
+	public PersistentImpl _getPersistentImpl()
+	{
+		if ( _persistentImpl==null)
+				_persistentImpl=new PersistentImpl();
+		return _persistentImpl;
+	}
 
     public String toString()
     {
-				return name;
+		return name;
     }
 
     public boolean isResolved()
@@ -106,7 +111,9 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 
     public int getLineNumber()
     {
-        return 1;
+    	if ( lineNumber== -1)
+    		return 0;
+        return lineNumber;
     }
 
     void addMethod( DBMethod toAdd)
@@ -142,6 +149,11 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     public String getSourceFile()
     {
         return sourceFile;
+    }
+    
+    public boolean isDeprecated()
+    {
+    	return deprecated;
     }
 
     private void clearMethods()
@@ -190,6 +202,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		dbc.clearFields();
 		dbc.resolved=true;
         dbc.accessFlags=ac.getFlags();
+        dbc.deprecated=ac.isDeprecated();
         dbc.internalName=ac.getInternalClassName( ac.getCurrentClassIndex());
         dbc.sourceFile=ac.getSourceFile();
 		int superClassIndex=ac.getSuperClassIndex();
@@ -208,6 +221,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
             DBField new_field=(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
 				DBField.makeKey( dbc.name, fi.getName()));
             new_field.accessFlags=fi.getFlags();
+            new_field.setDeprecated( fi.isDeprecated());
             new_field.setTypeFromDescriptor( db, fi.getType());
             dbc.addField( new_field);
 		}

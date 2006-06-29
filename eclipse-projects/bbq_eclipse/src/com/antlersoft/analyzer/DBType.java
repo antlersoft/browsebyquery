@@ -5,10 +5,13 @@ package com.antlersoft.analyzer;
 
 import java.util.Enumeration;
 
+import com.antlersoft.analyzer.query.EmptyEnumeration;
+
 import com.antlersoft.classwriter.TypeParse;
 
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
@@ -98,19 +101,40 @@ public class DBType implements Persistent, Cloneable {
 	
 	public Enumeration getReturningMethods( AnalyzerDB db)
 	{
-		// TODO: implement this method
-		return null;
+		Enumeration result;
+		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+		{
+			result=((IndexAnalyzeDB)db).retrieveByIndex( DBMethod.RETURN_TYPE_INDEX, new ObjectRefKey( this));
+		}
+		else
+			result=EmptyEnumeration.emptyEnumeration;
+		
+		return result;
 	}
 	
 	public Enumeration getFields( AnalyzerDB db)
 	{
-		// TODO: implement this method
-		return null;
+		Enumeration result;
+		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+		{
+			result=((IndexAnalyzeDB)db).retrieveByIndex( DBField.FIELD_TYPE_INDEX, new ObjectRefKey( this));
+		}
+		else
+			result=EmptyEnumeration.emptyEnumeration;
+		
+		return result;
 	}
 	
 	public Enumeration getArguments( AnalyzerDB db)
 	{
-		// TODO: implement this method
-		return null;
+		Enumeration result;
+		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+		{
+			result=((IndexAnalyzeDB)db).retrieveByIndex( DBArgument.ARGUMENT_TYPE_INDEX, new ObjectRefKey( this));
+		}
+		else
+			result=EmptyEnumeration.emptyEnumeration;
+		
+		return result;
 	}
 }

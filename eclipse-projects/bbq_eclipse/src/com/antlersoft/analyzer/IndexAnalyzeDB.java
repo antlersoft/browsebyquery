@@ -29,14 +29,17 @@ package com.antlersoft.analyzer;
 import java.io.Serializable;
 import java.io.File;
 
-import java.lang.ref.*;
+import java.lang.reflect.Constructor;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.antlersoft.odb.IndexIterator;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.IndexExistsException;
 import com.antlersoft.odb.KeyGenerator;
@@ -59,12 +62,17 @@ public class IndexAnalyzeDB implements AnalyzerDB
 {
     private IndexObjectDB _session;
     private int createCount;
+    private HashMap _constructorMap;
+    private int _captureOptional;
     private static Logger _logger=Logger.getLogger( IndexAnalyzeDB.class.getName());
-    private static String LOOKUP_INDEX="Lookup";
+    private static final String LOOKUP_INDEX="Lookup";
+    private static String OPTIONAL_FLAGS_KEY="optional_flags";
+    private static Class[] _argumentList=new Class[] { String.class, AnalyzerDB.class };
 
 	public IndexAnalyzeDB()
 	{
 		_session=null;
+		_constructorMap=new HashMap();
         createCount=0;
 	}
 
@@ -75,10 +83,21 @@ public class IndexAnalyzeDB implements AnalyzerDB
         createCount=0;
         _session=new IndexObjectDB( new DirectoryAllocator( new File( dbName),
             new CFactory()));
+        Integer optional_flags=(Integer)_session.getRootObject( OPTIONAL_FLAGS_KEY);
+        if ( optional_flags!=null)
+        	_captureOptional=optional_flags.intValue();
+        else
+        	_captureOptional=AnalyzerDB.OPTIONAL_TYPE_INFO;
         try
         {
             _session.defineIndex( LOOKUP_INDEX, Lookup.class,
                 new TypeKeyGenerator(), false, true);
+            _session.defineIndex( DBField.FIELD_TYPE_INDEX, DBField.class,
+            		new DBField.FieldTypeKeyGenerator(), false, false);
+            _session.defineIndex( DBMethod.RETURN_TYPE_INDEX, DBMethod.class,
+            		new DBMethod.ReturnTypeKeyGenerator(), false, false);
+            _session.defineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
+            		new DBArgument.ArgumentTypeKeyGenerator(), false, false);
         }
         catch ( IndexExistsException iee)
         {
@@ -121,16 +140,7 @@ public class IndexAnalyzeDB implements AnalyzerDB
         Object result=findWithKey( type, key);
         if ( result==null)
         {
-try
-{
-			result=Class.forName( type).getConstructor( new Class[]
-                { String.class, AnalyzerDB.class }).
-                newInstance( new Object[] { key, this });
-}
-catch ( java.lang.reflect.InvocationTargetException ite)
-{
-ite.getTargetException().printStackTrace();
-}
+			result=newInstance( type, key);
             Lookup keyReference=new Lookup( type, key, (Persistent)result);
 			createCount++;
 			if ( createCount==1000)
@@ -164,17 +174,59 @@ ite.getTargetException().printStackTrace();
         }
         return result;
     }
+    
+    public boolean captureOptional( int optional_flag)
+    {
+    	return ( optional_flag & _captureOptional)!=0;
+    }
+    
+    public void setCaptureOptional( int flags)
+    {
+    	if ( _session!=null)
+    	{
+    		_captureOptional=flags;
+    		_session.makeRootObject( OPTIONAL_FLAGS_KEY, new Integer( _captureOptional));
+    	}
+    }
 
     public synchronized void makeCurrent()
     {
         _session.makeCurrent();
     }
 
-public static void printTypeKey( Comparable x)
-{
-    TypeKey y=(TypeKey)x;
-    System.out.println( y.type+"|"+y.key);
-}
+	public static void printTypeKey( Comparable x)
+	{
+	    TypeKey y=(TypeKey)x;
+	    System.out.println( y.type+"|"+y.key);
+	}
+	
+	public Enumeration retrieveByIndex( String index_name, Comparable key)
+	{
+		Enumeration result=EmptyEnumeration.emptyEnumeration;
+		
+		if ( _session!=null)
+		{
+			final IndexIterator ii=_session.greaterThanOrEqualEntries( index_name, key);
+			if ( ii.isExactMatch())
+			{
+				result=new ExactMatchIndexEnumeration( ii, key);
+			}
+		}
+		
+		return result;
+	}
+	
+	private Object newInstance( String type, String key)
+	throws Exception
+	{
+		Constructor c=(Constructor)_constructorMap.get( type);
+		if ( c==null)
+		{
+			c=Class.forName( type).getConstructor( _argumentList);
+			_constructorMap.put( type, c);
+		}
+		return c.newInstance( new Object[] { key, this });		
+	}
 
     static class TypeKey implements Comparable, Serializable
     {
@@ -199,7 +251,11 @@ public static void printTypeKey( Comparable x)
 
     static class Lookup implements Persistent
     {
-        private transient PersistentImpl _impl;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 5675201888813610421L;
+		private transient PersistentImpl _impl;
         private TypeKey key;
         ObjectRef object;
 
@@ -247,5 +303,48 @@ public static void printTypeKey( Comparable x)
         {
             return ((Lookup)keyed).key;
         }
+    }
+    
+    private static class ExactMatchIndexEnumeration implements Enumeration
+    {
+    	private IndexIterator _ii;
+    	private Object _nextObject;
+    	private Comparable _key;
+    	
+    	ExactMatchIndexEnumeration( IndexIterator ii, Comparable key)
+    	{
+    		_ii=ii;
+    		_key=key;
+    		determineNextObject();
+    	}
+    	
+    	public boolean hasMoreElements()
+    	{
+    		return _nextObject!=null;
+    	}
+    	
+    	public Object nextElement()
+    	throws NoSuchElementException
+    	{
+    		if ( _nextObject==null)
+    			throw new NoSuchElementException();
+    		Object result=_nextObject;
+    		determineNextObject();
+    		return result;
+    	}
+    	
+    	private void determineNextObject()
+    	{
+    		Object result=null;
+			if ( _ii.hasNext())
+			{
+				result=_ii.next();
+				if ( _key.compareTo( result)!=0)
+				{
+					result=null;
+				}
+			}
+			_nextObject=result;
+    	}
     }
 }

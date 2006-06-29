@@ -13,6 +13,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 
 import org.eclipse.jface.action.*;
@@ -190,10 +191,20 @@ public class QueryResultView extends Page implements ISearchResultPage {
 							IProject[] projects=root.getProjects();
 							for ( int i=0; i<projects.length && file==null; ++i)
 							{
-								IJavaProject project=JavaCore.create( projects[i]);
-								if ( project==null)
+								IPackageFragmentRoot[] fragments;
+								try
+								{
+									IJavaProject project=JavaCore.create( projects[i]);
+									if ( project==null)
+										continue;
+									fragments=project.getPackageFragmentRoots();
+								}
+								catch ( JavaModelException jme)
+								{
+									// Catching this exception means that the project wasn't really a
+									// Java project
 									continue;
-								IPackageFragmentRoot[] fragments=project.getPackageFragmentRoots();
+								}
 								for ( int j=0; j<fragments.length; ++j)
 								{
 									if ( fragments[j].getKind()==IPackageFragmentRoot.K_SOURCE)

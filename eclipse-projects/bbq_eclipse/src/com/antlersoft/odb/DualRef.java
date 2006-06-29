@@ -23,6 +23,10 @@ import java.io.Serializable;
 
 public class DualRef extends ObjectRef
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6769695183831894619L;
 	private Serializable serializableRef;
 	private transient Object nonSerializableRef;
 

@@ -24,6 +24,7 @@ reserved comma "," 1 left
 reserved containing
 reserved count
 reserved deintersection 2 left
+reserved deprecated 4 right
 reserved derived
 reserved execute
 reserved exists
@@ -54,12 +55,12 @@ reserved referenced
 reserved rightParen ")"
 reserved same
 reserved set
-reserved SetExpressionSymbol "#1"
+reserved SetExpressionSymbol "((#1"
 reserved stringconstant "string"
 reserved stringconstants "strings"
 reserved that
 reserved to
-reserved TransformSymbol "#2"
+reserved TransformSymbol "((#2"
 reserved uncalled
 reserved uncorrelated
 reserved union 2 left
@@ -117,6 +118,8 @@ Filter : Package "{
     }" .
 Filter : Abstract "{ return new AccessFilter( ClassWriter.ACC_ABSTRACT); }" .
 Filter : Interface "{ return new AccessFilter( ClassWriter.ACC_INTERFACE); }" .
+Filter : deprecated "{ return new DeprecatedFilter(); }" .
+
 Transform : Transform Transform "{
 	int size=valueStack.size();
 	return new TransformTransform( (Transform)valueStack.get( valueStack.size()-2),
