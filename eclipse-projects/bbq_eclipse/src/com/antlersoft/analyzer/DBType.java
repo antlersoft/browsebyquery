@@ -56,7 +56,7 @@ public class DBType implements Persistent, Cloneable {
 			_class=new ObjectRef(
 					db.getWithKey( "com.antlersoft.analyzer.DBClass",
 							TypeParse.convertFromInternalClassName(
-									typeString.substring( 1, typeString.length()-2))));
+									typeString.substring( 1, typeString.length()-1))));
 		}
 		_builtInType=t;
 		_persistentImpl=new PersistentImpl();
@@ -136,5 +136,74 @@ public class DBType implements Persistent, Cloneable {
 			result=EmptyEnumeration.emptyEnumeration;
 		
 		return result;
+	}
+	
+	public String toString()
+	{
+		String result;
+		if ( isArrayRef())
+		{
+			result=_arrayReferencedType.getReferenced().toString()+"[]";
+		}
+		else if ( isClassRef())
+		{
+			result=_class.getReferenced().toString();
+		}
+		else
+		{
+			result=TypeStringMap.internalToUser( _builtInType);
+		}
+		
+		return result;
+	}
+	
+	static class TypeStringMap
+	{
+		private String internal;
+		private String user;
+		private static TypeStringMap[] typeMap= {
+			new TypeStringMap( TypeParse.ARG_BOOLEAN, "boolean"),
+			new TypeStringMap( TypeParse.ARG_BYTE, "byte"),
+			new TypeStringMap( TypeParse.ARG_CHAR, "char"),
+			new TypeStringMap( TypeParse.ARG_DOUBLE, "double"),
+			new TypeStringMap( TypeParse.ARG_FLOAT, "float"),
+			new TypeStringMap( TypeParse.ARG_INT, "int"),
+			new TypeStringMap( TypeParse.ARG_LONG, "long"),
+			new TypeStringMap( TypeParse.ARG_SHORT, "short"),
+			new TypeStringMap( TypeParse.ARG_VOID, "void")
+		};
+		
+		private TypeStringMap( String i, String u)
+		{
+			internal=i;
+			user=u;
+		}
+		
+		static String internalToUser( String s)
+		{
+			String result=null;
+			
+			for ( int i=0; i<typeMap.length; i++)
+				if ( typeMap[i].internal.equals(s))
+				{
+					result=typeMap[i].user;
+					break;
+				}
+			
+			return result;
+		}
+		static String userToInternal( String s)
+		{
+			String result=null;
+			
+			for ( int i=0; i<typeMap.length; i++)
+				if ( typeMap[i].user.equals(s))
+				{
+					result=typeMap[i].internal;
+					break;
+				}
+			
+			return result;
+		}
 	}
 }

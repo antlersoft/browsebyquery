@@ -18,7 +18,7 @@ import com.antlersoft.odb.PersistentImpl;
  * @author Michael MacDonald
  *
  */
-public class DBArgument implements Persistent, SourceObject {
+public class DBArgument implements Persistent, SourceObject, HasDBType {
 	
 	ObjectRef _dbtype;
 	ObjectRef _dbmethod;
@@ -45,7 +45,7 @@ public class DBArgument implements Persistent, SourceObject {
 		return (DBMethod)_dbmethod.getReferenced();
 	}
 	
-	public DBType getType()
+	public DBType getDBType()
 	{
 		return (DBType)_dbtype.getReferenced();
 	}

@@ -61,6 +61,7 @@ reserved stringconstants "strings"
 reserved that
 reserved to
 reserved TransformSymbol "((#2"
+reserved type
 reserved uncalled
 reserved uncorrelated
 reserved union 2 left
@@ -154,6 +155,9 @@ Transform : recursive leftParen Transform rightParen "{
 Transform : recursive leftParen Transform comma Transform rightParen "{
 	int s=valueStack.size();
 	return new RecursiveTransform( (Transform)valueStack.get( s-4), (Transform)valueStack.get( s-2));
+	}" .
+Transform : type of "{
+	return new TypeOf();
 	}" .
 
 SetExpression : Transform SetExpression "{

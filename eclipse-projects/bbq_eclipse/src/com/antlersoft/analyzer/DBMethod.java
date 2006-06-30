@@ -37,7 +37,7 @@ import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlags
+public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
 {
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
@@ -125,6 +125,15 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     public DBClass getDBClass()
     {
 		return (DBClass)dbclass.getReferenced();
+    }
+    
+    public DBType getDBType()
+    {
+    	DBType result=null;
+    	if ( returnType!=null)
+    		result=(DBType)returnType.getReferenced();
+    	
+    	return result;
     }
 
     public int getLineNumber()
@@ -437,7 +446,8 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 	    	    		}
 	    	    		arguments.add( new DBArgument( this, argument_count++,
 	    	    				(DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
-	    	    						signature.substring( start_offset, current_offset-start_offset+1))));
+	    	    						signature.substring( start_offset, current_offset+1))));
+	    	    		start_offset=current_offset+1;
 	    	    	}
 	    	    	returnType=new ObjectRef( (DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
 	    	    			signature.substring( ++current_offset)));

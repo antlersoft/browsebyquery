@@ -32,7 +32,7 @@ import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
+public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
 {
     ObjectRef dbclass;
     ObjectRef dbtype;
