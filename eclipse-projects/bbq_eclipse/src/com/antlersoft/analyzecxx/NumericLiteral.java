@@ -92,6 +92,6 @@ class NumericLiteral extends LexToken
 			throw new LexException( "No good digits in string");
 		if ( offset==0 && good_length==value.length())
 			return (int)Long.parseLong( value);
-		return (int)Long.parseLong( value.substring( offset, good_length-offset), radix);
+		return (int)Long.parseLong( value.substring( offset, good_length), radix);
 	}
 }
