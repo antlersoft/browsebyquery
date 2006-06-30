@@ -172,17 +172,18 @@ class Index
         {
             if ( oldKey!=null)
             {
+            	Comparable removeKey=oldKey;
                 if ( ! entry.unique)
                 {
-                    oldKey=new UniqueKey( oldKey, objectRef);
+                    removeKey=new UniqueKey( oldKey, objectRef);
                 }
-                removeKey( objectRef, oldKey);
+                removeKey( objectRef, removeKey);
             }
             if ( newKey!=null)
             {
                 if ( ! entry.unique)
                 {
-                    newKey=new UniqueKey( oldKey, objectRef);
+                    newKey=new UniqueKey( newKey, objectRef);
                 }
                 insertKey( objectRef, newKey);
             }
