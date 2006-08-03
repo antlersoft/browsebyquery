@@ -38,6 +38,8 @@ public class ReleaseNotes extends JDialog
 	public static final String RELEASE_NOTES_STRING="release_notes";
 	public static final String TITLE="Release Notes";
 
+	private JScrollPane m_scroll;
+
 	/**
 	 * Shows the release notes in a bundle if the version does not match
 	 * the version in the Properties.  Also, updates the version
@@ -70,7 +72,8 @@ public class ReleaseNotes extends JDialog
 		{
 			release_text="(Missing release notes)";
 		}
-		new ReleaseNotes( parent, release_text, title, notes_icon, intro_text).show();
+		ReleaseNotes rn=new ReleaseNotes( parent, release_text, title, notes_icon, intro_text);
+		rn.setVisible( true);
 	}
 
 	private ReleaseNotes( Frame parent, String release_text, String title, Icon notes_icon, String intro_text)
@@ -135,7 +138,8 @@ public class ReleaseNotes extends JDialog
 		text_area.setContentType( "text/html");
 		text_area.setEditable( false);
 		text_area.setText( release_text);
-		content_pane.add( new JScrollPane( text_area, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), c);
+		m_scroll=new JScrollPane( text_area, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		content_pane.add( m_scroll , c);
 		c.fill=c.NONE;
 		c.gridwidth=2;
 		c.gridheight=1;
@@ -151,5 +155,21 @@ public class ReleaseNotes extends JDialog
 			});
 		content_pane.add( ok_button, c);
 		setSize( 400, 550);
+		addWindowListener( new WindowAdapter() {
+			public void windowOpened( WindowEvent e)
+			{
+				notesToTop();
+			}
+		});
+	}
+
+	private void notesToTop()
+	{
+		JScrollBar scroll_bar=m_scroll.getVerticalScrollBar();
+		if ( scroll_bar!=null)
+		{
+			scroll_bar.setValue( scroll_bar.getMinimum());
+System.out.println( "min="+scroll_bar.getMinimum()+" max="+scroll_bar.getMaximum());
+		}
 	}
 }
