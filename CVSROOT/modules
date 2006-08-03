@@ -38,7 +38,7 @@ mars_mola_viewer -a mars_mola_viewer_ref \
 	humus_demos/Textures/CubeMaps/Mars \
 	humus_demos/libs
 
-mars_mola_viewer_ref -d humus_demos/Framework/antlersoft cppquery/com/antlersoft RefObject.cpp RefObject.h RefPtr.h
+mars_mola_viewer_ref -d humus_demos/Framework/antlersoft cppquery/com/antlersoft RefObject.cpp RefObject.h RefPtr.h tokenize.h
 
 mars_mola_viewer_src -a mars_mola_viewer_ref \
 	com/antlersoft/warroom/MapCanvas.java \
