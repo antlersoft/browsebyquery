@@ -23,6 +23,7 @@ import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.DBMethod;
 import com.antlersoft.analyzer.DBField;
 import com.antlersoft.analyzer.DBStringConstant;
+import com.antlersoft.analyzer.DBType;
 
 class MatchFilter extends Filter
 {
@@ -54,7 +55,7 @@ class MatchFilter extends Filter
 		{
 			name=((DBField)toMatch).getName();
 		}
-        else if ( c==DBStringConstant.class)
+        else if ( c==DBStringConstant.class || c==DBType.class)
         {
             name=((DBStringConstant)toMatch).toString();
         }
