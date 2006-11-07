@@ -31,16 +31,25 @@ import java.util.Enumeration;
 import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.DBStringConstant;
 
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.SetExpression;
+
 class StringsGet extends SetExpression
 {
-
-    public StringsGet()
+	public Class getResultClass()
+	{
+		return DBStringConstant.class;
+	}
+	
+    public Enumeration evaluate(DataSource source)
     {
-        super( DBStringConstant.class);
-    }
-
-    public Enumeration execute(AnalyzerDB parm1) throws java.lang.Exception
-    {
-        return parm1.getAll( DBStringConstant.class.getName());
+    	try
+    	{
+    		return ((AnalyzerDB)source).getAll( DBStringConstant.class.getName());
+    	}
+    	catch ( Exception e)
+    	{
+    		throw new RuntimeException( e);
+    	}
     }
 }

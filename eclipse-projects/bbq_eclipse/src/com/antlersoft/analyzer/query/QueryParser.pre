@@ -1,5 +1,8 @@
 package com.antlersoft.analyzer.query;
 
+import java.text.DateFormat;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import com.antlersoft.parser.GotoRule;
@@ -13,6 +16,8 @@ import com.antlersoft.parser.Symbol;
 import com.antlersoft.parser.Token;
 
 import com.antlersoft.classwriter.ClassWriter;
+
+import com.antlersoft.query.*;
 
 public class QueryParser extends QueryParserBase
 {

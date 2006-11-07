@@ -2,7 +2,7 @@ package com.antlersoft.analyzer.query;
 
 import com.antlersoft.analyzer.AccessFlags;
 
-import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.query.DataSource;
 
 /**
  * <p>Title: BBQ Tool</p>
@@ -42,7 +42,7 @@ class AccessFilter extends FilterOnAccessFlagsTypes {
     {
         this( flag_value, flag_value);
     }
-    protected boolean include(Object toCheck) throws java.lang.Exception {
+    protected boolean getCountPreservingFilterValue(DataSource source, Object toCheck) {
         if ( _compareValue!= -1)
             return (((AccessFlags)toCheck).getAccessFlags() & _mask)==_compareValue;
         else

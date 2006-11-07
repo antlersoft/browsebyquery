@@ -26,8 +26,9 @@ import java.io.IOException;
 import java.util.Enumeration;
 
 import com.antlersoft.analyzer.query.QueryParser;
-import com.antlersoft.analyzer.query.SetExpression;
 import com.antlersoft.analyzer.query.ParseException;
+
+import com.antlersoft.query.SetExpression;
 
 public class TestQuery
 {
@@ -52,7 +53,7 @@ public class TestQuery
 			break;
 		    qp.setLine( line);
 		    SetExpression se=qp.getExpression();
-		    Enumeration e=se.execute( sadb);
+		    Enumeration e=se.evaluate( sadb);
 		    while ( e.hasMoreElements())
 		    {
 			System.out.println( e.nextElement().toString());

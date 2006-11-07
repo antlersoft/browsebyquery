@@ -5,9 +5,10 @@ package com.antlersoft.bbq_eclipse.searchresult;
 
 import java.util.Enumeration;
 
-import com.antlersoft.analyzer.query.SetExpression;
+
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 import com.antlersoft.odb.ObjectDBException;
+import com.antlersoft.query.SetExpression;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -43,7 +44,7 @@ public class Query implements ISearchQuery {
 		{
 			monitor.subTask( "Get enumeration");
 			monitor.worked(1);
-			Enumeration e=_expression.execute( Bbq_eclipsePlugin.getDefault().getDB());
+			Enumeration e=_expression.evaluate( Bbq_eclipsePlugin.getDefault().getDB());
 			monitor.subTask( "Step through enumeration");
 			while ( e.hasMoreElements() && ! monitor.isCanceled())
 			{

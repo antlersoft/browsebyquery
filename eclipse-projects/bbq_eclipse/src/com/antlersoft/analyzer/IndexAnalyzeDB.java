@@ -54,7 +54,7 @@ import com.antlersoft.odb.diralloc.NoSuchClassException;
 
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
 
-import com.antlersoft.analyzer.query.EmptyEnumeration;
+import com.antlersoft.query.EmptyEnum;
 
 import com.antlersoft.util.IteratorEnumeration;
 
@@ -98,6 +98,8 @@ public class IndexAnalyzeDB implements AnalyzerDB
             		new DBMethod.ReturnTypeKeyGenerator(), false, false);
             _session.defineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
             		new DBArgument.ArgumentTypeKeyGenerator(), false, false);
+            _session.defineIndex( DBType.TYPE_CLASS_INDEX, DBType.class,
+            		new DBType.TypeClassKeyGenerator(), false, false);
         }
         catch ( IndexExistsException iee)
         {
@@ -170,7 +172,7 @@ public class IndexAnalyzeDB implements AnalyzerDB
         }
         catch ( NoSuchClassException nsce)
         {
-            result = com.antlersoft.analyzer.query.EmptyEnumeration.emptyEnumeration;
+            result = EmptyEnum.empty;
         }
         return result;
     }
@@ -202,7 +204,7 @@ public class IndexAnalyzeDB implements AnalyzerDB
 	
 	public Enumeration retrieveByIndex( String index_name, Comparable key)
 	{
-		Enumeration result=EmptyEnumeration.emptyEnumeration;
+		Enumeration result=EmptyEnum.empty;
 		
 		if ( _session!=null)
 		{

@@ -118,7 +118,7 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
         return accessFlags;
     }
     
-    public DBType getDBType()
+    public DBType getDBType( AnalyzerDB db)
     {
     	return (DBType)dbtype.getReferenced();
     }

@@ -32,5 +32,5 @@ public abstract class Transform implements Bindable {
 	{
 		return null;
 	}
-	void bindOrdering( Comparator ord) {};
+	public void bindOrdering( Comparator ord) {};
 }

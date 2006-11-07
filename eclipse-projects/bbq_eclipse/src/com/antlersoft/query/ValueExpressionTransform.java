@@ -70,7 +70,11 @@ public class ValueExpressionTransform extends Transform
 			case ValueContext.COUNT_PRESERVING:
 				((CountPreservingValueContext)m_expr.getContext()).inputObject( m_expr, source, to_transform);
 			case ValueContext.SCALAR:
-				result=new SingleEnum( m_expr.getValue());
+				Object value=m_expr.getValue();
+				if ( value==null)
+					result=EmptyEnum.empty;
+				else
+					result=new SingleEnum( m_expr.getValue());
 		}
 
 		return result;

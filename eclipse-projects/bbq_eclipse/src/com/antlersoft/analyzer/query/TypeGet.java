@@ -3,40 +3,28 @@
  */
 package com.antlersoft.analyzer.query;
 
-import java.util.Enumeration;
-
 import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.DBType;
 
-import com.antlersoft.analyzer.query.EmptyEnumeration;
-
-import com.antlersoft.query.SingleEnum;
+import com.antlersoft.query.CountPreservingValueExpression;
+import com.antlersoft.query.DataSource;
 
 /**
- * Simple set expression that gets a type from a string
+ * Simple value expression that gets a type from a string
  * @author mike
  *
  */
-public class TypeGet extends SetExpression {
+public class TypeGet extends CountPreservingValueExpression {
 	
-	private String _name;
-
-	/**
-	 * @param name of the type (class name or name of one of the built-in types, or a type name with []'s
-	 * to indicate array references)
-	 */
-	public TypeGet( String name) {
-		super( DBType.class);
-		_name=name;
+	public TypeGet( ) {
+		super( DBType.class, String.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.antlersoft.analyzer.query.SetExpression#execute(com.antlersoft.analyzer.AnalyzerDB)
-	 */
-	public Enumeration execute(AnalyzerDB db) throws Exception {
-		String name=_name;
+	public Object transformSingleObject(DataSource source, Object toTransform) {
+		String name=(String)toTransform;
 		String array_references="";
+		AnalyzerDB db=(AnalyzerDB)source;
 		for ( int array_offset; ( array_offset=name.lastIndexOf("[]"))!= -1;)
 		{
 			name=name.substring( 0, array_offset);
@@ -44,22 +32,28 @@ public class TypeGet extends SetExpression {
 		}
 		String base_type=DBType.TypeStringMap.userToInternal( name);
 		DBType found=null;
-		if ( base_type==null)
+		try
 		{
-			DBClass referenced=(DBClass)db.findWithKey( "com.antlersoft.analyzer.DBClass", name);
-			if ( referenced==null)
-				return EmptyEnumeration.emptyEnumeration;
-			found=DBType.getFromClass( db, referenced);
-			if ( array_references.length()>0)
-				found=(DBType)db.findWithKey( "com.antlersoft.analyzer.DBType",
-						array_references+found.getTypeString());
+			if ( base_type==null)
+			{
+				DBClass referenced=(DBClass)db.findWithKey( "com.antlersoft.analyzer.DBClass", name);
+				if ( referenced!=null)
+				{
+					found=DBType.getFromClass( db, referenced);
+					if ( array_references.length()>0)
+						found=(DBType)db.findWithKey( "com.antlersoft.analyzer.DBType",
+								array_references+found.getTypeString());
+				}
+			}
+			else
+				found=(DBType)db.findWithKey( "com.antlersoft.analyzer.DBType", array_references+base_type);
 		}
-		else
-			found=(DBType)db.findWithKey( "com.antlersoft.analyzer.DBType", array_references+base_type);
-		if ( found==null)
-			return EmptyEnumeration.emptyEnumeration;
+		catch ( Exception e)
+		{
+			
+		}
 		
-		return new SingleEnum( found);
+		return found;
 	}
 
 }

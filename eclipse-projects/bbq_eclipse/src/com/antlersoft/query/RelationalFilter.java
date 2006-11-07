@@ -71,9 +71,6 @@ public class RelationalFilter extends Filter {
     public void lateBindApplies(Class new_applies) throws com.antlersoft.query.BindException {
 		m_binding.lateBindApplies( new_applies);
     }
-    public Class resultClass() {
-		return Boolean.class;
-    }
     public Class appliesClass() {
 		return m_binding.appliesClass();
     }
@@ -93,11 +90,6 @@ public class RelationalFilter extends Filter {
 		}
 
 		return result;
-    }
-    public void lateBindResult(Class new_result) throws com.antlersoft.query.BindException {
-		if ( ! new_result.isAssignableFrom( Boolean.class))
-			throw new BindException( "Inappropriate type "+new_result.getName()+
-		" bound as RelationalFilter result type");
     }
     public ValueContext getContext() {
 		return m_context;

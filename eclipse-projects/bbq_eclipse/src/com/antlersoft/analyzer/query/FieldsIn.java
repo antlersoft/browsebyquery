@@ -23,6 +23,9 @@ import java.util.Enumeration;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.DBField;
 
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.TransformImpl;
+
 class FieldsIn extends TransformImpl
 {
 	FieldsIn()
@@ -30,8 +33,7 @@ class FieldsIn extends TransformImpl
 		super( DBClass.class, DBField.class);
 	}
 
-	public Enumeration transform( Object toTransform)
-		throws Exception
+	public Enumeration transformObject( DataSource source, Object toTransform)
 	{
 		return ((DBClass)toTransform).getFields();
 	}

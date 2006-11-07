@@ -22,14 +22,17 @@ package com.antlersoft.analyzer.query;
 import com.antlersoft.analyzer.DBFieldReference;
 import com.antlersoft.analyzer.DBField;
 
-class FieldsOf extends UniqueTransform
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.UniqueTransformImpl;
+
+class FieldsOf extends UniqueTransformImpl
 {
 	FieldsOf()
 	{
 		super( DBFieldReference.class, DBField.class);
 	}
 
-	public Object uniqueTransform( Object toTransform)
+	public Object uniqueTransform( DataSource source, Object toTransform)
 	{
 		return ((DBFieldReference)toTransform).getTarget();
 	}

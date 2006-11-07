@@ -1,19 +1,14 @@
-symbol SetExpression
-symbol Transform
-symbol CompleteQuery
-symbol Filter
-symbol UncalledPolymorphic
+#include ../../query/BasicBase.bp
+
 symbol Identity
 symbol ImportExpression
-symbol SetOperator
 symbol Reference
 symbol StringConstant
-symbol LogicalOperator
 symbol Types
+symbol UncalledPolymorphic
 
 reserved Abstract "abstract"
 reserved all
-reserved and 4 left
 reserved are
 reserved arguments
 reserved base
@@ -22,40 +17,25 @@ reserved called
 reserved calls
 reserved Class "class"
 reserved classes
-reserved comma "," 1 left
 reserved containing
-reserved count
-reserved deintersection 2 left
 reserved deprecated 4 right
 reserved derived
-reserved execute
-reserved exists
 reserved fields
-reserved finalToken
 reserved from
 reserved Import "import"
 reserved in
 reserved is
-reserved intersection 2 left
 reserved Interface "interface"
-reserved leftParen "("
-reserved matching
 reserved methods
-reserved NOT "not" 5 right
-reserved or 4 left
-reserved of
 reserved Package "package" 4 right
 reserved polymorphic
-reserved previous
 reserved Protected "protected" 4 right
 reserved Private "private" 4 right
 reserved Public "public" 4 right
-reserved recursive
 reserved references
 reserved reference
 reserved referenced
 reserved rightParen ")"
-reserved same
 reserved set
 reserved SetExpressionSymbol "((#1"
 reserved stringconstant "string"
@@ -66,18 +46,9 @@ reserved TransformSymbol "((#2"
 reserved type
 reserved types
 reserved uncalled
-reserved uncorrelated
-reserved union 2 left
-reserved without 2 left
 reserved write
 
-CompleteQuery : SetExpression finalToken "{
-    QueryParser qp=(QueryParser)parser;
-    qp.previousSet=(SetExpression)valueStack.get(valueStack.size()-2);
-    return qp.previousSet;
-    }" .
-
-SetExpression : set nameSymbol to SetExpression "{
+SET_EXPRESSION : set nameSymbol to SET_EXPRESSION "{
     QueryParser qp=(QueryParser)parser;
     int size=valueStack.size();
     SetExpression se=(SetExpression)valueStack.get( size-1);
@@ -86,7 +57,7 @@ SetExpression : set nameSymbol to SetExpression "{
 	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
     return se; }" 1 .
 
-SetExpression : set nameSymbol to Transform "{
+SET_EXPRESSION : set nameSymbol to TRANSFORM "{
     QueryParser qp=(QueryParser)parser;
     int size=valueStack.size();
     Transform se=(Transform)valueStack.get( size-1);
@@ -96,61 +67,35 @@ SetExpression : set nameSymbol to Transform "{
 	return new EmptySetExpression();
 	}" 1 .
 
-SetExpression : SetExpressionSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
+SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
 
-SetExpression : Transform SetExpression "{
+SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 	int size=valueStack.size();
-	return new TransformSet( (SetExpression)valueStack.get( size-1),
-		(Transform)valueStack.get( size-2));
-	}" 3 .
-
-SetExpression : execute SetExpression "{
-	return new ExecuteExpression( (SetExpression)valueStack.get(
- 		valueStack.size()-1));
-   }" .
-
-SetExpression : leftParen SetExpression rightParen "{
-	return (SetExpression)valueStack.get( valueStack.size()-2);
+	return new TransformSet( new FilterTransform( (Filter)valueStack.get( size-1),
+		(SetExpression)valueStack.get( size-4)));
 	}" .
 
-SetExpression : SetExpression that Identity Filter "{
-	int size=valueStack.size();
-	return new TransformSet( (SetExpression)valueStack.get( size-4),
-		new FilterTransform( (Filter)valueStack.get( size-1)));
-	}" .
-
-SetExpression : SetExpression SetOperator SetExpression "{
-	int size=valueStack.size();
-	return new SetOpExpression( (ReservedWord)valueStack.get( size-2),
-		(SetExpression)valueStack.get( size-3), (SetExpression)valueStack.get( size-1));
-	}" 2 .
-
-SetExpression : previous "{
-	QueryParser qp=(QueryParser)parser;
-	return qp.previousSet;
-	}" .
-
-SetExpression : Class literalString "{
+SET_EXPRESSION : Class literalString "{
 	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((QueryParserBase)parser).importedPackages);
 	}" .
 
-SetExpression : all classes "{
+SET_EXPRESSION : all classes "{
 	return new ClassesGet();
 	}" .
 
-SetExpression : all StringConstant "{
+SET_EXPRESSION : all StringConstant "{
     return new StringsGet();
     }" .
 
-SetExpression : stringconstant literalString "{
-	return new StringGet( (String)valueStack.get( valueStack.size()-1));
+VALUE_EXPRESSION : StringConstant "{
+	return new StringGet();
 	}" .
 	
-SetExpression : Types literalString "{
-	return new TypeGet( (String)valueStack.get( valueStack.size()-1));
+VALUE_EXPRESSION : Types "{
+	return new TypeGet();
 	}" .
 
-SetExpression : ImportExpression "{ return new ImportSet( ((QueryParserBase)parser).importedPackages); }" .
+SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((QueryParserBase)parser).importedPackages); }" .
 
 ImportExpression : Import .
 ImportExpression : ImportExpression set "{
@@ -162,106 +107,68 @@ ImportExpression : ImportExpression literalString "{
     return \"\";
 }" .
 
-Transform : Transform Transform "{
-	int size=valueStack.size();
-	return new TransformTransform( (Transform)valueStack.get( valueStack.size()-2),
-		(Transform)valueStack.get( valueStack.size()-1));
-	}"  3 .Transform : Filter "{
-	return new FilterTransform( (Filter)valueStack.get( valueStack.size()-1)); }" .
-Transform : Transform SetOperator Transform "{
-	int size=valueStack.size();
-	return new SetOpTransform( (ReservedWord)valueStack.get( size-2),
-		(Transform)valueStack.get( size-3), (Transform)valueStack.get( size-1));
-	}" 2 .
-Transform : Transform that Identity Filter "{
+SET_EXPRESSION : TRANSFORM SET_EXPRESSION
+"{ return new TransformSet( (Transform)valueStack.get( valueStack.size()-2),
+(SetExpression)valueStack.get( valueStack.size()-1)); }" .
+
+VALUE_EXPRESSION : VALUE_EXPRESSION VALUE_EXPRESSION
+"{ return new CompoundExpression( (ValueExpression)valueStack.get( valueStack.size()-1),
+(ValueExpression)valueStack.get( valueStack.size()-2)); }" .
+
+TRANSFORM : TRANSFORM TRANSFORM
+"{ return new TransformTransform( (Transform)valueStack.get( valueStack.size()-1),
+(Transform)valueStack.get( valueStack.size()-2)); }" 5 .
+
+TRANSFORM : TRANSFORM that Identity FILTER "{
 	int size=valueStack.size();
 	return new TransformTransform(
-		new FilterTransform((Filter)valueStack.get( size-1)),
-		(Transform)valueStack.get( size-4));
-	};" .
-Transform : leftParen Transform rightParen "{
-	return (Transform)valueStack.get( valueStack.size()-2);
-	}" .
-Transform : count "{ return new Count(); }" .
-
-Transform : uncorrelated leftParen SetExpression rightParen "{
-	return new UncorrelatedSet( (SetExpression)
-            valueStack.get( valueStack.size()-2));
-	}" .
-	
-Transform : recursive leftParen Transform rightParen "{
-	return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-2), null);
-	}" .
-
-Transform : recursive leftParen Transform comma Transform rightParen "{
-	int s=valueStack.size();
-	return new RecursiveTransform( (Transform)valueStack.get( s-4), (Transform)valueStack.get( s-2));
-	}" .
-Transform : Types of "{
+		(Transform)valueStack.get( size-4),
+		new FilterTransform((Filter)valueStack.get( size-1)));
+	};" 2 .
+VALUE_EXPRESSION : Types of "{
 	return new TypeOf();
 	}" .
-Transform : arguments of "{
+TRANSFORM : arguments of "{
 	return new ArgumentsOf();
 	}" .
 
-Transform : base classes of "{ return new BaseClasses(); }" .
-Transform : recursive base classes of "{ return new RecursiveBaseClasses(); }" .
-Transform : derived classes of "{ return new DerivedClasses(); }" .
-Transform : recursive derived classes of "{ return new RecursiveDerivedClasses(); }" .
-Transform : same "{ return new SameTransform(); }" .
-Transform : methods in "{ return new MethodsIn(); }" .
-Transform : fields in "{ return new FieldsIn(); }" .
-Transform : polymorphic "{ return new Polymorphic(); }" .
-Transform : methods called by "{ return new MethodsOf(); }" .
-Transform : fields referenced by "{ return new FieldsOf(); }" .
-Transform : StringConstant referenced by "{ return new StringsOf(); }" .
-Transform : methods containing "{ return new MethodsContaining(); }" .
-Transform : classes containing "{ return new ClassOf(); }" .
-Transform : calls from "{ return new CallsFrom(); }" .
-Transform : Reference from "{ return new ReferenceFrom(); }" .
-Transform : StringConstant Reference from "{ return new StringReferenceFrom(); }" .
-Transform : Reference to "{ return new ReferencesTo(); }" .
-Transform : calls to "{ return new CallsTo(); }" .
-Transform : TransformSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
+TRANSFORM : recursive base classes of "{ return new RecursiveBaseClasses(); }" .
+TRANSFORM : base classes of "{ return new BaseClasses(); }" .
+TRANSFORM : recursive derived classes of "{ return new RecursiveDerivedClasses(); }" .
+TRANSFORM : derived classes of "{ return new DerivedClasses(); }" .
+TRANSFORM : methods in "{ return new MethodsIn(); }" .
+TRANSFORM : fields in "{ return new FieldsIn(); }" .
+TRANSFORM : polymorphic "{ return new Polymorphic(); }" .
+TRANSFORM : methods called by "{ return new MethodsOf(); }" .
+TRANSFORM : fields referenced by "{ return new FieldsOf(); }" .
+TRANSFORM : StringConstant referenced by "{ return new StringsOf(); }" .
+TRANSFORM : methods containing "{ return new MethodsContaining(); }" .
+TRANSFORM : classes containing "{ return new ClassOf(); }" .
+TRANSFORM : calls from "{ return new CallsFrom(); }" .
+TRANSFORM : Reference from "{ return new ReferenceFrom(); }" .
+TRANSFORM : StringConstant Reference from "{ return new StringReferenceFrom(); }" .
+TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
+TRANSFORM : calls to "{ return new CallsTo(); }" .
+TRANSFORM : TransformSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
 
-Filter : exists leftParen Transform rightParen "{
-    return new Existing( (Transform)valueStack.get( valueStack.size()-2));
-    }" .
+FILTER : write "{ return new WriteReferences(); }" .
 
-Filter : Filter LogicalOperator Filter "{
-    return new LogicalOpFilter( (ReservedWord)valueStack.get( valueStack.size()-2),
-        (Filter)valueStack.get( valueStack.size()-3),
-        (Filter)valueStack.get( valueStack.size()-1));
-    }" 4 .
-Filter : leftParen Filter rightParen  "{
-	return (Filter)valueStack.get( valueStack.size()-2);
-	}" .
-Filter : NOT Filter "{
-	Filter filter=(Filter)valueStack.get( valueStack.size()-1);
-	filter.setNot();
-	return filter;
-	}" .
-Filter : matching literalString "{
-	return new MatchFilter( (String)valueStack.get( valueStack.size()-1));
-	}" .
-Filter : write "{ return new WriteReferences(); }" .
-
-Filter : Public "{
+FILTER : Public "{
 	return new AccessFilter( ClassWriter.ACC_PUBLIC); }" .
-Filter : Private "{
+FILTER : Private "{
 	return new AccessFilter( ClassWriter.ACC_PRIVATE); }" .
-Filter : Protected "{
+FILTER : Protected "{
 	return new AccessFilter( ClassWriter.ACC_PROTECTED); }" .
-Filter : Package "{
+FILTER : Package "{
     return new AccessFilter( ClassWriter.ACC_PUBLIC|ClassWriter.ACC_PRIVATE|
         ClassWriter.ACC_PROTECTED, 0);
     }" .
-Filter : Abstract "{ return new AccessFilter( ClassWriter.ACC_ABSTRACT); }" .
-Filter : Interface "{ return new AccessFilter( ClassWriter.ACC_INTERFACE); }" .
-Filter : deprecated "{ return new DeprecatedFilter(); }" .
+FILTER : Abstract "{ return new AccessFilter( ClassWriter.ACC_ABSTRACT); }" .
+FILTER : Interface "{ return new AccessFilter( ClassWriter.ACC_INTERFACE); }" .
+FILTER : deprecated "{ return new DeprecatedFilter(); }" .
 
-Filter : uncalled "{ return new UncalledMethod(); }" .
-Filter : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
+FILTER : uncalled "{ return new UncalledMethod(); }" .
+FILTER : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
 
 Reference : reference .
 Reference : references .
@@ -269,19 +176,11 @@ Reference : references .
 StringConstant : stringconstant .
 StringConstant : stringconstants .
 
-UncalledPolymorphic : uncalled polymorphic .
+UncalledPolymorphic : uncalled polymorphic 16 .
 
 Types : type .
 Types : types .
 
 Identity : is .
 Identity : are .
-
-SetOperator : union "{ return union; }" .
-SetOperator : intersection "{ return intersection; }" .
-SetOperator : deintersection "{ return deintersection; }" .
-SetOperator : without "{ return without; }" .
-
-LogicalOperator : and "{ return and; }" .
-LogicalOperator : or "{ return or; }" .
 

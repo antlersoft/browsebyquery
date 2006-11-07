@@ -8,6 +8,8 @@ import java.util.Enumeration;
 import com.antlersoft.analyzer.DBArgument;
 import com.antlersoft.analyzer.DBMethod;
 
+import com.antlersoft.query.*;
+
 /**
  * @author mike
  *
@@ -22,10 +24,7 @@ class ArgumentsOf extends TransformImpl {
 		super(DBArgument.class, DBMethod.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.antlersoft.analyzer.query.TransformImpl#transform(java.lang.Object)
-	 */
-	public Enumeration transform(Object toTransform) throws Exception {
+	public Enumeration transformObject( DataSource source, Object toTransform) {
 		return ((DBMethod)toTransform).getArguments();
 	}
 

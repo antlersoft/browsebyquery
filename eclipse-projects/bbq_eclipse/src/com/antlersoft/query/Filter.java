@@ -19,9 +19,8 @@
  */
 package com.antlersoft.query;
 
-import java.util.List;
-
 public abstract class Filter implements ValueExpression {
+	protected static Class BOOLEAN_CLASS=Boolean.class;
 	public abstract boolean booleanValue();
 
 	public final Object getValue()
@@ -37,6 +36,18 @@ public abstract class Filter implements ValueExpression {
 	public final boolean adjustedBooleanValue()
 	{
 		return m_not ? ! booleanValue() : booleanValue();
+	}
+	
+	public final Class resultClass()
+	{
+		return BOOLEAN_CLASS;
+	}
+	
+	public final void lateBindResult( Class new_result)
+	throws BindException
+	{
+		if ( new_result!=BOOLEAN_CLASS)
+			throw new BindException( "Trying to bind"+new_result.toString()+" to filter result");
 	}
 
 	private boolean m_not;

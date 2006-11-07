@@ -22,7 +22,8 @@ package com.antlersoft.analyzer.query;
 import java.util.Enumeration;
 import java.util.TreeSet;
 
-import com.antlersoft.analyzer.AnalyzerDB;
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.SetExpression;
 
 import com.antlersoft.util.IteratorEnumeration;
 
@@ -30,10 +31,13 @@ class ImportSet extends SetExpression {
     private TreeSet m_set;
     ImportSet( TreeSet set)
     {
-        super( String.class);
         m_set=set;
     }
-    public Enumeration execute(AnalyzerDB db) throws java.lang.Exception {
+    public Class getResultClass()
+    {
+    	return String.class;
+    }
+    public Enumeration evaluate(DataSource db) {
         return new IteratorEnumeration( m_set.iterator());
     }
 }

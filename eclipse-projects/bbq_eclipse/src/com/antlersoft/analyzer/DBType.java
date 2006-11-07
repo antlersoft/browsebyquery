@@ -5,10 +5,11 @@ package com.antlersoft.analyzer;
 
 import java.util.Enumeration;
 
-import com.antlersoft.analyzer.query.EmptyEnumeration;
+import com.antlersoft.query.EmptyEnum;
 
 import com.antlersoft.classwriter.TypeParse;
 
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectRefKey;
@@ -25,6 +26,7 @@ public class DBType implements Persistent, Cloneable {
 	 * 
 	 */
 	private static final long serialVersionUID = 2116580043409773373L;
+	public static final String TYPE_CLASS_INDEX="TypeClass";
 	private ObjectRef _class;
 	private ObjectRef _arrayReferencedType;
 	private String _builtInType;
@@ -94,9 +96,42 @@ public class DBType implements Persistent, Cloneable {
 		return (DBType)db.getWithKey( "com.antlersoft.analyzer.DBType", "["+_typeString);
 	}
 	
+	/**
+	 * 
+	 * @return The single character internal code for the type
+	 */
 	public String getBuiltInType()
 	{
 		return _builtInType;
+	}
+	
+	/**
+	 * 
+	 * @return The internal representation of the type, which is also the primary key
+	 */
+	public String getTypeString()
+	{
+		return _typeString;
+	}
+	
+	/**
+	 * Return the DBType object for a class if it exists in the database
+	 * @param db -- database (must be IndexAnalyzeDB to retrieve a type)
+	 * @param cl -- class to find within a database
+	 * @return The DBType representing the class type, or null if no such type is referenced
+	 */
+	public static DBType getFromClass( AnalyzerDB db, DBClass cl)
+	{
+		DBType result=null;
+		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+		{
+			Enumeration e=((IndexAnalyzeDB)db).retrieveByIndex( DBType.TYPE_CLASS_INDEX,
+					new ObjectRefKey( cl));
+			if ( e.hasMoreElements())
+				result=(DBType)e.nextElement(); 
+		}
+		
+		return result;
 	}
 	
 	public Enumeration getReturningMethods( AnalyzerDB db)
@@ -107,7 +142,7 @@ public class DBType implements Persistent, Cloneable {
 			result=((IndexAnalyzeDB)db).retrieveByIndex( DBMethod.RETURN_TYPE_INDEX, new ObjectRefKey( this));
 		}
 		else
-			result=EmptyEnumeration.emptyEnumeration;
+			result=EmptyEnum.empty;
 		
 		return result;
 	}
@@ -120,7 +155,7 @@ public class DBType implements Persistent, Cloneable {
 			result=((IndexAnalyzeDB)db).retrieveByIndex( DBField.FIELD_TYPE_INDEX, new ObjectRefKey( this));
 		}
 		else
-			result=EmptyEnumeration.emptyEnumeration;
+			result=EmptyEnum.empty;
 		
 		return result;
 	}
@@ -133,7 +168,7 @@ public class DBType implements Persistent, Cloneable {
 			result=((IndexAnalyzeDB)db).retrieveByIndex( DBArgument.ARGUMENT_TYPE_INDEX, new ObjectRefKey( this));
 		}
 		else
-			result=EmptyEnumeration.emptyEnumeration;
+			result=EmptyEnum.empty;
 		
 		return result;
 	}
@@ -157,7 +192,13 @@ public class DBType implements Persistent, Cloneable {
 		return result;
 	}
 	
-	static class TypeStringMap
+	/**
+	 * Maps names for Java built-in types to the characters found in the type strings in
+	 * class files
+	 * @author Michael MacDonald
+	 *
+	 */
+	public static class TypeStringMap
 	{
 		private String internal;
 		private String user;
@@ -179,7 +220,7 @@ public class DBType implements Persistent, Cloneable {
 			user=u;
 		}
 		
-		static String internalToUser( String s)
+		public static String internalToUser( String s)
 		{
 			String result=null;
 			
@@ -192,7 +233,13 @@ public class DBType implements Persistent, Cloneable {
 			
 			return result;
 		}
-		static String userToInternal( String s)
+		
+		/**
+		 * 
+		 * @param s user representation of a built-in type
+		 * @return internal java type character, or null if type name doesn't map to a built-in type
+		 */
+		public static String userToInternal( String s)
 		{
 			String result=null;
 			
@@ -204,6 +251,20 @@ public class DBType implements Persistent, Cloneable {
 				}
 			
 			return result;
+		}
+	}
+
+	static class TypeClassKeyGenerator implements KeyGenerator
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 173926813542534195L;
+
+		public Comparable generateKey( Object obj)
+		{
+			DBType t=(DBType)obj;
+			return new ObjectRefKey( t._class);
 		}
 	}
 }

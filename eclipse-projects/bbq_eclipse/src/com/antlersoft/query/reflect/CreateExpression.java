@@ -4,10 +4,14 @@ import java.util.List;
 
 import com.antlersoft.query.*;
 
-public abstract class CreateExpression implements ValueExpression, CountPreservingValueContext {
+public class CreateExpression implements ValueExpression, CountPreservingValueContext {
+	
+	private Class m_result_class;
+	
 	public CreateExpression( Transform transform)
 	{
 		m_invoker=new Invoker( null, transform);
+		m_result_class=null;
 	}
 
 	public Object getValue()
@@ -23,6 +27,31 @@ public abstract class CreateExpression implements ValueExpression, CountPreservi
 	public ValueContext getContext()
 	{
 		return this;
+	}
+	
+	public int getContextType()
+	{
+		return COUNT_PRESERVING;
+	}
+	
+	public void inputObject( ValueObject obj, DataSource source, Object target)
+	{
+		m_result=m_invoker.invokeConstructor( source, target);
+	}
+	
+	public Class resultClass()
+	{
+		return m_result_class;
+	}
+	
+	public Class appliesClass()
+	{
+		return m_invoker.m_transform.appliesClass();
+	}
+	
+	public void lateBindResult( Class new_result)
+	{
+		m_result_class=new_result;
 	}
 
 	public void lateBindApplies( Class new_applies)

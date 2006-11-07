@@ -127,7 +127,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 		return (DBClass)dbclass.getReferenced();
     }
     
-    public DBType getDBType()
+    public DBType getDBType( AnalyzerDB db)
     {
     	DBType result=null;
     	if ( returnType!=null)
@@ -146,6 +146,13 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 		if ( calls!=null)
 		    return calls.elements();
 		return emptyVector.elements();
+    }
+    
+    public Enumeration getArguments()
+    {
+    	if ( arguments!=null)
+    		return arguments.elements();
+    	return emptyVector.elements();
     }
 
     public Enumeration getReferences()

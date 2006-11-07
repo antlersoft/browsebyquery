@@ -23,6 +23,13 @@ import java.util.Enumeration;
 import com.antlersoft.analyzer.DBFieldReference;
 import com.antlersoft.analyzer.DBMethod;
 
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.TransformImpl;
+
+/**
+ * @author Michael A. MacDonald
+ *
+ */
 class ReferenceFrom extends TransformImpl
 {
 	ReferenceFrom()
@@ -30,8 +37,7 @@ class ReferenceFrom extends TransformImpl
 		super( DBMethod.class, DBFieldReference.class);
 	}
 
-	public Enumeration transform( Object base)
-		throws Exception
+	public Enumeration transformObject( DataSource source, Object base)
 	{
 		return ((DBMethod)base).getReferences();
 	}

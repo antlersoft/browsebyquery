@@ -22,14 +22,17 @@ package com.antlersoft.analyzer.query;
 import com.antlersoft.analyzer.DBCall;
 import com.antlersoft.analyzer.DBMethod;
 
-class MethodsOf extends UniqueTransform
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.UniqueTransformImpl;
+
+class MethodsOf extends UniqueTransformImpl
 {
 	MethodsOf()
 	{
 		super( DBCall.class, DBMethod.class);
 	}
 
-	public Object uniqueTransform( Object toTransform)
+	public Object uniqueTransform( DataSource source, Object toTransform)
 	{
 		return ((DBCall)toTransform).getTarget();
 	}

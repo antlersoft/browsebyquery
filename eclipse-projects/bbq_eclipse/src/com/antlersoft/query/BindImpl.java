@@ -23,7 +23,7 @@ public class BindImpl implements Bindable {
 	private Class m_result;
 	private Class m_applies;
 
-	BindImpl( Class result, Class applies)
+	public BindImpl( Class result, Class applies)
 	{
 		m_result=result;
 		m_applies=applies;

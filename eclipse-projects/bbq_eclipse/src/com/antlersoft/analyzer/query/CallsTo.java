@@ -23,6 +23,9 @@ import java.util.Enumeration;
 import com.antlersoft.analyzer.DBMethod;
 import com.antlersoft.analyzer.DBCall;
 
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.TransformImpl;
+
 class CallsTo extends TransformImpl
 {
 	CallsTo()
@@ -30,8 +33,7 @@ class CallsTo extends TransformImpl
 		super( DBMethod.class, DBCall.class);
 	}
 
-	public Enumeration transform( Object method)
-		throws Exception
+	public Enumeration transformObject( DataSource source, Object method)
 	{
 		return ((DBMethod)method).getCalledBy();
 	}

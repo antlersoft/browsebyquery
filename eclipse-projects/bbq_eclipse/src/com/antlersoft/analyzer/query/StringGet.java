@@ -26,28 +26,28 @@
  */
 package com.antlersoft.analyzer.query;
 
-import java.util.Enumeration;
 import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.DBStringConstant;
 
-class StringGet extends SetExpression
-{
-    private String toGet;
+import com.antlersoft.query.CountPreservingValueExpression;
+import com.antlersoft.query.DataSource;
 
-    StringGet( String _toGet)
+class StringGet extends CountPreservingValueExpression
+{
+    StringGet()
     {
-        super( DBStringConstant.class);
-        toGet=_toGet;
+        super( DBStringConstant.class, String.class);
     }
 
-    public Enumeration execute(AnalyzerDB parm1) throws java.lang.Exception
+    protected Object transformSingleObject(DataSource source, Object inputObject)
     {
-        Enumeration result;
-        Object found=parm1.findWithKey( DBStringConstant.class.getName(),
-            toGet);
-        if ( found!=null)
-            return QueryParser.enumFromObject( found);
-        else
-            return EmptyEnumeration.emptyEnumeration;
+    	try
+    	{
+    		return ((AnalyzerDB)source).findWithKey( DBStringConstant.class.getName(), (String)inputObject);
+    	}
+    	catch ( Exception e)
+    	{
+    		throw new RuntimeException( e);
+    	}
     }
 }

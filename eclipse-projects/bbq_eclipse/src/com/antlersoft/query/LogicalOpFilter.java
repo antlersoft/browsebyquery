@@ -41,10 +41,7 @@ public class LogicalOpFilter extends Filter {
     public void lateBindApplies(Class new_applies) throws com.antlersoft.query.BindException {
 		m_binding.lateBindApplies( new_applies);
     }
-    public Class resultClass() {
-		return m_binding.resultClass();
-    }
-    public Class appliesClass() {
+     public Class appliesClass() {
 		return m_binding.appliesClass();
     }
     public boolean booleanValue() {
@@ -62,9 +59,6 @@ public class LogicalOpFilter extends Filter {
 			throw new IllegalArgumentException();
 		}
 		return result;
-    }
-    public void lateBindResult(Class new_result) throws com.antlersoft.query.BindException {
-		m_binding.lateBindResult( new_result);
     }
     public ValueContext getContext() {
 		return m_context;

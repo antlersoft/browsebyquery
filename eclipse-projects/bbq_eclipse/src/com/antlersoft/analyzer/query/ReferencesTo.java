@@ -27,23 +27,25 @@ import com.antlersoft.analyzer.DBReference;
 import com.antlersoft.analyzer.DBStringConstant;
 import com.antlersoft.analyzer.DBStringReference;
 
-import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.query.BindException;
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.EmptyEnum;
+import com.antlersoft.query.Transform;
 
-class ReferencesTo extends TransformImpl
+class ReferencesTo extends Transform
 {
 	ReferencesTo()
 	{
-		super( null, null);
+		m_applies=m_result=null;
 	}
 
-	public Enumeration transform( Object base)
-		throws Exception
+	public Enumeration transformObject( DataSource source, Object base)
 	{
-        if ( _applies==null)
+        if ( appliesClass()==null)
         {
-            throw new Exception( "Unbound reference to");
+            throw new RuntimeException( "Unbound reference to");
         }
-        if ( _applies==DBStringConstant.class)
+        if ( appliesClass()==DBStringConstant.class)
         {
             return ((DBStringConstant)base).getReferencedBy();
         }
@@ -51,48 +53,68 @@ class ReferencesTo extends TransformImpl
 		    return ((DBField)base).getReferencedBy();
 	}
 
- 	public void lateBindResult( Class newResultClass)
-		throws RuleActionException
+	public void startEvaluation( DataSource source) {}
+	public Enumeration finishEvaluation( DataSource source) { return EmptyEnum.empty; }
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.query.BindImpl#appliesClass()
+	 */
+	public Class appliesClass() {
+		return m_applies;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.query.BindImpl#resultClass()
+	 */
+	public Class resultClass() {
+		return m_result;
+	}
+
+	public void lateBindResult( Class newResultClass)
+		throws BindException
 	{
-        if ( newResultClass==DBStringReference.class && ( _applies==null ||
-            _applies==DBStringConstant.class))
+        if ( newResultClass==DBStringReference.class && ( m_applies==null ||
+            m_applies==DBStringConstant.class))
         {
-            _applies=DBStringConstant.class;
-            _result=DBStringReference.class;
+            m_applies=DBStringConstant.class;
+            m_result= DBStringReference.class;
         }
-        else if ( newResultClass==DBFieldReference.class && ( _applies==null
-            || _applies==DBField.class))
+        else if ( newResultClass==DBFieldReference.class && ( m_applies==null
+            || m_applies==DBField.class))
         {
-            _applies=DBField.class;
-            _result=DBFieldReference.class;
+            m_applies=DBField.class;
+            m_result=DBFieldReference.class;
         }
         else if ( newResultClass==DBReference.class)
         {
         }
         else
-    		throw new RuleActionException(
+    		throw new BindException(
     			getClass().getName()+" can not be bound for result to "+
                 newResultClass.getName());
 	}
 
 	public void lateBindApplies( Class newAppliesClass)
-		throws RuleActionException
+		throws BindException
 	{
-        if ( newAppliesClass==DBStringConstant.class && ( _applies==null ||
-            _applies==DBStringConstant.class))
+        if ( newAppliesClass==DBStringConstant.class && ( m_applies==null ||
+            m_applies==DBStringConstant.class))
         {
-            _applies=DBStringConstant.class;
-            _result=DBStringReference.class;
+            m_applies=DBStringConstant.class;
+            m_result=DBStringReference.class;
         }
-        else if ( newAppliesClass==DBField.class && ( _applies==null
-            || _applies==DBField.class))
+        else if ( newAppliesClass==DBField.class && ( m_applies==null
+            || m_applies==DBField.class))
         {
-            _applies=DBField.class;
-            _result=DBFieldReference.class;
+            m_applies=DBField.class;
+            m_result=DBFieldReference.class;
         }
         else
-    		throw new RuleActionException(
+    		throw new BindException(
     			getClass().getName()+" can not be bound for applies to "+
                 newAppliesClass.getName());
 	}
+	
+	private Class m_applies;
+	private Class m_result;
 }

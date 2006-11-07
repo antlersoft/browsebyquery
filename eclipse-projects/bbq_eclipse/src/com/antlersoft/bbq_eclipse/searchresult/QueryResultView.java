@@ -163,6 +163,8 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						IWorkspaceRoot root=ResourcesPlugin.getWorkspace().getRoot();
 						IFile file=null;
 						String path=source.getDBClass().getInternalName();
+						if ( path==null)
+							path="";
 						int lastSlash=path.lastIndexOf( '/');
 						if ( lastSlash!= -1)
 							path=path.substring( 0, lastSlash+1);

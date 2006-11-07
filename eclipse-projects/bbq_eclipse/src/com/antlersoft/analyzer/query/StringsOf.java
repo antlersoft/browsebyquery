@@ -26,19 +26,20 @@
  */
 package com.antlersoft.analyzer.query;
 
-import java.util.Enumeration;
-
 import com.antlersoft.analyzer.DBStringConstant;
 import com.antlersoft.analyzer.DBStringReference;
 
-class StringsOf extends UniqueTransform
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.UniqueTransformImpl;
+
+class StringsOf extends UniqueTransformImpl
 {
     public StringsOf()
     {
         super( DBStringReference.class, DBStringConstant.class);
     }
 
-    public Object uniqueTransform(Object parm1)
+    public Object uniqueTransform( DataSource source, Object parm1)
     {
         return ((DBStringReference)parm1).getTarget();
     }

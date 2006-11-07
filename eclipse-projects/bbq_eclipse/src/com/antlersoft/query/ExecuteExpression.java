@@ -23,12 +23,11 @@
  * @author Michael MacDonald
  * @version 1.0
  */
-package com.antlersoft.analyzer.query;
+package com.antlersoft.query;
 
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Vector;
-
-import com.antlersoft.analyzer.AnalyzerDB;
 
 public class ExecuteExpression extends SetExpression
 {
@@ -37,18 +36,26 @@ public class ExecuteExpression extends SetExpression
 
     public ExecuteExpression( SetExpression toExecute)
     {
-    	super( toExecute.getSetClass());
     	storedResult=null;
         setExpression=toExecute;
     }
-
-    public Enumeration execute(AnalyzerDB adb)
-    	throws java.lang.Exception
+    
+    public Class getResultClass()
     {
+    	return setExpression.getResultClass();
+    }
+    
+    public Comparator getOrdering()
+    {
+    	return setExpression.getOrdering();
+    }
+
+    public Enumeration evaluate(DataSource adb)
+     {
         if ( storedResult==null)
         {
         	storedResult=new Vector();
-	        for ( Enumeration e=setExpression.execute( adb);
+	        for ( Enumeration e=setExpression.evaluate( adb);
          		e.hasMoreElements();
 	            storedResult.addElement( e.nextElement()));
 	        setExpression=null;

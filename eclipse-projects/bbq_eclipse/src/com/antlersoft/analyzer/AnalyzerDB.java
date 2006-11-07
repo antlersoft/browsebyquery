@@ -21,7 +21,9 @@ package com.antlersoft.analyzer;
 
 import java.util.Enumeration;
 
-public interface AnalyzerDB
+import com.antlersoft.query.DataSource;
+
+public interface AnalyzerDB extends DataSource
 {
 	public static final int OPTIONAL_TYPE_INFO=1;
 	

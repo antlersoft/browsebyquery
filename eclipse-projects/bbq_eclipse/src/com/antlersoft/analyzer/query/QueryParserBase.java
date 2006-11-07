@@ -30,15 +30,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import com.antlersoft.analyzer.*;
 import com.antlersoft.parser.*;
+import com.antlersoft.query.*;
 
 
-class QueryParserBase extends Parser
+class QueryParserBase extends BasicBase
 {
     public QueryParserBase( ParseState[] parseStates)
     {
         super( parseStates);
         tokens=null;
-        previousSet=null;
         storedValues=new HashMap();
         storedValuesSupport=new PropertyChangeSupport( this);
         importedPackages=new TreeSet();
@@ -61,7 +61,7 @@ class QueryParserBase extends Parser
             reset();
             throw pe;
         }
-        return previousSet;
+        return getLastParsedExpression();
     }
 
     public void setLine( String toParse)
@@ -108,12 +108,10 @@ class QueryParserBase extends Parser
     // Package interface
     Token[] tokens;
     int currentIndex;
-    SetExpression previousSet;
     HashMap storedValues; // String, SetExpression
     PropertyChangeSupport storedValuesSupport;
     TreeSet importedPackages;
 
-    static Symbol literalString=Symbol.get( "_literalString");
     static Symbol nameSymbol=Symbol.get( "_nameSymbol");
 
     static class LiteralToken extends Token
@@ -214,7 +212,6 @@ class QueryParserBase extends Parser
                 }
             }
         }
-        tokens.addElement( new Token( QueryParser.finalToken, ";"));
         tokens.addElement( new Token( Parser._end_, ""));
 
         Token[] retval=new Token[tokens.size()];
@@ -264,165 +261,155 @@ class QueryParserBase extends Parser
 
         ClassGet( String className, TreeSet set)
         {
-            super( DBClass.class);
             _className=className;
             _set=set;
         }
+        
+        public Class getResultClass()
+        {
+        	return DBClass.class;
+        }
 
-        public Enumeration execute( AnalyzerDB db)
-            throws Exception
+        public Enumeration evaluate( DataSource source)
         {
             Vector tmp=new Vector( 1);
-            Object q=db.findWithKey( "com.antlersoft.analyzer.DBClass", _className);
-            if ( q!=null)
-                tmp.addElement( q);
-            for ( Iterator i=_set.iterator(); i.hasNext() && q==null;)
+            AnalyzerDB db=(AnalyzerDB)source;
+            try
             {
-                q=db.findWithKey( "com.antlersoft.analyzer.DBClass", ((String)i.next())+"."+_className);
-                if ( q!=null)
-                    tmp.addElement( q);
+	            Object q=db.findWithKey( "com.antlersoft.analyzer.DBClass", _className);
+	            if ( q!=null)
+	                tmp.addElement( q);
+	            for ( Iterator i=_set.iterator(); i.hasNext() && q==null;)
+	            {
+	                q=db.findWithKey( "com.antlersoft.analyzer.DBClass", ((String)i.next())+"."+_className);
+	                if ( q!=null)
+	                    tmp.addElement( q);
+	            }
+	            return tmp.elements();
             }
-            return tmp.elements();
+            catch ( Exception e)
+            {
+            	throw new RuntimeException( e);
+            }
         }
     }
 
     static class ClassesGet extends SetExpression
     {
-        ClassesGet()
+    	public Class getResultClass()
+    	{
+    		return DBClass.class;
+    	}
+    	
+        public Enumeration evaluate( DataSource db)
         {
-            super( DBClass.class);
-        }
-
-        public Enumeration execute( AnalyzerDB db)
-            throws Exception
-        {
-            return db.getAll( "com.antlersoft.analyzer.DBClass");
+        	try
+        	{
+        		return ((AnalyzerDB)db).getAll( "com.antlersoft.analyzer.DBClass");
+        	}
+        	catch ( Exception e)
+        	{
+        		throw new RuntimeException( e);
+        	}
         }
     }
 
-    static class BaseClasses extends TransformImpl
+    static abstract class ClassTransform extends UniqueTransformImpl
     {
-        protected Hashtable ht;
-        BaseClasses( )
+        ClassTransform( )
         {
             super( DBClass.class, DBClass.class);
         }
+    }
 
-        public void startEvaluation( AnalyzerDB db)
-        {
-            ht=new Hashtable();
-        }
-
-        public Enumeration transform( Object toTransform)
-            throws Exception
+    static class BaseClasses extends ClassTransform
+    {
+        public Object uniqueTransform( DataSource source, Object toTransform)
         {
             DBClass c=(DBClass)toTransform;
-            Enumeration superEnum=c.getSuperClasses();
-            while ( superEnum.hasMoreElements())
-            {
-                DBClass superClass=(DBClass)superEnum.nextElement();
-                ht.put( superClass, superClass);
-            }
-            return EmptyEnumeration.emptyEnumeration;
-        }
-
-        public Enumeration finishEvaluation()
-        {
-            Enumeration result= ht.keys();
-            ht=null;
-            return result;
+            return c.getSuperClasses();
         }
     }
 
-    static class DerivedClasses extends BaseClasses
+    static class DerivedClasses extends ClassTransform
     {
-        public Enumeration transform( Object toTransform)
-            throws Exception
+        public Object uniqueTransform( DataSource source, Object toTransform)
         {
             DBClass c=(DBClass)toTransform;
-            Enumeration derivedEnum=c.getDerivedClasses();
-            while ( derivedEnum.hasMoreElements())
-            {
-                DBClass derivedClass=(DBClass)derivedEnum.nextElement();
-                ht.put( derivedClass, derivedClass);
-            }
-            return EmptyEnumeration.emptyEnumeration;
+            return c.getDerivedClasses();
         }
     }
 
-    static class RecursiveBaseClasses extends BaseClasses
+    static class RecursiveBaseClasses extends ClassTransform
     {
-        private static void addSuperClasses( DBClass current, Hashtable ht)
+        private void addSuperClasses( DBClass current)
         {
             Enumeration superEnum=current.getSuperClasses();
             while ( superEnum.hasMoreElements())
             {
                 DBClass superClass=(DBClass)superEnum.nextElement();
-                if ( ht.get( superClass)==null)
+                if ( ! m_set.contains( superClass))
                 {
-                    ht.put( superClass, superClass);
-                    addSuperClasses( superClass, ht);
+                    m_set.add( superClass);
+                    addSuperClasses( superClass);
                 }
             }
         }
 
-        public Enumeration transform( Object toTransform)
-            throws Exception
+        public Object uniqueTransform( DataSource source, Object toTransform)
         {
-            addSuperClasses( (DBClass)toTransform, ht);
-            return EmptyEnumeration.emptyEnumeration;
+            addSuperClasses( (DBClass)toTransform);
+            return EmptyEnum.empty;
         }
     }
 
-    static class RecursiveDerivedClasses extends BaseClasses
+    static class RecursiveDerivedClasses extends ClassTransform
     {
-        private static void addDerivedClasses( DBClass current, Hashtable ht)
+        private void addDerivedClasses( DBClass current)
         {
             Enumeration derivedEnum=current.getDerivedClasses();
             while ( derivedEnum.hasMoreElements())
             {
                 DBClass derivedClass=(DBClass)derivedEnum.nextElement();
-                if ( ht.get( derivedClass)==null)
+                if ( ! m_set.contains( derivedClass))
                 {
-                    ht.put( derivedClass, derivedClass);
-                    addDerivedClasses( derivedClass, ht);
+                    m_set.add( derivedClass);
+                    addDerivedClasses( derivedClass);
                 }
             }
         }
 
-        public Enumeration transform( Object toTransform)
-            throws Exception
+        public Object uniqueTransform( DataSource source, Object toTransform)
         {
-            addDerivedClasses( (DBClass)toTransform, ht);
-            return EmptyEnumeration.emptyEnumeration;
+            addDerivedClasses( (DBClass)toTransform);
+            return EmptyEnum.empty;
         }
     }
 
-    static class ClassOf extends UniqueTransform
+    static class ClassOf extends UniqueTransformImpl
     {
         ClassOf()
         {
-            super( null, DBClass.class);
+            super( DBClass.class, null);
         }
 
-        public Object uniqueTransform( Object toTransform)
-            throws Exception
+        public Object uniqueTransform( DataSource source, Object toTransform)
         {
-            if ( appliesTo()==DBMethod.class)
+            if ( appliesClass()==DBMethod.class)
                 return ((DBMethod)toTransform).getDBClass();
-            if ( appliesTo()==DBField.class)
+            if ( appliesClass()==DBField.class)
                 return ((DBField)toTransform).getDBClass();
-            throw new Exception( "Class of incorrectly bound");
+            throw new RuntimeException( "Class of incorrectly bound");
         }
 
         public void lateBindApplies( Class c)
-            throws RuleActionException
+            throws BindException
         {
             if ( c!=DBMethod.class && c!=DBField.class)
             {
-                throw new RuleActionException( "Operator only applies to methods and fields");
+                throw new BindException( "Operator only applies to methods and fields");
             }
-            _applies=c;
+            super.lateBindApplies( c);
         }
     }
 
@@ -461,13 +448,17 @@ class QueryParserBase extends Parser
 
         SingleClass( DBClass c)
         {
-            super( DBClass.class);
             _class=c;
         }
-
-        public Enumeration execute( AnalyzerDB db)
+        
+        public Class getResultClass()
         {
-            return enumFromObject( _class);
+        	return _class.getClass();
+        }
+
+        public Enumeration evaluate( DataSource source)
+        {
+            return new SingleEnum( _class);
         }
     }
 
@@ -485,218 +476,10 @@ class QueryParserBase extends Parser
             super( DBClass.class, DBMethod.class);
         }
 
-        public Enumeration transform( Object toTransform)
-            throws Exception
+        public Enumeration transformObject( DataSource source, Object toTransform)
         {
             return ((DBClass)toTransform).getMethods();
         }
-    }
-
-    static class Polymorphic extends TransformImpl
-    {
-        private AnalyzerDB db;
-
-        Polymorphic() {
-            super( DBMethod.class, DBMethod.class);
-        }
-
-        public void startEvaluation( AnalyzerDB adb)
-        {
-            db=adb;
-        }
-
-        public Enumeration transform( Object toTransform)
-            throws Exception
-        {
-            final DBMethod soughtMethod=(DBMethod)toTransform;
-            DBClass c=soughtMethod.getDBClass();
-            Enumeration fromBase=new FilterEnumeration(
-                ( new TransformSet( new SingleClass( c),
-                    new RecursiveBaseClasses())).execute( db)) {
-                protected Object filterObject( Object base)
-                {
-                    DBClass filterc=(DBClass)base;
-                    try
-                    {
-                    return db.findWithKey( "com.antlersoft.analyzer.DBMethod",
-                        DBMethod.makeKey( filterc.getName(),
-                        soughtMethod.getName(),
-                        soughtMethod.getSignature()));
-                    }
-                    catch ( Exception e)
-                    {
-                        throw new NoSuchElementException(
-                            e.getMessage());
-                    }
-                }
-            };
-            Enumeration fromDerived=new GoodBase( c, db, soughtMethod);
-            return new ComboEnumeration( enumFromObject(
-                soughtMethod), new ComboEnumeration( fromBase,
-                fromDerived));
-        }
-    }
-
-    static class GoodBase extends BiEnumeration {
-        AnalyzerDB _adb;
-        DBMethod soughtMethod;
-        GoodBase( DBClass fromHere, AnalyzerDB adb, DBMethod sm)
-            throws Exception
-        {
-            super( ( new TransformSet(
-                new SingleClass( fromHere), new DerivedClasses())).
-                execute( adb));
-            _adb=adb;
-            soughtMethod=sm;
-        }
-
-        protected Enumeration getNextCurrent(
-            Object base)
-        {
-            DBClass c=(DBClass)base;
-            try
-            {
-                DBMethod candidate=(DBMethod)
-                    _adb.findWithKey( "com.antlersoft.analyzer.DBMethod",
-                    DBMethod.makeKey( c.getName(),
-                    soughtMethod.getName(),
-                    soughtMethod.getSignature()));
-                if ( candidate==null || !
-                    ( candidate.methodStatus()==
-                    DBMethod.REAL))
-                {
-                    return candidate==null ?
-                        (Enumeration)new GoodBase( c, _adb, soughtMethod) :
-                        (Enumeration)new ComboEnumeration(
-                        enumFromObject( candidate),
-                        new GoodBase( c, _adb, soughtMethod));
-                }
-                else
-                {
-                    return EmptyEnumeration.emptyEnumeration;
-                }
-            }
-            catch ( Exception e)
-            {
-                throw new NoSuchElementException(
-                    e.getMessage());
-            }
-        }
-    }
-
-/*
-    static class MethodMatching implements MethodSet
-    {
-        MethodSet _toFilter;
-        String _filterString;
-
-        MethodMatching( MethodSet toFilter, String filterString)
-        {
-            _toFilter=toFilter;
-            _filterString=filterString;
-        }
-
-        public Enumeration execute( AnalyzerDB db)
-            throws Exception
-        {
-            return new FilterEnumeration( _toFilter.execute( db)) {
-                protected Object filterObject( Object next)
-                {
-                    Object retVal=null;
-                    if ( ((DBMethod)next).getName().indexOf(
-                        _filterString)!= -1)
-                        retVal=next;
-                    return retVal;
-                }
-            };
-        }
-    }
-*/
-
-    static class UncalledMethod extends Filter
-    {
-        UncalledMethod()
-        {
-            super( DBMethod.class);
-        }
-
-        protected boolean include( Object toCheck)
-            throws Exception
-        {
-            return ! ((DBMethod)toCheck).getCalledBy().hasMoreElements();
-        }
-    }
-
-    static class UncalledPolymorphic extends UncalledMethod
-    {
-        AnalyzerDB db;
-        public void startEvaluation( AnalyzerDB adb)
-        {
-            db=adb;
-        }
-
-        protected boolean include( Object toInclude)
-            throws Exception
-        {
-            DBMethod method=(DBMethod)toInclude;
-            boolean result=true;
-            for ( Enumeration e=(new TransformSet( new SingleMethod( method), new Polymorphic())).execute( db);
-                e.hasMoreElements() && result;)
-            {
-                if ( ((DBMethod)e.nextElement()).
-                    getCalledBy().hasMoreElements())
-                    result=false;
-            }
-            return result;
-        }
-    }
-
-    static class SingleMethod extends SetExpression
-    {
-        DBMethod _method;
-
-        SingleMethod( DBMethod c)
-        {
-            super( DBMethod.class);
-            _method=c;
-        }
-
-        public Enumeration execute( AnalyzerDB db)
-            throws Exception
-        {
-            return enumFromObject( _method);
-        }
-    }
-
-    static public class ComboEnumeration extends BiEnumeration
-    {
-        private static Enumeration combined( Enumeration e1,
-            Enumeration e2)
-        {
-            Vector tmp=new Vector( 2);
-            tmp.addElement( e1);
-            tmp.addElement( e2);
-            return tmp.elements();
-        }
-
-        ComboEnumeration( Enumeration e1, Enumeration e2)
-        {
-            super( combined( e1, e2));
-        }
-
-        protected Enumeration getNextCurrent( Object base)
-        {
-            return (Enumeration)base;
-        }
-    }
-
-    static public Enumeration enumFromObject( Object o1)
-    {
-if ( o1==null)
-throw new IllegalStateException( "null passed to enumFromObject");
-        Vector tmp=new Vector(1);
-        tmp.addElement( o1);
-        return tmp.elements();
     }
 
     static public abstract class FilterEnumeration implements Enumeration
@@ -751,48 +534,174 @@ throw new IllegalStateException( "null passed to enumFromObject");
         }
     }
 
-    static public abstract class BiEnumeration implements Enumeration
+    static class Polymorphic extends TransformImpl
     {
-        private Enumeration _baseEnumeration;
-        private Enumeration _currentEnumeration;
+        private AnalyzerDB db;
 
-        public BiEnumeration( Enumeration base)
-        {
-            _baseEnumeration=base;
-            _currentEnumeration=null;
+        Polymorphic() {
+            super( DBMethod.class, DBMethod.class);
         }
 
-        private void setCurrentEnumeration()
+        public void startEvaluation( DataSource adb)
         {
-            while (  _currentEnumeration==null
-                || ! _currentEnumeration.hasMoreElements())
+            db=(AnalyzerDB)adb;
+        }
+
+        public Enumeration transformObject( DataSource source, Object toTransform)
+        {
+        	try
+        	{
+	            final DBMethod soughtMethod=(DBMethod)toTransform;
+	            DBClass c=soughtMethod.getDBClass();
+	            Enumeration fromBase=new FilterEnumeration(
+	                ( new TransformSet( new RecursiveBaseClasses(),
+	                		new SingleClass( c))).evaluate( db)) {
+	                protected Object filterObject( Object base)
+	                {
+	                    DBClass filterc=(DBClass)base;
+	                    try
+	                    {
+	                    return db.findWithKey( "com.antlersoft.analyzer.DBMethod",
+	                        DBMethod.makeKey( filterc.getName(),
+	                        soughtMethod.getName(),
+	                        soughtMethod.getSignature()));
+	                    }
+	                    catch ( Exception e)
+	                    {
+	                        throw new NoSuchElementException(
+	                            e.getMessage());
+	                    }
+	                }
+	            };
+	            Enumeration fromDerived=new GoodBase( c, db, soughtMethod);
+	            return new CombineEnum( new SingleEnum(
+	                soughtMethod), new CombineEnum( fromBase,
+	                fromDerived));
+        	}
+        	catch ( BindException be)
+        	{
+        		throw new RuntimeException( be);
+        	}
+        }
+    }
+
+    static class GoodBase extends MultiEnum {
+        AnalyzerDB _adb;
+        DBMethod soughtMethod;
+        GoodBase( DBClass fromHere, AnalyzerDB adb, DBMethod sm)
+        throws BindException
+        {
+            super( ( new TransformSet(
+                new DerivedClasses(), new SingleClass( fromHere))).
+                evaluate( adb));
+            _adb=adb;
+            soughtMethod=sm;
+        }
+
+        protected Enumeration getNextCurrent(
+            Object base)
+        {
+            DBClass c=(DBClass)base;
+            try
             {
-                if ( _baseEnumeration.hasMoreElements())
-                    _currentEnumeration=getNextCurrent( _baseEnumeration.nextElement());
+                DBMethod candidate=(DBMethod)
+                    _adb.findWithKey( "com.antlersoft.analyzer.DBMethod",
+                    DBMethod.makeKey( c.getName(),
+                    soughtMethod.getName(),
+                    soughtMethod.getSignature()));
+                if ( candidate==null || !
+                    ( candidate.methodStatus()==
+                    DBMethod.REAL))
+                {
+                    return candidate==null ?
+                        (Enumeration)new GoodBase( c, _adb, soughtMethod) :
+                        (Enumeration)new CombineEnum(
+                        new SingleEnum( candidate),
+                        new GoodBase( c, _adb, soughtMethod));
+                }
                 else
                 {
-                    _currentEnumeration=null;
-                    break;
+                    return EmptyEnum.empty;
                 }
             }
-        }
-
-        protected abstract Enumeration getNextCurrent( Object base);
-
-        public boolean hasMoreElements()
-        {
-            setCurrentEnumeration();
-            return _currentEnumeration!=null;
-        }
-
-        public Object nextElement()
-        {
-            setCurrentEnumeration();
-            if ( _currentEnumeration==null)
+            catch ( Exception e)
             {
-                throw new NoSuchElementException();
+                throw new NoSuchElementException(
+                    e.getMessage());
             }
-            return _currentEnumeration.nextElement();
+        }
+    }
+
+    static class UncalledMethod extends CountPreservingFilter
+    {
+        UncalledMethod()
+        {
+        	m_bind=new BindImpl( BOOLEAN_CLASS, DBMethod.class);
+        }
+
+        protected boolean getCountPreservingFilterValue( DataSource source, Object toCheck)
+        {
+            return ! ((DBMethod)toCheck).getCalledBy().hasMoreElements();
+        }
+        
+        private BindImpl m_bind;
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.query.BindImpl#appliesClass()
+		 */
+		public Class appliesClass() {
+			return m_bind.appliesClass();
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.query.BindImpl#lateBindApplies(java.lang.Class)
+		 */
+		public void lateBindApplies(Class new_applies) throws BindException {
+			m_bind.lateBindApplies(new_applies);
+		}
+    }
+
+    static class UncalledPolymorphic extends UncalledMethod
+    {
+        protected boolean getCountPreservingFilterValue( DataSource source, Object toInclude)
+        {
+        	try
+        	{
+	            DBMethod method=(DBMethod)toInclude;
+	            boolean result=true;
+	            for ( Enumeration e=(new TransformSet( new Polymorphic(), new SingleMethod( method))).evaluate( source);
+	                e.hasMoreElements() && result;)
+	            {
+	                if ( ((DBMethod)e.nextElement()).
+	                    getCalledBy().hasMoreElements())
+	                    result=false;
+	            }
+                return result;
+        	}
+        	catch (BindException be)
+        	{
+        		throw new RuntimeException( be);
+        	}
+        }
+    }
+
+    static class SingleMethod extends SetExpression
+    {
+        DBMethod _method;
+
+        SingleMethod( DBMethod c)
+        {
+            _method=c;
+        }
+        
+        public Class getResultClass()
+        {
+        	return _method.getClass();
+        }
+
+        public Enumeration evaluate( DataSource db)
+        {
+            return new SingleEnum( _method);
         }
     }
 }

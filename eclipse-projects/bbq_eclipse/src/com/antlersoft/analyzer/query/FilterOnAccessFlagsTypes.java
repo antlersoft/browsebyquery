@@ -4,29 +4,32 @@
 package com.antlersoft.analyzer.query;
 
 import com.antlersoft.analyzer.AccessFlags;
-import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.query.CountPreservingFilter;
+import com.antlersoft.query.BindException;
 
 /**
  * @author mike
  *
  */
-abstract class FilterOnAccessFlagsTypes extends Filter {
-	FilterOnAccessFlagsTypes()
-	{
-		super(null);
-	}
-
-    public void lateBind( Class new_applies)
-    throws RuleActionException
+abstract class FilterOnAccessFlagsTypes extends CountPreservingFilter {
+    public void lateBindApplies( Class new_applies)
+    throws BindException
     {
         if ( ! AccessFlags.class.isAssignableFrom( new_applies))
-            throw new RuleActionException( "Failed to bind: "+new_applies.getName()+".  Does not implement AccessFlags");
-        if ( getFilterClass()==null)
-            _filterClass=new_applies;
+            throw new BindException( "Failed to bind: "+new_applies.getName()+".  Does not implement AccessFlags");
+        if ( m_filter_class==null)
+            m_filter_class=new_applies;
         else
-        if ( getFilterClass().isAssignableFrom( new_applies))
-            _filterClass=new_applies;
+        if ( m_filter_class.isAssignableFrom( new_applies))
+            m_filter_class=new_applies;
         else
-            throw new RuleActionException( "Failed to bind: "+new_applies.getName()+".  Not compatible with "+getFilterClass().getName());
+            throw new BindException( "Failed to bind: "+new_applies.getName()+".  Not compatible with "+m_filter_class.getName());
     }
+    
+    public Class appliesClass()
+    {
+    	return m_filter_class;
+    }
+    
+    private Class m_filter_class;
 }

@@ -1,3 +1,6 @@
+/**
+ * Copyright (c) 2006 Michael A. MacDonald
+ */
 package com.antlersoft.query.reflect;
 
 import java.lang.reflect.Constructor;
@@ -13,11 +16,23 @@ import com.antlersoft.query.*;
 
 import com.antlersoft.util.IteratorEnumeration;
 
+/**
+ * Common functionality to different query language method invocation; identifies methods and argument
+ * sets.
+ * 
+ * @author Michael A. MacDonald
+ *
+ */
 class Invoker {
-	Invoker( String name, Transform transform)
+	/**
+	 * @param method_name Name of method to invode
+	 * @param argument_transform Group transform that returns set expressions giving the arguments
+	 * for each invocation
+	 */
+	Invoker( String method_name, Transform argument_transform)
 	{
-		m_name=name;
-		m_transform=transform;
+		m_name=method_name;
+		m_transform=argument_transform;
 	}
 
 	private void getArguments( DataSource source, Object arg)

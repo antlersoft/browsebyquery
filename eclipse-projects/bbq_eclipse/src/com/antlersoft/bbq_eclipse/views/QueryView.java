@@ -21,10 +21,11 @@ import org.eclipse.swt.SWT;
 
 import com.antlersoft.analyzer.query.ParseException;
 import com.antlersoft.analyzer.query.QueryParser;
-import com.antlersoft.analyzer.query.SetExpression;
 
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 import com.antlersoft.bbq_eclipse.searchresult.Query;
+
+import com.antlersoft.query.SetExpression;
 
 /**
  *

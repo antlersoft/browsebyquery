@@ -19,20 +19,20 @@
  */
 package com.antlersoft.analyzer.query;
 
-import java.util.Enumeration;
-import java.util.Hashtable;
-
 import com.antlersoft.analyzer.DBReference;
 import com.antlersoft.analyzer.DBMethod;
 
-class MethodsContaining extends UniqueTransform
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.UniqueTransformImpl;
+
+class MethodsContaining extends UniqueTransformImpl
 {
     MethodsContaining()
     {
 		super( DBReference.class, DBMethod.class);
     }
 
-    public Object uniqueTransform( Object toTransform)
+    public Object uniqueTransform( DataSource source, Object toTransform)
     {
 		return ((DBReference)toTransform).getSource();
     }

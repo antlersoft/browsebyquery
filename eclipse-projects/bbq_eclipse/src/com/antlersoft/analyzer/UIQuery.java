@@ -35,12 +35,13 @@ import java.awt.event.*;
 
 import com.antlersoft.analyzer.query.ParseException;
 import com.antlersoft.analyzer.query.QueryParser;
-import com.antlersoft.analyzer.query.SetExpression;
 
 import com.antlersoft.analyzer.ui.HistoryList;
 import com.antlersoft.analyzer.ui.StoredValuesList;
 
 import com.antlersoft.odb.ObjectDBException;
+
+import com.antlersoft.query.SetExpression;
 
 import com.antlersoft.util.ExtensionFileFilter;
 
@@ -108,7 +109,7 @@ public class UIQuery
                         qp.setLine( line);
                         SetExpression se=qp.getExpression();
                         historyList.addQuery( line);
-                        Enumeration e=se.execute( analyzerDB);
+                        Enumeration e=se.evaluate( analyzerDB);
                         TreeSet resultSorter=new TreeSet();
                         while ( e.hasMoreElements())
                             resultSorter.add( e.nextElement().toString());

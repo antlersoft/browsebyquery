@@ -8,5 +8,5 @@ package com.antlersoft.analyzer;
  *
  */
 public interface HasDBType {
-	public DBType getDBType();
+	public DBType getDBType( AnalyzerDB db);
 }

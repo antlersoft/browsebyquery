@@ -5,7 +5,6 @@ import com.antlersoft.query.*;
 
 public class ClassExpression extends CountPreservingValueExpression {
     public ClassExpression()
-	throws BindException
 	{
 		super( Class.class, String.class);
     }

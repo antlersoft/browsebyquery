@@ -31,6 +31,9 @@ import java.util.Enumeration;
 import com.antlersoft.analyzer.DBMethod;
 import com.antlersoft.analyzer.DBStringReference;
 
+import com.antlersoft.query.DataSource;
+import com.antlersoft.query.TransformImpl;
+
 class StringReferenceFrom extends TransformImpl
 {
     public StringReferenceFrom()
@@ -38,7 +41,7 @@ class StringReferenceFrom extends TransformImpl
         super( DBMethod.class, DBStringReference.class);
     }
 
-    public Enumeration transform(Object parm1) throws java.lang.Exception
+    public Enumeration transformObject(DataSource source, Object parm1)
     {
         return ((DBMethod)parm1).getStringReferences();
     }

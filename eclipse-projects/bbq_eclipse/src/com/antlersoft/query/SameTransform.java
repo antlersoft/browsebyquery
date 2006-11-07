@@ -44,5 +44,5 @@ public class SameTransform extends TransformImpl {
 		m_ordering=ordering;
 	}
 
-	Comparator m_ordering;
+	private Comparator m_ordering;
 }

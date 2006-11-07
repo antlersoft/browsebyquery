@@ -24,10 +24,9 @@ import java.util.List;
 public abstract class CountPreservingValueExpression extends BindImpl implements
 	ValueExpression, CountPreservingValueContext
 {
-	public CountPreservingValueExpression( Class a, Class b)
-	throws BindException
+	public CountPreservingValueExpression( Class result, Class applies)
 	{
-		super( a, b);
+		super( result, applies);
 	}
 
 	public void inputObject( ValueObject obj, DataSource source, Object to_transform)

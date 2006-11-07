@@ -40,7 +40,7 @@ import com.antlersoft.odb.PersistentImpl;
 
 import com.antlersoft.classwriter.*;
 
-public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
+public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
 {
     String name;
     Vector superClasses;
@@ -114,6 +114,11 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     	if ( lineNumber== -1)
     		return 0;
         return lineNumber;
+    }
+    
+    public DBType getDBType( AnalyzerDB db)
+    {
+		return DBType.getFromClass( db, this); 
     }
 
     void addMethod( DBMethod toAdd)

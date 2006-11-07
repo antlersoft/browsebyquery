@@ -25,7 +25,7 @@ public class CombineEnum implements Enumeration {
 	private Enumeration m_first;
 	Enumeration m_second;
 	boolean m_use_first;
-	CombineEnum( Enumeration first, Enumeration second)
+	public CombineEnum( Enumeration first, Enumeration second)
 	{
 		m_first=first;
 		m_second=second;
