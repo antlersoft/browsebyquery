@@ -66,6 +66,13 @@ SET_EXPRESSION : set nameSymbol to TRANSFORM "{
 	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
 	return new EmptySetExpression();
 	}" 1 .
+	
+SET_EXPRESSION : VALUE_EXPRESSION SET_EXPRESSION "
+	{
+		int size=valueStack.size();
+		return new TransformSet( new ValueExpressionTransform( (ValueExpression)valueStack.get( size-2)),
+			(SetExpression)valueStack.get( size-1));
+	}" .
 
 SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
 
@@ -93,6 +100,13 @@ VALUE_EXPRESSION : StringConstant "{
 	
 VALUE_EXPRESSION : Types "{
 	return new TypeGet();
+	}" .
+	
+TRANSFORM : VALUE_EXPRESSION TRANSFORM "
+	{
+		int size=valueStack.size();
+		return new TransformTransform( (Transform)valueStack.get(size-1),
+			new ValueExpressionTransform( (ValueExpression)valueStack.get( size-2)));
 	}" .
 
 SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((QueryParserBase)parser).importedPackages); }" .
