@@ -29,7 +29,7 @@ public class TransformSet extends SetExpression {
 	public TransformSet( Transform transform, SetExpression base)
 	throws BindException
 	{
-		transform.lateBindResult( base.getResultClass());
+		transform.lateBindApplies( base.getResultClass());
 		transform.bindOrdering( base.getOrdering());
 		m_transform=transform;
 		m_set=base;

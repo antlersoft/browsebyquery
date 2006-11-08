@@ -29,20 +29,23 @@ public class CombineEnum implements Enumeration {
 	{
 		m_first=first;
 		m_second=second;
+		m_use_first=true;
 	}
     public boolean hasMoreElements() {
-		boolean result;
+		boolean result=false;
 		if ( m_use_first)
 		{
 			result=m_first.hasMoreElements();
 			if ( ! result)
 			{
 				m_use_first=false;
-				result=m_second.hasMoreElements();
 			}
 		}
-		else
-			result=m_second.hasMoreElements();
+		if ( ! m_use_first)
+		{
+			if ( m_second!=null)
+				result=m_second.hasMoreElements();
+		}
 		return result;
     }
     public Object nextElement() {
