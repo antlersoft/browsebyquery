@@ -188,10 +188,7 @@ t.printStackTrace();
         }
         catch ( ObjectDBException odb)
         {
-            if ( odb.getUnderlying() instanceof java.io.InvalidClassException)
-                app.analyzerDB.clearDB( app.analyzerDBOpenString);
-            else
-                throw odb;
+            app.analyzerDB.clearDB( app.analyzerDBOpenString);
         }
 
         JFrame appFrame=new JFrame( (argv.length>0 ? "Querying " : "Querying default DB ")+app.analyzerDBOpenString );
