@@ -30,7 +30,7 @@ class FieldsIn extends TransformImpl
 {
 	FieldsIn()
 	{
-		super( DBClass.class, DBField.class);
+		super( DBField.class, DBClass.class);
 	}
 
 	public Enumeration transformObject( DataSource source, Object toTransform)

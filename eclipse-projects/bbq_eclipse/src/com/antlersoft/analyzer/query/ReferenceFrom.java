@@ -34,7 +34,7 @@ class ReferenceFrom extends TransformImpl
 {
 	ReferenceFrom()
 	{
-		super( DBMethod.class, DBFieldReference.class);
+		super( DBFieldReference.class, DBMethod.class);
 	}
 
 	public Enumeration transformObject( DataSource source, Object base)

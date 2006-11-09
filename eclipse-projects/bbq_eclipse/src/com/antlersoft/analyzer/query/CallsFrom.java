@@ -30,7 +30,7 @@ class CallsFrom extends TransformImpl
 {
 	CallsFrom()
 	{
-		super( DBMethod.class, DBCall.class);
+		super( DBCall.class, DBMethod.class);
 	}
 
 	public Enumeration transformObject( DataSource source, Object method)

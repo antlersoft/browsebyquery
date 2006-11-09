@@ -38,7 +38,7 @@ class StringReferenceFrom extends TransformImpl
 {
     public StringReferenceFrom()
     {
-        super( DBMethod.class, DBStringReference.class);
+        super( DBStringReference.class, DBMethod.class);
     }
 
     public Enumeration transformObject(DataSource source, Object parm1)

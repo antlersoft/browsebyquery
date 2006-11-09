@@ -19,7 +19,7 @@ public class TypeOf extends CountPreservingValueExpression {
 
 	public TypeOf()
 	{
-		super(HasDBType.class, DBType.class);
+		super(DBType.class, HasDBType.class);
 	}
 	
 	public Object transformSingleObject(DataSource source, Object toTransform) {

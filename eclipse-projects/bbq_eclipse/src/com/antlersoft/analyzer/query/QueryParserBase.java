@@ -473,7 +473,7 @@ class QueryParserBase extends BasicBase
     {
         MethodsIn()
         {
-            super( DBClass.class, DBMethod.class);
+            super( DBMethod.class, DBClass.class);
         }
 
         public Enumeration transformObject( DataSource source, Object toTransform)
