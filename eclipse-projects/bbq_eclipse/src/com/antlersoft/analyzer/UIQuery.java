@@ -178,6 +178,7 @@ t.printStackTrace();
         throws Exception
     {
         final UIQuery app = new UIQuery();
+        boolean db_cleared=false;
         if ( argv.length<=0)
         	app.analyzerDBOpenString="test.bbq";
 		else
@@ -188,11 +189,14 @@ t.printStackTrace();
         }
         catch ( ObjectDBException odb)
         {
+        	db_cleared=true;
             app.analyzerDB.clearDB( app.analyzerDBOpenString);
         }
 
         JFrame appFrame=new JFrame( (argv.length>0 ? "Querying " : "Querying default DB ")+app.analyzerDBOpenString );
         app.frameWindow=appFrame;
+        if ( db_cleared)
+        	JOptionPane.showMessageDialog( appFrame, "There was a problem opening the existing database, so it was cleared,\nand you must rebuild it by analyzing classes.", "Corrupt Database", JOptionPane.ERROR_MESSAGE);
         Component contents = app.createComponents();
         appFrame.getContentPane().add(contents, BorderLayout.CENTER);
         appFrame.setJMenuBar( app.createMenuBar());
