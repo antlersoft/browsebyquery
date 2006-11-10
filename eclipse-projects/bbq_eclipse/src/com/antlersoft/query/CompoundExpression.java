@@ -28,9 +28,11 @@ implements ValueExpression, ScalarValueContext
 	throws BindException
 	{
 		super( primary, secondary);
-		if ( m_secondary.getContext().getContextType()!=COUNT_PRESERVING)
+		m_primary_expr=primary;
+		m_secondary_expr=secondary;
+		if ( m_secondary_expr.getContext().getContextType()!=COUNT_PRESERVING)
 			throw new BindException( "Value expression contexts incompatible");
-		m_context_type=m_primary.getContext().getContextType();
+		m_context_type=m_primary_expr.getContext().getContextType();
 		if (m_context_type == SCALAR)
 		{
 			m_context_type=COUNT_PRESERVING;
@@ -39,39 +41,39 @@ implements ValueExpression, ScalarValueContext
 
 	public void inputObject( ValueObject obj, DataSource source, Object to_transform)
 	{
-		((CountPreservingValueContext)m_primary.getContext()).inputObject(
-				  m_primary, source, to_transform);
-		((CountPreservingValueContext)m_secondary.getContext()).inputObject(
-				  m_secondary, source, m_primary.getValue());
+		((CountPreservingValueContext)m_primary_expr.getContext()).inputObject(
+				  m_primary_expr, source, to_transform);
+		((CountPreservingValueContext)m_secondary_expr.getContext()).inputObject(
+				  m_secondary_expr, source, m_primary_expr.getValue());
 	}
 
 	public void startGroup( ValueObject obj, DataSource source)
 	{
-		((GroupValueContext)m_primary.getContext()).startGroup( m_primary, source);
+		((GroupValueContext)m_primary_expr.getContext()).startGroup( m_primary_expr, source);
 	}
 
 	public boolean addObject( ValueObject obj, DataSource source, Object to_add)
 	{
-		return ((GroupValueContext)m_primary.getContext()).addObject( m_primary,
+		return ((GroupValueContext)m_primary_expr.getContext()).addObject( m_primary_expr,
 			source, to_add);
 	}
 
 	public void finishGroup( ValueObject obj, DataSource source)
 	{
-		((GroupValueContext)m_primary.getContext()).finishGroup(
-				  m_primary, source);
-		((CountPreservingValueContext)m_secondary.getContext()).inputObject(
-				  m_secondary, source, m_primary.getValue());
+		((GroupValueContext)m_primary_expr.getContext()).finishGroup(
+				  m_primary_expr, source);
+		((CountPreservingValueContext)m_secondary_expr.getContext()).inputObject(
+				  m_secondary_expr, source, m_primary_expr.getValue());
 	}
 
 	public List getValueCollection()
 	{
-		return m_primary.getValueCollection();
+		return m_primary_expr.getValueCollection();
 	}
 
 	public Object getValue()
 	{
-		return m_secondary.getValue();
+		return m_secondary_expr.getValue();
 	}
 
 	public ValueContext getContext()
@@ -85,5 +87,5 @@ implements ValueExpression, ScalarValueContext
 	}
 
 	private int m_context_type;
-	private ValueExpression m_primary, m_secondary;
+	private ValueExpression m_primary_expr, m_secondary_expr;
 }
