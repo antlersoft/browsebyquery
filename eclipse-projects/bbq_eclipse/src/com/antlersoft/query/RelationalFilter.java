@@ -68,8 +68,11 @@ public class RelationalFilter extends Filter {
 	public List getValueCollection() {
 		return m_context.getValueCollection();
     }
-    public void lateBindApplies(Class new_applies) throws com.antlersoft.query.BindException {
+    public void lateBindApplies(Class new_applies) throws BindException {
 		m_binding.lateBindApplies( new_applies);
+		if ( m_comp==SetOperator.DefaultComparator.m_default && m_type!=EQUALS && m_type!=NOT_EQUALS
+				&& ! Comparable.class.isAssignableFrom( new_applies))
+			throw new BindException( "Trying to compare non-comparable types");
     }
     public Class appliesClass() {
 		return m_binding.appliesClass();
@@ -77,14 +80,14 @@ public class RelationalFilter extends Filter {
     public boolean booleanValue() {
 		boolean result = false;
 
-		switch (m_type) {
-		case EQUALS:
-			result = m_a.getValue().equals(m_b.getValue());
-			break;
-		case NOT_EQUALS:
-			result = !m_a.getValue().equals(m_b.getValue());
-			break;
-		default: {
+		if ( m_comp==SetOperator.DefaultComparator.m_default && ( m_type==EQUALS || m_type==NOT_EQUALS))
+		{
+			result=m_a.getValue().equals( m_b.getValue());
+			if ( m_type==NOT_EQUALS)
+				result= ! result;
+		}
+		else
+		{
 			int r = m_comp.compare(m_a.getValue(), m_b.getValue());
 
 			switch (m_type) {
@@ -106,7 +109,6 @@ public class RelationalFilter extends Filter {
 				result = r > 0;
 				break;
 			}
-		}
 		}
 
 		return result;
