@@ -112,9 +112,14 @@ public class DirectoryAllocator implements IndexObjectStore
             {
                 int offset=overhead.getInitialRegion();
                 byte[] offsetBuffer=overhead.read( offset, INITIAL_REGION_SIZE);
-                entryOffset=NetByte.quadToInt( offsetBuffer, 0);
-                classOffset=NetByte.quadToInt( offsetBuffer, 4);
-                rootOffset=NetByte.quadToInt( offsetBuffer, 8);
+                int version=NetByte.quadToInt( offsetBuffer, 0);
+                if ( version!=DIR_ALLOC_VERSION)
+                {
+                	throw new ObjectStoreException( "Mismatched version:" + version);
+                }
+                entryOffset=NetByte.quadToInt( offsetBuffer, 4);
+                classOffset=NetByte.quadToInt( offsetBuffer, 8);
+                rootOffset=NetByte.quadToInt( offsetBuffer, 12);
                 entryList=(EntryPageList)overheadStreams.readObject(
                     entryOffset);
                 entryList.initialize( overheadStreams);
@@ -366,9 +371,10 @@ ioe.printStackTrace();
             }
             if ( initialModified)
             {
-                NetByte.intToQuad( entryOffset, offsets, 0);
-                NetByte.intToQuad( classOffset, offsets, 4);
-                NetByte.intToQuad( rootOffset, offsets, 8);
+            	NetByte.intToQuad( DIR_ALLOC_VERSION, offsets, 0);
+                NetByte.intToQuad( entryOffset, offsets, 4);
+                NetByte.intToQuad( classOffset, offsets, 8);
+                NetByte.intToQuad( rootOffset, offsets, 12);
                 overhead.write( overhead.getInitialRegion(), offsets);
             }
             overhead.sync();
@@ -450,8 +456,13 @@ ioe.printStackTrace();
     private ArrayList indexPageLRU;
     private Semaphore indexPageFlushLock;
 
-    private static final int INITIAL_REGION_SIZE=12;
+    private static final int INITIAL_REGION_SIZE=16;
     private static final int INDEX_PAGE_CACHE_SIZE=100;
+    /** 
+     * BBQ magic number; increment the last byte is the version number;
+     * the current (and first) version is 1.
+     */
+    private static final int DIR_ALLOC_VERSION=0x42425101;
 
     void startIndexPageNoFlush()
     {
