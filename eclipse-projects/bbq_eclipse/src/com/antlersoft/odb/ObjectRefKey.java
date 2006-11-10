@@ -46,7 +46,7 @@ public class ObjectRefKey implements Comparable, Serializable
 
 	public ObjectRefKey( ObjectRef ref)
 	{
-		if ( ref.impl!=null)
+		if ( ref!=null && ref.impl!=null)
 			m_object_key=(Comparable)ref.impl.objectKey;
 		else
 			m_object_key=null;
