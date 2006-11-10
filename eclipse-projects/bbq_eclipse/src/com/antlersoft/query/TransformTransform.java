@@ -59,7 +59,7 @@ public class TransformTransform extends Transform {
     public Enumeration transformObject(DataSource source, Object to_transform) {
 		return new MultiEnum(
 				  new TransformSet.BaseAdapter(
-						source, m_secondary, m_primary.finishEvaluation( source)
+						source, m_secondary, m_primary.transformObject( source, to_transform)
 						));
     }
 
