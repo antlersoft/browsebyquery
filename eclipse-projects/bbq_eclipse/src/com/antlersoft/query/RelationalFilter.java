@@ -75,18 +75,38 @@ public class RelationalFilter extends Filter {
 		return m_binding.appliesClass();
     }
     public boolean booleanValue() {
-		boolean result=false;
+		boolean result = false;
 
-		int r=m_comp.compare( m_a.getValue(), m_b.getValue());
+		switch (m_type) {
+		case EQUALS:
+			result = m_a.getValue().equals(m_b.getValue());
+			break;
+		case NOT_EQUALS:
+			result = !m_a.getValue().equals(m_b.getValue());
+			break;
+		default: {
+			int r = m_comp.compare(m_a.getValue(), m_b.getValue());
 
-		switch ( m_type)
-		{
-			case LESS_THAN : result= r<0; break;
-			case LESS_THAN_OR_EQUALS : result= r<=0; break;
-			case EQUALS : result= r==0; break;
-			case NOT_EQUALS : result= r!=0; break;
-			case GREATER_THAN_OR_EQUALS : result= r>=0;
-			case GREATER_THAN : result= r>0; break;
+			switch (m_type) {
+			case LESS_THAN:
+				result = r < 0;
+				break;
+			case LESS_THAN_OR_EQUALS:
+				result = r <= 0;
+				break;
+			case EQUALS:
+				result = r == 0;
+				break;
+			case NOT_EQUALS:
+				result = r != 0;
+				break;
+			case GREATER_THAN_OR_EQUALS:
+				result = r >= 0;
+			case GREATER_THAN:
+				result = r > 0;
+				break;
+			}
+		}
 		}
 
 		return result;
