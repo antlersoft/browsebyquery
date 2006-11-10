@@ -19,11 +19,7 @@
  */
 package com.antlersoft.query;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
-
-import com.antlersoft.util.IteratorEnumeration;
 
 public class SetOperatorExpression extends SetExpression {
 	public SetOperatorExpression( int operator, SetExpression a,
@@ -45,33 +41,18 @@ public class SetOperatorExpression extends SetExpression {
 		m_operator=operator;
 	}
     public Enumeration evaluate(DataSource source) {
+    	SetOperator op=SetOperator.SetOperatorFactory( m_operator);
 		if ( m_use_ordering)
-			return SetOperator.SetOperatorFactory( m_operator, m_a.getOrdering(),
+			return op.getSortedEnum( m_a.getOrdering(),
 				m_a.evaluate( source), m_b.evaluate( source));
 
-		ArrayList a_list=collectionFromEnumeration( m_a.evaluate( source));
-		Collections.sort( a_list);
-		ArrayList b_list=collectionFromEnumeration( m_b.evaluate( source));
-		Collections.sort( b_list);
-		return SetOperator.SetOperatorFactory( m_operator, null,
-		new IteratorEnumeration( a_list.iterator()),
-		new IteratorEnumeration( b_list.iterator()));
+		op.processEnumerationFromA( m_a.evaluate( source));
+		op.processEnumerationFromB( m_b.evaluate( source));
+		return op.getUnsortedEnumeration();
 	}
     public Class getResultClass() {
 		return m_result;
     }
-
-	public static ArrayList collectionFromEnumeration( ArrayList result, Enumeration e)
-	{
-		while ( e.hasMoreElements())
-			result.add( e.nextElement());
-		return result;
-	}
-
-	public static ArrayList collectionFromEnumeration( Enumeration e)
-	{
-		return collectionFromEnumeration( new ArrayList(), e);
-	}
 
 	Class m_result;
 	int m_operator;

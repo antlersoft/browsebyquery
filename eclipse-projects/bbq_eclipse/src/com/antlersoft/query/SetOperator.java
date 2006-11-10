@@ -21,9 +21,10 @@ package com.antlersoft.query;
 
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
 
-public abstract class SetOperator implements Enumeration {
+public abstract class SetOperator {
 
 	public static final int UNION=1;
 	public static final int INTERSECTION=2;
@@ -37,57 +38,138 @@ public abstract class SetOperator implements Enumeration {
 		"without",
 		"deintersection"
 	};
-
-	public SetOperator( Comparator comp, Enumeration a, Enumeration b)
+	
+	protected class SetOperatorSortedEnum implements Enumeration
 	{
-		m_comp=comp;
-		if ( m_comp==null)
-			m_comp=DefaultComparator.m_default;
-		m_a=a;
-		m_b=b;
-		m_next=determineNext();
-	}
+		protected Object m_next;
+		protected Comparator m_comp;
+		protected Enumeration m_a;
+		protected Enumeration m_b;
+		protected Object m_current_a;
+		protected Object m_current_b;
+		protected boolean m_next_advance_a;
 
-	public boolean hasMoreElements()
-	{
-		return m_next!=null;
-	}
-
-	public Object nextElement()
-	{
-		if ( m_next==null)
-			throw new NoSuchElementException();
-		Object result=m_next;
-		do
+		SetOperatorSortedEnum( Comparator comp, Enumeration a, Enumeration b)
 		{
-			m_next=determineNext();
+			m_comp=comp;
+			if ( m_comp==null)
+				m_comp=DefaultComparator.m_default;
+			m_a=a;
+			m_b=b;
+			m_next=determineNext( this);
 		}
-		while( m_next!=null && m_comp.compare( result, m_next)==0);
-		return result;
+	
+		public boolean hasMoreElements()
+		{
+			return m_next!=null;
+		}
+	
+		public Object nextElement()
+		{
+			if ( m_next==null)
+				throw new NoSuchElementException();
+			Object result=m_next;
+			do
+			{
+				m_next=determineNext( this);
+			}
+			while( m_next!=null && m_comp.compare( result, m_next)==0);
+			return result;
+		}
+		
+		protected boolean nextPairInOrder()
+		{
+			boolean result=true;
+			// Initial condition
+			if ( m_next==null)
+			{
+				if ( m_a.hasMoreElements())
+				{
+					m_current_a=m_a.nextElement();
+					if ( m_b.hasMoreElements())
+					{
+						m_current_b=m_a.nextElement();
+						if ( m_comp.compare( m_current_a, m_current_b)>0)
+							m_next_advance_a=false;
+					}
+					else
+						m_next_advance_a=true;
+				}
+				else
+				{
+					if ( m_b.hasMoreElements())
+					{
+						m_next_advance_a=false;
+						m_current_b=m_b.nextElement();
+					}
+					else
+						result=false;
+				}
+			}
+			else
+			{
+				if ( m_next_advance_a)
+				{
+					if ( m_a.hasMoreElements())
+					{
+						m_current_a=m_a.nextElement();
+						if ( m_current_b!=null && m_comp.compare( m_current_a, m_current_b)>0)
+							m_next_advance_a=false;
+					}
+					else
+					{
+						m_current_a=null;
+						m_next_advance_a=false;
+						result=m_current_b!=null;
+					}
+				}
+				else
+				{
+					if ( m_b.hasMoreElements())
+					{
+						m_current_b=m_b.nextElement();
+						if ( m_current_a!=null && m_comp.compare( m_current_a, m_current_b)<0)
+							m_next_advance_a=true;
+					}
+					else
+					{
+						m_current_b=null;
+						m_next_advance_a=true;
+						result=m_current_a!=null;
+					}
+				}
+			}
+			return result;
+		}
 	}
-
-	public static SetOperator SetOperatorFactory( int type, Comparator comp, Enumeration a, Enumeration b)
+	
+	public static SetOperator SetOperatorFactory( int type)
 	{
 		SetOperator result=null;
 
 		switch ( type)
 		{
 		case UNION :
-			result=new SetUnion( comp, a, b);
+			result=new SetUnion();
 			break;
 		case INTERSECTION :
-			result=new SetIntersection( comp, a, b);
+			result=new SetIntersection();
 			break;
 		case WITHOUT :
-			result=new SetWithout( comp, a, b);
+			result=new SetWithout();
 			break;
 		case DEINTERSECTION :
-			result=new SetDeintersection( comp, a, b);
+			result=new SetDeintersection();
 			break;
 		default :
 			throw new NoSuchElementException();
 		}
 		return result;
+	}
+	
+	public Enumeration getSortedEnum( Comparator comp, Enumeration a, Enumeration b)
+	{
+		return new SetOperatorSortedEnum( comp, a, b);
 	}
 
 	public static int getType( String type_name)
@@ -98,15 +180,11 @@ public abstract class SetOperator implements Enumeration {
 		return i;
 	}
 
-	protected abstract Object determineNext();
+	protected abstract Object determineNext( SetOperatorSortedEnum e);
 
-	protected Object m_next;
-	protected Comparator m_comp;
-	protected Enumeration m_a;
-	protected Enumeration m_b;
-	protected Object m_current_a;
-	protected Object m_current_b;
-	protected boolean m_next_advance_a;
+	protected HashSet m_set_a;
+	protected HashSet m_set_b;
+	protected HashSet m_set_both;
 
 	public static class DefaultComparator implements Comparator
 	{
@@ -122,69 +200,58 @@ public abstract class SetOperator implements Enumeration {
 
 		public static final DefaultComparator m_default=new DefaultComparator();
 	}
-
-	protected boolean nextPairInOrder()
+	
+	private void initializeSets()
 	{
-		boolean result=true;
-		// Initial condition
-		if ( m_next==null)
+		if ( m_set_a==null)
 		{
-			if ( m_a.hasMoreElements())
-			{
-				m_current_a=m_a.nextElement();
-				if ( m_b.hasMoreElements())
-				{
-					m_current_b=m_a.nextElement();
-					if ( m_comp.compare( m_current_a, m_current_b)>0)
-						m_next_advance_a=false;
-				}
-				else
-					m_next_advance_a=true;
-			}
-			else
-			{
-				if ( m_b.hasMoreElements())
-				{
-					m_next_advance_a=false;
-					m_current_b=m_b.nextElement();
-				}
-				else
-					result=false;
-			}
+			m_set_a=new HashSet();
+			m_set_b=new HashSet();
+			m_set_both=new HashSet();
 		}
-		else
-		{
-			if ( m_next_advance_a)
-			{
-				if ( m_a.hasMoreElements())
-				{
-					m_current_a=m_a.nextElement();
-					if ( m_current_b!=null && m_comp.compare( m_current_a, m_current_b)>0)
-						m_next_advance_a=false;
-				}
-				else
-				{
-					m_current_a=null;
-					m_next_advance_a=false;
-					result=m_current_b!=null;
-				}
-			}
-			else
-			{
-				if ( m_b.hasMoreElements())
-				{
-					m_current_b=m_b.nextElement();
-					if ( m_current_a!=null && m_comp.compare( m_current_a, m_current_b)<0)
-						m_next_advance_a=true;
-				}
-				else
-				{
-					m_current_b=null;
-					m_next_advance_a=true;
-					result=m_current_a!=null;
-				}
-			}
-		}
+	}
+
+	public Enumeration getUnsortedEnumeration()
+	{
+		initializeSets();
+		Enumeration result=getEnumerationFromSets();
+		
+		// Clear references so they can be collected when enumeration is gone
+		m_set_a=m_set_b=m_set_both=null;
+		
 		return result;
+	}
+	
+	public void processEnumerationFromA( Enumeration e)
+	{
+		initializeSets();
+		processEnumeration( e, m_set_a, m_set_b);
+	}
+	
+	public void processEnumerationFromB( Enumeration e)
+	{
+		initializeSets();
+		processEnumeration( e, m_set_b, m_set_a);
+	}
+	
+	protected abstract Enumeration getEnumerationFromSets();
+	
+	private void processEnumeration( Enumeration e, HashSet same, HashSet other)
+	{
+		while (  e.hasMoreElements())
+		{
+			Object o=e.nextElement();
+
+			if ( ! m_set_both.contains( o))
+			{
+				if ( other.contains( o))
+				{
+					other.remove( o);
+					m_set_both.add( o);
+				}
+				else
+					same.add( o);
+			}
+		}
 	}
 }

@@ -22,23 +22,25 @@ package com.antlersoft.query;
 import java.util.Comparator;
 import java.util.Enumeration;
 
-public class SetIntersection extends SetOperator {
-	public SetIntersection( Comparator comp, Enumeration a, Enumeration b)
-	{
-		super( comp, a, b);
-	}
+import com.antlersoft.util.IteratorEnumeration;
 
-	protected Object determineNext()
+public class SetIntersection extends SetOperator {
+	protected Object determineNext( SetOperatorSortedEnum e)
 	{
 		Object result=null;
-		while ( nextPairInOrder())
+		while ( e.nextPairInOrder())
 		{
-			if ( m_comp.compare( m_current_a, m_current_b)==0)
+			if ( e.m_comp.compare( e.m_current_a, e.m_current_b)==0)
 		    {
-				result=m_current_a;
+				result=e.m_current_a;
 				break;
 			}
 		}
 		return result;
+	}
+	
+	protected Enumeration getEnumerationFromSets()
+	{
+		return new IteratorEnumeration( m_set_both.iterator());
 	}
 }

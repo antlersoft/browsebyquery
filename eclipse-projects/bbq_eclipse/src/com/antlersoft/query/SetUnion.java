@@ -19,25 +19,28 @@
  */
 package com.antlersoft.query;
 
-import java.util.Comparator;
 import java.util.Enumeration;
 
-public class SetUnion extends SetOperator {
-	public SetUnion( Comparator comp, Enumeration a, Enumeration b)
-	{
-		super( comp, a, b);
-	}
+import com.antlersoft.util.IteratorEnumeration;
 
-	protected Object determineNext()
+public class SetUnion extends SetOperator {
+	protected Object determineNext( SetOperatorSortedEnum e)
 	{
 		Object result=null;
-		while ( nextPairInOrder())
+		while ( e.nextPairInOrder())
 		{
-			if ( m_next_advance_a)
-				result=m_current_a;
+			if ( e.m_next_advance_a)
+				result=e.m_current_a;
 			else
-				result=m_current_b;
+				result=e.m_current_b;
 		}
 		return result;
+	}
+	
+	protected Enumeration getEnumerationFromSets()
+	{
+		return new CombineEnum( new IteratorEnumeration( m_set_both.iterator()),
+				new CombineEnum( new IteratorEnumeration( m_set_a.iterator()),
+						new IteratorEnumeration( m_set_b.iterator())));
 	}
 }

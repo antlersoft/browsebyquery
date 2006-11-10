@@ -22,39 +22,41 @@ package com.antlersoft.query;
 import java.util.Comparator;
 import java.util.Enumeration;
 
+import com.antlersoft.util.IteratorEnumeration;
+
 public class SetDeintersection extends SetOperator {
-	public SetDeintersection( Comparator comp, Enumeration a, Enumeration b)
+
+	public SetDeintersection()
 	{
-		super( comp, a, b);
 		m_candidate_a=null;
 		m_candidate_b=null;
 		m_first=true;
 	}
-
-	protected Object determineNext()
+	
+	protected Object determineNext( SetOperatorSortedEnum e)
 	{
 		Object result=null;
-		while ( result==null && nextPairInOrder())
+		while ( result==null && e.nextPairInOrder())
 		{
-			if ( m_next_advance_a || m_first)
+			if ( e.m_next_advance_a || m_first)
 			{
 				if ( m_candidate_a!=null)
 				{
 					result=m_candidate_a;
 				}
-				m_candidate_a=m_current_a;
+				m_candidate_a=e.m_current_a;
 			}
-			if ( ! m_next_advance_a || m_first)
+			if ( ! e.m_next_advance_a || m_first)
 			{
 				if ( m_candidate_b!=null)
 				{
 					result=m_candidate_b;
 				}
-				m_candidate_b=m_current_b;
+				m_candidate_b=e.m_current_b;
 			}
-			if ( m_candidate_a!=null && m_current_b!=null && m_comp.compare( m_candidate_a, m_current_b)==0)
+			if ( m_candidate_a!=null && e.m_current_b!=null && e.m_comp.compare( m_candidate_a, e.m_current_b)==0)
 				m_candidate_a=null;
-			if ( m_candidate_b!=null && m_current_a!=null && m_comp.compare( m_candidate_b, m_current_a)==0)
+			if ( m_candidate_b!=null && e.m_current_a!=null && e.m_comp.compare( m_candidate_b, e.m_current_a)==0)
 				m_candidate_b=null;
 			m_first=false;
 		}
@@ -64,7 +66,7 @@ public class SetDeintersection extends SetOperator {
 			{
 				if ( m_candidate_b!=null)
 				{
-					if ( m_comp.compare( m_candidate_a, m_candidate_b)<0)
+					if ( e.m_comp.compare( m_candidate_a, m_candidate_b)<0)
 					{
 						result=m_candidate_a;
 						m_candidate_a=null;
@@ -88,6 +90,14 @@ public class SetDeintersection extends SetOperator {
 			}
 		}
 		return result;
+	}
+	
+	protected Enumeration getEnumerationFromSets()
+	{
+		return new CombineEnum(
+				new IteratorEnumeration( m_set_a.iterator()),
+				new IteratorEnumeration( m_set_b.iterator())
+				);
 	}
 
 	private Object m_candidate_a, m_candidate_b;

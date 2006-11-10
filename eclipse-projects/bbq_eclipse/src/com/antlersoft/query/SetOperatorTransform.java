@@ -19,18 +19,14 @@
  */
 package com.antlersoft.query;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-
-import com.antlersoft.util.IteratorEnumeration;
 
 public class SetOperatorTransform extends Transform {
 	public SetOperatorTransform( int operator, Transform a, Transform b)
 	throws BindException
 	{
-		m_operator=operator;
+		m_operator_type=operator;
 		m_a=a;
 		m_b=b;
 		m_binding=new ResolvePairBinding( a, b);
@@ -38,32 +34,28 @@ public class SetOperatorTransform extends Transform {
     public Enumeration finishEvaluation(DataSource source) {
 		if ( m_common_ordering!=null)
 		{
-			return SetOperator.SetOperatorFactory( m_operator,
+			return m_operator.getSortedEnum(
 				m_common_ordering, m_a.finishEvaluation( source),
 				m_b.finishEvaluation( source));
 		}
-		Collections.sort( m_a_list);
-		Collections.sort( m_b_list);
-		return SetOperator.SetOperatorFactory( m_operator, null,
-		new IteratorEnumeration( m_a_list.iterator()),
-		new IteratorEnumeration( m_b_list.iterator())
-		);
+		m_operator.processEnumerationFromA(
+				m_a.finishEvaluation( source));
+		m_operator.processEnumerationFromB(
+			m_b.finishEvaluation( source));
+		
+		return m_operator.getUnsortedEnumeration();
     }
     public void lateBindApplies(Class parm1) throws com.antlersoft.query.BindException {
 		m_binding.lateBindApplies( parm1);
     }
     public void startEvaluation(DataSource source) {
+    	
+    	m_operator=SetOperator.SetOperatorFactory( m_operator_type);
 
 		m_a.startEvaluation( source);
 		m_b.startEvaluation( source);
 
 		resolveOrdering();
-
-		if ( m_common_ordering==null)
-		{
-			m_a_list = new ArrayList();
-			m_b_list = new ArrayList();
-		}
     }
     public Class resultClass() {
 		return m_binding.resultClass();
@@ -77,13 +69,13 @@ public class SetOperatorTransform extends Transform {
     public Enumeration transformObject(DataSource source, Object to_transform) {
 		if ( m_common_ordering!=null)
 		{
-			return SetOperator.SetOperatorFactory( m_operator, m_common_ordering,
+			return m_operator.getSortedEnum( m_common_ordering,
 				m_a.transformObject( source, to_transform),
 				m_b.transformObject( source, to_transform));
 		}
-		SetOperatorExpression.collectionFromEnumeration( m_a_list,
+		m_operator.processEnumerationFromA(
 			m_a.transformObject( source, to_transform));
-		SetOperatorExpression.collectionFromEnumeration( m_b_list,
+		m_operator.processEnumerationFromB(
 			m_b.transformObject( source, to_transform));
 		return EmptyEnum.empty;
     }
@@ -116,8 +108,7 @@ public class SetOperatorTransform extends Transform {
 
 	private Transform m_a, m_b;
 	private Comparator m_common_ordering;
-	private int m_operator;
+	private int m_operator_type;
+	private SetOperator m_operator;
 	private ResolvePairBinding m_binding;
-	private ArrayList m_a_list;
-	private ArrayList m_b_list;
 }
