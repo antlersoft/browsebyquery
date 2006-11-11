@@ -29,17 +29,17 @@ package com.antlersoft.analyzer.query;
 import com.antlersoft.analyzer.DBStringConstant;
 import com.antlersoft.analyzer.DBStringReference;
 
+import com.antlersoft.query.CountPreservingValueExpression;
 import com.antlersoft.query.DataSource;
-import com.antlersoft.query.UniqueTransformImpl;
 
-class StringsOf extends UniqueTransformImpl
+class StringsOf extends CountPreservingValueExpression
 {
     public StringsOf()
     {
-        super( DBStringReference.class, DBStringConstant.class);
+        super( DBStringConstant.class, DBStringReference.class);
     }
 
-    public Object uniqueTransform( DataSource source, Object parm1)
+    public Object transformSingleObject( DataSource source, Object parm1)
     {
         return ((DBStringReference)parm1).getTarget();
     }

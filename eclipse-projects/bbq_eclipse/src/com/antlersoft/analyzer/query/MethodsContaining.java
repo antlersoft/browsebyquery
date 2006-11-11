@@ -22,17 +22,17 @@ package com.antlersoft.analyzer.query;
 import com.antlersoft.analyzer.DBReference;
 import com.antlersoft.analyzer.DBMethod;
 
+import com.antlersoft.query.CountPreservingValueExpression;
 import com.antlersoft.query.DataSource;
-import com.antlersoft.query.UniqueTransformImpl;
 
-class MethodsContaining extends UniqueTransformImpl
+class MethodsContaining extends CountPreservingValueExpression
 {
     MethodsContaining()
     {
-		super( DBReference.class, DBMethod.class);
+		super( DBMethod.class, DBReference.class);
     }
 
-    public Object uniqueTransform( DataSource source, Object toTransform)
+    public Object transformSingleObject( DataSource source, Object toTransform)
     {
 		return ((DBReference)toTransform).getSource();
     }

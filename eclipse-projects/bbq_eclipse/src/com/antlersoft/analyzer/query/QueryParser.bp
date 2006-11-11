@@ -94,21 +94,6 @@ SET_EXPRESSION : all StringConstant "{
     return new StringsGet();
     }" .
 
-VALUE_EXPRESSION : StringConstant "{
-	return new StringGet();
-	}" .
-	
-VALUE_EXPRESSION : Types "{
-	return new TypeGet();
-	}" .
-	
-TRANSFORM : VALUE_EXPRESSION TRANSFORM "
-	{
-		int size=valueStack.size();
-		return new TransformTransform( (Transform)valueStack.get(size-1),
-			new ValueExpressionTransform( (ValueExpression)valueStack.get( size-2)));
-	}" .
-
 SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((QueryParserBase)parser).importedPackages); }" .
 
 ImportExpression : Import .
@@ -125,9 +110,12 @@ SET_EXPRESSION : TRANSFORM SET_EXPRESSION
 "{ return new TransformSet( (Transform)valueStack.get( valueStack.size()-2),
 (SetExpression)valueStack.get( valueStack.size()-1)); }" .
 
-VALUE_EXPRESSION : VALUE_EXPRESSION VALUE_EXPRESSION
-"{ return new CompoundExpression( (ValueExpression)valueStack.get( valueStack.size()-1),
-(ValueExpression)valueStack.get( valueStack.size()-2)); }" .
+TRANSFORM : VALUE_EXPRESSION TRANSFORM "
+	{
+		int size=valueStack.size();
+		return new TransformTransform( (Transform)valueStack.get(size-1),
+			new ValueExpressionTransform( (ValueExpression)valueStack.get( size-2)));
+	}" .
 
 TRANSFORM : TRANSFORM TRANSFORM
 "{ return new TransformTransform( (Transform)valueStack.get( valueStack.size()-1),
@@ -139,9 +127,6 @@ TRANSFORM : TRANSFORM that Identity FILTER "{
 		(Transform)valueStack.get( size-4),
 		new FilterTransform((Filter)valueStack.get( size-1)));
 	};" 2 .
-VALUE_EXPRESSION : Types of "{
-	return new TypeOf();
-	}" .
 TRANSFORM : arguments of "{
 	return new ArgumentsOf();
 	}" .
@@ -153,11 +138,6 @@ TRANSFORM : derived classes of "{ return new DerivedClasses(); }" .
 TRANSFORM : methods in "{ return new MethodsIn(); }" .
 TRANSFORM : fields in "{ return new FieldsIn(); }" .
 TRANSFORM : polymorphic "{ return new Polymorphic(); }" .
-TRANSFORM : methods called by "{ return new MethodsOf(); }" .
-TRANSFORM : fields referenced by "{ return new FieldsOf(); }" .
-TRANSFORM : StringConstant referenced by "{ return new StringsOf(); }" .
-TRANSFORM : methods containing "{ return new MethodsContaining(); }" .
-TRANSFORM : classes containing "{ return new ClassOf(); }" .
 TRANSFORM : calls from "{ return new CallsFrom(); }" .
 TRANSFORM : Reference from "{ return new ReferenceFrom(); }" .
 TRANSFORM : StringConstant Reference from "{ return new StringReferenceFrom(); }" .
@@ -183,6 +163,30 @@ FILTER : deprecated "{ return new DeprecatedFilter(); }" .
 
 FILTER : uncalled "{ return new UncalledMethod(); }" .
 FILTER : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
+
+VALUE_EXPRESSION : Types of "{
+	return new TypeOf();
+	}" .
+
+VALUE_EXPRESSION : VALUE_EXPRESSION VALUE_EXPRESSION
+"{ return new CompoundExpression( (ValueExpression)valueStack.get( valueStack.size()-1),
+(ValueExpression)valueStack.get( valueStack.size()-2)); }" .
+
+VALUE_EXPRESSION : StringConstant "{
+	return new StringGet();
+	}" .
+	
+VALUE_EXPRESSION : Types "{
+	return new TypeGet();
+	}" .
+	
+VALUE_EXPRESSION : classes containing "{ return new ClassContaining(); }" .
+
+VALUE_EXPRESSION : classes of "{ return new ClassForType(); }" .
+VALUE_EXPRESSION : methods containing "{ return new MethodsContaining(); }" .
+VALUE_EXPRESSION : methods called by "{ return new MethodsOf(); }" .
+VALUE_EXPRESSION : fields referenced by "{ return new FieldsOf(); }" .
+VALUE_EXPRESSION : StringConstant referenced by "{ return new StringsOf(); }" .
 
 Reference : reference .
 Reference : references .

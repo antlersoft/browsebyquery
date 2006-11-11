@@ -386,14 +386,14 @@ class QueryParserBase extends BasicBase
         }
     }
 
-    static class ClassOf extends UniqueTransformImpl
+    static class ClassContaining extends CountPreservingValueExpression
     {
-        ClassOf()
+        ClassContaining()
         {
             super( DBClass.class, null);
         }
 
-        public Object uniqueTransform( DataSource source, Object toTransform)
+        public Object transformSingleObject( DataSource source, Object toTransform)
         {
             if ( appliesClass()==DBMethod.class)
                 return ((DBMethod)toTransform).getDBClass();

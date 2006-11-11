@@ -23,16 +23,16 @@ import com.antlersoft.analyzer.DBFieldReference;
 import com.antlersoft.analyzer.DBField;
 
 import com.antlersoft.query.DataSource;
-import com.antlersoft.query.UniqueTransformImpl;
+import com.antlersoft.query.CountPreservingValueExpression;
 
-class FieldsOf extends UniqueTransformImpl
+class FieldsOf extends CountPreservingValueExpression
 {
 	FieldsOf()
 	{
-		super( DBFieldReference.class, DBField.class);
+		super( DBField.class, DBFieldReference.class);
 	}
 
-	public Object uniqueTransform( DataSource source, Object toTransform)
+	public Object transformSingleObject( DataSource source, Object toTransform)
 	{
 		return ((DBFieldReference)toTransform).getTarget();
 	}
