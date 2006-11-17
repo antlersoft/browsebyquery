@@ -30,7 +30,11 @@ import java.io.Serializable;
 
 class UniqueKey implements Comparable, Serializable
 {
-    static DAKey largestDAKey=new DAKey( Integer.MAX_VALUE, Integer.MAX_VALUE);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6081208245894853943L;
+	static DAKey largestDAKey=new DAKey( Integer.MAX_VALUE, Integer.MAX_VALUE);
     static DAKey smallestDAKey=new DAKey( -1, -1);
 
     UniqueKey( Comparable base, DAKey ref)

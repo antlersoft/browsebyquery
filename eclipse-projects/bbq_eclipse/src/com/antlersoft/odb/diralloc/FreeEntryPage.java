@@ -33,7 +33,11 @@ import com.antlersoft.odb.DiskAllocatorException;
 
 class FreeEntryPage implements Serializable
 {
-    int nextPageOffset;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1308309403287688763L;
+	int nextPageOffset;
     int[] freeArray;
     int size;
     transient boolean modified;

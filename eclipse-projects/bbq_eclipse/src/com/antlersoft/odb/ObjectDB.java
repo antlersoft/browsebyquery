@@ -89,6 +89,7 @@ public class ObjectDB
 		if ( impl.objectKey==null)
 		{
 			impl.objectKey=store.insert( (Persistent)toStore);
+			assert( impl.objectKey!=null);
     		if ( ! impl.isDirty())
             {
                 impl.makeDirty( (Persistent)toStore);

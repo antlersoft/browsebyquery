@@ -26,14 +26,16 @@
  */
 package com.antlersoft.odb.diralloc;
 
-import com.antlersoft.odb.DiskAllocator;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 
 class ClassEntry implements Serializable
 {
-    ClassEntry()
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3787188533816303917L;
+	ClassEntry()
     {
     }
 

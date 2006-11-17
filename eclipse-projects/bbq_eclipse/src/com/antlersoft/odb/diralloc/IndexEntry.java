@@ -32,7 +32,11 @@ import com.antlersoft.odb.KeyGenerator;
 
 class IndexEntry implements Serializable
 {
-    String indexName;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1239991667473885314L;
+	String indexName;
     KeyGenerator generator;
     int pageCount;
     int startPageOffset;

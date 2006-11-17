@@ -32,8 +32,6 @@ import java.util.Iterator;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import com.antlersoft.odb.DiskAllocator;
@@ -46,7 +44,11 @@ import com.antlersoft.util.Semaphore;
 
 class ClassList implements Serializable
 {
-    ArrayList classEntries;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 2243343019911000296L;
+	ArrayList classEntries;
     private ArrayList freeList;
     transient boolean listModified;
     transient HashMap classMap;

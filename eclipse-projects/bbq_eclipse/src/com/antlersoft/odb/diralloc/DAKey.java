@@ -30,6 +30,10 @@ import com.antlersoft.odb.ObjectKey;
 
 class DAKey implements ObjectKey, Comparable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2551671276277657088L;
 	int index;
 	int reuseCount;
 

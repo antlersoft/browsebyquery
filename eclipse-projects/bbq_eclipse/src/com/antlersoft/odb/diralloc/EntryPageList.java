@@ -40,7 +40,11 @@ import com.antlersoft.util.Semaphore;
 
 class EntryPageList implements Serializable
 {
-    private static final int ENTRY_PAGE_CACHE_SIZE=100;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 9025048519481607864L;
+	private static final int ENTRY_PAGE_CACHE_SIZE=100;
     static final int ENTRY_PAGE_SIZE=8000;
 
     private int freePageOffset;
@@ -451,10 +455,21 @@ class EntryPageList implements Serializable
         }
     }
 
-    EntryPage makePageCurrent( StreamPair streams, int pageIndex)
+    /**
+     * Make the page at pageIndex current in the cache
+     * Starts with pageFlushLock unprotected
+     * and ends with the pageFlushLock in protected state
+     * @param streams
+     * @param pageIndex
+     * @return
+     * @throws ClassNotFoundException
+     * @throws DiskAllocatorException
+     * @throws IOException
+     */
+    private EntryPage makePageCurrent( StreamPair streams, int pageIndex)
         throws ClassNotFoundException, DiskAllocatorException, IOException
     {
-        pageFlushLock.enterProtected();
+    	pageFlushLock.enterProtected();
         EntryPageHeader header=(EntryPageHeader)pages.get( pageIndex);
         if ( header.page!=null)
         {

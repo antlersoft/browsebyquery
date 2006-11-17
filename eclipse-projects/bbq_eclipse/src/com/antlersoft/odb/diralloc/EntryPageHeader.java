@@ -30,7 +30,11 @@ import java.io.Serializable;
 
 public class EntryPageHeader implements Serializable
 {
-    int offset;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5936370701267982533L;
+	int offset;
     transient EntryPage page;
 
     EntryPageHeader()

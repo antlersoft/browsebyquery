@@ -44,8 +44,6 @@ import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectKey;
 import com.antlersoft.odb.ObjectStoreException;
 import com.antlersoft.odb.ObjectStreamCustomizer;
-import com.antlersoft.util.RandomInputStream;
-import com.antlersoft.util.RandomOutputStream;
 
 import com.antlersoft.util.NetByte;
 import com.antlersoft.util.Semaphore;

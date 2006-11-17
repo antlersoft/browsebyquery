@@ -30,7 +30,11 @@ import java.io.Serializable;
 
 class EntryPage implements Serializable
 {
-    int[] offset;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4772917320357930009L;
+	int[] offset;
     int[] reuseCount;
     int[] classIndex;
     int[] classReuse;

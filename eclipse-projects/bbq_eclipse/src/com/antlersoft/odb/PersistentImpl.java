@@ -78,6 +78,7 @@ public class PersistentImpl
     
     final void makeDirty( Persistent p)
     {
+    	assert( objectKey!=null);
     	dirtyReference=p;
     	cachedReference=null;
     }
