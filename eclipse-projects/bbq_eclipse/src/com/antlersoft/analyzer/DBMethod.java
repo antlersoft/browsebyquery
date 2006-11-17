@@ -36,6 +36,7 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
+import com.antlersoft.odb.FromRefEnumeration;
 
 public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
 {
@@ -151,7 +152,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     public Enumeration getArguments()
     {
     	if ( arguments!=null)
-    		return arguments.elements();
+    		return new FromRefEnumeration( arguments.elements());
     	return emptyVector.elements();
     }
 
@@ -243,7 +244,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 				int variableOffset=isSpecialOrStatic() ? 0 : 1;
 				for ( Iterator i=arguments.iterator(); i.hasNext();)
 				{
-					DBArgument arg=(DBArgument)i.next();
+					DBArgument arg=(DBArgument)((ObjectRef)i.next()).getReferenced();
 					String entry=locals.getLocalVariable( ac, 1, arg.getOrdinal()+variableOffset);
 					if ( entry!=null)
 					{
@@ -451,9 +452,9 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 	    	    		default :
 	    	    			break;
 	    	    		}
-	    	    		arguments.add( new DBArgument( this, argument_count++,
+	    	    		arguments.add( new ObjectRef( new DBArgument( this, argument_count++,
 	    	    				(DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
-	    	    						signature.substring( start_offset, current_offset+1))));
+	    	    						signature.substring( start_offset, current_offset+1)))));
 	    	    		start_offset=current_offset+1;
 	    	    	}
 	    	    	returnType=new ObjectRef( (DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
