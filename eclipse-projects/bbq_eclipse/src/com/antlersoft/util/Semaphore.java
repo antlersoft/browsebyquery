@@ -26,7 +26,7 @@
  */
 package com.antlersoft.util;
 
-public class Semaphore
+public final class Semaphore
 {
     public Semaphore()
     {
