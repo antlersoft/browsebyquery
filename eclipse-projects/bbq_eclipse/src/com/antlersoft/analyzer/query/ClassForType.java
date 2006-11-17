@@ -6,7 +6,6 @@ package com.antlersoft.analyzer.query;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.DBType;
 
-import com.antlersoft.query.BindException;
 import com.antlersoft.query.CountPreservingValueExpression;
 import com.antlersoft.query.DataSource;
 

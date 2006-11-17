@@ -11,6 +11,7 @@ reserved Abstract "abstract"
 reserved all
 reserved are
 reserved arguments
+reserved array
 reserved base
 reserved by
 reserved called
@@ -147,6 +148,10 @@ TRANSFORM : TransformSymbol "{ return ((QueryParser)parser).storedValues.get( va
 
 FILTER : write "{ return new WriteReferences(); }" .
 
+FILTER : is array "{ return new IsArray(); }" .
+
+FILTER : is reference type "{ return new IsReferenceType(); }" .
+
 FILTER : Public "{
 	return new AccessFilter( ClassWriter.ACC_PUBLIC); }" .
 FILTER : Private "{
@@ -187,6 +192,14 @@ VALUE_EXPRESSION : methods containing "{ return new MethodsContaining(); }" .
 VALUE_EXPRESSION : methods called by "{ return new MethodsOf(); }" .
 VALUE_EXPRESSION : fields referenced by "{ return new FieldsOf(); }" .
 VALUE_EXPRESSION : StringConstant referenced by "{ return new StringsOf(); }" .
+VALUE_EXPRESSION : type referenced by "{
+	return new CountPreservingValueExpression( DBType.class, DBType.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getArrayReferencedType();
+		}
+	};
+	}" .
 
 Reference : reference .
 Reference : references .
