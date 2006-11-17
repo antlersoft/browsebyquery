@@ -211,7 +211,7 @@ public class IndexAnalyzeDB implements AnalyzerDB
 			final IndexIterator ii=_session.greaterThanOrEqualEntries( index_name, key);
 			if ( ii.isExactMatch())
 			{
-				result=new ExactMatchIndexEnumeration( ii, key);
+				result=new ExactMatchIndexEnumeration( ii);
 			}
 		}
 		
@@ -311,12 +311,10 @@ public class IndexAnalyzeDB implements AnalyzerDB
     {
     	private IndexIterator _ii;
     	private Object _nextObject;
-    	private Comparable _key;
     	
-    	ExactMatchIndexEnumeration( IndexIterator ii, Comparable key)
+    	ExactMatchIndexEnumeration( IndexIterator ii)
     	{
     		_ii=ii;
-    		_key=key;
     		determineNextObject();
     	}
     	
@@ -338,13 +336,9 @@ public class IndexAnalyzeDB implements AnalyzerDB
     	private void determineNextObject()
     	{
     		Object result=null;
-			if ( _ii.hasNext())
+			if ( _ii.hasNext() && _ii.isExactMatch())
 			{
 				result=_ii.next();
-				if ( _key.compareTo( result)!=0)
-				{
-					result=null;
-				}
 			}
 			_nextObject=result;
     	}
