@@ -3,6 +3,7 @@ package com.antlersoft.analyzer.query;
 import java.text.DateFormat;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import com.antlersoft.analyzer.*;

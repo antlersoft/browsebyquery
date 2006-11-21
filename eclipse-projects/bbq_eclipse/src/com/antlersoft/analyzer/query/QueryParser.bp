@@ -47,6 +47,7 @@ reserved TransformSymbol "((#2"
 reserved type
 reserved types
 reserved uncalled
+reserved with
 reserved write
 
 SET_EXPRESSION : set nameSymbol to SET_EXPRESSION "{
@@ -145,6 +146,28 @@ TRANSFORM : StringConstant Reference from "{ return new StringReferenceFrom(); }
 TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
 TRANSFORM : calls to "{ return new CallsTo(); }" .
 TRANSFORM : TransformSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
+TRANSFORM : fields with "{
+	return new TransformImpl( DBField.class, DBType.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getFields((AnalyzerDB)source);
+		}
+	};}" .
+TRANSFORM : methods with "{
+	return new TransformImpl( DBMethod.class, DBType.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getReturningMethods((AnalyzerDB)source);
+		}
+	};}" .
+TRANSFORM : arguments with "{
+	return new TransformImpl( DBArgument.class, DBType.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getArguments((AnalyzerDB)source);
+		}
+	};}" .
+	
 
 FILTER : write "{ return new WriteReferences(); }" .
 
@@ -187,7 +210,7 @@ VALUE_EXPRESSION : Types "{
 	
 VALUE_EXPRESSION : classes containing "{ return new ClassContaining(); }" .
 
-VALUE_EXPRESSION : classes of "{ return new ClassForType(); }" .
+VALUE_EXPRESSION : classes with "{ return new ClassForType(); }" .
 VALUE_EXPRESSION : methods containing "{ return new MethodsContaining(); }" .
 VALUE_EXPRESSION : methods called by "{ return new MethodsOf(); }" .
 VALUE_EXPRESSION : fields referenced by "{ return new FieldsOf(); }" .
@@ -197,6 +220,14 @@ VALUE_EXPRESSION : type referenced by "{
 		public Object transformSingleObject( DataSource source, Object to_transform)
 		{
 			return ((DBType)to_transform).getArrayReferencedType();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : methods of "{
+	return new CountPreservingValueExpression( DBMethod.class, DBArgument.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBArgument)to_transform).getMethod();
 		}
 	};
 	}" .
