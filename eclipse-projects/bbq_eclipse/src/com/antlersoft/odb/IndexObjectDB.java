@@ -27,6 +27,7 @@
 package com.antlersoft.odb;
 
 import java.util.Iterator;
+import java.util.Properties;
 
 public class IndexObjectDB extends ObjectDB
 {
@@ -39,11 +40,11 @@ public class IndexObjectDB extends ObjectDB
     }
 
     public void defineIndex( String indexName, Class indexedClass,
-        KeyGenerator keyGen, boolean descending, boolean unique)
+        KeyGenerator keyGen, boolean descending, boolean unique, Properties indexProperties)
         throws ObjectStoreException
     {
         store.defineIndex( indexName, indexedClass, keyGen, descending,
-            unique);
+            unique, indexProperties);
     }
 
     public void removeIndex( String indexName)

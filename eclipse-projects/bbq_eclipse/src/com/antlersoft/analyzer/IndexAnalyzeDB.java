@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,8 +49,9 @@ import com.antlersoft.odb.ObjectStreamCustomizer;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-import com.antlersoft.odb.diralloc.DirectoryAllocator;
 import com.antlersoft.odb.diralloc.CustomizerFactory;
+import com.antlersoft.odb.diralloc.DirectoryAllocator;
+import com.antlersoft.odb.diralloc.IndexStatistics;
 import com.antlersoft.odb.diralloc.NoSuchClassException;
 
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
@@ -68,6 +70,17 @@ public class IndexAnalyzeDB implements AnalyzerDB
     private static final String LOOKUP_INDEX="Lookup";
     private static String OPTIONAL_FLAGS_KEY="optional_flags";
     private static Class[] _argumentList=new Class[] { String.class, AnalyzerDB.class };
+    
+    private static Properties LOOKUP_INDEX_PROPS;
+    private static Properties TYPEKEY_INDEX_PROPS;
+    
+    static
+    {
+    	LOOKUP_INDEX_PROPS=new Properties();
+    	LOOKUP_INDEX_PROPS.put( DirectoryAllocator.ENTRIES_PER_PAGE, "80");
+    	TYPEKEY_INDEX_PROPS=new Properties();
+    	TYPEKEY_INDEX_PROPS.put( DirectoryAllocator.ENTRIES_PER_PAGE, "220");
+    }
 
 	public IndexAnalyzeDB()
 	{
@@ -91,15 +104,15 @@ public class IndexAnalyzeDB implements AnalyzerDB
         try
         {
             _session.defineIndex( LOOKUP_INDEX, Lookup.class,
-                new TypeKeyGenerator(), false, true);
+                new TypeKeyGenerator(), false, true, LOOKUP_INDEX_PROPS);
             _session.defineIndex( DBField.FIELD_TYPE_INDEX, DBField.class,
-            		new DBField.FieldTypeKeyGenerator(), false, false);
+            		new DBField.FieldTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
             _session.defineIndex( DBMethod.RETURN_TYPE_INDEX, DBMethod.class,
-            		new DBMethod.ReturnTypeKeyGenerator(), false, false);
+            		new DBMethod.ReturnTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
             _session.defineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
-            		new DBArgument.ArgumentTypeKeyGenerator(), false, false);
+            		new DBArgument.ArgumentTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
             _session.defineIndex( DBType.TYPE_CLASS_INDEX, DBType.class,
-            		new DBType.TypeClassKeyGenerator(), false, false);
+            		new DBType.TypeClassKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
         }
         catch ( IndexExistsException iee)
         {
@@ -342,5 +355,29 @@ public class IndexAnalyzeDB implements AnalyzerDB
 			}
 			_nextObject=result;
     	}
+    }
+    
+    static void printStatistics( DirectoryAllocator store, String index_name)
+    throws Exception
+    {
+    	IndexStatistics stats=(IndexStatistics)store.getIndexStatistics( index_name);
+    	System.out.println( index_name+" Entries per page: "+stats.getEntriesPerPage());
+    	System.out.println( "Regular--"+stats.getRegular().toString());
+    	System.out.println( "Overflow--"+stats.getOverflow().toString());
+    }
+    /**
+     * Print the statistics for the indexes in this database
+     * @param args
+     */
+    public static void main( String[] args)
+    throws Exception
+    {
+    	DirectoryAllocator store=new DirectoryAllocator( new File( args[0]),
+                new CFactory());
+    	printStatistics( store, LOOKUP_INDEX);
+    	printStatistics( store, DBType.TYPE_CLASS_INDEX);
+    	printStatistics( store, DBMethod.RETURN_TYPE_INDEX);
+    	printStatistics( store, DBField.FIELD_TYPE_INDEX);
+    	printStatistics( store, DBArgument.ARGUMENT_TYPE_INDEX);
     }
 }

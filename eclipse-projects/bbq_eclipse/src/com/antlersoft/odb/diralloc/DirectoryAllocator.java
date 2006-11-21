@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,6 +80,9 @@ import com.antlersoft.util.Semaphore;
 public class DirectoryAllocator implements IndexObjectStore
 {
     private static Logger logger=Logger.getLogger( DirectoryAllocator.class.getName());
+    
+    public static final int FAVORED_CHUNK_SIZE=10240;
+    public static final String ENTRIES_PER_PAGE="ENTRIES_PER_PAGE";
 
     public DirectoryAllocator( File file, CustomizerFactory factory)
         throws ObjectStoreException
@@ -90,7 +94,7 @@ public class DirectoryAllocator implements IndexObjectStore
             baseDirectory=file;
             File allocatorFile=new File( file, "overhead");
             overhead=new DiskAllocator( allocatorFile, INITIAL_REGION_SIZE,
-                10240, 204800, 0);
+            		FAVORED_CHUNK_SIZE, 204800, 0);
 
             overheadStreams=new StreamPair( overhead,
                 factory.getCustomizer( EntryPage.class));
@@ -150,7 +154,7 @@ public class DirectoryAllocator implements IndexObjectStore
                 {
                     entry.indexStreams=new StreamPair(
                         new DiskAllocator( new File( baseDirectory,
-                            entry.fileName+"i"), 4, 10240, 102400,
+                            entry.fileName+"i"), 4, FAVORED_CHUNK_SIZE, 102400,
                             DiskAllocator.FORCE_EXIST), customizer);
                     for ( Iterator j=entry.indices.iterator(); j.hasNext();)
                     {
@@ -192,11 +196,36 @@ ioe.printStackTrace();
     }
 
     public void defineIndex(String indexName, Class indexedClass,
-        KeyGenerator keyGen, boolean descending, boolean unique)
+        KeyGenerator keyGen, boolean descending, boolean unique, Properties indexProperties)
         throws ObjectStoreException
     {
+    	int entriesPerPage=200; // A number pulled out of the air
+    	if ( indexProperties!=null)
+    	{
+    		String entries=indexProperties.getProperty( ENTRIES_PER_PAGE);
+    		if ( entries!=null)
+    			entriesPerPage=Integer.parseInt( entries);
+    	}
         classList.defineIndex( indexName, indexedClass,
-            keyGen, descending, unique, this, baseDirectory);
+            keyGen, descending, unique, 
+            entriesPerPage, this, baseDirectory);
+    }
+
+    public Object getIndexStatistics( String indexName) throws ObjectStoreException
+    {
+        classList.classChangeLock.enterProtected();
+        try
+        {
+            Index index=(Index)classList.indexMap.get( indexName);
+            if ( index==null)
+                throw new ObjectStoreException( "getIndexStatistics: Index "+indexName+
+                " undefined");
+            return index.getStatistics();
+        }
+        finally
+        {
+            classList.classChangeLock.leaveProtected();
+        }
     }
 
     public void removeIndex(String indexName) throws ObjectStoreException
@@ -331,8 +360,7 @@ ioe.printStackTrace();
             {
                 for ( Iterator i=indexPageLRU.iterator(); i.hasNext();)
                 {
-                    if ( flushIndexPage( (IndexPage)i.next()))
-                        i=indexPageLRU.iterator();
+                    flushIndexPage( (IndexPage)i.next());
                 }
             }
             finally
@@ -376,11 +404,6 @@ ioe.printStackTrace();
                 overhead.write( overhead.getInitialRegion(), offsets);
             }
             overhead.sync();
-        }
-        catch ( ClassNotFoundException cnfe)
-        {
-            throw new ObjectStoreException( "sync: class not found",
-                cnfe);
         }
         catch ( IOException ioe)
         {
@@ -457,8 +480,8 @@ ioe.printStackTrace();
     private static final int INITIAL_REGION_SIZE=16;
     private static final int INDEX_PAGE_CACHE_SIZE=100;
     /** 
-     * BBQ magic number; increment the last byte is the version number;
-     * the current (and first) version is 1.
+     * BBQ magic number; the last byte is the version number, it gets incremented with each version
+     * the current version is 1.
      */
     private static final int DIR_ALLOC_VERSION=0x42425101;
 
@@ -483,11 +506,6 @@ ioe.printStackTrace();
                     indexPageMap.remove( toFlush.thisPage);
                     flushIndexPage( toFlush);
                 }
-            }
-            catch ( ClassNotFoundException cnfe)
-            {
-                throw new ObjectStoreException( "Index page class not found",
-                    cnfe);
             }
             catch ( IOException ioe)
             {
@@ -531,7 +549,7 @@ ioe.printStackTrace();
             indexPageLRU.remove( toFree);
             try
             {
-                toFree.thisPage.index.streams.free( toFree.thisPage.offset);
+                toFree.thisPage.index.streams.freeImmovableObject( toFree.thisPage.offset);
             }
             catch ( IOException ioe)
             {
@@ -614,7 +632,7 @@ ioe.printStackTrace();
             {
                 if ( logger.isLoggable( Level.FINE))
                     logger.fine( "Read index page from store at "+key.offset+( key.parent!=null ? " parent "+key.parent.offset : " top page"));
-                result=(IndexPage)key.index.streams.readObject( key.offset);
+                result=(IndexPage)key.index.streams.readImmovableObject( key.offset);
                 result.modified=false;
                 result.thisPage=key;
                 indexPageMap.put( key, result);
@@ -635,50 +653,14 @@ ioe.printStackTrace();
      * That means index pages are not stable, so no index operations
      * can be happening.  So we don't have to coordinate with index operations.
      */
-    private boolean flushIndexPage( IndexPage toDump)
-        throws ClassNotFoundException, IOException, DiskAllocatorException,
-            ObjectStoreException
+    private void flushIndexPage( IndexPage toDump)
+        throws IOException, DiskAllocatorException
     {
-        boolean modifiedPages=false;
         if ( toDump.modified)
         {
             toDump.modified=false;
-            int newOffset=
-                toDump.thisPage.index.streams.writeObject( toDump,
-                    toDump.thisPage.offset);
-            if ( newOffset!=toDump.thisPage.offset)
-            {
-                if ( logger.isLoggable( Level.FINE))
-                    logger.fine( "Write index page to "+newOffset+" was at "+toDump.thisPage.offset+( toDump.thisPage.parent!=null ? " parent "+toDump.thisPage.parent.offset : " top page"));
-                Object wasMapped=indexPageMap.remove( toDump.thisPage);
-                toDump.thisPage.offset=newOffset;
-                if ( wasMapped!=null)
-                    indexPageMap.put( toDump.thisPage, toDump);
-                if ( toDump.thisPage.parent==null)
-                {
-                    toDump.thisPage.index.entry.startPageOffset
-                        =toDump.thisPage.offset;
-                    classList.listModified=true;
-                }
-                else
-                {
-                    IndexPage parent=getIndexPageByKeyInternal( toDump.
-                        thisPage.parent);
-                    int fixOffset=
-                        parent.thisPage.index.binarySearch(
-                        parent.keyArray, 0, parent.size-1,
-                        toDump.keyArray[0]);
-                    if ( fixOffset<0)
-                        throw new ObjectStoreException(
-                        "Corrupt index when fixing offset in parent");
-
-                    parent.nextOffsetArray[fixOffset]=
-                        toDump.thisPage.offset;
-                    parent.modified=true;
-                    modifiedPages=true;
-                }
-            }
+            toDump.thisPage.index.streams.writeImmovableObject( toDump,
+                toDump.thisPage.offset);
         }
-        return modifiedPages;
     }
 }

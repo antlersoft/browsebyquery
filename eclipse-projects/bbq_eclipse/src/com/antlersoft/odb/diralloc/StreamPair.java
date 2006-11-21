@@ -144,6 +144,114 @@ class StreamPair
         second=NetByte.quadToInt( objectBuffer, 4);
         return readObject( objectBuffer, 8, objectBuffer.length-8);
     }
+    
+    /**
+     * Read an "immovable" object; one that might vary in size, but once created
+     * will always have the same object address.  Objects that are too big for the original
+     * allocation will automatically be extended onto an overflow page, at the cost
+     * of some efficiency.
+     * @param offset
+     * @return Object read
+     * @throws DiskAllocatorException
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    Object readImmovableObject( int offset)
+    throws DiskAllocatorException, IOException, ClassNotFoundException
+    {
+    	byte[] readBuffer=allocator.read( offset, allocator.getRegionSize( offset));
+    	customizer.resetObjectInputStream( objectInput);
+    	randomInput.emptyAddBytes( readBuffer, 4, readBuffer.length-4);
+    	int secondOffset=NetByte.quadToInt( readBuffer, 0);
+    	if ( secondOffset!=0)
+    	{
+    		readBuffer=allocator.read( secondOffset, allocator.getRegionSize( secondOffset));
+    		randomInput.addBytes( readBuffer, 0, readBuffer.length);
+    	}
+    	return objectInput.readObject();
+    }
+
+    /**
+     * Write an "immovable" object; one that might vary in size, but once created
+     * will always have the same object address.  Objects that are too big for the original
+     * allocation will automatically be extended onto an overflow page, at the cost
+     * of some efficiency.
+     * @param toWrite
+     * @param offset
+     * @return
+     * @throws IOException
+     * @throws DiskAllocatorException
+     */
+    int writeImmovableObject( Object toWrite, int offset)
+    throws IOException, DiskAllocatorException
+	{
+	    byte[] writeBuffer=writeObject( toWrite);
+	    byte[] offsetBuffer;
+	    int overflowOffset=0;
+	    if ( offset==0)
+	    {
+	    	offset=allocator.allocate( DirectoryAllocator.FAVORED_CHUNK_SIZE);
+	    	offsetBuffer=new byte[4];
+	    }
+	    else
+	    {
+	    	offsetBuffer=allocator.read( offset, 4);
+	    	overflowOffset=NetByte.quadToInt( offsetBuffer, 0);
+	    }
+	    int firstSize=allocator.getRegionSize( offset);
+	    if ( firstSize-4>=writeBuffer.length)
+	    {
+	    	NetByte.intToQuad( 0, offsetBuffer, 0);
+	    	allocator.write( offset, offsetBuffer);
+	    	allocator.write( offset+4, writeBuffer);
+	    	if ( overflowOffset!=0)
+	    		free( overflowOffset);
+	    }
+	    else
+	    {
+	    	int overflowSize=writeBuffer.length-( firstSize-4);
+	    	if ( overflowOffset==0)
+	    	{
+	    		overflowOffset=allocator.allocate( overflowSize);
+	    	}
+	    	else
+	    	{
+	    		int oldSize=allocator.getRegionSize( overflowOffset);
+		        if ( oldSize<overflowSize ||
+			            oldSize-overflowSize>=chunkSize)
+			    {
+		            allocator.free( overflowOffset);
+		            overflowOffset=allocator.allocate( writeBuffer.length);
+		        }
+	    	}
+	    	NetByte.intToQuad( overflowOffset, offsetBuffer, 0);
+	    	byte[] firstBuffer=new byte[firstSize-4];
+	    	byte[] secondBuffer=new byte[overflowSize];
+	    	System.arraycopy( writeBuffer, 0, firstBuffer, 0, firstSize-4);
+	    	System.arraycopy( writeBuffer, firstSize-4, secondBuffer, 0, overflowSize);
+	    	allocator.write( offset, offsetBuffer);
+	    	allocator.write( offset+4, firstBuffer);
+	    	allocator.write( overflowOffset, secondBuffer);
+	    }
+	    return offset;
+	}
+
+    /**
+     * Read an "immovable" object; one that might vary in size, but once created
+     * will always have the same object address.
+     * @param offset
+     * @throws IOException
+     * @throws DiskAllocatorException
+     */
+    void freeImmovableObject( int offset)
+    throws IOException, DiskAllocatorException
+    {
+    	byte[] secondBuffer=allocator.read( offset, 4);
+    	allocator.free( offset);
+    	offset=NetByte.quadToInt( secondBuffer, 0);
+    	if ( offset!=0)
+    		allocator.free( offset);
+    }
 
 	byte[] writeObject( Object toWrite)
 		throws IOException

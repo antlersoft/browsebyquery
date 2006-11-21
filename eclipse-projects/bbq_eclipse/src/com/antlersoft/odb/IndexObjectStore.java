@@ -27,6 +27,7 @@
 package com.antlersoft.odb;
 
 import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * An ObjectStore that organizes stored objects by their class
@@ -56,10 +57,22 @@ public interface IndexObjectStore extends ObjectStore
      * <P>
      * If an index is defined for a class that already has data, the existing
      * values for the class are added to the index.
+     * @param indexProperties Store-specific index properties.  All stores must
+     * accept a null for this value, which will result in default properties
+     * being used.
      */
     public void defineIndex( String indexName, Class indexedClass,
-        KeyGenerator keyGen, boolean descending, boolean unique)
+        KeyGenerator keyGen, boolean descending, boolean unique, Properties indexProperties)
         throws ObjectStoreException;
+    
+    /**
+     * Get store-specific index statistics for an index.
+     * @param indexName
+     * @return An object with index statistics, or null if the store doesn't support
+     * this functionality.
+     */
+    public Object getIndexStatistics( String indexName) throws ObjectStoreException;
+    
     /**
      * Remove the named index from this database.
      */

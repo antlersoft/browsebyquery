@@ -104,7 +104,7 @@ class ClassList implements Serializable
     }
 
     public void defineIndex(String indexName, Class indexedClass,
-        KeyGenerator keyGen, boolean descending, boolean unique,
+        KeyGenerator keyGen, boolean descending, boolean unique, int entriesPerPage,
         DirectoryAllocator manager, File baseDirectory)
         throws ObjectStoreException
     {
@@ -132,11 +132,11 @@ class ClassList implements Serializable
             {
                 entry.indexStreams=new StreamPair(
                     new DiskAllocator( new File( baseDirectory,
-                        entry.fileName+"i"), 4, 10240, 102400, 0),
+                        entry.fileName+"i"), 4, DirectoryAllocator.FAVORED_CHUNK_SIZE, 102400, 0),
                         factory.getCustomizer( indexedClass));
             }
             IndexEntry indexEntry=Index.createIndexEntry( indexName,
-                keyGen, descending, unique, manager, entry.indexStreams);
+                keyGen, descending, unique, entriesPerPage, manager, entry.indexStreams);
             entry.indices.add( indexEntry);
             indexMap.put( indexName, indexEntry.index);
 

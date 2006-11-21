@@ -218,7 +218,7 @@ class Index
     }
 
     static IndexEntry createIndexEntry( String indexName, KeyGenerator keyGen,
-        boolean descending, boolean unique, DirectoryAllocator manager,
+        boolean descending, boolean unique, int entriesPerPage, DirectoryAllocator manager,
         StreamPair streams)
         throws ObjectStoreException
     {
@@ -227,7 +227,7 @@ class Index
         entry.generator=keyGen;
         entry.indexName=indexName;
         entry.unique=unique;
-        entry.pageCount=200;    // A number pulled from the air
+        entry.pageCount=entriesPerPage;
         IndexPage startPage=new IndexPage();
         startPage.size=0;
         startPage.nextOffsetArray=new int[entry.pageCount];
@@ -236,7 +236,7 @@ class Index
         startPage.reuseArray=new int[entry.pageCount];
         try
         {
-            entry.startPageOffset=streams.writeObject( startPage, 0);
+            entry.startPageOffset=streams.writeImmovableObject( startPage, 0);
         }
         catch ( IOException ioe)
         {
@@ -252,6 +252,56 @@ class Index
         startPage.thisPage=entry.index.getTopKey();
         manager.addNewIndexPageToCache( startPage);
         return entry;
+    }
+    
+    IndexStatistics getStatistics()
+    throws ObjectStoreException
+    {
+    	IndexStatistics result=new IndexStatistics();
+    	result.m_entriesPerPage=entry.pageCount;
+    	
+    	try
+    	{
+    		indexModificationLock.enterProtected();
+    		evaluatePageStatistics( result, entry.startPageOffset);
+    	}
+    	catch ( ClassNotFoundException cnfe)
+    	{
+    		throw new ObjectStoreException( "getStatistics ", cnfe);
+    	}
+    	catch ( DiskAllocatorException dae)
+    	{
+    		throw new ObjectStoreException( "getStatistics allocator error ", dae);
+    	}
+    	catch ( IOException ioe)
+    	{
+    		throw new ObjectStoreException( "getStatistic io error", ioe);
+    	}
+    	finally
+    	{
+    		indexModificationLock.leaveProtected();
+    	}
+    	
+    	return result;
+    }
+    
+    private void evaluatePageStatistics( IndexStatistics stats, int offset)
+    throws IOException, DiskAllocatorException, ClassNotFoundException
+    {
+    	byte[] overflowOffsetBuffer=streams.allocator.read( offset, 4);
+    	int overflowOffset=com.antlersoft.util.NetByte.quadToInt( overflowOffsetBuffer, 0);
+    	IndexPage page=(IndexPage)streams.readImmovableObject( offset);
+    	IndexStatistics.Counts counts=( overflowOffset==0 ? stats.m_regular : stats.m_overflow);
+    	counts.m_pages++;
+    	counts.m_totalKeys+=page.size;
+    	counts.m_totalSize+=streams.writeObject( page).length;
+    	if ( page.reuseArray==null)
+    	{
+    		for ( int i=0; i<page.size; ++i)
+    		{
+    			evaluatePageStatistics( stats, page.nextOffsetArray[i]);
+    		}
+    	}
     }
 
     /**
@@ -304,7 +354,7 @@ class Index
             try
             {
                 parent.thisPage=new IndexPageKey( this,
-                    streams.writeObject( parent, 0), null);
+                    streams.writeImmovableObject( parent, 0), null);
             }
             catch ( IOException ioe)
             {
@@ -355,7 +405,7 @@ class Index
         try
         {
             newPage.thisPage=new IndexPageKey( this,
-                streams.writeObject( newPage, 0), toSplit.thisPage.parent);
+                streams.writeImmovableObject( newPage, 0), toSplit.thisPage.parent);
         }
         catch ( IOException ioe)
         {

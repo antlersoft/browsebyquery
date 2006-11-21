@@ -61,6 +61,20 @@ public class RandomInputStream extends InputStream
     {
         emptyAddBytes( toAdd, 0, toAdd.length);
     }
+    
+    public synchronized void addBytes( byte[] toAdd, int offset, int length)
+    {
+    	int new_length=count+length;
+    	if ( new_length>buffer.length)
+    	{
+    		int newSize=((new_length/SIZE_INCREMENT)+1)*SIZE_INCREMENT;
+    		byte[] newBuffer=new byte[newSize];
+    		System.arraycopy( buffer, 0, newBuffer, 0, count);
+    		buffer=newBuffer;
+    	}
+    	System.arraycopy( toAdd, offset, buffer, count, length);
+    	count+=length;
+    }
 
 	private void packBuffer()
 	{

@@ -55,7 +55,7 @@ public class CxxIndexObjectDB implements DBDriver {
 			m_session.defineIndex( TranslationUnit.TRANSLATION_UNIT_NAME_INDEX,
 								   TranslationUnit.class,
 								   new SourceFile.FileKeyGenerator(),
-								   false, true);
+								   false, true, null);
 		}
 		catch ( IndexExistsException iee)
 		{
@@ -66,7 +66,7 @@ public class CxxIndexObjectDB implements DBDriver {
 			m_session.defineIndex( IncludeFile.INCLUDE_FILE_INDEX,
 								   IncludeFile.class,
 								   new SourceFile.FileKeyGenerator(),
-								   false, true);
+								   false, true, null);
 		}
 		catch ( IndexExistsException iee)
 		{
@@ -77,7 +77,7 @@ public class CxxIndexObjectDB implements DBDriver {
 			m_session.defineIndex( UnitEntry.ENTRY_INDEX_NAME,
 								   UnitEntry.class,
 								   new UnitEntry.EntryGenerator(),
-								   false, false);
+								   false, false, null);
 		}
 		catch ( IndexExistsException iee)
 		{
@@ -88,7 +88,7 @@ public class CxxIndexObjectDB implements DBDriver {
 			m_session.defineIndex( UnitEntry.UNIT_INDEX_NAME,
 								   UnitEntry.class,
 								   new UnitEntry.UnitGenerator(),
-								   false, false);
+								   false, false, null);
 		}
 		catch ( IndexExistsException iee)
 		{
@@ -99,7 +99,7 @@ public class CxxIndexObjectDB implements DBDriver {
 			m_session.defineIndex(UnitEntry.COMBINED_INDEX_NAME,
 								  UnitEntry.class,
 								  new UnitEntry.CombinedGenerator(),
-								  false, true);
+								  false, true, null);
 		}
 		catch (IndexExistsException iee) {
 			// Don't care if index exists
@@ -109,7 +109,7 @@ public class CxxIndexObjectDB implements DBDriver {
 			m_session.defineIndex(FileInclusion.UNIQUE_KEY,
 								  FileInclusion.class,
 								  new FileInclusion.InclusionKeyGenerator(),
-								  false, true);
+								  false, true, null);
 		}
 		catch (IndexExistsException iee) {
 			// Don't care if index exists
