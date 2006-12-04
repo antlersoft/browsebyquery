@@ -73,6 +73,7 @@ public class IndexAnalyzeDB implements AnalyzerDB
     
     private static Properties LOOKUP_INDEX_PROPS;
     private static Properties TYPEKEY_INDEX_PROPS;
+    private static Properties CLASSNAME_INDEX_PROPS;
     
     static
     {
@@ -80,6 +81,8 @@ public class IndexAnalyzeDB implements AnalyzerDB
     	LOOKUP_INDEX_PROPS.put( DirectoryAllocator.ENTRIES_PER_PAGE, "80");
     	TYPEKEY_INDEX_PROPS=new Properties();
     	TYPEKEY_INDEX_PROPS.put( DirectoryAllocator.ENTRIES_PER_PAGE, "220");
+    	CLASSNAME_INDEX_PROPS=new Properties();
+    	CLASSNAME_INDEX_PROPS.put( DirectoryAllocator.ENTRIES_PER_PAGE, "150");
     }
 
 	public IndexAnalyzeDB()
@@ -105,6 +108,8 @@ public class IndexAnalyzeDB implements AnalyzerDB
         {
             _session.defineIndex( LOOKUP_INDEX, Lookup.class,
                 new TypeKeyGenerator(), false, true, LOOKUP_INDEX_PROPS);
+            _session.defineIndex( DBClass.CLASS_NAME_INDEX, DBClass.class,
+            	new DBClass.NameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
             _session.defineIndex( DBField.FIELD_TYPE_INDEX, DBField.class,
             		new DBField.FieldTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
             _session.defineIndex( DBMethod.RETURN_TYPE_INDEX, DBMethod.class,
@@ -174,6 +179,11 @@ public class IndexAnalyzeDB implements AnalyzerDB
         if ( l==null)
             return null;
         return l.object.getReferenced();
+    }
+    
+    public Object findWithIndex( String index_name, Comparable key) throws Exception
+    {
+    	return _session.findObject( index_name, key);
     }
 
     public Enumeration getAll(String type) throws Exception
@@ -367,7 +377,7 @@ public class IndexAnalyzeDB implements AnalyzerDB
     }
     /**
      * Print the statistics for the indexes in this database
-     * @param args
+     * @param args The first argument should be the database directory
      */
     public static void main( String[] args)
     throws Exception
@@ -379,5 +389,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
     	printStatistics( store, DBMethod.RETURN_TYPE_INDEX);
     	printStatistics( store, DBField.FIELD_TYPE_INDEX);
     	printStatistics( store, DBArgument.ARGUMENT_TYPE_INDEX);
+    	printStatistics( store, DBClass.CLASS_NAME_INDEX);
     }
 }

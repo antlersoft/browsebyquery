@@ -57,8 +57,7 @@ public class DBType implements Persistent, Cloneable {
 		{
 			_class=new ObjectRef(
 					db.getWithKey( "com.antlersoft.analyzer.DBClass",
-							TypeParse.convertFromInternalClassName(
-									typeString.substring( 1, typeString.length()-1))));
+									typeString.substring( 1, typeString.length()-1)));
 		}
 		_builtInType=t;
 		_persistentImpl=new PersistentImpl();

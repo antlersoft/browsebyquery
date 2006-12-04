@@ -273,15 +273,15 @@ class QueryParserBase extends BasicBase
         public Enumeration evaluate( DataSource source)
         {
             Vector tmp=new Vector( 1);
-            AnalyzerDB db=(AnalyzerDB)source;
+            IndexAnalyzeDB db=(IndexAnalyzeDB)source;
             try
             {
-	            Object q=db.findWithKey( "com.antlersoft.analyzer.DBClass", _className);
+	            Object q=db.findWithIndex( DBClass.CLASS_NAME_INDEX, _className);
 	            if ( q!=null)
 	                tmp.addElement( q);
 	            for ( Iterator i=_set.iterator(); i.hasNext() && q==null;)
 	            {
-	                q=db.findWithKey( "com.antlersoft.analyzer.DBClass", ((String)i.next())+"."+_className);
+	                q=db.findWithIndex( DBClass.CLASS_NAME_INDEX, ((String)i.next())+"."+_className);
 	                if ( q!=null)
 	                    tmp.addElement( q);
 	            }
@@ -562,7 +562,7 @@ class QueryParserBase extends BasicBase
 	                    try
 	                    {
 	                    return db.findWithKey( "com.antlersoft.analyzer.DBMethod",
-	                        DBMethod.makeKey( filterc.getName(),
+	                        DBMethod.makeKey( filterc.getInternalName(),
 	                        soughtMethod.getName(),
 	                        soughtMethod.getSignature()));
 	                    }
@@ -606,7 +606,7 @@ class QueryParserBase extends BasicBase
             {
                 DBMethod candidate=(DBMethod)
                     _adb.findWithKey( "com.antlersoft.analyzer.DBMethod",
-                    DBMethod.makeKey( c.getName(),
+                    DBMethod.makeKey( c.getInternalName(),
                     soughtMethod.getName(),
                     soughtMethod.getSignature()));
                 if ( candidate==null || !

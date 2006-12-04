@@ -310,7 +310,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 						DBMethod.this,
 						(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
 						DBMethod.makeKey(
-						ac.getClassName( methodRef.getClassIndex()),
+						ac.getInternalClassName( methodRef.getClassIndex()),
 						methodRef.getSymbolName(),
 						methodRef.getSymbolType()
 						)), codeAttribute.getLineNumber( instruction.getInstructionStart())));
@@ -329,7 +329,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 						DBMethod.this,
 						(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
 						DBField.makeKey(
-						ac.getClassName( methodRef.getClassIndex()),
+						ac.getInternalClassName( methodRef.getClassIndex()),
 						methodRef.getSymbolName()
 						)), codeAttribute.getLineNumber( instruction.getInstructionStart()), opcode.getMnemonic().substring( 0, 3).equals( "put")));
 				}

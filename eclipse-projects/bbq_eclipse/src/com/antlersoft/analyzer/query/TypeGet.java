@@ -3,9 +3,9 @@
  */
 package com.antlersoft.analyzer.query;
 
-import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.DBType;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import com.antlersoft.query.CountPreservingValueExpression;
 import com.antlersoft.query.DataSource;
@@ -24,7 +24,7 @@ public class TypeGet extends CountPreservingValueExpression {
 	public Object transformSingleObject(DataSource source, Object toTransform) {
 		String name=(String)toTransform;
 		String array_references="";
-		AnalyzerDB db=(AnalyzerDB)source;
+		IndexAnalyzeDB db=(IndexAnalyzeDB)source;
 		for ( int array_offset; ( array_offset=name.lastIndexOf("[]"))!= -1;)
 		{
 			name=name.substring( 0, array_offset);
@@ -36,7 +36,7 @@ public class TypeGet extends CountPreservingValueExpression {
 		{
 			if ( base_type==null)
 			{
-				DBClass referenced=(DBClass)db.findWithKey( "com.antlersoft.analyzer.DBClass", name);
+				DBClass referenced=(DBClass)db.findWithIndex( DBClass.CLASS_NAME_INDEX, name);
 				if ( referenced!=null)
 				{
 					found=DBType.getFromClass( db, referenced);

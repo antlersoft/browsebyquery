@@ -33,6 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
 import com.antlersoft.odb.FromRefEnumeration;
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
@@ -42,7 +43,22 @@ import com.antlersoft.classwriter.*;
 
 public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
 {
-    String name;
+    /**
+	 * @author Michael A. MacDonald
+	 *
+	 */
+	static class NameKeyGenerator implements KeyGenerator {
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
+		 */
+		public Comparable generateKey(Object o1) {
+			return ((DBClass)o1).name;
+		}
+
+	}
+
+	String name;
     Vector superClasses;
     private Hashtable methods;
     private Hashtable fields;
@@ -54,13 +70,15 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     boolean deprecated;
     int lineNumber;
     
+    public static String CLASS_NAME_INDEX="CLASS_NAME_INDEX";
+    
     private static final long serialVersionUID = 2812968988095700193L;
 
-		private transient PersistentImpl _persistentImpl;
+	private transient PersistentImpl _persistentImpl;
 
     public DBClass( String key, AnalyzerDB db)
     {
-		name=key;
+		internalName=key;
 		superClasses=new Vector();
 		derivedClasses=new Vector();
 		methods=new Hashtable();
@@ -69,6 +87,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		deprecated=false;
 		_persistentImpl=new PersistentImpl();
 		lineNumber= -1;
+		name=TypeParse.convertFromInternalClassName( internalName);
 		ObjectDB.makePersistent( this);
     }
 
@@ -201,30 +220,29 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		throws Exception
     {
 		DBClass dbc=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass",
-		    ac.getClassName( ac.getCurrentClassIndex()));
+		    ac.getInternalClassName( ac.getCurrentClassIndex()));
 		dbc.clearMethods();
 		dbc.clearSuperClasses();
 		dbc.clearFields();
 		dbc.resolved=true;
         dbc.accessFlags=ac.getFlags();
         dbc.deprecated=ac.isDeprecated();
-        dbc.internalName=ac.getInternalClassName( ac.getCurrentClassIndex());
         dbc.sourceFile=ac.getSourceFile();
 		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{
-		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName( superClassIndex)));
+		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getInternalClassName( superClassIndex)));
 		}
 		Iterator i;
 		for ( i=ac.getInterfaces().iterator(); i.hasNext();)
 		{
-		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getClassName(((Integer)i.next()).intValue())));
+		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getInternalClassName(((Integer)i.next()).intValue())));
 		}
 		for ( i=ac.getFields().iterator(); i.hasNext();)
 		{
             FieldInfo fi=(FieldInfo)i.next();
             DBField new_field=(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-				DBField.makeKey( dbc.name, fi.getName()));
+				DBField.makeKey( dbc.internalName, fi.getName()));
             new_field.accessFlags=fi.getFlags();
             new_field.setDeprecated( fi.isDeprecated());
             new_field.setTypeFromDescriptor( db, fi.getType());
@@ -234,7 +252,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		{
 		    MethodInfo mi=(MethodInfo)i.next();
 		    DBMethod method=(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
-				DBMethod.makeKey( dbc.name,
+				DBMethod.makeKey( dbc.internalName,
 				mi.getName(),
 				mi.getType()
 				));
