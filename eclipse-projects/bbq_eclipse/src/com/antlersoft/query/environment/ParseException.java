@@ -17,17 +17,17 @@
  * <p>
  * ----- - - -- - - --
  */
-package com.antlersoft.analyzer.query;
+package com.antlersoft.query.environment;
 
 public class ParseException extends Exception
 {
-    static String parseMessage( QueryParserBase qp)
+    static String parseMessage( QueryLanguageEnvironment qp)
     {
         StringBuffer retval=new StringBuffer();
 
-        if ( qp.getRuleMessage()!=null)
+        if ( qp.getParser().getRuleMessage()!=null)
         {
-                retval.append( qp.getRuleMessage());
+                retval.append( qp.getParser().getRuleMessage());
                 retval.append( ": ");
         }
 
@@ -44,7 +44,7 @@ public class ParseException extends Exception
         return retval.toString();
     }
 
-    ParseException( QueryParserBase qp)
+    ParseException( QueryLanguageEnvironment qp)
     {
         super( parseMessage( qp));
     }

@@ -30,8 +30,6 @@ public abstract class Parser
 	public static Symbol _end_=Symbol.get( "_end");
 	public static Symbol _error_=Symbol.get( "_error_");
 
-	// allowable not implemented
-	// public Collection allowable();
 	public List getValueStack() { return (List)value_stack.clone(); }
 
 	public String getRuleMessage()
@@ -144,6 +142,20 @@ public abstract class Parser
 	public ParseState[] getParseStates()
 	{
 		return parse_states;
+	}
+	
+	/**
+	 * Return some object that contains the parser;
+	 * the rules call this method to get access to their environment.
+	 * This is better design than the old way of
+	 * sub-classing the parser and casting it, although the default
+	 * implementation, which returns the this pointer,
+	 * allows for such an implementation.
+	 * @return Some object that contains the parser and provides details of the execution environment
+	 */
+	public Object getParserEnvironment()
+	{
+		return this;
 	}
 
     // Protected interface

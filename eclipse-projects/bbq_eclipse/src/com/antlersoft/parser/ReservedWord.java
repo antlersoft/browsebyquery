@@ -19,8 +19,6 @@
  */
 package com.antlersoft.parser;
 
-import java.util.Hashtable;
-
 public class ReservedWord extends Symbol
 {
 	protected ReservedWord( String w)

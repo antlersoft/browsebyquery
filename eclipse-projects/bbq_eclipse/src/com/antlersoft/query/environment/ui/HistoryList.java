@@ -17,7 +17,7 @@
  * <p>
  * ----- - - -- - - --
  */
-package com.antlersoft.analyzer.ui;
+package com.antlersoft.query.environment.ui;
 
 import java.awt.*;
 

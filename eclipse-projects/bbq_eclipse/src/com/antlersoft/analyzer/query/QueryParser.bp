@@ -51,12 +51,10 @@ reserved with
 reserved write
 
 SET_EXPRESSION : set nameSymbol to SET_EXPRESSION "{
-    QueryParser qp=(QueryParser)parser;
     int size=valueStack.size();
     SetExpression se=(SetExpression)valueStack.get( size-1);
     String valueName=(String)valueStack.get( size-3);
-    qp.storedValues.put( valueName, se);
-	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
+    ((QueryLanguageEnvironment)parser.getParserEnvironment()).setStoredValue( valueName, se);
     return se; }" 1 .
 
 SET_EXPRESSION : set nameSymbol to TRANSFORM "{
@@ -64,8 +62,7 @@ SET_EXPRESSION : set nameSymbol to TRANSFORM "{
     int size=valueStack.size();
     Transform se=(Transform)valueStack.get( size-1);
     String valueName=(String)valueStack.get( size-3);
-    qp.storedValues.put( valueName, se);
-	qp.storedValuesSupport.firePropertyChange( \"storedValues\", null, this);
+    ((QueryLanguageEnvironment)parser.getParserEnvironment()).setStoredValue( valueName, se);
 	return new EmptySetExpression();
 	}" 1 .
 	
@@ -76,7 +73,7 @@ SET_EXPRESSION : VALUE_EXPRESSION SET_EXPRESSION "
 			(SetExpression)valueStack.get( size-1));
 	}" .
 
-SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
+SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).getStoredValue( (String)valueStack.get( valueStack.size()-1)); }" .
 
 SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 	int size=valueStack.size();
@@ -85,7 +82,7 @@ SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 	}" .
 
 SET_EXPRESSION : Class literalString "{
-	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((QueryParserBase)parser).importedPackages);
+	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages);
 	}" .
 
 SET_EXPRESSION : all classes "{
@@ -96,15 +93,15 @@ SET_EXPRESSION : all StringConstant "{
     return new StringsGet();
     }" .
 
-SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((QueryParserBase)parser).importedPackages); }" .
+SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages); }" .
 
 ImportExpression : Import .
 ImportExpression : ImportExpression set "{
-    ((QueryParserBase)parser).importedPackages.clear();
+    ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages.clear();
     return \"\";
 }" .
 ImportExpression : ImportExpression literalString "{
-    ((QueryParserBase)parser).importedPackages.add( valueStack.get( valueStack.size()-1));
+    ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages.add( valueStack.get( valueStack.size()-1));
     return \"\";
 }" .
 
@@ -145,7 +142,7 @@ TRANSFORM : Reference from "{ return new ReferenceFrom(); }" .
 TRANSFORM : StringConstant Reference from "{ return new StringReferenceFrom(); }" .
 TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
 TRANSFORM : calls to "{ return new CallsTo(); }" .
-TRANSFORM : TransformSymbol "{ return ((QueryParser)parser).storedValues.get( valueStack.get( valueStack.size()-1)); }" .
+TRANSFORM : TransformSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).getStoredValue( (String)valueStack.get( valueStack.size()-1)); }" .
 TRANSFORM : fields with "{
 	return new TransformImpl( DBField.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)

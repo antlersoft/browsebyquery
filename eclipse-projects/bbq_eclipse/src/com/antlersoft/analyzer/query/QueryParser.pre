@@ -22,6 +22,9 @@ import com.antlersoft.parser.Token;
 
 import com.antlersoft.query.*;
 
+import com.antlersoft.query.environment.QueryLanguageEnvironment;
+import com.antlersoft.query.environment.ReservedWord;
+
 public class QueryParser extends QueryParserBase
 {
     // Public interface
@@ -30,21 +33,15 @@ public class QueryParser extends QueryParserBase
 		super( parseStates);
 	}
 	
-    public QueryParser( String toParse)
-    {
-        this();
-        setLine( toParse);
-    }
-    
- 	/**
+	/**
  	 * Change a nameSymbol token to an appropriate type for the named object
  	 */
-    protected void massageToken( Token token)
+    public void massageToken( Token token)
     {
     	if ( token.symbol==nameSymbol && ! nameSymbolExpected())
     	{
     		String name=token.value;
-    		Object o=storedValues.get( name);
+    		Object o=((QueryLanguageEnvironment)getParserEnvironment()).getStoredValue( name);
     		if ( o instanceof Transform)
     		{
     			token.symbol=TransformSymbol;
@@ -56,5 +53,14 @@ public class QueryParser extends QueryParserBase
     	}
     }
 
+    private final boolean nameSymbolExpected()
+    {
+    	for ( Enumeration e=getExpectedSymbols(); e.hasMoreElements();)
+    	{
+    		if ( e.nextElement()==nameSymbol)
+    			return true;
+    	}
+    	return false;
+    }
 
 // Include output here

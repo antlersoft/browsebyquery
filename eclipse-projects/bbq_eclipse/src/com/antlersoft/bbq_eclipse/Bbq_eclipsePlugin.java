@@ -12,7 +12,7 @@ import org.osgi.framework.BundleContext;
 
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 
-import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 import com.antlersoft.bbq_eclipse.preferences.PreferenceConstants;
 
@@ -28,7 +28,7 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	private static Bbq_eclipsePlugin plugin;
 	
 	private IndexAnalyzeDB m_db;
-	private QueryParser m_qp;
+	private AnalyzerQuery m_qp;
 	boolean _pathChanged;
 	
 	/**
@@ -135,11 +135,11 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	/**
 	 * Return the query parser
 	 */
-	public synchronized QueryParser getQueryParser()
+	public synchronized AnalyzerQuery getQueryParser()
 	{
 		if ( m_qp==null)
 		{
-			m_qp=new QueryParser();
+			m_qp=new AnalyzerQuery();
 		}
 		return m_qp;
 	}

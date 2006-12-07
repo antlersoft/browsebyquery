@@ -17,20 +17,20 @@
  * <p>
  * ----- - - -- - - --
  */
-package com.antlersoft.analyzer.ui;
+package com.antlersoft.query.environment.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.JList;
 
-import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.query.environment.QueryLanguageEnvironment;
 
 public class StoredValuesList extends JList implements PropertyChangeListener
 {
-	private QueryParser m_qp;
+	private QueryLanguageEnvironment m_qp;
 
-	public StoredValuesList( QueryParser qp)
+	public StoredValuesList( QueryLanguageEnvironment qp)
 	{
 		super();
 		m_qp=qp;

@@ -49,17 +49,17 @@ symbol VALUE_EXPRESSION
 symbol VALUE_LIST
 
 COMPLETE_QUERY : SET_EXPRESSION
-"{ ((BasicBase)parser).setLastParsedExpression( (SetExpression)valueStack.get( valueStack.size()-1)); return \"\"; }" .
+"{ ((ParserEnvironment)parser.getParserEnvironment()).setLastParsedExpression( (SetExpression)valueStack.get( valueStack.size()-1)); return \"\"; }" .
 
 COMPLETE_QUERY : DELIMITED_QUERY .
 
 DELIMITED_QUERY : SET_EXPRESSION expression_separator
-"{ ((BasicBase)parser).setLastParsedExpression( (SetExpression)valueStack.get( valueStack.size()-2)); return \"\"; }" .
+"{ ((ParserEnvironment)parser.getParserEnvironment()).setLastParsedExpression( (SetExpression)valueStack.get( valueStack.size()-2)); return \"\"; }" .
 
 DELIMITED_QUERY : DELIMITED_QUERY expression_separator .
 
 DELIMITED_QUERY : DELIMITED_QUERY SET_EXPRESSION
-"{ ((BasicBase)parser).setLastParsedExpression( (SetExpression)valueStack.get( valueStack.size()-1)); return \"\"; }" .
+"{ ((ParserEnvironment)parser.getParserEnvironment()).setLastParsedExpression( (SetExpression)valueStack.get( valueStack.size()-1)); return \"\"; }" .
 
 SET_EXPRESSION : SET_EXPRESSION SET_OPERATOR SET_EXPRESSION
 "{ return new SetOperatorExpression( SetOperator.getType(
@@ -74,7 +74,7 @@ SET_EXPRESSION : execute SET_EXPRESSION "{
 	return new ExecuteExpression( (SetExpression)valueStack.get(
  		valueStack.size()-1));
    }" .
-SET_EXPRESSION : previous "{ return ((BasicBase)parser).getLastParsedExpression(); }" .
+SET_EXPRESSION : previous "{ return ((ParserEnvironment)parser.getParserEnvironment()).getLastParsedExpression(); }" .
 
 
 # Value Expression Rules

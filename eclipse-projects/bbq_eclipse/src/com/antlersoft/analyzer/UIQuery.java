@@ -33,15 +33,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import com.antlersoft.analyzer.query.ParseException;
-import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.analyzer.query.AnalyzerQuery;
 
-import com.antlersoft.analyzer.ui.HistoryList;
-import com.antlersoft.analyzer.ui.StoredValuesList;
 
 import com.antlersoft.odb.ObjectDBException;
 
 import com.antlersoft.query.SetExpression;
+import com.antlersoft.query.environment.ParseException;
+import com.antlersoft.query.environment.ui.HistoryList;
+import com.antlersoft.query.environment.ui.StoredValuesList;
 
 import com.antlersoft.util.ExtensionFileFilter;
 
@@ -50,7 +50,7 @@ public class UIQuery
     JFileChooser chooser;
     AnalyzerDB analyzerDB;
     String analyzerDBOpenString;
-    QueryParser qp;
+    AnalyzerQuery qp;
     JTextArea queryArea;
     JTextArea outputArea;
     HistoryList historyList;
@@ -59,7 +59,7 @@ public class UIQuery
     UIQuery()
     {
         analyzerDB=new IndexAnalyzeDB();
-        qp=new QueryParser();
+        qp=new AnalyzerQuery();
         chooser=new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled( true);

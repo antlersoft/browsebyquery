@@ -15,5 +15,5 @@ public class Basic extends BasicBase
 {
 public Basic()
 {
-super( parseStates);
+super( parseStates, new ParserEnvironment());
 }

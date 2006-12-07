@@ -22,23 +22,38 @@ package com.antlersoft.query;
 import com.antlersoft.parser.*;
 
 public class BasicBase extends Parser {
-	static protected final Symbol literalString=Symbol.get( "literalString");
-	static protected final Symbol number=Symbol.get( "number");
+	static public final Symbol literalString=Symbol.get( "literalString");
+	static public final Symbol number=Symbol.get( "number");
+    static public final Symbol nameSymbol=Symbol.get( "_nameSymbol");
 
-	private SetExpression m_last_expression;
-
+	private ParserEnvironment m_environment;
+	
 	public BasicBase( ParseState[] states)
 	{
+		super(states);
+	}
+	
+	public BasicBase( ParseState[] states, ParserEnvironment environment)
+	{
 		super( states);
+		m_environment=environment;
+	}
+	
+	public Object getParserEnvironment()
+	{
+		return m_environment;
+	}
+	
+	public void setParserEnvironment( ParserEnvironment env)
+	{
+		m_environment=env;
 	}
 
-	public SetExpression getLastParsedExpression()
+	/**
+	 * Anything a sub-class might want to do with a token
+	 */
+	public void massageToken( Token token)
 	{
-		return m_last_expression;
-	}
-
-	public void setLastParsedExpression( SetExpression expr)
-	{
-		m_last_expression=expr;
+	
 	}
 }

@@ -25,10 +25,10 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.Enumeration;
 
-import com.antlersoft.analyzer.query.QueryParser;
-import com.antlersoft.analyzer.query.ParseException;
+import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 import com.antlersoft.query.SetExpression;
+import com.antlersoft.query.environment.ParseException;
 
 public class TestQuery
 {
@@ -39,7 +39,7 @@ public class TestQuery
 	IndexAnalyzeDB sadb=new IndexAnalyzeDB();
 	BufferedReader in=new BufferedReader( new InputStreamReader( System.in));
 	sadb.openDB( argv[0]);
-	QueryParser qp=new QueryParser();
+	AnalyzerQuery qp=new AnalyzerQuery();
 	try
 	{
 	    String line="1";

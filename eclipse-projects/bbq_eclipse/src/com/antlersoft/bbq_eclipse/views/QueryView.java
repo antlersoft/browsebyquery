@@ -19,13 +19,13 @@ import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
 
-import com.antlersoft.analyzer.query.ParseException;
-import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 import com.antlersoft.bbq_eclipse.searchresult.Query;
 
 import com.antlersoft.query.SetExpression;
+import com.antlersoft.query.environment.ParseException;
 
 /**
  *
@@ -219,7 +219,7 @@ public class QueryView extends ViewPart {
                 		_historyList.remove( i);
                 		break;
                 	}
-                QueryParser qp=Bbq_eclipsePlugin.getDefault().getQueryParser();
+                AnalyzerQuery qp=Bbq_eclipsePlugin.getDefault().getQueryParser();
                 qp.setLine( line);
                 try
                 {

@@ -19,230 +19,24 @@
  */
 package com.antlersoft.analyzer.query;
 
-import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeSet;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import com.antlersoft.analyzer.*;
-import com.antlersoft.parser.*;
-import com.antlersoft.query.*;
 
+import com.antlersoft.parser.ParseState;
+
+import com.antlersoft.query.*;
 
 class QueryParserBase extends BasicBase
 {
     public QueryParserBase( ParseState[] parseStates)
     {
         super( parseStates);
-        tokens=null;
-        storedValues=new HashMap();
-        storedValuesSupport=new PropertyChangeSupport( this);
-        importedPackages=new TreeSet();
     }
 
-    public SetExpression getExpression()
-        throws ParseException
-    {
-        currentIndex=0;
-        boolean errorOut=false;
-        for (; ! errorOut && currentIndex<tokens.length; currentIndex++)
-        {
-        	Token token=tokens[currentIndex];
-        	massageToken( token);
-            errorOut=parse( token.symbol, token.value);
-        }
-        if ( errorOut)
-        {
-            ParseException pe=new ParseException( this);
-            reset();
-            throw pe;
-        }
-        return getLastParsedExpression();
-    }
-
-    public void setLine( String toParse)
-    {
-        tokens=tokenize( toParse);
-    }
-
-    // Bean type interface for accessing stored value names
-    public String[] getStoredValues()
-    {
-        return (String[])storedValues.keySet().toArray( new String[0]);
-    }
-
-    public void addStoredValuesListener( PropertyChangeListener l)
-    {
-        storedValuesSupport.addPropertyChangeListener( "storedValues", l);
-    }
-
-    public void removeStoredValuesListener( PropertyChangeListener l)
-    {
-        storedValuesSupport.removePropertyChangeListener( l);
-    }
-
-    // Protected interface
-    
-    /**
-     * Anything a sub-class might want to do with a token
-     */
-    protected void massageToken( Token token)
-    {
-    
-    }
-    
-    protected final boolean nameSymbolExpected()
-    {
-    	for ( Enumeration e=getExpectedSymbols(); e.hasMoreElements();)
-    	{
-    		if ( e.nextElement()==nameSymbol)
-    			return true;
-    	}
-    	return false;
-    }
-
-    // Package interface
-    Token[] tokens;
-    int currentIndex;
-    HashMap storedValues; // String, SetExpression
-    PropertyChangeSupport storedValuesSupport;
-    TreeSet importedPackages;
-
-    static Symbol nameSymbol=Symbol.get( "_nameSymbol");
-
-    static class LiteralToken extends Token
-    {
-        LiteralToken( String val)
-        {
-            super( literalString, val);
-        }
-
-        public String toString()
-        {
-            return "\""+value+"\"";
-        }
-    }
-    
-    private static void addCurrentString( StringBuffer currentString, Vector tokens)
-    {
-        if ( currentString.length()>0)
-        {
-            String cs=currentString.toString();
-            currentString.setLength(0);
-            ReservedWord rw=(ReservedWord)ReservedWord.wordList.get( cs);
-            if ( rw==null)
-            {
-                tokens.addElement( new Token( nameSymbol, cs));
-            }
-            else
-            {
-                tokens.addElement( new Token( rw, cs));
-            }
-        }  	
-    }
-    
-    static Token[] tokenize( String toTokenize)
-    {
-        char[] chars=toTokenize.toCharArray();
-        Vector tokens=new Vector();
-        StringBuffer currentString=new StringBuffer();
-        int i=0;
-        boolean inQuoted=false;
-        for ( ; i<=chars.length; i++)
-        {
-            char c;
-            if ( i==chars.length)
-            {
-                if ( inQuoted)
-                    c='"';
-                else
-                    c='\n';
-            }
-            else
-            {
-                c=chars[i];
-            }
-            if ( inQuoted)
-            {
-                if ( c=='"')
-                {
-                    tokens.addElement( new LiteralToken( currentString.toString()));
-                    currentString.setLength(0);
-                    inQuoted=false;
-                }
-                else
-                    currentString.append( c);
-            }
-            else
-            {
-                switch ( c)
-                {
-                // Whitespace cases
-                case ' ' :
-                case '\r' :
-                case '\n' :
-                case '\t' :
-                	addCurrentString( currentString, tokens);
-                	break;
-                	
-                // Initial quote
-                case '"' :
-                	addCurrentString( currentString, tokens);
-                    if ( c=='"')
-                    {
-                        inQuoted=true;
-                    }
-                    break;
-                    
-                // Non-quote Punctuation-- only supports single char punctuation tokens
-                case ',' :
-                case '(' :
-                case ')' :
-                	addCurrentString( currentString, tokens);
-                	currentString.append( c);
-                	addCurrentString( currentString, tokens);
-                	break;
-
-                default :
-	                currentString.append( c);
-                }
-            }
-        }
-        tokens.addElement( new Token( Parser._end_, ""));
-
-        Token[] retval=new Token[tokens.size()];
-        tokens.copyInto( retval);
-        return retval;
-    }
-
-    static class ReservedWord extends Symbol
-    {
-        static Hashtable wordList=new Hashtable();
-        private ReservedWord( String w)
-            throws DuplicateSymbolException
-        {
-            super( w);
-            wordList.put( w, this);
-        }
-
-        static ReservedWord getReserved( String w)
-        {
-            ReservedWord result;
-            try
-            {
-                result=new ReservedWord( w);
-            }
-            catch ( DuplicateSymbolException dse)
-            {
-                result=(ReservedWord)dse.duplicate;
-            }
-            return result;
-        }
-    }
 
     /*
      ClassSet : Class "x"
