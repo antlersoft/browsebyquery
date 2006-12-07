@@ -140,7 +140,7 @@ public class ProjectBBQ implements NodeViewer
         try
         {
             SetExpression se=analyzer.qp.getExpression();
-            for ( Enumeration i=se.execute( analyzer.db);
+            for ( Enumeration i=se.evaluate( analyzer.db);
                   i.hasMoreElements();)
             {
                 temp_list.add( i.nextElement());
@@ -269,7 +269,7 @@ public class ProjectBBQ implements NodeViewer
                         analyzer.qp.setLine( line);
                         SetExpression se=analyzer.qp.getExpression();
                         historyList.addQuery( line);
-                        outputArea.setResults( se.execute( analyzer.db));
+                        outputArea.setResults( se.evaluate( analyzer.db));
                     }
                     catch ( ParseException pe)
                     {
