@@ -42,7 +42,7 @@ import com.borland.primetime.vfs.Url;
 
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
-import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.analyzer.query.AnalyzeQuery;
 
 import com.antlersoft.classwriter.ClassWriter;
 
@@ -52,7 +52,7 @@ class ProjectAnalyzer
 {
     JBProject project;
     IndexAnalyzeDB db;
-    QueryParser qp;
+    AnalyzeQuery qp;
     private String goodPath;
 
     ProjectAnalyzer( BBQNode node)
@@ -84,7 +84,7 @@ class ProjectAnalyzer
             else
                 throw odb;
         }
-        qp=new QueryParser();
+        qp=new AnalyzeQuery();
         goodPath=canonicalPath;
     }
 

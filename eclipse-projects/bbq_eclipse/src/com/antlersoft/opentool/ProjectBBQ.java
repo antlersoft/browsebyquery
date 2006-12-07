@@ -61,7 +61,6 @@ import java.awt.event.*;
 import com.antlersoft.analyzer.SourceObject;
 
 import com.antlersoft.analyzer.query.ParseException;
-import com.antlersoft.analyzer.query.QueryParser;
 import com.antlersoft.analyzer.query.SetExpression;
 
 import com.antlersoft.analyzer.ui.HistoryList;
