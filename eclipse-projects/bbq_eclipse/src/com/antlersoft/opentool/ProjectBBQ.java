@@ -60,11 +60,12 @@ import java.awt.event.*;
 
 import com.antlersoft.analyzer.SourceObject;
 
-import com.antlersoft.analyzer.query.ParseException;
-import com.antlersoft.analyzer.query.SetExpression;
+import com.antlersoft.query.SetExpression;
 
-import com.antlersoft.analyzer.ui.HistoryList;
-import com.antlersoft.analyzer.ui.StoredValuesList;
+import com.antlersoft.query.environment.ParseException;
+
+import com.antlersoft.query.environment.ui.HistoryList;
+import com.antlersoft.query.environment.ui.StoredValuesList;
 
 public class ProjectBBQ implements NodeViewer
 {
