@@ -79,6 +79,7 @@ public class RecursiveTransform extends Transform {
 		RecursiveEnumeration( DataSource source, Enumeration initial)
 		{
 			m_source=source;
+			m_enum_stack=new ArrayList();
 			if ( initial.hasMoreElements())
 				m_enum_stack.add( initial);
 		}

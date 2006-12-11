@@ -29,6 +29,7 @@ reserved is
 reserved Interface "interface"
 reserved methods
 reserved Package "package" 4 right
+reserved packages
 reserved polymorphic
 reserved Protected "protected" 4 right
 reserved Private "private" 4 right
@@ -84,6 +85,10 @@ SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 SET_EXPRESSION : Class literalString "{
 	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages);
 	}" .
+	
+SET_EXPRESSION : Package literalString "{
+	return new PackageGet( (String)valueStack.get( valueStack.size()-1));
+	}" 10 .
 
 SET_EXPRESSION : all classes "{
 	return new ClassesGet();
@@ -92,6 +97,10 @@ SET_EXPRESSION : all classes "{
 SET_EXPRESSION : all StringConstant "{
     return new StringsGet();
     }" .
+    
+SET_EXPRESSION : all packages "{
+	return new PackagesGet();
+	}" .
 
 SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages); }" .
 
@@ -165,6 +174,34 @@ TRANSFORM : arguments with "{
 		}
 	};}" .
 	
+TRANSFORM : packages in "{
+	return new TransformImpl( DBPackage.class, DBPackage.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBPackage)to_transform).getSubPackages();
+		}
+	};}" .
+	
+TRANSFORM : classes in "{
+	return new TransformImpl( DBClass.class, null) {
+		public void lateBindApplies( Class new_applies)
+		throws BindException
+		{
+			if ( DBClass.class.isAssignableFrom( new_applies)
+				|| DBPackage.class.isAssignableFrom( new_applies))
+				super.lateBindApplies( new_applies);
+			else
+				throw new BindException( \"Can only bind DBClass or DBPackage\");
+		}
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			if ( to_transform instanceof DBClass)
+				return ((DBClass)to_transform).getInnerClasses();
+			return ((DBPackage)to_transform).getContainedClasses();
+		}
+	};
+	}" .
+	
 
 FILTER : write "{ return new WriteReferences(); }" .
 
@@ -228,7 +265,14 @@ VALUE_EXPRESSION : methods of "{
 		}
 	};
 	}" .
-
+VALUE_EXPRESSION : packages of "{
+	return new CountPreservingValueExpression( DBPackage.class, DBClass.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBClass)to_transform).getPackage();
+		}
+	};		
+	}" .
 Reference : reference .
 Reference : references .
 

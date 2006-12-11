@@ -212,6 +212,7 @@ t.printStackTrace();
                 }
                 System.exit(0);      }        });
         appFrame.pack();
+        appFrame.setLocation( 10, 10);
         appFrame.setVisible(true);
     }
 

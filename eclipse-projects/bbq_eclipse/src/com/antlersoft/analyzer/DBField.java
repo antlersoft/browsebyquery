@@ -19,10 +19,8 @@
  */
 package com.antlersoft.analyzer;
 
-import java.io.Serializable;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.util.Hashtable;
 import java.util.Enumeration;
 
 import com.antlersoft.odb.KeyGenerator;

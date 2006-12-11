@@ -37,17 +37,37 @@ class QueryParserBase extends BasicBase
         super( parseStates);
     }
 
-
-    /*
-     ClassSet : Class "x"
-              | All Classes
-              | Base Classes of ClassSet
-              | Recursive Base Classes of ClassSet
-              | Derived From ClassSet
-              | Recursive Derived From ClassSet
-              | Class of MethodSet
-              | ClassSet matching "x"
-     */
+    static class PackageGet extends SetExpression
+    {
+    	private String _packageName;
+    	
+    	PackageGet( String packageName)
+    	{
+    		_packageName=packageName;
+    	}
+    	
+    	public Class getResultClass()
+    	{
+    		return DBPackage.class;
+    	}
+    	
+    	public Enumeration evaluate( DataSource source)
+    	{
+    		Vector tmp=new Vector(1);
+    		try
+    		{
+	    		Object pack=((IndexAnalyzeDB)source).findWithKey( "com.antlersoft.analyzer.DBPackage", _packageName);
+	    		if ( pack!=null)
+	    			tmp.add( pack);
+    		}
+    		catch (Exception e)
+    		{
+    		
+    		}
+    		return tmp.elements();
+    	}
+    }
+    
     static class ClassGet extends SetExpression
     {
         private String _className;
@@ -108,7 +128,27 @@ class QueryParserBase extends BasicBase
         }
     }
 
-    static abstract class ClassTransform extends UniqueTransformImpl
+    static class PackagesGet extends SetExpression
+    {
+    	public Class getResultClass()
+    	{
+    		return DBPackage.class;
+    	}
+    	
+        public Enumeration evaluate( DataSource db)
+        {
+        	try
+        	{
+        		return ((AnalyzerDB)db).getAll( "com.antlersoft.analyzer.DBPackage");
+        	}
+        	catch ( Exception e)
+        	{
+        		throw new RuntimeException( e);
+        	}
+        }
+    }
+
+static abstract class ClassTransform extends UniqueTransformImpl
     {
         ClassTransform( )
         {
@@ -193,15 +233,17 @@ class QueryParserBase extends BasicBase
                 return ((DBMethod)toTransform).getDBClass();
             if ( appliesClass()==DBField.class)
                 return ((DBField)toTransform).getDBClass();
+            if ( appliesClass()==DBClass.class)
+            	return ((DBClass)toTransform).getContainingClass();
             throw new RuntimeException( "Class of incorrectly bound");
         }
 
         public void lateBindApplies( Class c)
             throws BindException
         {
-            if ( c!=DBMethod.class && c!=DBField.class)
+            if ( c!=DBMethod.class && c!=DBField.class && c!=DBClass.class)
             {
-                throw new BindException( "Operator only applies to methods and fields");
+                throw new BindException( "Operator only applies to methods, fields and classes");
             }
             super.lateBindApplies( c);
         }

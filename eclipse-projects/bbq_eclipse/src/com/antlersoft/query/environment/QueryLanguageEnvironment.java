@@ -26,6 +26,8 @@ public class QueryLanguageEnvironment extends ParserEnvironment {
 	{
 		m_parser=parser;
 		parser.setParserEnvironment( this);
+		storedValues=new HashMap();
+		storedValuesSupport=new PropertyChangeSupport(this);
 	}
 	
     public SetExpression getExpression()
@@ -86,7 +88,6 @@ public class QueryLanguageEnvironment extends ParserEnvironment {
 	int currentIndex;
 	HashMap storedValues; // String, SetExpression
 	PropertyChangeSupport storedValuesSupport;
-	TreeSet importedPackages;
 	
 	Parser getParser()
 	{

@@ -296,6 +296,13 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 			stringReferences.removeAllElements();
 		}
 		lineNumber=codeAttribute.getLineNumber( 0);
+		// Class linenumber = minimum linenumber of any method in the class
+		if ( lineNumber>0)
+		{
+			DBClass c=getDBClass();
+			if ( c.lineNumber== -1 || c.lineNumber>lineNumber)
+				c.lineNumber=lineNumber;
+		}
 		for ( Iterator i=codeAttribute.getInstructions().iterator();
 			i.hasNext();)
 		{

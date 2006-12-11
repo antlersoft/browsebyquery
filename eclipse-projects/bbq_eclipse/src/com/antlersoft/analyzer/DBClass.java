@@ -21,7 +21,6 @@ package com.antlersoft.analyzer;
 
 import java.util.Hashtable;
 import java.util.Vector;
-import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedInputStream;
@@ -32,6 +31,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
+import com.antlersoft.classwriter.*;
+
 import com.antlersoft.odb.FromRefEnumeration;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
@@ -39,11 +40,20 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
-import com.antlersoft.classwriter.*;
+import com.antlersoft.query.EmptyEnum;
 
+/**
+ * @author Michael A. MacDonald
+ *
+ */
 public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
 {
-    /**
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7885836463810814465L;
+
+	/**
 	 * @author Michael A. MacDonald
 	 *
 	 */
@@ -69,18 +79,22 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     int accessFlags;
     boolean deprecated;
     int lineNumber;
+    ObjectRef containingClass;
+    Vector containedClasses;
+    ObjectRef myPackage;
     
     public static String CLASS_NAME_INDEX="CLASS_NAME_INDEX";
     
-    private static final long serialVersionUID = 2812968988095700193L;
-
 	private transient PersistentImpl _persistentImpl;
 
     public DBClass( String key, AnalyzerDB db)
+    throws Exception
     {
 		internalName=key;
 		superClasses=new Vector();
 		derivedClasses=new Vector();
+		containedClasses=null;
+		containingClass=null;
 		methods=new Hashtable();
 		fields=new Hashtable();
 		resolved=false;
@@ -89,6 +103,21 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		lineNumber= -1;
 		name=TypeParse.convertFromInternalClassName( internalName);
 		ObjectDB.makePersistent( this);
+		if ( internalName.charAt(0)!='[')
+		{
+			DBPackage my_package=(DBPackage)db.getWithKey( "com.antlersoft.analyzer.DBPackage",
+					TypeParse.packageFromInternalClassName( internalName));
+			my_package.setContainedClass( this);
+			myPackage=new ObjectRef( my_package);
+			String containing_name=containingClassName( internalName);
+			if ( containing_name!=null)
+			{
+				DBClass containing=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", containing_name);
+				containingClass=new ObjectRef( containing);
+				containing.setContainedClass( this);
+				ObjectDB.makeDirty( this);
+			}
+		}
     }
 
 	public PersistentImpl _getPersistentImpl()
@@ -201,6 +230,49 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     {
 		return new FromRefEnumeration( derivedClasses.elements());
     }
+    
+    public boolean isInnerClass()
+    {
+    	return containingClass!=null;
+    }
+    
+    public DBClass getContainingClass()
+    {
+    	DBClass result=null;
+    	if ( containingClass!=null)
+    		result=(DBClass)containingClass.getReferenced();
+    	
+    	return result;
+    }
+    
+    public Enumeration getInnerClasses()
+    {
+    	Enumeration result=EmptyEnum.empty;
+    	if ( containedClasses!=null)
+    		result=new FromRefEnumeration( containedClasses.elements());
+    	
+    	return result;
+    }
+    
+    public DBPackage getPackage()
+    {
+    	if ( myPackage==null)
+    		return null;
+    	return (DBPackage)myPackage.getReferenced();
+    }
+    
+    private synchronized void setContainedClass( DBClass toAdd)
+    {
+    	if ( containedClasses==null)
+    	{
+    		containedClasses=new Vector();
+    	}
+    	if ( ! containedClasses.contains( toAdd))
+    	{
+    		containedClasses.add( new ObjectRef( toAdd));
+    		ObjectDB.makeDirty( this);
+    	}
+    }
 
     private void addSuperClass( DBClass toAdd)
     {
@@ -228,6 +300,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
         dbc.accessFlags=ac.getFlags();
         dbc.deprecated=ac.isDeprecated();
         dbc.sourceFile=ac.getSourceFile();
+        dbc.lineNumber= -1;
 		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{
@@ -336,5 +409,22 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 				System.out.println( "In "+file.getCanonicalPath());
 		    }
 		}
+    }
+    
+    /**
+     * Returns the internal name of the class that contains a given internal name if any.
+     * @param internalName Internal name of a class
+     * @return internal name of the class that contains this class, or null if this class
+     * is not contained within another class
+     */
+    private static String containingClassName( String internalName)
+    {
+    	String result=null;
+    	int last_dollar=internalName.lastIndexOf( '$');
+    	if ( last_dollar!= -1)
+    	{
+    		result=internalName.substring( 0, last_dollar);
+    	}
+    	return result;
     }
 }
