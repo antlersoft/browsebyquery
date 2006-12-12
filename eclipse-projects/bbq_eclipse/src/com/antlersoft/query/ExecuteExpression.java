@@ -33,21 +33,25 @@ public class ExecuteExpression extends SetExpression
 {
 	private Vector storedResult;
     private SetExpression setExpression;
+    private Class resultClass;
+    private Comparator ordering;
 
     public ExecuteExpression( SetExpression toExecute)
     {
     	storedResult=null;
         setExpression=toExecute;
+        resultClass=toExecute.getResultClass();
+        ordering=toExecute.getOrdering();
     }
     
     public Class getResultClass()
     {
-    	return setExpression.getResultClass();
+    	return resultClass;
     }
     
     public Comparator getOrdering()
     {
-    	return setExpression.getOrdering();
+    	return ordering;
     }
 
     public Enumeration evaluate(DataSource adb)
