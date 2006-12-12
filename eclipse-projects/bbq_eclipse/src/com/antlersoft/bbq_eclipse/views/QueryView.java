@@ -4,6 +4,11 @@ package com.antlersoft.bbq_eclipse.views;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseAdapter;
@@ -15,6 +20,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
@@ -23,6 +29,7 @@ import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 import com.antlersoft.bbq_eclipse.searchresult.Query;
+import com.antlersoft.bbq_eclipse.builder.BBQBuilder;
 
 import com.antlersoft.query.SetExpression;
 import com.antlersoft.query.environment.ParseException;
@@ -40,6 +47,7 @@ public class QueryView extends ViewPart {
 	private Action _queryAction;
 	private Action _selectAction;
 	private Action _deleteAction;
+	private Action _rebuildAction;
 	
 	private String[] _savedState;
 	
@@ -156,9 +164,11 @@ public class QueryView extends ViewPart {
 
 	private void fillLocalPullDown(IMenuManager manager) {
 		manager.add(_queryAction);
-		manager.add(new Separator());
+		manager.add( new Separator());
 		manager.add(_selectAction);
 		manager.add(_deleteAction);
+		manager.add(new Separator());
+		manager.add(_rebuildAction);
 	}
 
 	private void fillContextMenu(IMenuManager manager) {
@@ -170,8 +180,6 @@ public class QueryView extends ViewPart {
 	
 	private void fillLocalToolBar(IToolBarManager manager) {
 		manager.add(_queryAction);
-		manager.add(_selectAction);
-		manager.add(_deleteAction);
 	}
 
 	private void makeActions() {
@@ -234,6 +242,50 @@ public class QueryView extends ViewPart {
         	}
         };
         _queryAction.setText( "Query");
+        
+        _rebuildAction=new Action( "Rebuild") {
+        	public void run()
+        	{
+        		try
+        		{
+	        		PlatformUI.getWorkbench().getProgressService().
+	        		   busyCursorWhile(new IRunnableWithProgress(){
+	        		      public void run(IProgressMonitor monitor) {
+	        		    	  try
+	        		    	  {
+	        		    		  BBQBuilder.buildWorkspace( monitor);
+	        		    	  }
+							catch ( CoreException ce)
+							{
+								handleError( ce);
+							}
+	        		      }
+	        		   });
+        		}
+        		catch ( InvocationTargetException ite)
+        		{
+        			handleError( ite.getCause()==null ? ite : ite.getCause());
+        		}
+        		catch ( InterruptedException ie)
+        		{
+        			handleError( ie);
+        		}
+        	}
+        	
+        	public void handleError( Throwable e)
+        	{
+        		try
+        		{
+        			// Will this mean it gets logged twice?
+        			Bbq_eclipsePlugin.getDefault().logError( "Error Rebuilding", e);
+        		}
+        		catch ( CoreException ce)
+        		{
+        			// drop logged exception
+        		}
+        		displayException( "Error Rebuilding", e);
+        	}
+        };
 	}
 
     void displayException( String caption, Throwable t)

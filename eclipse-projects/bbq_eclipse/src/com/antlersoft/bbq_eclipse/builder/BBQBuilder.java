@@ -1,17 +1,22 @@
 package com.antlersoft.bbq_eclipse.builder;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
-
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
@@ -107,5 +112,39 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 			IProgressMonitor monitor) throws CoreException {
 		// the visitor does the work.
 		delta.accept(new BBQDeltaVisitor());
+	}
+	
+	public static void buildSingleProject( IProject project, IProgressMonitor monitor)
+		throws CoreException
+	{
+		project.build( FULL_BUILD, BUILDER_ID, null, monitor);
+	}
+	
+	public static void buildWorkspace( IProgressMonitor monitor)
+		throws CoreException
+	{
+		IWorkspaceRoot root=ResourcesPlugin.getWorkspace().getRoot();
+		
+		IProject[] projects=root.getProjects();
+
+		ArrayList bbq_projects=new ArrayList( projects.length);
+		for ( int i=0; i<projects.length; ++i)
+		{
+			IProjectDescription description = projects[i].getDescription();
+			String[] natures = description.getNatureIds();
+
+			for (int j = 0; j < natures.length; ++j) {
+				if (BBQNature.NATURE_ID.equals(natures[j])) {
+					bbq_projects.add( projects[i]);
+				}
+			}
+		}
+		monitor.beginTask( "Rebuild BBQ database", 10*bbq_projects.size());
+		for ( Iterator i=bbq_projects.iterator(); i.hasNext() && ! monitor.isCanceled();)
+		{
+			SubProgressMonitor spm=new SubProgressMonitor( monitor, 10);
+			buildSingleProject( (IProject)i.next(), spm);
+		}
+		monitor.done();
 	}
 }
