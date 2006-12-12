@@ -80,6 +80,18 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 		getLog().log( status);
 		throw new CoreException( status);
 	}
+	
+	public synchronized void clearDB() throws CoreException
+	{
+		try
+		{
+			getDB().clearDB( getDBPath());
+		}
+		catch ( Exception e)
+		{
+			logError( "Error clearing BBQ database:"+e.getLocalizedMessage(), e);
+		}
+	}
 
 	private void openDBAtCurrentPath() throws Exception
 	{
@@ -90,11 +102,15 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
         }
         catch ( ObjectDBException odb)
         {
-            if ( odb.getUnderlying() instanceof java.io.InvalidClassException
-            		|| odb.getUnderlying() instanceof DiskAllocatorException)
-                m_db.clearDB( getDBPath());
-            else
-                throw odb;
+            m_db.clearDB( getDBPath());
+            try
+            {
+            	logError( "There was a problem opening the BBQ database; the database was cleared and must be rebuild before use",odb);
+            }
+            catch ( CoreException ce)
+            {
+            	
+            }
         }					
 	}
 	

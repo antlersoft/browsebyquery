@@ -277,7 +277,7 @@ public class QueryView extends ViewPart {
         		try
         		{
         			// Will this mean it gets logged twice?
-        			Bbq_eclipsePlugin.getDefault().logError( "Error Rebuilding", e);
+        			Bbq_eclipsePlugin.getDefault().logError( e.getLocalizedMessage(), e);
         		}
         		catch ( CoreException ce)
         		{

@@ -123,6 +123,7 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 	public static void buildWorkspace( IProgressMonitor monitor)
 		throws CoreException
 	{
+		Bbq_eclipsePlugin.getDefault().clearDB();
 		IWorkspaceRoot root=ResourcesPlugin.getWorkspace().getRoot();
 		
 		IProject[] projects=root.getProjects();
