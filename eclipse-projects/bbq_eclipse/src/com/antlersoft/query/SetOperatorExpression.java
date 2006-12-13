@@ -26,14 +26,7 @@ public class SetOperatorExpression extends SetExpression {
 								  SetExpression b)
 	throws BindException
 	{
-		m_result=a.getResultClass();
-		Class other_result=b.getResultClass();
-		if ( ! m_result.isAssignableFrom( other_result))
-			if ( other_result.isAssignableFrom( m_result))
-				m_result=other_result;
-			else
-				throw new BindException( m_result.getName()+" can't be in set operator expression with "+
-		other_result.getName());
+		m_result=ResolvePairBinding.commonSubType( a.getResultClass(), b.getResultClass(), true);
 		m_use_ordering=( a.getOrdering()!=null && b.getOrdering()!=null &&
 			a.getOrdering().equals( b.getOrdering()));
 		m_a=a;

@@ -76,16 +76,7 @@ public class ResolvePairBinding implements Bindable {
 			}
 			else
 			{
-				if ( appliesA.isAssignableFrom( appliesB))
-				{
-					m_result=appliesA;
-				}
-				else if ( appliesB.isAssignableFrom( appliesA))
-				{
-					m_result=appliesB;
-				}
-				else
-					throw new BindException( "Sub-expression bindings are incompatible");
+				m_result=commonSubType( appliesA, appliesB, true);
 			}
 		}
 	}
@@ -116,18 +107,62 @@ public class ResolvePairBinding implements Bindable {
 			}
 			else
 			{
-				if ( appliesA.isAssignableFrom( appliesB))
-				{
-					m_applies=appliesB;
-				}
-				else if ( appliesB.isAssignableFrom( appliesA))
-				{
-					m_applies=appliesA;
-				}
-				else
-					throw new BindException( "Sub-expression bindings are incompatible");
+				m_applies=commonSubType( appliesA, appliesB, false);
 			}
 		}
+	}
+
+    public static Class commonSubType( Class a, Class b, boolean returnSuper)
+    throws BindException
+	{
+	    Class superClass;
+	    Class subClass;
+	
+	    if ( a==null || b==null)
+	        throw new BindException( "Incomplete bind");
+	    if ( a==b)
+	        return a;
+	    if ( a.isAssignableFrom( b))
+	    {
+	        superClass=a;
+	        subClass=b;
+	    }
+	    else if ( b.isAssignableFrom( a))
+	    {
+	        superClass=b;
+	        subClass=a;
+	    }
+	    else if ( returnSuper)
+	    {
+	        /* If they are not assignable to each other, but you want
+	         * a super class, they may still have a super class in common.
+	         * Go up a's base classes and see if any are assignable from
+	         * b.  We're not interested if Object is assignable, but
+	         * anything short of that is fair game
+	         */
+	        superClass=null;
+	        subClass=null;
+	        for ( Class baseClass=a.getSuperclass(); baseClass!=null &&
+	            baseClass!=Object.class; baseClass=baseClass.getSuperclass())
+	        {
+	            if ( baseClass.isAssignableFrom( b))
+	            {
+	                superClass=baseClass;
+	                subClass=b;
+	                break;
+	            }
+	        }
+	        if ( superClass==null)
+	            throw new BindException(
+	                "Incompatible object types: expecting "+
+	                    b.getName()+" but getting "+a.getName());
+	    }
+	    else
+	        throw new BindException(
+	            "Incompatible object types: expecting "+
+	                b.getName()+" but getting "+a.getName());
+	
+	    return returnSuper ? superClass : subClass;
 	}
 
 	private Bindable m_a;
