@@ -31,7 +31,7 @@ public abstract class CountPreservingValueExpression extends BindImpl implements
 
 	public void inputObject( ValueObject obj, DataSource source, Object to_transform)
 	{
-		m_result=transformSingleObject( source, to_transform);
+		m_value=transformSingleObject( source, to_transform);
 	}
 
 	public ValueContext getContext()
@@ -46,7 +46,7 @@ public abstract class CountPreservingValueExpression extends BindImpl implements
 
 	public Object getValue()
 	{
-		return m_result;
+		return m_value;
 	}
 
 	public List getValueCollection()
@@ -56,5 +56,5 @@ public abstract class CountPreservingValueExpression extends BindImpl implements
 
 	protected abstract Object transformSingleObject( DataSource source,
 											Object to_transform);
-	private Object m_result;
+	private Object m_value;
 }
