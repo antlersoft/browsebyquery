@@ -80,6 +80,16 @@ public class DBArgument implements Persistent, SourceObject, HasDBType {
 		ObjectDB.makeDirty( this);
 	}
 	
+	public String getName()
+	{
+		return _name;
+	}
+	
+	public String toString()
+	{
+		return getMethod().toString()+" #"+_ordinal+"; "+_name+" ("+getDBType(null).toString()+")";
+	}
+	
 	static class ArgumentTypeKeyGenerator implements KeyGenerator
 	{
 		/**
