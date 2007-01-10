@@ -385,6 +385,7 @@ or a filter enclosed within parentheses.
 <member>strings</member>
 <member>that</member>
 <member>to</member>
+<member>type</member>
 <member>uncalled</member>
 <member>uncorrelated</member>
 <member>union</member>
@@ -404,6 +405,11 @@ from the base type <link linkend="r-type-object">object</link>.</para>
 </imageobject>
 <textobject><phrase>(Diagram illustrating type hierarchy)</phrase></textobject>
 </mediaobject>
+<para>
+Note that the type <link linkend="r-type-type">Type</link> represents
+a type in Java (such as int, boolean, etc.) which is a completely different
+than types within the query language.
+</para>
 <para>
 Set expressions have a type, which is the most-derived common type
 of all the objects in the resulting set.  Filters
@@ -436,6 +442,28 @@ If the transforms have different result types,
 the result type of the compound transform is the most-derived
 type that is an ancestor of each of the constituent result types.
 </para>
+      <refentry id="r-type-argument">
+	<refnamediv>
+	  <refname>argument</refname>
+	  <refpurpose>Represents an argument to a method</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Description</title>
+	  <para>Object with this type represent the arguments to a method.
+	  Each argument has a <link linkend="r-type-type">type</link>,
+	  and an ordinal, which represents the zero-based position of the argument
+	  in the methods argument list (note that non-static, non-constructor
+	  methods have an implicit argument-0 representing the this object).
+	  If the information is available in the database, an argument
+	  will also have a name, which is the name defined in the Java source
+	  code.
+	  </para>
+	</refsect1>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
+	</refsect1>
+      </refentry>
       <refentry id="r-type-call">
 	<refnamediv>
 	  <refname>call</refname>
@@ -577,6 +605,23 @@ this type.</para>
 	<refsect1>
 	  <title>Parent</title>
 	  <para><link linkend="r-type-reference">reference</link></para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-type">
+	<refnamediv>
+	  <refname>type</refname>
+	  <refpurpose>Represents a Java type</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Description</title>
+	  <para>
+	  These objects represent the type of a value in Java, which may be
+	  one of the Java built-in types, an array type, or a Java class type.
+	  </para>
+	</refsect1>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">Object</link></para>
 	</refsect1>
       </refentry>
     </sect1>
@@ -781,9 +826,14 @@ is substituted.
 		over again.
 		</para>
 		<para>&p-bbq; uses the same name space for both set expressions and
-		transforms; you can re-use to a given name,
+		transforms; you can re-use a given name to give it a different
+		meaning,
 		but the name will only refer to either a set expression or a transform at
 		any one time.
+		Also, changing the meaning of a name does not change
+		the meaning of any existing
+		definitions that might have been made using the old
+		definition of the name.
 			<itemizedlist>
 				<listitem>In the first form, the <replaceable>set expression</replaceable> is assigned to the <replaceable>name</replaceable>.
 		The complete set expression can be referenced by using the name
@@ -1409,6 +1459,43 @@ with <userinput>( string references from foo ) intersection ( references to stri
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-types-of">
+		  <refnamediv>
+			<refname>types of</refname>
+			<refpurpose>Returns the Java type of a field or argument,
+			or the return type of a method
+			</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>types of</synopsis>
+			<synopsis>type of</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>The transform returns all the string constant references found
+in the methods
+in the set.
+If you have a set of methods foo, and a string constant "bar",
+you can find all the references to "bar" from the methods in foo
+with <userinput>( string references from foo ) intersection ( references to string "bar" )</userinput>.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-argument">argument</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-uncorrelated">
