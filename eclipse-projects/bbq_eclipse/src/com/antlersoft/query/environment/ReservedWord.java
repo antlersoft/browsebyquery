@@ -24,14 +24,17 @@ public class ReservedWord extends Symbol {
 
     public static ReservedWord getReserved( String w)
     {
-        ReservedWord result;
-        try
+        ReservedWord result=(ReservedWord)wordList.get( w);
+        if ( result==null)
         {
-            result=new ReservedWord( w);
-        }
-        catch ( DuplicateSymbolException dse)
-        {
-            result=(ReservedWord)dse.duplicate;
+	        try
+	        {
+	            result=new ReservedWord( w);
+	        }
+	        catch ( DuplicateSymbolException dse)
+	        {
+	            result=(ReservedWord)dse.duplicate;
+	        }
         }
         return result;
     }
