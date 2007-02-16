@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999-2005  Michael A. MacDonald
+ * Copyright (c) 1999-2007  Michael A. MacDonald
  * ----- - - -- - - --
  *     This file is free software; you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ public :
 	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
 	{
 		string word= *static_cast<const SeqString*>( value_stack.last());
-		cout<<"static Symbol "<<word<<"=ReservedWord.getReserved( \""<<word<<"\");\n";
+		cout<<"static Symbol "<<word<<"=reservedScope.getReserved( \""<<word<<"\");\n";
 		Symbol scope_symbol( terminal_scope, word);
 		return new TerminalSymbol( word);
 	}
@@ -48,7 +48,7 @@ public :
 		string text= *static_cast<const SeqString*>( value_stack.last());
 		value_stack=value_stack.butLast();
 		string word= *static_cast<const SeqString*>( value_stack.last());
-		cout<<"static Symbol "<<word<<"=ReservedWord.getReserved( \""<<text<<"\");\n";
+		cout<<"static Symbol "<<word<<"=reservedScope.getReserved( \""<<text<<"\");\n";
 		Symbol scope_symbol( terminal_scope, word);
 		return new TerminalSymbol( word);
 	}
@@ -277,7 +277,7 @@ int main( int argc, char* argv[])
 	TerminalSymbol left( "left");
 	TerminalSymbol right( "right");
 	TerminalSymbol none( "none");
-	TerminalSymbol not( "not");
+	TerminalSymbol Not( "not");
 	TerminalSymbol colon( ":");
 	TerminalSymbol rule_ender( ".");
 	TerminalSymbol statement_divider( ";");
@@ -293,7 +293,7 @@ int main( int argc, char* argv[])
 	x.addRule( Rule( Associativity, CompareSequence(left)));
 	x.addRule( Rule( Associativity, CompareSequence(right)));
 	x.addRule( Rule( Associativity, CompareSequence(none)));
-	x.addRule( Rule( Associativity, CompareSequence(not)));
+	x.addRule( Rule( Associativity, CompareSequence(Not)));
 	x.addRule( Rule( RulePrecedence, CompareSequence( rule_ender), no_precedence));
 	x.addRule( Rule( RulePrecedence, CompareSequence( LexScan::_num_const)|rule_ender, set_precedence));
 	x.addRule( Rule( SymbolDef, CompareSequence( symbol)|LexScan::_name, sda));
@@ -317,7 +317,7 @@ int main( int argc, char* argv[])
 	Parser* parser=x.build(cerr);
 	LexScan lex_scan(
 		// Reserved words for lexical scanning
-		CompareSequence( reserved)|symbol|left|right|none|not|name|string|number|errorSymbol,      
+		CompareSequence( reserved)|symbol|left|right|none|Not|name|string|number|errorSymbol,      
 		// Tokens composed of punctuation
 		CompareSequence( colon)|statement_divider|rule_ender|line_comment);
 	lex_scan.setLineComment( line_comment);
