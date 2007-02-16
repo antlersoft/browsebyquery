@@ -105,7 +105,7 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
             m_db.clearDB( getDBPath());
             try
             {
-            	logError( "There was a problem opening the BBQ database; the database was cleared and must be rebuild before use",odb);
+            	logError( "There was a problem opening the BBQ database; the database was cleared and must be rebuilt before use",odb);
             }
             catch ( CoreException ce)
             {
