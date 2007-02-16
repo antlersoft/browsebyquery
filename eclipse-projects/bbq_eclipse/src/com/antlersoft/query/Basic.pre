@@ -13,7 +13,10 @@ import com.antlersoft.parser.*;
  */
 public class Basic extends BasicBase
 {
+    static private final ReservedScope reservedScope=new ReservedScope();
 public Basic()
 {
-super( parseStates, new ParserEnvironment());
+super( parseStates, new ParserEnvironmentImpl());
 }
+public ReservedScope getReservedScope() { return reservedScope; }
+

@@ -19,8 +19,6 @@
  */
 package com.antlersoft.query;
 
-import java.util.List;
-
 public class Matches extends CountPreservingFilter {
 	public Matches( String to_match)
 	{

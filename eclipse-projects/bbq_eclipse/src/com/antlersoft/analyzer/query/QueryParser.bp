@@ -6,6 +6,7 @@ symbol Reference
 symbol StringConstant
 symbol Types
 symbol UncalledPolymorphic
+symbol SAVING_NAME
 
 reserved Abstract "abstract"
 reserved all
@@ -51,19 +52,23 @@ reserved uncalled
 reserved with
 reserved write
 
-SET_EXPRESSION : set nameSymbol to SET_EXPRESSION "{
+SAVING_NAME : set nameSymbol to "{
+	return ((QueryLanguageEnvironment)parser.getParserEnvironment()).startSavingName( (String)valueStack.get(
+		valueStack.size()-2), 3);
+}" 1 .
+
+SET_EXPRESSION : SAVING_NAME SET_EXPRESSION "{
     int size=valueStack.size();
     SetExpression se=(SetExpression)valueStack.get( size-1);
-    String valueName=(String)valueStack.get( size-3);
-    ((QueryLanguageEnvironment)parser.getParserEnvironment()).setStoredValue( valueName, se);
+    SavingName valueName=(SavingName)valueStack.get( size-2);
+    ((QueryLanguageEnvironment)parser.getParserEnvironment()).finishSavingName( valueName, se);
     return se; }" 1 .
 
-SET_EXPRESSION : set nameSymbol to TRANSFORM "{
-    QueryParser qp=(QueryParser)parser;
+SET_EXPRESSION : SAVING_NAME TRANSFORM "{
     int size=valueStack.size();
     Transform se=(Transform)valueStack.get( size-1);
-    String valueName=(String)valueStack.get( size-3);
-    ((QueryLanguageEnvironment)parser.getParserEnvironment()).setStoredValue( valueName, se);
+    SavingName valueName=(SavingName)valueStack.get( size-2);
+    ((QueryLanguageEnvironment)parser.getParserEnvironment()).finishSavingName( valueName, se);
 	return new EmptySetExpression();
 	}" 1 .
 	
@@ -74,7 +79,7 @@ SET_EXPRESSION : VALUE_EXPRESSION SET_EXPRESSION "
 			(SetExpression)valueStack.get( size-1));
 	}" .
 
-SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).getStoredValue( (String)valueStack.get( valueStack.size()-1)); }" .
+SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).replaceWithStoredValue( (String)valueStack.get( valueStack.size()-1), 1); }" .
 
 SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 	int size=valueStack.size();
@@ -151,7 +156,7 @@ TRANSFORM : Reference from "{ return new ReferenceFrom(); }" .
 TRANSFORM : StringConstant Reference from "{ return new StringReferenceFrom(); }" .
 TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
 TRANSFORM : calls to "{ return new CallsTo(); }" .
-TRANSFORM : TransformSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).getStoredValue( (String)valueStack.get( valueStack.size()-1)); }" .
+TRANSFORM : TransformSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).replaceWithStoredValue( (String)valueStack.get( valueStack.size()-1), 1); }" .
 TRANSFORM : fields with "{
 	return new TransformImpl( DBField.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)

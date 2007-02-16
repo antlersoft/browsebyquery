@@ -10,3 +10,7 @@ class ConstExprParser extends ConstExprParserBase
     {
         super( parseStates);
     }
+    
+private static final ReservedScope reservedScope=new ReservedScope();
+public ReservedScope getReservedScope() { return reservedScope; }
+    

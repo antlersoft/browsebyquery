@@ -19,8 +19,6 @@
  */
 package com.antlersoft.query;
 
-import java.util.List;
-
 public class FirstOf extends GroupExpression {
    public Object getValue() {
 	   return m_result;

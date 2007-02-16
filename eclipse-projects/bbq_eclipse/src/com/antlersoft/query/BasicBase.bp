@@ -74,7 +74,14 @@ SET_EXPRESSION : execute SET_EXPRESSION "{
 	return new ExecuteExpression( (SetExpression)valueStack.get(
  		valueStack.size()-1));
    }" .
-SET_EXPRESSION : previous "{ return ((ParserEnvironment)parser.getParserEnvironment()).getLastParsedExpression(); }" .
+SET_EXPRESSION : previous "{
+	SetExpression se=((ParserEnvironment)parser.getParserEnvironment()).getLastParsedExpression();
+	if ( se==null)
+	{
+		throw new RuleActionException( \"Can't resolve 'previous': no set expression yet evaluated\");
+	}
+	return se;
+	}" .
 
 
 # Value Expression Rules
@@ -133,11 +140,11 @@ TRANSFORM : left_paren TRANSFORM right_paren
 TRANSFORM : VALUE_EXPRESSION
 "{ return new ValueExpressionTransform( (ValueExpression)valueStack.get(
 valueStack.size()-1)); }" .
-TRANSFORM : recursive TRANSFORM
-"{ return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-1)); }" .
-TRANSFORM : recursive TRANSFORM comma TRANSFORM
-"{ return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-3),
-(Transform)valueStack.get( valueStack.size()-1)); }" .
+TRANSFORM : recursive left_paren TRANSFORM right_paren
+"{ return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-2)); }" .
+TRANSFORM : recursive left_paren TRANSFORM comma TRANSFORM right_paren
+"{ return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-4),
+(Transform)valueStack.get( valueStack.size()-2)); }" .
 TRANSFORM : uncorrelated left_paren SET_EXPRESSION right_paren
 "{ return new UncorrelatedSetTransform( (SetExpression)valueStack.get( valueStack.size()-2)); }" .
 TRANSFORM : unique "{ return new UniqueTransform(); }" .

@@ -427,9 +427,9 @@ static abstract class ClassTransform extends UniqueTransformImpl
         GoodBase( DBClass fromHere, AnalyzerDB adb, DBMethod sm)
         throws BindException
         {
-            super( ( new TransformSet(
-                new DerivedClasses(), new SingleClass( fromHere))).
-                evaluate( adb));
+            super( new TransformSet.BaseAdapter( adb,
+                new DerivedClasses(), new SingleClass( fromHere).
+                evaluate( adb)));
             _adb=adb;
             soughtMethod=sm;
         }

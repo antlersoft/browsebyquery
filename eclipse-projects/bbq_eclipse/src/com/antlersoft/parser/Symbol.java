@@ -42,14 +42,19 @@ public class Symbol
 
     public static Symbol get( String symbol_name)
     {
-		try
-		{
-			return new Symbol( symbol_name);
-		}
-		catch ( DuplicateSymbolException dse)
-		{
-			return dse.duplicate;
-		}
+    	Symbol s=(Symbol)_scope.get( symbol_name);
+    	if ( s==null)
+    	{
+			try
+			{
+				s=new Symbol( symbol_name);
+			}
+			catch ( DuplicateSymbolException dse)
+			{
+				s=dse.duplicate;
+			}
+    	}
+    	return s;
     }
 
     public static class DuplicateSymbolException extends Exception

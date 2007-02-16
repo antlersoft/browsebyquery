@@ -229,6 +229,16 @@ public abstract class Parser
 
 		return false;
 	}
+	
+	/**
+	 * Sub-classes will normally override the return the appropriate ReservedScope object
+	 * @return Object with list of reserved symbols used by the parser; null
+	 * if such a list is not supported.
+	 */
+	public ReservedScope getReservedScope()
+	{
+		return null;
+	}
 
 	private String ruleMessage;
 	private int recovery_count;

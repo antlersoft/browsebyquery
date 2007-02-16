@@ -48,7 +48,7 @@ public class BasicBase extends Parser {
 	{
 		m_environment=env;
 	}
-
+	
 	/**
 	 * Anything a sub-class might want to do with a token
 	 */

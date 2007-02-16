@@ -20,7 +20,8 @@
 package com.antlersoft.analyzer;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -152,7 +153,7 @@ public class UIQuery
         // Create clear action
         fileMenu.addSeparator();
         fileMenu.add( new ClearAction());
-
+        
         // Create Exit action
         fileMenu.addSeparator();
         fileMenu.add( new ExitAction());
@@ -200,12 +201,31 @@ t.printStackTrace();
         Component contents = app.createComponents();
         appFrame.getContentPane().add(contents, BorderLayout.CENTER);
         appFrame.setJMenuBar( app.createMenuBar());
+        
+		final File environment_file=new File( new File( app.analyzerDBOpenString), "environment.xml");
+		try
+		{
+			if ( environment_file.canRead())
+			{
+				FileReader reader=new FileReader( environment_file);
+				app.qp.readEnvironment( reader);
+				reader.close();
+			}
+		}
+		catch ( Exception e)
+		{
+			app.displayException( "Error loading saved expressions", e);
+		}
+
         //Finish setting up the frame, and show it.
         appFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 try
                 {
                     app.analyzerDB.closeDB();
+                    FileWriter writer=new FileWriter( environment_file);
+                    app.qp.writeEnvironment( writer);
+                    writer.close();
                 }
                 catch ( Exception exception)
                 {
@@ -252,6 +272,20 @@ t.printStackTrace();
             }
         }
     }
+
+    /*
+    class SaveStateAction extends AbstractAction
+    {
+    	SaveStateAction()
+    	{
+    		super( "Save stored expressions");
+    	}
+    	
+    	public void actionPerformed( ActionEvent ae)
+    	{
+    	}
+    }
+    */
 
     class ClearAction extends AbstractAction
     {

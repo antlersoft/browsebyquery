@@ -10,6 +10,8 @@ import com.antlersoft.query.*;
 
 public class Reflect extends ReflectBase
 {
+private static final ReservedScope reservedScope=new ReservedScope();
+public ReservedScope getReservedScope() { return reservedScope; }
 public Reflect()
 {
 super( parseStates);

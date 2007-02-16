@@ -19,7 +19,7 @@
  */
 package com.antlersoft.query.environment;
 
-public class ParseException extends Exception
+public class ParseException extends QueryException
 {
     static String parseMessage( QueryLanguageEnvironment qp)
     {

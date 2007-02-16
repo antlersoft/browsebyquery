@@ -137,6 +137,7 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 			for (int j = 0; j < natures.length; ++j) {
 				if (BBQNature.NATURE_ID.equals(natures[j])) {
 					bbq_projects.add( projects[i]);
+					break;
 				}
 			}
 		}

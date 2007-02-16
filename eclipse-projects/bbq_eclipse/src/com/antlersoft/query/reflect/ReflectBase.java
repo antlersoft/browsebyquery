@@ -23,12 +23,12 @@ import com.antlersoft.parser.ParseState;
 import com.antlersoft.parser.Symbol;
 
 import com.antlersoft.query.BasicBase;
-import com.antlersoft.query.ParserEnvironment;
+import com.antlersoft.query.ParserEnvironmentImpl;
 
 public class ReflectBase extends BasicBase {
 	public static final Symbol nameSymbol=Symbol.get( "nameSymbol");
 	public ReflectBase( ParseState[] states)
 	{
-		super( states, new ParserEnvironment());
+		super( states, new ParserEnvironmentImpl());
 	}
 }

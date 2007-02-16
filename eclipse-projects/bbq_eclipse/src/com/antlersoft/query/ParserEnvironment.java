@@ -10,17 +10,9 @@ package com.antlersoft.query;
  * @author Michael A. MacDonald
  *
  */
-public class ParserEnvironment {
+public interface ParserEnvironment {
 
-	private SetExpression m_last_expression;
+	public SetExpression getLastParsedExpression();
 
-	public SetExpression getLastParsedExpression()
-	{
-		return m_last_expression;
-	}
-
-	public void setLastParsedExpression( SetExpression expr)
-	{
-		m_last_expression=expr;
-	}
+	public void setLastParsedExpression( SetExpression expr);
 }

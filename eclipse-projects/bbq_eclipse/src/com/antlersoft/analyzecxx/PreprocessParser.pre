@@ -13,3 +13,5 @@ class PreprocessParser extends PreprocessParserBase
 	    super( parseStates, reader, initial_defines);
     }
 
+private static final ReservedScope reservedScope=new ReservedScope();
+public ReservedScope getReservedScope() { return reservedScope; }

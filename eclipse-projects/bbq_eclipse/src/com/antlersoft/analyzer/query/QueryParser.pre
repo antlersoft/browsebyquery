@@ -14,6 +14,7 @@ import com.antlersoft.parser.GotoRule;
 import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.ParseState;
 import com.antlersoft.parser.ReduceRule;
+import com.antlersoft.parser.ReservedScope;
 import com.antlersoft.parser.RuleAction;
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.ShiftRule;
@@ -23,7 +24,7 @@ import com.antlersoft.parser.Token;
 import com.antlersoft.query.*;
 
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
-import com.antlersoft.query.environment.ReservedWord;
+import com.antlersoft.query.environment.SavingName;
 
 public class QueryParser extends QueryParserBase
 {
@@ -63,4 +64,7 @@ public class QueryParser extends QueryParserBase
     	return false;
     }
 
+	private static final ReservedScope reservedScope=new ReservedScope();
+	public ReservedScope getReservedScope() { return reservedScope; }
+	
 // Include output here

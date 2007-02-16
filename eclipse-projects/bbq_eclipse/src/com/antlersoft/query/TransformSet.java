@@ -50,7 +50,7 @@ public class TransformSet extends SetExpression {
 		return m_transform.getOrdering();
 	}
 
-	static class BaseAdapter implements Enumeration
+	public static class BaseAdapter implements Enumeration
 	{
 		private DataSource m_source;
 		private Transform m_transform;
@@ -58,7 +58,7 @@ public class TransformSet extends SetExpression {
 		private boolean m_has_more;
 		CombineEnum m_combined;
 
-		BaseAdapter( DataSource source, Transform transform, Enumeration base)
+		public BaseAdapter( DataSource source, Transform transform, Enumeration base)
 		{
 			m_source=source;
 			m_transform=transform;
