@@ -1,7 +1,16 @@
 package com.antlersoft.bbq_eclipse;
 
+import java.io.File;
+import java.io.FileReader;
+
+import org.eclipse.core.resources.ISavedState;
+import org.eclipse.core.resources.ISaveParticipant;
+import org.eclipse.core.resources.ResourcesPlugin;
+
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 
 import org.eclipse.ui.plugin.*;
@@ -31,6 +40,8 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	private AnalyzerQuery m_qp;
 	boolean _pathChanged;
 	
+	static final String ENVIRONMENT_FILE_KEY = "environment";
+	
 	/**
 	 * The constructor.
 	 */
@@ -44,6 +55,34 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	 */
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
+		
+		// TODO:
+		// From save participant documentation example; note
+		// that we should use the alternative to java.io.File in Eclipse 3.2
+		
+        ISaveParticipant saveParticipant = new BBQSaveParticipant( this);
+        ISavedState lastState =
+           ResourcesPlugin.getWorkspace().addSaveParticipant(this, saveParticipant);
+        if (lastState == null)
+           return;
+        IPath location = lastState.lookup(new Path(ENVIRONMENT_FILE_KEY));
+        if (location == null)
+           return;
+        // the plugin instance should read any important state from the file.
+        File f = getStateLocation().append(location).toFile();
+        if ( f.canRead())
+        {
+        	try
+        	{
+        		FileReader reader=new FileReader( f);
+        		getQueryParser().readEnvironment( reader);
+        		reader.close();
+        	}
+        	catch ( Exception e)
+        	{
+        		logNoThrow( e.getLocalizedMessage(), e);
+        	}
+        }
 	}
 
 	/**
@@ -73,12 +112,17 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 		return new Status(severity, "com.antlersoft.bbq_eclipse", code, message, ex);
 	}
 	
-	public void logError( String message, Throwable ex)
-		throws CoreException
+	private IStatus logNoThrow( String message, Throwable ex)
 	{
 		IStatus status=createStatus( message, ex, IStatus.ERROR, 0);
 		getLog().log( status);
-		throw new CoreException( status);
+		return status;
+	}
+	
+	public void logError( String message, Throwable ex)
+		throws CoreException
+	{
+		throw new CoreException( logNoThrow( message, ex));
 	}
 	
 	public synchronized void clearDB() throws CoreException
