@@ -49,7 +49,7 @@ import com.antlersoft.util.ExtensionFileFilter;
 public class UIQuery
 {
     JFileChooser chooser;
-    AnalyzerDB analyzerDB;
+    IndexAnalyzeDB analyzerDB;
     String analyzerDBOpenString;
     AnalyzerQuery qp;
     JTextArea queryArea;
@@ -262,8 +262,7 @@ t.printStackTrace();
             {
                 try
                 {
-                    analyzerDB.closeDB();
-                    analyzerDB.openDB( analyzerDBOpenString);
+                    analyzerDB.commit();
                 }
                 catch ( Exception e)
                 {
