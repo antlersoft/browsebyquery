@@ -154,6 +154,13 @@ public class IndexAnalyzeDB implements AnalyzerDB
         }
         openDB( dbName);
     }
+    
+    public synchronized void commit()
+    throws Exception
+    {
+    	if ( _session != null)
+    		_session.commitAndRetain();
+    }
 
     public Object getWithKey(String type, String key) throws Exception
     {
