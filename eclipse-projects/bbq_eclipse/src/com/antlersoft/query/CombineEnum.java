@@ -21,6 +21,12 @@ package com.antlersoft.query;
 
 import java.util.Enumeration;
 
+
+/**
+ * An enumeration that combines two other enumerations.
+ * @author Michael A. MacDonald
+ *
+ */
 public class CombineEnum implements Enumeration {
 	private Enumeration m_first;
 	Enumeration m_second;

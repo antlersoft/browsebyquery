@@ -24,6 +24,9 @@ import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Iterator;
 import java.util.TreeSet;
+
+import sun.security.krb5.internal.crypto.b;
+
 import com.antlersoft.analyzer.*;
 
 import com.antlersoft.parser.ParseState;
@@ -318,6 +321,12 @@ static abstract class ClassTransform extends UniqueTransformImpl
         }
     }
 
+    /**
+     * Implements an enumeration that changes the objects produced by a base enumeration
+     * into another object with the filterObject abstract method.
+     * @author Michael A. MacDonald
+     *
+     */
     static public abstract class FilterEnumeration implements Enumeration
     {
         private Enumeration _baseEnumeration;
@@ -332,6 +341,12 @@ static abstract class ClassTransform extends UniqueTransformImpl
             initialized=false;
         }
 
+        /**
+         * Changes the output of the underlying enumeration.
+         * Must produce an object or null for each object passed in.
+         * @param next Object from base enumeration
+         * @return transformed object
+         */
         abstract protected Object filterObject( Object next);
 
         private void getNextObject()
@@ -382,6 +397,37 @@ static abstract class ClassTransform extends UniqueTransformImpl
         {
             db=(AnalyzerDB)adb;
         }
+        
+        static class RealMethodFilter extends FilterEnumeration
+        {
+        	private DBMethod soughtMethod;
+        	private AnalyzerDB db;
+        	
+        	RealMethodFilter( Enumeration base, AnalyzerDB source, DBMethod sought)
+        	{
+        		super( base);
+        		db=source;
+        		soughtMethod=sought;
+        	}
+            protected Object filterObject( Object base)
+            {
+                DBClass filterc=(DBClass)base;
+                try
+                {
+                    DBMethod m=(DBMethod) db.findWithKey( "com.antlersoft.analyzer.DBMethod",
+                        DBMethod.makeKey( filterc.getInternalName(),
+                        soughtMethod.getName(),
+                        soughtMethod.getSignature()));
+                    return m;
+                }
+                catch ( Exception e)
+                {
+                    throw new NoSuchElementException(
+                        e.getMessage());
+                }
+            }
+        	
+        }
 
         public Enumeration transformObject( DataSource source, Object toTransform)
         {
@@ -389,27 +435,12 @@ static abstract class ClassTransform extends UniqueTransformImpl
         	{
 	            final DBMethod soughtMethod=(DBMethod)toTransform;
 	            DBClass c=soughtMethod.getDBClass();
-	            Enumeration fromBase=new FilterEnumeration(
+	            Enumeration fromBase=new RealMethodFilter(
 	                ( new TransformSet( new RecursiveBaseClasses(),
-	                		new SingleClass( c))).evaluate( db)) {
-	                protected Object filterObject( Object base)
-	                {
-	                    DBClass filterc=(DBClass)base;
-	                    try
-	                    {
-	                    return db.findWithKey( "com.antlersoft.analyzer.DBMethod",
-	                        DBMethod.makeKey( filterc.getInternalName(),
-	                        soughtMethod.getName(),
-	                        soughtMethod.getSignature()));
-	                    }
-	                    catch ( Exception e)
-	                    {
-	                        throw new NoSuchElementException(
-	                            e.getMessage());
-	                    }
-	                }
-	            };
-	            Enumeration fromDerived=new GoodBase( c, db, soughtMethod);
+	                		new SingleClass( c))).evaluate( db), db, soughtMethod);
+	            Enumeration fromDerived=new  RealMethodFilter(
+		                ( new TransformSet( new RecursiveDerivedClasses(),
+		                		new SingleClass( c))).evaluate( db), db, soughtMethod);
 	            return new CombineEnum( new SingleEnum(
 	                soughtMethod), new CombineEnum( fromBase,
 	                fromDerived));
@@ -418,53 +449,6 @@ static abstract class ClassTransform extends UniqueTransformImpl
         	{
         		throw new RuntimeException( be);
         	}
-        }
-    }
-
-    static class GoodBase extends MultiEnum {
-        AnalyzerDB _adb;
-        DBMethod soughtMethod;
-        GoodBase( DBClass fromHere, AnalyzerDB adb, DBMethod sm)
-        throws BindException
-        {
-            super( new TransformSet.BaseAdapter( adb,
-                new DerivedClasses(), new SingleClass( fromHere).
-                evaluate( adb)));
-            _adb=adb;
-            soughtMethod=sm;
-        }
-
-        protected Enumeration getNextCurrent(
-            Object base)
-        {
-            DBClass c=(DBClass)base;
-            try
-            {
-                DBMethod candidate=(DBMethod)
-                    _adb.findWithKey( "com.antlersoft.analyzer.DBMethod",
-                    DBMethod.makeKey( c.getInternalName(),
-                    soughtMethod.getName(),
-                    soughtMethod.getSignature()));
-                if ( candidate==null || !
-                    ( candidate.methodStatus()==
-                    DBMethod.REAL))
-                {
-                    return candidate==null ?
-                        (Enumeration)new GoodBase( c, _adb, soughtMethod) :
-                        (Enumeration)new CombineEnum(
-                        new SingleEnum( candidate),
-                        new GoodBase( c, _adb, soughtMethod));
-                }
-                else
-                {
-                    return EmptyEnum.empty;
-                }
-            }
-            catch ( Exception e)
-            {
-                throw new NoSuchElementException(
-                    e.getMessage());
-            }
         }
     }
 

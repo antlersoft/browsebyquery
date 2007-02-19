@@ -21,6 +21,12 @@ package com.antlersoft.query;
 
 import java.util.Enumeration;
 
+/**
+ * Starting with an enumeration that returns enumerations,
+ * create a single enumeration over all those enumerations.
+ * @author Michael A. MacDonald
+ *
+ */
 public class MultiEnum implements Enumeration {
 	private Enumeration m_base;
 	private Enumeration m_current;
