@@ -39,7 +39,6 @@ public class BBQPathsGroup implements PropertyGroup
     private static String PATH_NAME="DBPath";
     private static String CLASS_PATH="ClassPath";
     private static String UPDATE_TIME="UpdateTime";
-    private static String IMPORTS="Imports";
     private static String RECENT_QUERIES="RecentQueries";
 
     static NodeProperty pathsProperty=new NodeProperty(
@@ -48,8 +47,6 @@ public class BBQPathsGroup implements PropertyGroup
         CATEGORY, CLASS_PATH, "");
     static NodeProperty updateTimeProperty=new NodeProperty(
         CATEGORY, UPDATE_TIME, "0");
-    static NodeArrayProperty importsProperty=new NodeArrayProperty( CATEGORY,
-        IMPORTS);
     static NodeArrayProperty recentQueriesProperty=new NodeArrayProperty( CATEGORY,
         RECENT_QUERIES);
 

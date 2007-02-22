@@ -81,10 +81,8 @@ class ProjectAnalyzer
         }
         catch ( ObjectDBException odb)
         {
-            if ( odb.getUnderlying() instanceof java.io.InvalidClassException)
-                clearDB( node, canonicalPath);
-            else
-                throw odb;
+odb.printStackTrace();
+			clearDB( node, canonicalPath);
         }
         qp=new AnalyzerQuery();
         goodPath=canonicalPath;

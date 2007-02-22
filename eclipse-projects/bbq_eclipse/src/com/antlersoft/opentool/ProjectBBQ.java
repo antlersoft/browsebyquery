@@ -119,15 +119,6 @@ public class ProjectBBQ implements NodeViewer
         ArrayList temp_list=new ArrayList();
         try
         {
-            SetExpression se=analyzer.qp.getExpression();
-            for ( Enumeration i=se.evaluate( analyzer.db);
-                  i.hasMoreElements();)
-            {
-                temp_list.add( i.nextElement());
-            }
-            String[] imports=new String[temp_list.size()];
-            temp_list.toArray( imports);
-            BBQPathsGroup.importsProperty.setValues( node, imports);
             analyzer.saveEnvironment();
         }
         catch ( Exception e)
