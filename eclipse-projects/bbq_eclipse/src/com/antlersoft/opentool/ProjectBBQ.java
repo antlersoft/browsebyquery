@@ -87,25 +87,6 @@ public class ProjectBBQ implements NodeViewer
         node=n;
         component=createComponents();
 
-        // Initialize the analyzer with the saved imports
-        String[] imports=BBQPathsGroup.importsProperty.getValues( n);
-        StringBuffer sb=new StringBuffer("import ");
-        for ( int i=0; i<imports.length; ++i)
-        {
-            sb.append('"');
-            sb.append(imports[i]);
-            sb.append("\" ");
-        }
-        a.qp.setLine( sb.toString());
-        try
-        {
-            a.qp.getExpression();
-        }
-        catch ( Exception e)
-        {
-
-        }
-
         // Initialize the history list with the recent queries
         String[] recent_queries=BBQPathsGroup.recentQueriesProperty.getValues( n);
         for ( int i=recent_queries.length-1; i>=0; --i)
@@ -134,8 +115,7 @@ public class ProjectBBQ implements NodeViewer
 
     public void viewerDeactivating() throws com.borland.primetime.util.VetoException
     {
-        // Save imports and recent query list
-        analyzer.qp.setLine( "import");
+        // Save recent query list
         ArrayList temp_list=new ArrayList();
         try
         {
@@ -148,10 +128,11 @@ public class ProjectBBQ implements NodeViewer
             String[] imports=new String[temp_list.size()];
             temp_list.toArray( imports);
             BBQPathsGroup.importsProperty.setValues( node, imports);
+            analyzer.saveEnvironment();
         }
         catch ( Exception e)
         {
-
+e.printStackTrace();
         }
         temp_list.clear();
         for ( Enumeration i=historyList.getContents(); i.hasMoreElements() &&
@@ -287,11 +268,11 @@ public class ProjectBBQ implements NodeViewer
                     try
                     {
                         analyzer.updateDB( node, analyzeButton);
+                        analyzer.saveEnvironment();
                     }
                     catch ( Exception e)
                     {
-                        e.printStackTrace();
-                        //displayException( "Analyzer error:", e);
+                        displayException( "Analyzer error:", e);
                     }
                 }
             });

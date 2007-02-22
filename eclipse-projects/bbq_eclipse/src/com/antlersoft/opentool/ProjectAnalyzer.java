@@ -28,8 +28,10 @@ package com.antlersoft.opentool;
 
 import java.awt.EventQueue;
 
-import java.io.File;
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 
 import java.util.Stack;
 
@@ -86,6 +88,17 @@ class ProjectAnalyzer
         }
         qp=new AnalyzerQuery();
         goodPath=canonicalPath;
+        // Don't choke on failure to read environment
+        try
+        {
+            File environment_file = new File(analyzerFile, "environment.xml");
+            if (environment_file.canRead())
+                qp.readEnvironment(new FileReader(environment_file));
+        }
+        catch ( Exception e)
+        {
+e.printStackTrace();
+        }
     }
 
     void clearDB( BBQNode node, String canonicalPath)
@@ -139,6 +152,16 @@ class ProjectAnalyzer
         }
         BBQPathsGroup.pathsProperty.setValue( node, newPath);
         goodPath=testPath;
+    }
+
+    void saveEnvironment()
+    throws Exception
+    {
+        File environment_file=new File( goodPath, "environment.xml");
+        if ( environment_file.canWrite())
+        {
+            qp.writeEnvironment( new FileWriter( environment_file));
+        }
     }
 
     class UpdateDBThread extends Thread
