@@ -44,6 +44,7 @@ public class ElementTransformReader implements XMLReader {
 	static class FormattingContentHandler implements ContentHandler {
 		
 		ContentHandler m_base;
+		boolean m_first=true;
 		
 		static char[] NEW_LINE={ '\n' };
 
@@ -107,6 +108,7 @@ public class ElementTransformReader implements XMLReader {
 		 * @see org.xml.sax.ContentHandler#startDocument()
 		 */
 		public void startDocument() throws SAXException {
+			m_first=true;
 			m_base.startDocument();
 		}
 
@@ -114,7 +116,12 @@ public class ElementTransformReader implements XMLReader {
 		 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 		 */
 		public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-			m_base.ignorableWhitespace( NEW_LINE, 0, 1);
+			if ( m_first)
+				m_first=false;
+			else
+			{
+				m_base.ignorableWhitespace( NEW_LINE, 0, 1);
+			}
 			m_base.startElement(uri, localName, qName, atts);
 		}
 
