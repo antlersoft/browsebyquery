@@ -1,4 +1,4 @@
-<!DOCTYPE book SYSTEM "file:///usr/kde/3.4/share/apps/ksgmltools2/docbook/xml-dtd-4.1.2/docbookx.dtd" [
+<!DOCTYPE book SYSTEM "docbookx.dtd" [
 <!ENTITY p-bbq "BBQ">
 ]>
 <book>
@@ -17,8 +17,8 @@
   </bookinfo>
   <preface>
     <title>A Note on the Language</title>
-    <para>This document described the &p-bbq; language
-for querying Java systems as it exists in early 2006.  The concepts
+    <para>This document describes the &p-bbq; language
+for querying Java systems as it exists in early 2007.  The concepts
 embodied by this language are, I hope, more important
 than the details of the language itself
 and will outlast any particular implementation.
@@ -29,8 +29,10 @@ be revised dramatically in the near future.</para>
   <chapter>
     <title>Overview</title>
     <para>
-Like a conventional browser,
-&p-bbq; helps you find things in your code.
+Modern integrated development environments include some sort of code browser; the browser
+understands the elements and structure of your source code and presents that structure
+in various ways to help you navigate your code base.
+&p-bbq; has the same basic purpose: to help you find things in your code.
 What &p-bbq; lets you do that a conventional
 browser does not is specify just what you want to find
 with as much precision and complexity as you desire; it
@@ -59,7 +61,7 @@ of classes, variables and methods in your system?
     <sect1>
       <title>Set Expressions</title>
 <para>
-The purpose of &p-bbq; is to easily find constructs in your code, any of the things &p-bbq; keeps track of: class definitions, method definitions, field definitions, method calls, field references, or string constant references.
+The purpose of &p-bbq; is to easily find constructs in your code, any of the things &p-bbq; keeps track of: class definitions, method definitions, method calls, field references and more.
 The language is intended to allow you to express what you are interested in,
 if not in plain english, at least in a form that is reasonably close to
 how you might think.
@@ -143,6 +145,7 @@ from the simple set expression through the transforms from right to left.
 </para>
 <sect2 id="r-stateless">
 <title>Stateless Transforms</title>
+<para>
 In general, all the results of a transform may depend on any of the elements
 in the set being transformed.
 However, some transforms have the property of being <firstterm>stateless</firstterm>.
@@ -152,6 +155,14 @@ Because of this, stateless transforms behave more predictably in the context
 of some transform operators such as <link linkend="r-exists">exists</link>
 and <link linkend="r-recursive">recursive</link>.
 If a transform is stateless, that is noted in the synopsis for the transform in the <link linkend="r-transforms">reference</link>.
+</para>
+<para>
+Many operators that were stateless transforms in previous releases of the language are now
+implemented as
+<link linkend="r-value-expressions">value expressions</link>.
+You can still use them in set expressions with the same syntax; you can also use them
+as part of value expressions.
+</para>
 </sect2>
 </sect1>
 <sect1>
@@ -274,6 +285,78 @@ The complete type resolution rules are listed in the
 <link linkend="r-types">reference</link>.
 </para>
     </sect1>
+<sect1 id="r-value-expression-intro">
+<title>Value Expressions</title>
+<para>
+Set expressions are powerful and general,
+but because of their generality
+it can be difficult for the language to know enough
+about them to combine them in interesting ways.
+Therefore, &p-bbq; has special support for a particular
+subset known as <firstterm>value expressions</firstterm>,
+which are guaranteed to result in a single value--rather than a set--when
+evaluated within a particular context.
+In &p-bbq;, constants are value expressions,
+some operators (i.e. <link linkend="r-count">count</link>, +) produce value expressions,
+and some operators (i.e. relational operators, +)
+can only work with value expressions.
+Value expressions, in turn, can be used as part of set expressions or transforms.
+</para>
+<para>
+There are three ways that value expressions can be used to produce a value
+within set expressions: they can have a value independent of the rest of the expression;
+they can have a value for each member of a set to which they are applied;
+or they can have a single value when applied to a set as a whole.
+More formally, each of these ways to evaluate
+a value expression is referred to as a <firstterm>value context</firstterm>.
+Most value expressions are only meaningful in one of the contexts.
+We'll provide a more complete definition of each of the contexts mentions above:</para>
+<variablelist>
+	<varlistentry>
+		<term>Scalar Context</term>
+		<listitem>
+			<para>In a scalar context, a value expression is evaluated without reference
+			to any other objects or expressions.  A constant is an example of a value expression that may
+			be evaluated in a scalar context.
+			</para>
+			<para>
+			If a value expression may be evaluated in a scalar context, it also can be used as a complete
+			set expression.
+			</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>Count-Preserving Context</term>
+		<listitem>
+			<para>A value expression in a count-preserving context results in a single
+			value when evaluated for a single object.</para>
+			<para>When evaluated in a set expression, a count-preserving value expression
+			functions as a stateless transform.</para>
+		</listitem>
+	</varlistentry>
+	<varlistentry>
+		<term>Group Context</term>
+		<listitem>
+			<para>A value expression in a group context results in a single value
+			when evaluated for an entire set.  The canonical example is the <link linkend="r-count">count</link>
+			expression, which returns the number of members in a set.</para>
+		</listitem>
+	</varlistentry>
+</variablelist>
+<para>
+Value expressions of the same context can be freely combined with the value operators to produce
+a compound expression with that context.  Scalar expressions may be combined with count-preserving
+expressions to produce another count-preserving expression, and scalar expressions may be
+combined with group expressions to produce another group expression.  You can't combine
+a group expression and a count-preserving expression to get a value expression.
+</para>
+<para>
+Value expressions have a result type,
+and non-scalar value expressions have a type to which they apply.
+Combining value expressions with value operators is subject
+to the same type resolution rules applicable to sets and transforms.
+</para>
+</sect1>
     </chapter>
   <chapter>
     <title>Language Reference</title>
@@ -296,8 +379,8 @@ Names and reserved words consist of a string of alphanumeric
 characters or underscores starting with a letter or underscore.
 The only permissable punctuation within a set expression
 are parentheses, which are used for grouping in set expressions,
-filters or transforms, and commas, which are used with certain
-operators.  Punctuation characters are recognized as tokens
+filters or transforms, commas, which are used with certain
+operators, and the <link linkend="r-value-operators">value operator</link> <userinput>&amp;</userinput>.  Punctuation characters are recognized as tokens
 in themselves and don't have to be set off with spaces.</para>
 <para>
 A sequence of one or more reserved words represents a
@@ -318,6 +401,7 @@ an expression or transform previously defined with the <link linkend="r-setcomma
 A valid set expression consists of one of the set expressions defined
 in the language,
 a name,
+a scalar value expression,
 a set expression with a transform prepended,
  two set expressions joined by one of the set operators,
 or a set expression enclosed within parentheses.
@@ -328,6 +412,7 @@ a name,
 a transform with another transform appended,
 two transforms joined by one of the set operators,
 a filter,
+a count-preserving or group value expression,
 or a transform enclosed within parentheses.
 </para>
 <para>
@@ -337,12 +422,20 @@ two filters joined by the logical operators <userinput>and</userinput> or
  <userinput>or</userinput>,
 or a filter enclosed within parentheses.
 </para>
+<para>
+A value expression is a constant,
+one of the value expression operators defined in the langauge,
+two value expressions with compatible context combined with value operators,
+or a value expression enclosed within parentheses.
+</para>
 <simpara>Reserved Words:</simpara>
       <simplelist>
 	<member>abstract</member>
 	<member>all</member>
+	<member>arguments</member>
 	<member>and</member>
 	<member>are</member>
+	<member>array</member>
 	<member>base</member>
 	<member>by</member>
 	<member>called</member>
@@ -351,12 +444,15 @@ or a filter enclosed within parentheses.
 	<member>classes</member>
 	<member>containing</member>
 	<member>count</member>
+	<member>date</member>
 	<member>deintersection</member>
+	<member>deprecated</member>
 <member>derived</member>
 <member>execute</member>
 <member>exists</member>
 <member>fields</member>
 <member>finalToken</member>
+<member>first</member>
 <member>from</member>
 <member>import</member>
 <member>in</member>
@@ -370,6 +466,7 @@ or a filter enclosed within parentheses.
 <member>or</member>
 <member>of</member>
 <member>package</member>
+<member>packages</member>
 <member>polymorphic</member>
 <member>previous</member>
 <member>protected</member>
@@ -386,12 +483,18 @@ or a filter enclosed within parentheses.
 <member>that</member>
 <member>to</member>
 <member>type</member>
+<member>types</member>
 <member>uncalled</member>
 <member>uncorrelated</member>
 <member>union</member>
+<member>with</member>
 <member>without</member>
 <member>write</member>
       </simplelist>
+      <para>Reserved words all start with a lowercase letter.  Therefore, it is a convention of the language
+      that user defined operators (for set expressions or transforms) start with an uppercase letter;
+      this will distinguish them from current and future reserved words.
+      </para>
     </sect1>
     <sect1 id="r-types">
       <title>Types</title>
@@ -424,7 +527,7 @@ of the compound expression is the most-derived type that is the
 ancestor of both constituent types in the set expression.
 </para>
 <para>
-Similarly, combining filters with a logical expression produces a compound
+Similarly, combining filters with a logical operator produces a compound
 filter.
 If the two filters are applicable to different types, the applicable
 type for one of the filters must be derived from the applicable
@@ -490,6 +593,16 @@ type that is an ancestor of each of the constituent result types.
 	  <para><link linkend="r-type-object">Object</link></para>
 	</refsect1>
       </refentry>
+      <refentry id="r-type-date">
+	<refnamediv>
+	  <refname>date</refname>
+	  <refpurpose>Represents a data</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">object</link></para>
+	</refsect1>
+      </refentry>
       <refentry id="r-type-field">
 	<refnamediv>
 	  <refname>field</refname>
@@ -510,8 +623,8 @@ type that is an ancestor of each of the constituent result types.
 	  <para><link linkend="r-type-reference">reference</link></para>
 	</refsect1>
       </refentry>
-      <refentry>
-	<refnamediv id="r-type-integer">
+      <refentry id="r-type-integer">
+	<refnamediv>
 	  <refname>integer</refname>
 	  <refpurpose>An integer numeric value</refpurpose>
 	</refnamediv>
@@ -545,6 +658,16 @@ type that is an ancestor of each of the constituent result types.
 	  <title>Description</title>
 	  <para>All other types are direct or indirect descendents of
 this type.</para>
+	</refsect1>
+      </refentry>
+      <refentry id="r-type-package">
+	<refnamediv>
+	  <refname>package</refname>
+	  <refpurpose>Represents a java package</refpurpose>
+	</refnamediv>
+	<refsect1>
+	  <title>Parent</title>
+	  <para><link linkend="r-type-object">object</link></para>
 	</refsect1>
       </refentry>
       <refentry id="r-type-reference">
@@ -646,7 +769,7 @@ the interpreter's state..</para>
 	<refsect1>
 	  <title>Description</title>
 <para>
-Returns the complete set of all classes in the analyzed system; use this
+Returns the complete set of all classes in the analyzed system; you can use this
 expression as a starting point when you are doing a global search
 of your system.
 </para>
@@ -655,6 +778,29 @@ of your system.
 	  <title>Type</title>
 <para>
 <link linkend="r-type-class">class</link>
+</para>
+	</refsect1>
+      </refentry>
+     <refentry>
+	<refnamediv>
+	  <refname>all packages</refname>
+	  <refpurpose>Returns all the packages in the analyzed system</refpurpose>
+	</refnamediv>
+	<refsynopsisdiv>
+	  <synopsis><userinput>all packages</userinput></synopsis>
+	</refsynopsisdiv>
+	<refsect1>
+	  <title>Description</title>
+<para>
+Returns the complete set of all the java packages in the analyzed system; you can use this
+expression as a starting point when you are doing a global search
+of your system.
+</para>
+	</refsect1>
+	<refsect1>
+	  <title>Type</title>
+<para>
+<link linkend="r-type-package">package</link>
 </para>
 	</refsect1>
       </refentry>
@@ -690,7 +836,7 @@ search through the string constants.</para>
 	    <title>Description</title>
 	    <para>Use this expression to get a single class; useful
 when you are searching within one class.
-name is a quoted string with the name of the class
+<replaceable>name</replaceable> is a quoted string with the name of the class
 as you would type it in a Java program; if you've use the import
 command to set import paths, they will be prepended to the
 name until a valid class is found.</para>
@@ -698,6 +844,26 @@ name until a valid class is found.</para>
 	  <refsect1>
 	    <title>Type</title>
 	    <para><link linkend="r-type-class">Class</link></para>
+	  </refsect1>
+	</refentry>
+	<refentry id="r-package">
+	  <refnamediv>
+	    <refname>package "name"</refname>
+	    <refpurpose>Select a single package by name</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>package <replaceable>name</replaceable></synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>Use this expression to get a single java package; useful
+when you are searching within one package.
+<replaceable>name</replaceable> is a quoted string with the name of the class
+as you would type it in a Java program.</para>
+	  </refsect1>
+	  <refsect1>
+	    <title>Type</title>
+	    <para><link linkend="r-type-package">package</link></para>
 	  </refsect1>
 	</refentry>
 	<refentry>
@@ -852,9 +1018,10 @@ is substituted.
     </sect1>
     <sect1 id="r-transforms">
     	<title>Transforms</title>
-  		<para>Many transforms represent the relationships between
+    	<para>Transforms change a set into another set.</para>
+  		<para>Many transforms and value expressions represent the relationships between
 objects in the &p-bbq; database;
-use these transforms to traverse the relationships
+use these to traverse the relationships
 to get to your desired object type.</para>
 <mediaobject>
 <imageobject>
@@ -862,6 +1029,54 @@ to get to your desired object type.</para>
 </imageobject>
 <textobject><phrase>(Diagram illustrating object relationships and transforms)</phrase></textobject>
 </mediaobject>
+		<refentry id="r-arguments-of">
+		  <refnamediv>
+		    <refname>arguments of</refname>
+		    <refpurpose>Returns the arguments of the methods in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+		    <synopsis>arguments of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+		    <title>Description</title>
+		    <para>
+		    The transform returns all the arguments for the methods in the set.
+		    </para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-argument">argument</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-arguments-with">
+		  <refnamediv>
+		    <refname>arguments with</refname>
+		    <refpurpose>Returns all the arguments with the types in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+		    <synopsis>arguments with</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+		    <title>Description</title>
+		    <para>
+		    For each type in the set, this transform returns all the method arguments,
+		    for any method in the analyzed system, that have that type.  For a large system
+		    and a common argument type (i.e. int), you can expect this to be a large set.
+		    </para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-argument">argument</link></para>
+		  </refsect1>
+		</refentry>
 		<refentry id="r-base-classes">
 		  <refnamediv>
 			<refname>base classes of</refname>
@@ -952,52 +1167,34 @@ where bar is called, you might use:
 		  	<para><link linkend="r-type-call">call</link></para>
 		  </refsect1>
 		</refentry>
-		<refentry id="r-classes-containing">
+		<refentry id="r-classes-in">
 		  <refnamediv>
-			<refname>classes containing</refname>
-			<refpurpose>Returns the classes that contain the class members in the set</refpurpose>
+		    <refname>classes in</refname>
+		    <refpurpose>Returns the classes in a set of packages, or the inner classes within a set of classes</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>classes containing</synopsis>
+		    <synopsis>classes in</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
-			<title>Description</title>
-			<para>
-			Applied to a set of methods, or a set of fields, this transform returns
-			the set of classes in which those methods or fields are defined.
-			</para>
+		    <title>Description</title>
+		    <para>
+		    This operator can represent two different transforms, depending on whether it is applied to a set
+		    of packages or to a set of classes.
+		    </para>
+		    <itemizedlist>
+		    	<listitem>When applied to a set of packages, the transform returns the classes
+		    	in those packages.</listitem>
+		    	<listitem>When applied to a set of classes, the transform returns the inner classes
+		    	contained by those classes.</listitem>
+		    </itemizedlist>
 		  </refsect1>
 		  <refsect1>
-			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-field">field</link></para>
-		  	<para><link linkend="r-type-method">method</link></para>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-class">class</link>, <link linkend="r-type-package">package</link></para>
 		  </refsect1>
 		  <refsect1>
-			<title>Results in Type</title>
-		  	<para><link linkend="r-type-class">class</link></para>
-		  </refsect1>
-		</refentry>
-		<refentry id="r-count">
-		  <refnamediv>
-			<refname>count</refname>
-			<refpurpose>return the number of items in the transformed set</refpurpose>
-		  </refnamediv>
-		  <refsynopsisdiv>
-			<synopsis>count</synopsis>
-		  </refsynopsisdiv>
-		  <refsect1>
-			<title>Description</title>
-			<para>This transform changes any set to a count of the number
-			of items in the set.
-			</para>
-		  </refsect1>
-		  <refsect1>
-			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-object">object</link></para>
-		  </refsect1>
-		  <refsect1>
-			<title>Results in Type</title>
-		  	<para><link linkend="r-type-integer">integer</link></para>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-class">class</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-derived-classes">
@@ -1055,78 +1252,29 @@ where bar is called, you might use:
 		  	<para><link linkend="r-type-field">field</link></para>
 		  </refsect1>
 		</refentry>
-		<refentry id="r-fields-referenced-by">
+		<refentry id="r-fields-with">
 		  <refnamediv>
-			<refname>fields referenced by</refname>
-			<refpurpose>Returns the fields referenced by a
-set of field references</refpurpose>
+		    <refname>fields with</refname>
+		    <refpurpose>Returns all the fields with the types in the set</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>fields referenced by</synopsis>
+		    <synopsis>fields with</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
-			<title>Description</title>
-			<para>
-Applied to a set of field reference objects, this transform returns the set of
-fields referenced.
-			</para>
+		    <title>Description</title>
+		    <para>
+		    For each type in the set, this transform returns all the fields
+		    in the analyzed system that have that type.  For a large system
+		    and a common type (i.e. int), you can expect this to be a large set.
+		    </para>
 		  </refsect1>
 		  <refsect1>
-			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-type">type</link></para>
 		  </refsect1>
 		  <refsect1>
-			<title>Results in Type</title>
-		  	<para><link linkend="r-type-field">field</link></para>
-		  </refsect1>
-		</refentry>
-		<refentry id="r-methods-called-by">
-		  <refnamediv>
-			<refname>methods called by</refname>
-			<refpurpose>Returns the methods called be a set of calls</refpurpose>
-		  </refnamediv>
-		  <refsynopsisdiv>
-			<synopsis>methods called by</synopsis>
-		  </refsynopsisdiv>
-		  <refsect1>
-			<title>Description</title>
-			<para>
-Applied to a set of call objects, this transform returns the set of methods
-that are called.
-			</para>
-		  </refsect1>
-		  <refsect1>
-			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-call">call</link></para>
-		  </refsect1>
-		  <refsect1>
-			<title>Results in Type</title>
-		  	<para><link linkend="r-type-method">method</link></para>
-		  </refsect1>
-		</refentry>
-		<refentry id="r-methods-containing">
-		  <refnamediv>
-			<refname>methods containing</refname>
-			<refpurpose>Returns the methods containing
-			a set of references</refpurpose>
-		  </refnamediv>
-		  <refsynopsisdiv>
-			<synopsis>methods containing</synopsis>
-		  </refsynopsisdiv>
-		  <refsect1>
-			<title>Description</title>
-			<para>
-Applied to a set of reference objects, returns the set of methods
-where those references were found.
-			</para>
-		  </refsect1>
-		  <refsect1>
-			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-reference">reference</link></para>
-		  </refsect1>
-		  <refsect1>
-			<title>Results in Type</title>
-		  	<para><link linkend="r-type-method">method</link></para>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-argument">field</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-methods-in">
@@ -1157,6 +1305,57 @@ where those references were found.
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-methods-with">
+		  <refnamediv>
+		    <refname>methods with</refname>
+		    <refpurpose>Returns all the methods returning the types in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+		    <synopsis>fields with</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+		    <title>Description</title>
+		    <para>
+		    For each type in the set, this transform returns all the methods
+		    in the analyzed system that have that return type.  For a large system
+		    and a common type (i.e. void), you can expect this to be a large set.
+		    </para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-argument">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-packages-in">
+		  <refnamediv>
+		    <refname>packages in</refname>
+		    <refpurpose>Returns the packages nested in the packages in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+		    <synopsis>packages in</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+		    <title>Description</title>
+		    <para>
+		    This transform returns the packages within the packages in the set.  It only
+		    looks at the next nesting level of packages.  It is commonly used with the
+		    <link linkend="r-recursive">recursive</link> operator to examine all the packages
+		    nested at any level within a top-level package: <userinput>recursive ( packages in )</userinput>
+		    </para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-package">package</link></para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-package">package</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-polymorphic">
@@ -1238,7 +1437,7 @@ input methods.
 				</para>
 				<para>
 				<userinput>
-				recursive ( calls from, methods containing)
+				recursive ( calls to, methods containing)
 				</userinput>
 				</para>
 			</refsect2>
@@ -1404,31 +1603,6 @@ in the set.
 		  	</para>
 		  </refsect1>
 		</refentry>
-		<refentry id="r-strings-referenced-by">
-		  <refnamediv>
-			<refname>strings referenced by</refname>
-			<refpurpose>Returns the strings referenced by a
-set of string references</refpurpose>
-		  </refnamediv>
-		  <refsynopsisdiv>
-			<synopsis>strings referenced by</synopsis>
-		  </refsynopsisdiv>
-		  <refsect1>
-			<title>Description</title>
-			<para>
-Applied to a set of string constant reference objects, this transform returns the set of
-string constants referenced.
-			</para>
-		  </refsect1>
-		  <refsect1>
-			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
-		  </refsect1>
-		  <refsect1>
-			<title>Results in Type</title>
-		  	<para><link linkend="r-type-string-constant">string constant</link></para>
-		  </refsect1>
-		</refentry>
 		<refentry id="r-string-constant-references-from">
 		  <refnamediv>
 			<refname>string references from</refname>
@@ -1461,43 +1635,6 @@ with <userinput>( string references from foo ) intersection ( references to stri
 		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
 		  </refsect1>
 		</refentry>
-		<refentry id="r-types-of">
-		  <refnamediv>
-			<refname>types of</refname>
-			<refpurpose>Returns the Java type of a field or argument,
-			or the return type of a method
-			</refpurpose>
-		  </refnamediv>
-		  <refsynopsisdiv>
-			<synopsis>types of</synopsis>
-			<synopsis>type of</synopsis>
-			<highlights>
-				<itemizedlist>
-					<listitem>stateless</listitem>
-				</itemizedlist>
-			</highlights>
-		  </refsynopsisdiv>
-		  <refsect1>
-			<title>Description</title>
-			<para>The transform returns all the string constant references found
-in the methods
-in the set.
-If you have a set of methods foo, and a string constant "bar",
-you can find all the references to "bar" from the methods in foo
-with <userinput>( string references from foo ) intersection ( references to string "bar" )</userinput>.
-			</para>
-		  </refsect1>
-		  <refsect1>
-			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-method">method</link></para>
-		  	<para><link linkend="r-type-field">field</link></para>
-		  	<para><link linkend="r-type-argument">argument</link></para>
-		  </refsect1>
-		  <refsect1>
-			<title>Results in Type</title>
-		  	<para><link linkend="r-type-type">type</link></para>
-		  </refsect1>
-		</refentry>
 		<refentry id="r-uncorrelated">
 		  <refnamediv>
 			<refname>uncorrelated</refname>
@@ -1524,6 +1661,469 @@ of the <replaceable>set expression</replaceable> argument provided.
 		  	<para>The result type is the type of the supplied
 <replaceable>set expression</replaceable> argument.
 		  	</para>
+		  </refsect1>
+		</refentry>
+  	</sect1>
+ 	<sect1 id="r-value-expressions">
+  		<title>Value Expressions</title>
+  		<para>
+  		Count-preserving and group value expressions share many of the properties of transforms.<footnote id="fn-value-expression">Some value expressions
+  		were transforms in previous releases of the language; they can still be used
+  		as transforms, and also used with value-expression specific operators.</footnote>
+        Scalar value expressions can be used as simple set-expressions, as well as with value operators.
+  		The available value expressions
+  		are listed including the context in which they may be applied.
+  		</para>
+		<refentry id="r-classes-containing">
+		  <refnamediv>
+			<refname>classes containing</refname>
+			<refpurpose>Returns the classes that contain the class members in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>classes containing</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to a set of methods, or a set of fields, this transform returns
+			the set of classes in which those methods or fields are defined.
+			Applied to an inner class, it returns the class that contains the inner class.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-classes-with">
+		  <refnamediv>
+			<refname>classes with</refname>
+			<refpurpose>Returns the classes that are referenced by the types in the set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>classes with</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to a set of types, returns the classes that the types reference.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-count">
+		  <refnamediv>
+			<refname>count</refname>
+			<refpurpose>return the number of items in a set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>count</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This expression returns the number of items in a set.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Group</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-integer">integer</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-fields-referenced-by">
+		  <refnamediv>
+			<refname>fields referenced by</refname>
+			<refpurpose>Returns the fields referenced by a
+set of field references</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>fields referenced by</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a field reference object, this value expression returns the field referenced.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-first">
+		  <refnamediv>
+			<refname>first</refname>
+			<refpurpose>Return the first item in a set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>first</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This expression returns the first item produced in a set.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Group</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-group-of">
+		  <refnamediv>
+			<refname>group of</refname>
+			<refpurpose>Create a count-preserving expression from a group value expression</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis><replaceable>group-value-expression</replaceable> of ( <replaceable>transform</replaceable> )</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This construction allows you to make a count-preserving value expression from a
+			group value expression.</para>
+			<para>When this expression is evaluated for an object,
+			<replaceable>transform</replaceable> is applied to the object,
+			and the result of the expression is the result of <replaceable>group-value-expression</replaceable>
+			applied to the resulting set.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para>The applicable type of <replaceable>transform</replaceable></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para>The result type of <replaceable>group-value-expression</replaceable></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-methods-called-by">
+		  <refnamediv>
+			<refname>methods called by</refname>
+			<refpurpose>Returns the methods called be a set of calls</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>methods called by</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a call object, this expression returns the set method
+that is called.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-call">call</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-methods-containing">
+		  <refnamediv>
+			<refname>methods containing</refname>
+			<refpurpose>Returns the methods containing
+			a set of references</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>methods containing</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a reference object, returns the method
+where that reference were found.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-reference">reference</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-methods-of">
+		  <refnamediv>
+			<refname>methods of</refname>
+			<refpurpose>Returns the method of an argument</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>methods of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to an argument, returns the method that has that argument.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-argument">argument</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-number-value">
+		  <refnamediv>
+			<refname>number</refname>
+			<refpurpose>a nymber</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>number</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>A number that appears as a constant scalar expression.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Scalar</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-integer">integer</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-packages-of">
+		  <refnamediv>
+			<refname>packages of</refname>
+			<refpurpose>Returns the package that contains a class</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>packages of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to a class, returns the package that contains that class.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-package">package</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-string-value">
+		  <refnamediv>
+			<refname>string expression</refname>
+			<refpurpose>a string</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>"some string"</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>A quoted string that is not part of another operator is a scalar value expression,
+			with the value being that string.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Scalar</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string">string</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-strings-referenced-by">
+		  <refnamediv>
+			<refname>strings referenced by</refname>
+			<refpurpose>Returns the string referenced by a string reference</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>strings referenced by</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applied to string constant reference object, this expression returns the string constant that is referenced.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string-constant">string constant</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-type">
+		  <refnamediv>
+			<refname>type</refname>
+			<refpurpose>Returns the type named by a certain string</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>type</synopsis>
+			<synopsis>types</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para><userinput>type</userinput> returns the type named by a string.
+			For reference types, the complete name of the class should be included in the string.
+			For array types, add [] to the end of the string for each array dimension.
+			</para>
+			<para>
+			Examples:
+			</para>
+			<para><userinput>type "void"</userinput></para>
+			<para><userinput>type "int[]"</userinput></para>
+			<para><userinput>type "java.util.Vector"</userinput></para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string">string</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-type-of">
+		  <refnamediv>
+			<refname>type of</refname>
+			<refpurpose>return the type that references a class, or the type of a field or an argument,
+			or the return type of a function.</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>type of</synopsis>
+			<synopsis>types of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para><userinput>type of</userinput> can be applied
+			to argument, class, field or method objects.
+			When applied to arguments or fields, it returns the type of the
+			argument or field.
+			When applied to a method, it returns the return type of the method.
+			When applied to a class, it returns the type that references that class.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-argument">argument</link></para>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-type-referenced-by">
+		  <refnamediv>
+			<refname>type referenced by</refname>
+			<refpurpose>Returns the type that an array type is an array of</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>type referenced by</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+Applies to a type that is an array type, this returns the type of the members of an array.
+If the array is multi-dimensional, this will effectively strip off one dimension of the array.
+If the type does not represent a reference type, this will expression will return null.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
 		  </refsect1>
 		</refentry>
   	</sect1>
@@ -1556,6 +2156,27 @@ the compound filter <userinput>not interface abstract</userinput>.
 		  <refsect1>
 			<title>Applies to Type</title>
 		  	<para><link linkend="r-type-class">class</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+        </refentry>
+		<refentry id="r-deprecated">
+		  <refnamediv>
+			<refname>deprecated</refname>
+			<refpurpose>Checks whether a class, field or method is marked deprecated</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>deprecated</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This filter tests whether a member of the set
+			is marked as being deprecated.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  	<para><link linkend="r-type-field">field</link></para>
 		  	<para><link linkend="r-type-method">method</link></para>
 		  </refsect1>
         </refentry>
@@ -1605,6 +2226,43 @@ an interface.
 		  <refsect1>
 			<title>Applies to Type</title>
 		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+        </refentry>
+		<refentry id="r-is-array">
+		  <refnamediv>
+			<refname>is array</refname>
+			<refpurpose>Checks whether a type is an array type</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>is array</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This filter tests whether a member of a set of types is an array type.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+        </refentry>
+		<refentry id="r-is-reference-type">
+		  <refnamediv>
+			<refname>is reference type</refname>
+			<refpurpose>Checks whether a type is a reference type or a built-in type</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>is reference type</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>This filter tests whether a member of a set of types is a reference type (that is,
+			a class or an array type, as opposed to a built-in value type).
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
 		  </refsect1>
         </refentry>
 		<refentry id="r-matching">
@@ -1716,6 +2374,78 @@ if it updates the value of the field.
 		  	<para><link linkend="r-type-field-reference">field reference</link></para>
 		  </refsect1>
 		</refentry>
+  	</sect1>
+   	<sect1 id="r-operators">
+  		<title>Operators</title>
+  		<para>The language supports set operators, logical operators, and value operators.</para>
+  		<sect2 id="r-set-operators">
+  			<title>Set Operators</title>
+  			<para>Set operators combine two set expressions or two transforms in different ways:</para>
+  			<variablelist>
+  				<varlistentry>
+  					<term>union</term>
+  					<listitem>
+  					<para>The <userinput>union</userinput> operator combines all the elements of two sets.</para>
+  					</listitem>
+  				</varlistentry>
+  				<varlistentry>
+  					<term>intersection</term>
+  					<listitem>
+  					<para>The <userinput>intersection</userinput> operator creates a set containing only those elements that appear in both
+  					operand sets.</para>
+  					</listitem>
+  				</varlistentry>
+  				<varlistentry>
+  					<term>without</term>
+  					<listitem>
+  					<para>The <userinput>without</userinput> operator creates a set containing only those elements in the first operand
+  					set that do not also exist in the second operand set.  This operation is sometimes referred to as "difference".</para>
+  					</listitem>
+  				</varlistentry>
+  				<varlistentry>
+  					<term>deintersection</term>
+  					<listitem>
+  					<para>The <userinput>deintersection</userinput> operator creates a set containing only those elements that appear
+  					in one of the operand sets that don't appear in both operand sets.  This operation is sometimes referred to as "symmetric difference".</para>
+  					</listitem>
+  				</varlistentry>
+  			</variablelist>
+  		</sect2>
+  		<sect2 id="r-logical-operators">
+  			<title>Logical Operators</title>
+  			<para>Logical operators let you combine filters into different filters.</para>
+ 			<variablelist>
+  				<varlistentry>
+  					<term>and</term>
+  					<listitem>
+  					<para>The <userinput>and</userinput> operator results in a filter that passes a value only
+  					if it passes both operand filters.</para>
+  					</listitem>
+  				</varlistentry>
+  				<varlistentry>
+  					<term>or</term>
+  					<listitem>
+  					<para>The <userinput>or</userinput> operator results in a filter that passes a value if either
+  					of the operand filters pass the value.</para>
+  					</listitem>
+  				</varlistentry>
+  				<varlistentry>
+  					<term>not</term>
+  					<listitem>
+  					<para>The <userinput>not</userinput> operator applies to a single filter and
+  					changes its sense, so that it rejects values it would pass and passes values
+  					it would reject.</para>
+  					</listitem>
+  				</varlistentry>
+  			</variablelist>
+  		</sect2>
+  		<sect2 id="r-value-operators">
+  			<title>Value Operators</title>
+  			<para>Value operators combine two value expressions into a single value expression.</para>
+  			<para>&p-bbq; currently defines only one value operator, <userinput>&amp;</userinput>.
+  			This operator concatenates two <link linkend="r-type-string">string</link>-type expressions.
+  			</para>
+  		</sect2>
   	</sect1>
   </chapter>
 </book>
