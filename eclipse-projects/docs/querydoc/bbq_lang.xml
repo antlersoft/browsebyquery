@@ -596,7 +596,7 @@ type that is an ancestor of each of the constituent result types.
       <refentry id="r-type-date">
 	<refnamediv>
 	  <refname>date</refname>
-	  <refpurpose>Represents a data</refpurpose>
+	  <refpurpose>Represents a date</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Parent</title>
@@ -1274,7 +1274,7 @@ where bar is called, you might use:
 		  </refsect1>
 		  <refsect1>
 		    <title>Results in Type</title>
-		    <para><link linkend="r-type-argument">field</link></para>
+		    <para><link linkend="r-type-field">field</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-methods-in">
@@ -1329,7 +1329,7 @@ where bar is called, you might use:
 		  </refsect1>
 		  <refsect1>
 		    <title>Results in Type</title>
-		    <para><link linkend="r-type-argument">method</link></para>
+		    <para><link linkend="r-type-method">method</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-packages-in">
@@ -2332,7 +2332,7 @@ the analyzed system.  Equivalent to the filter <userinput>not exists ( calls to 
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-uncalled-polymorphic">
@@ -2352,7 +2352,7 @@ the analyzed system.  Equivalent to the filter <userinput>not exists ( calls to 
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-field-reference">field reference</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-write">
