@@ -52,6 +52,7 @@ implements ValueExpression, CountPreservingValueContext
 	{
 		m_transform.startEvaluation( source);
 		GroupValueContext context=(GroupValueContext)m_expr.getContext();
+		context.startGroup( vobj, source);
 		Enumeration e=m_transform.transformObject( source, next);
 		boolean need_more=true;
 		while ( need_more && e.hasMoreElements())

@@ -8,7 +8,7 @@ symbol Types
 symbol UncalledPolymorphic
 symbol SAVING_NAME
 
-reserved Abstract "abstract"
+reserved Abstract "abstract" 4 right
 reserved all
 reserved are
 reserved arguments
@@ -27,7 +27,7 @@ reserved from
 reserved Import "import"
 reserved in
 reserved is
-reserved Interface "interface"
+reserved Interface "interface" 4 right
 reserved methods
 reserved Package "package" 4 right
 reserved packages
@@ -41,6 +41,7 @@ reserved referenced
 reserved rightParen ")"
 reserved set
 reserved SetExpressionSymbol "((#1"
+reserved Static "static" 4 right
 reserved stringconstant "string"
 reserved stringconstants "strings"
 reserved that
@@ -225,6 +226,7 @@ FILTER : Package "{
         ClassWriter.ACC_PROTECTED, 0);
     }" .
 FILTER : Abstract "{ return new AccessFilter( ClassWriter.ACC_ABSTRACT); }" .
+FILTER : Static "{ return new AccessFilter( ClassWriter.ACC_STATIC); }" .
 FILTER : Interface "{ return new AccessFilter( ClassWriter.ACC_INTERFACE); }" .
 FILTER : deprecated "{ return new DeprecatedFilter(); }" .
 

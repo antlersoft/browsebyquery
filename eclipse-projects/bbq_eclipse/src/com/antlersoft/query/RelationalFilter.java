@@ -71,7 +71,7 @@ public class RelationalFilter extends Filter {
     public void lateBindApplies(Class new_applies) throws BindException {
 		m_binding.lateBindApplies( new_applies);
 		if ( m_comp==SetOperator.DefaultComparator.m_default && m_type!=EQUALS && m_type!=NOT_EQUALS
-				&& ! Comparable.class.isAssignableFrom( new_applies))
+				&& ! Comparable.class.isAssignableFrom( m_binding.resultClass()))
 			throw new BindException( "Trying to compare non-comparable types");
     }
     public Class appliesClass() {

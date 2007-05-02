@@ -88,7 +88,18 @@ SET_EXPRESSION : previous "{
 VALUE_EXPRESSION : literalString
 "{ return new Constant( valueStack.get( valueStack.size()-1)); }" .
 VALUE_EXPRESSION : number
-"{ return new Constant( valueStack.get( valueStack.size()-1)); }" .
+"{ 
+	Integer val;
+	try
+	{
+		val=new Integer( (String)valueStack.get( valueStack.size()-1));
+	}
+	catch ( NumberFormatException nfe)
+	{
+		val=new Integer(0);
+	}
+	return new Constant( val); }" .
+	
 VALUE_EXPRESSION : GROUP_EXPRESSION
 "{ return valueStack.get( valueStack.size()-1); }" .
 VALUE_EXPRESSION : VALUE_EXPRESSION ampersand VALUE_EXPRESSION

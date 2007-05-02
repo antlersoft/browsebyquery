@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -29,7 +28,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.antlersoft.parser.Parser;
-import com.antlersoft.parser.Symbol;
 import com.antlersoft.parser.Token;
 
 import com.antlersoft.query.BasicBase;
@@ -54,6 +52,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	public QueryLanguageEnvironment( BasicBase parser)
 	{
 		m_parser=parser;
+		m_lexer=new Lexer( parser);
 		parser.setParserEnvironment( this);
 		storedValues=new HashMap();
 		storedValuesSupport=new PropertyChangeSupport(this);
@@ -86,7 +85,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	
 	public void setLine( String toParse)
 	{
-	    tokens=tokenize( toParse);
+	    tokens=m_lexer.tokenize( toParse);
 	}
 	
 	// Bean type interface for accessing stored value names
@@ -240,6 +239,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	
 	private BasicBase m_parser;
 	private Stack m_sequence_stack;
+	private Lexer m_lexer;
 	
 	
 	/**
@@ -277,103 +277,6 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 			to_restore.setResult( exp);
 	}
 	
-	/**
-	 * Add the token represented by the content of the current buffer to the list of tokens
-	 * @param currentString Current buffer of received characters
-	 * @param tokens List of tokens
-	 */
-	private void addCurrentString( StringBuffer currentString, Vector tokens)
-	{
-	    if ( currentString.length()>0)
-	    {
-	        String cs=currentString.toString();
-	        currentString.setLength(0);
-	        Symbol rw=m_parser.getReservedScope().findReserved( cs);
-	        if ( rw==null)
-	        {
-	            tokens.addElement( new Token( BasicBase.nameSymbol, cs));
-	        }
-	        else
-	        {
-	            tokens.addElement( new Token( rw, cs));
-	        }
-	    }  	
-	}
-	
-	Token[] tokenize( String toTokenize)
-	{
-	    char[] chars=toTokenize.toCharArray();
-	    Vector tokens=new Vector();
-	    StringBuffer currentString=new StringBuffer();
-	    int i=0;
-	    boolean inQuoted=false;
-	    for ( ; i<=chars.length; i++)
-	    {
-	        char c;
-	        if ( i==chars.length)
-	        {
-	            if ( inQuoted)
-	                c='"';
-	            else
-	                c='\n';
-	        }
-	        else
-	        {
-	            c=chars[i];
-	        }
-	        if ( inQuoted)
-	        {
-	            if ( c=='"')
-	            {
-	                tokens.addElement( new LiteralToken( currentString.toString()));
-	                currentString.setLength(0);
-	                inQuoted=false;
-	            }
-	            else
-	                currentString.append( c);
-	        }
-	        else
-	        {
-	            switch ( c)
-	            {
-	            // Whitespace cases
-	            case ' ' :
-	            case '\r' :
-	            case '\n' :
-	            case '\t' :
-	            	addCurrentString( currentString, tokens);
-	            	break;
-	            	
-	            // Initial quote
-	            case '"' :
-	            	addCurrentString( currentString, tokens);
-	                if ( c=='"')
-	                {
-	                    inQuoted=true;
-	                }
-	                break;
-	                
-	            // Non-quote Punctuation-- only supports single char punctuation tokens
-	            case ',' :
-	            case '(' :
-	            case ')' :
-	            	addCurrentString( currentString, tokens);
-	            	currentString.append( c);
-	            	addCurrentString( currentString, tokens);
-	            	break;
-	
-	            default :
-	                currentString.append( c);
-	            }
-	        }
-	    }
-	    tokens.addElement( new Token( Parser._end_, ""));
-	
-	    Token[] retval=new Token[tokens.size()];
-	    tokens.copyInto( retval);
-	    return retval;
-	}
-
 	// Implementation of ParserEnvironment
 	
 	public SetExpression getLastParsedExpression() {
