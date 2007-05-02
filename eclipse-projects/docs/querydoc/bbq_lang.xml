@@ -181,7 +181,7 @@ The language implements many filters, described in the
 </para>
 <para>
 Filters represent a boolean condition, and so you can combine them
-with boolean operators (not, and, or) to create a more complex filter.
+with boolean operators (not, and, or, xor) to create a more complex filter.
 <userinput>( public or protected ) methods in class "java.util.ArrayList"</userinput>
 will give the list of all the methods in the class that are visible outside
 its package.
@@ -236,7 +236,8 @@ the expression returns (this type is distinct from any type within the
 analyzed system.)
 &p-bbq; supports a hierarchy of types that is fully described in the
 <link linkend="r-types">reference</link>:
-it includes: classes, methods, fields, method calls, field references,
+it includes: classes, methods, fields, method calls, field references, types (Java types), arguments,
+packages,
 and strings and numbers in expressions.
 </para>
 <para>
@@ -358,6 +359,160 @@ to the same type resolution rules applicable to sets and transforms.
 </para>
 </sect1>
     </chapter>
+    <chapter id="r-tutorial-examples">
+    	<title>Tutorial Examples</title>
+    	<para>Now that you've had the birds-eye view of &p-bbq;, you may
+    	be looking for examples that illustrate how the pieces fit together.
+    	We'll examine in detail some queries that perform tasks which I hope
+    	are both recognizable as the sort of tasks you might face, and also complex
+    	enough to show how the power
+    	of &p-bbq; can be useful.</para>
+    	<sect1>
+    		<title>Basic Queries</title>
+    		<para>
+    		To warm up, we'll write some queries that perform basic browsing functionality
+    		that is already available in most IDE's.  If you're familiar at all with your IDE,
+    		it's probably easier just to click on an object in the explorer and select
+    		the right menu item than to type in these queries, but they will illustrate
+    		the principles of &p-bbq;, and you always have the ability to build on them
+    		to meet your specialized needs.
+    		</para>
+    		<para>
+    		First, let's find the set of all calls to a particular method.
+    		In this example we'll find the calls to the <userinput>iterator</userinput>
+    		method in <userinput>java.util.ArrayList</userinput>.
+    		You start with the <link linkend="r-calls-to"><userinput>calls to</userinput></link>
+    		transform; that returns the result you want.  <userinput>calls to</userinput>
+    		applies to a set of methods; so you next want to specify the method.
+    		In &p-bbq; you normally pick a specific method (or field) by applying the <link linkend="r-matching">
+    		<userinput>matching</userinput></link> filter with the name of the method to
+    		the set of methods in a class.  You pick a particular class with the
+    		<link linkend="r-class"><userinput>class</userinput></link> simple set expression.
+    		So the complete query is:
+    		</para>
+    		<informalexample>
+    			<programlisting>calls to matching "iterator" methods in class "java.util.ArrayList"</programlisting>
+    		</informalexample>
+    		<para>
+    		Finding references to fields is very similar:
+    		</para>
+    		<informalexample>
+    			<programlisting>references to matching "gridx" fields in class "java.awt.GridBagConstraints"</programlisting>
+    		</informalexample>
+    		<para>
+    		If you don't want to type the complete path of the class, you can use the <link linkend="r-import">
+    		<userinput>import</userinput></link> expression to set
+    		packages to search automatically.
+    		</para>
+    		<informalexample>
+    			<programlisting>import "java.awt"</programlisting>
+    		</informalexample>
+    		<para>
+    		Then you can write the same query:
+    		</para>
+    		<informalexample>
+    			<programlisting>references to matching "gridx" fields in class "GridBagConstraints"</programlisting>
+    		</informalexample>
+    	</sect1>
+    	<sect1>
+    		<title>A More Complex Example: Serializable Classes Missing <varname>serialVersionUID</varname></title>
+	    	<para>
+	    	If you have a class that implements <classname>java.io.Serializable</classname>,
+	    	it's a good idea to to have the class include a version identifier in the form
+	    	of a static long field named <varname>serialVersionUID</varname>.  This 
+	    	query will identify such classes.</para>
+	    	<para>First, let's find the classes that implement <classname>java.io.Serializable</classname>.
+	    	Start with the <link linkend="r-class"><userinput>class</userinput></link> set expression,
+	    	and apply the <link linkend="r-recursive-derived-classes"><userinput>recursive derived classes of</userinput></link>
+	    	transform.
+	    	</para>
+	   		<informalexample>
+    			<programlisting>recursive derived classes of class "java.io.Serializable"</programlisting>
+    		</informalexample>
+	    	<para>
+	    	Now, we'll refine the query to include only those classes that <emphasis>do not</emphasis>
+	    	have the version marker.
+	    	"Does not have" in &p-bbq; generally translates to the <link linkend="r-exists"><userinput>exists</userinput></link>
+	    	filter modified by the <link linkend="r-operators"><userinput>not</userinput></link>
+	    	operator; <link linkend="r-exists"><userinput>exists</userinput></link> takes a transform argument
+	    	that should produce whatever we are testing the existence of.
+	    	In this case we are testing for a field with a certain name; we'll specify the name
+	    	with the <link linkend="r-matching"><userinput>matching</userinput></link> filter.
+	    	So the transform that finds the appropriate field in the class is:
+	    	</para>
+	    	<informalexample>
+	    		<programlisting>matching "serialVersionUID" fields in<lineannotation> ...</lineannotation></programlisting>
+	    	</informalexample>
+	    	<para>
+	    	We use that transform with the <link linkend="r-exists"><userinput>exists</userinput></link> filter
+	     	to get the more specific set expression:
+		   	</para>
+	    	<informalexample>
+	    		<programlisting>not exists ( matching "serialVersionUID" fields in ) recursive derived classes of class "java.io.Serializable"</programlisting>
+	    	</informalexample>
+	    	<para>
+	    	Straightforward enough, I hope, and in fact the Eclipse IDE duplicates this
+	    	functionality and by default will flag such classes in
+	    	your project.
+	    	</para>
+	    	<para>
+	    	The problem with the output of the query as written is that it might return a number of classes
+	    	that are serializable only incidentally; for these classes you don't care if there is a <varname>serialVersionUID</varname>
+	    	field.  For example (making some quick use to the <link linkend="r-count"><userinput>count</userinput></link>
+	    	expression) the Eclipse 3.1 code base has 368 <classname>Serializable</classname> classes; only 169 of these
+	    	have a serialVersionUID field.   Presumably, for the remaining 199 classes, it's not that important.
+	    	One of the advantages of &p-bbq; is that it lets you focus quickly on what you <emphasis>do</emphasis>
+	    	think is important.  Suppose you were not interested in all classes that implement <classname>Serializable</classname>,
+	    	but only those that are derived from <classname>Persistent</classname>.
+	    	You can readily modify the query and get exactly the list of classes that you want:
+	    	</para>
+	    	<informalexample>
+	    		<programlisting>not exists ( matching "serialVersionUID" fields in ) recursive derived classes of class "Persistent"</programlisting>
+	    	</informalexample>
+	    	<para>
+	    	Alternatively, you might be interested in any <classname>Serializable</classname> class within a certain package tree.
+	    	You can do that by applying the transform that looks for the missing field
+	    	</para>
+	    	<informalexample>
+	    		<programlisting>not exists ( matching "serialVersionUID" fields in )<lineannotation> ...</lineannotation></programlisting>
+	    	</informalexample>
+	    	<para>
+	    	to the intersection	of the two sets of classes: classes derived from <classname>java.io.Serializable</classname>
+	    	and classes within a package tree.
+	    	</para>	    	
+	    	<informalexample>
+	    		<programlisting>recursive derived classes of class "Persistent" intersection classes in recursive ( packages in ) package "com.antlersoft"</programlisting>
+	    	</informalexample>
+	    	<para>
+	    	When we construct the full expression we have to use parentheses to group the
+	    	set expression because the intersection operator has low precedence:
+	    	</para>
+	    	<informalexample>
+	    		<programlisting>not exists ( matching "serialVersionUID" fields in ) ( recursive derived classes of class "Persistent" intersection classes in recursive ( packages in ) package "com.antlersoft" )</programlisting>
+	    	</informalexample>
+	    	<para>
+	    	When we deal with longer examples, it can help to use line breaks and indenting to see the structure of
+	    	the query.
+	    	A good rule is to break and indent at parentheses, and break lines before and after and back indent set
+	    	operators.
+	    	</para>
+	    	<informalexample>
+	    	<programlisting>
+	    	not exists (
+	    		matching "serialVersionUID" fields in
+	    	)
+	    	(
+	    		recursive derived classes of class "Persistent"
+	    	  intersection
+	    		classes in recursive (
+	    			packages in
+	    		)
+	    		package "com.antlersoft"
+	    	)
+	    	</programlisting>
+	    	</informalexample>
+	    </sect1>
+    </chapter>
   <chapter>
     <title>Language Reference</title>
     <para>
@@ -478,6 +633,7 @@ or a value expression enclosed within parentheses.
 <member>referenced</member>
 <member>same</member>
 <member>set</member>
+<member>static</member>
 <member>string</member>
 <member>strings</member>
 <member>that</member>
@@ -487,9 +643,11 @@ or a value expression enclosed within parentheses.
 <member>uncalled</member>
 <member>uncorrelated</member>
 <member>union</member>
+<member>unique</member>
 <member>with</member>
 <member>without</member>
 <member>write</member>
+<member>xor</member>
       </simplelist>
       <para>Reserved words all start with a lowercase letter.  Therefore, it is a convention of the language
       that user defined operators (for set expressions or transforms) start with an uppercase letter;
@@ -758,7 +916,7 @@ the interpreter's state..</para>
     <sect2 id="r-simplesetexpressions">
       <title>Simple Set Expressions</title>
 	</sect2>
-      <refentry>
+      <refentry id="r-all-classes">
 	<refnamediv>
 	  <refname>all classes</refname>
 	  <refpurpose>Returns all classes in the analyzed system</refpurpose>
@@ -919,7 +1077,7 @@ to save the result of a time-consuming query for use in
 later expressions.</para>
 </refsect1>
 	</refentry>
-	<refentry>
+	<refentry id="r-import">
 	  <refnamediv>
 	    <refname>import</refname>
 	    <refpurpose>Set a list of packages to search for classes</refpurpose>
@@ -1663,6 +1821,31 @@ of the <replaceable>set expression</replaceable> argument provided.
 		  	</para>
 		  </refsect1>
 		</refentry>
+		<refentry id="r-unique">
+		  <refnamediv>
+			<refname>unique</refname>
+			<refpurpose>Remove duplicate elements in a set</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>unique</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+		  	<para>
+This transform returns only one instance of each object in the transformed set; duplicate
+instances are discarded.
+		  	</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para>Any</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para>The result type is the type of the transformed set expression.
+		  	</para>
+		  </refsect1>
+		</refentry>
   	</sect1>
  	<sect1 id="r-value-expressions">
   		<title>Value Expressions</title>
@@ -2316,6 +2499,26 @@ to test if it was declared with the default visibility.
 		  	<para><link linkend="r-type-method">method</link></para>
 		  </refsect1>
 		</refentry>
+		<refentry id="r-static">
+		  <refnamediv>
+			<refname>static</refname>
+			<refpurpose>Checks whether a field or method is static</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>static</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			A method or a field passes this filter if it is declared as static.
+			</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-field">field</link></para>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
 		<refentry id="r-uncalled">
 		  <refnamediv>
 			<refname>uncalled</refname>
@@ -2427,6 +2630,13 @@ if it updates the value of the field.
   					<listitem>
   					<para>The <userinput>or</userinput> operator results in a filter that passes a value if either
   					of the operand filters pass the value.</para>
+  					</listitem>
+  				</varlistentry>
+  				<varlistentry>
+  					<term>xor</term>
+  					<listitem>
+  					<para>The <userinput>xor</userinput> operator results in a filter that passes a value if either
+  					of the operand filters, but not both, pass the value.</para>
   					</listitem>
   				</varlistentry>
   				<varlistentry>
