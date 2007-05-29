@@ -74,6 +74,25 @@ public class RecursiveTransform extends Transform {
 	Transform m_main_transform;
 	Transform m_sub_transform;
 
+	/**
+	 * Stores the recursion level of each enumeration
+	 * @author Michael A. MacDonald
+	 *
+	 */
+	static class LevelOf
+	{	
+		int m_recursion_level;
+		Enumeration m_enum;
+		
+		LevelOf( Enumeration e, int level)
+		{
+			m_enum=e;
+			m_recursion_level=level;
+		}
+	}
+	
+	private static final int LEVEL_LIMIT=50;
+	
 	class RecursiveEnumeration implements Enumeration
 	{
 		RecursiveEnumeration( DataSource source, Enumeration initial)
@@ -81,7 +100,7 @@ public class RecursiveTransform extends Transform {
 			m_source=source;
 			m_enum_stack=new ArrayList();
 			if ( initial.hasMoreElements())
-				m_enum_stack.add( initial);
+				m_enum_stack.add( new LevelOf( initial, 1));
 		}
 
 		public boolean hasMoreElements()
@@ -91,29 +110,33 @@ public class RecursiveTransform extends Transform {
 
 		public Object nextElement()
 		{
-			Enumeration top_enum=(Enumeration)m_enum_stack.get( m_enum_stack.size()-1);
-			Object result=top_enum.nextElement();
-			if ( ! top_enum.hasMoreElements())
+			LevelOf top_enum=(LevelOf)m_enum_stack.get( m_enum_stack.size()-1);
+			Object result=top_enum.m_enum.nextElement();
+			if ( ! top_enum.m_enum.hasMoreElements())
 				m_enum_stack.remove( m_enum_stack.size()-1);
-			if ( m_sub_transform==null)
+			if ( top_enum.m_recursion_level<LEVEL_LIMIT)
 			{
-				Enumeration next_enum=m_main_transform.transformObject( m_source, result);
-				if ( next_enum.hasMoreElements())
-					m_enum_stack.add( next_enum);
-			}
-			else
-			{
-				Enumeration sub_enum=m_sub_transform.transformObject( m_source, result);
-				while ( sub_enum.hasMoreElements())
+				if ( m_sub_transform==null)
 				{
-					Enumeration next_enum=m_main_transform.transformObject( m_source, sub_enum.nextElement());
+					Enumeration next_enum=m_main_transform.transformObject( m_source, result);
 					if ( next_enum.hasMoreElements())
-						m_enum_stack.add( next_enum);
+						m_enum_stack.add( new LevelOf( next_enum, top_enum.m_recursion_level+1));
+				}
+				else
+				{
+					Enumeration sub_enum=m_sub_transform.transformObject( m_source, result);
+					while ( sub_enum.hasMoreElements())
+					{
+						Enumeration next_enum=m_main_transform.transformObject( m_source, sub_enum.nextElement());
+						if ( next_enum.hasMoreElements())
+							m_enum_stack.add( new LevelOf( next_enum, top_enum.m_recursion_level+1));
+					}
 				}
 			}
 			return result;
 		}
 		private DataSource m_source;
+		/** List of LevelOf objects with pending enums */
 		private ArrayList m_enum_stack;
 	}
 }
