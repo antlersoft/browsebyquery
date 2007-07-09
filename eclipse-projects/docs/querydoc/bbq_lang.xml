@@ -165,7 +165,7 @@ as part of value expressions.
 </para>
 </sect2>
 </sect1>
-<sect1>
+<sect1 id="r-filters-intro">
 <title>Filters</title>
 <para>
 A filter is a special kind of transform which changes the
@@ -298,9 +298,8 @@ subset known as <firstterm>value expressions</firstterm>,
 which are guaranteed to result in a single value--rather than a set--when
 evaluated within a particular context.
 In &p-bbq;, constants are value expressions,
-some operators (i.e. <link linkend="r-count">count</link>, +) produce value expressions,
-and some operators (i.e. relational operators, +)
-can only work with value expressions.
+some operators (i.e. <link linkend="r-count"><userinput>count</userinput></link>, <userinput>&amp;</userinput>) produce value expressions,
+and <link linkend="r-value-operators">value operators</link> can only be used with value expression.
 Value expressions, in turn, can be used as part of set expressions or transforms.
 </para>
 <para>
@@ -357,6 +356,34 @@ and non-scalar value expressions have a type to which they apply.
 Combining value expressions with value operators is subject
 to the same type resolution rules applicable to sets and transforms.
 </para>
+	<sect2>
+		<title>Relational Operators and Value Expressions</title>
+		<para>
+		&p-bbq; supports comparing value expressions with the full set of relational operators
+		(<userinput>&lt; &lt;= = != >= ></userinput>).  The result of such a comparison
+		is a <link linkend="r-filters-intro">filter</link> applied
+		to the expression that produced the value expressions.
+		</para>
+		<para>
+		The <userinput>=</userinput> and <userinput>!=</userinput>
+		operators apply to all types;
+		the other relational operators only apply to the types with a pre-defined ordering,
+		<link linkend="r-type-integer">integer</link> and
+		<link linkend="r-type-string">string</link>.
+		Therefore these other operators are most likely to be useful in conjunction
+		with the <userinput><link linkend="r-count">count</link></userinput> expression.
+		For example, to find all the methods in the analyzed system with more than
+		3 arguments, you might use the following set expression:
+		</para>
+		<informalexample>
+		<programlisting>( count of ( arguments of ) &gt; 3 ) methods in all classes</programlisting>
+		</informalexample>
+		<para>
+		Note how in this example the relational operator expression that acts as a filter
+		is enclosed in parentheses because the relational operators have lower precedence than the
+		default rule, which is to apply transforms and value expressions to the following set expression.
+		</para>
+	</sect2>
 </sect1>
     </chapter>
     <chapter id="r-tutorial-examples">
@@ -413,9 +440,76 @@ to the same type resolution rules applicable to sets and transforms.
     		<informalexample>
     			<programlisting>references to matching "gridx" fields in class "GridBagConstraints"</programlisting>
     		</informalexample>
+    		<para>
+    		In the examples so far, we've been querying the simple set expression <userinput><link linkend="r-class">class</link></userinput>.
+    		This is probably the one you will use most often, since it quickly sets the scope of the search to be
+    		a particular class.
+    		You can also do a more comprehensive search against <userinput><link linkend="r-all-classes">all classes</link></userinput>.
+    		or within a <userinput><link linkend="r-package">package</link></userinput>.
+    		For example, to find all the classes with "List" in their name in "java.util", you would use:
+    		</para>
+    		<informalexample>
+    			<programlisting>matching "List" classes in package "java.util"</programlisting>
+    		</informalexample>
+    		<para>You can use <userinput><link linkend="r-all-classes">all classes</link></userinput>
+    		or <userinput><link linkend="r-all-packages">all packages</link></userinput> when you
+    		want to search through the entire analyzed system, but your query will take a little longer (or a lot longer)
+    		to run.  In some cases, this might be exactly what you need: suppose you remember
+    		part of a method name, but can't remember what class it's in.  &p-bbq; let's you
+    		do the search more conveniently than a string-matching search through your source
+    		files, because &p-bbq; knows what a method name is.
+    		</para>
+    		<informalexample>
+    			<programlisting>matching "scape" methods in all classes</programlisting>
+    		</informalexample>
+    		<para>
+    		Similarly, &p-bbq; knows when a sequence of characters in your code is part
+    		of a string constant;
+    		there are a couple of simple set expressions just for searching string constants.
+    		You can look for references to a
+    		particular string:
+    		</para>
+    		<informalexample>
+    			<programlisting>references to string "import"</programlisting>
+    		</informalexample>
+    		<para>
+    		You can also look for all string constants in the analyzed system that contain a certain sub-string:
+    		</para>
+    		<informalexample>
+    			<programlisting>references to matching "import" all strings</programlisting>
+    		</informalexample>
+    		<para>
+    		When you look for "all references to" something in any code browser,
+    		you will often get a lot of irrelevant results.
+    		You'll then look through the returned items one by one to find those you are actually
+    		interested in.
+    		If you have a good idea of the filtering you will do when you look through the browser results,
+    		why not make this part of the query and have the browser do the work?
+    		With &p-bbq; you can do this; you can use set operators or the <userinput><link linkend="r-exists">exists</link></userinput>
+    		filter to search for calls to method <userinput>foo</userinput>
+    		only from methods that also contain calls to method <userinput>bar</userinput>.
+    		</para>
+    		<informalexample>
+    			<programlisting>( methods containing calls to matching "foo" methods in class "Sample" ) intersection ( methods containing calls to matching "bar" methods in class "Sample" )</programlisting>
+    		</informalexample>
+    		<para>
+    		You now have some experience with the <link linkend="r-simplesetexpressions">simple set expressions</link>
+    		and a few of the <link linkend="r-transforms">transforms</link>,
+    		and you can compose searches of the &p-bbq; database equivalent
+    		to, and beyond, the browser functions of your IDE.
+    		These searches can serve as the foundation for the more sophisticated queries
+    		where &p-bbq; really shines.
+    		</para>
     	</sect1>
     	<sect1>
     		<title>A More Complex Example: Serializable Classes Missing <varname>serialVersionUID</varname></title>
+    		<para>
+    		When you need to, you can combine simple search elements in a variety of ways with &p-bbq;.
+    		We'll examine how one particular search is constructed from simpler elements in some
+    		detail.  Although it might seem daunting at first, the hope is that with familiarity
+    		constructing similar queries will become almost effortless, second-nature.  Eventually you may come
+    		to see more and more development tasks in terms of &p-bbq; queries.
+    		</para>
 	    	<para>
 	    	If you have a class that implements <classname>java.io.Serializable</classname>,
 	    	it's a good idea to to have the class include a version identifier in the form
@@ -526,27 +620,31 @@ the environment.
     </para>
     <sect1>
       <title>Language Elements</title>
-<para>A set expression consists of a sequence of tokens
-separated by white space.
+<para>A set expression consists of a sequence of tokens.
+White space or punctuation delimits tokens.
 A token may be punctuation, a constant, a name, or a reserved
 word.
 Names and reserved words consist of a string of alphanumeric
 characters or underscores starting with a letter or underscore.
+Reserved words will always start with a lower-case letter.
+</para>
+<para>
 The only permissable punctuation within a set expression
 are parentheses, which are used for grouping in set expressions,
-filters or transforms, commas, which are used with certain
-operators, and the <link linkend="r-value-operators">value operator</link> <userinput>&amp;</userinput>.  Punctuation characters are recognized as tokens
-in themselves and don't have to be set off with spaces.</para>
+filters or transforms; commas, which are used with certain
+operators; and the <link linkend="r-value-operators">value operators</link>.  Punctuation tokens are recognized as tokens
+in themselves and don't have to be set off with whitespace.</para>
+<para>
+There are two kinds of constants.  String constants are enclosed in double quotation marks;
+double quotation marks or backslashes within a string
+must be escaped by a backslash.  Numeric constants
+consist of 1 or more decimal digits and are interpreted as integers.
+</para>
 <para>
 A sequence of one or more reserved words represents a
 set operator, a logical operator,
 a simple set expression,
 a filter or a transform.
-</para>
-<para>
-Constants are strings enclosed in double quotation marks;
-double quotation marks or backslashes within a string
-must be escaped by a backslash.
 </para>
 <para>
 Names are words that must not conflict
@@ -575,6 +673,7 @@ A filter is one of the filters defined in the language,
 a filter with the reserved word <userinput>not</userinput> prepended,
 two filters joined by the logical operators <userinput>and</userinput> or
  <userinput>or</userinput>,
+two value expressions related by one of the relational operators,
 or a filter enclosed within parentheses.
 </para>
 <para>
@@ -584,7 +683,7 @@ two value expressions with compatible context combined with value operators,
 or a value expression enclosed within parentheses.
 </para>
 <simpara>Reserved Words:</simpara>
-      <simplelist>
+      <simplelist columns="3">
 	<member>abstract</member>
 	<member>all</member>
 	<member>arguments</member>
@@ -912,9 +1011,23 @@ this type.</para>
 the starting point for your queries, as well as some
 <firstterm>commands</firstterm>
 which are set expressions that let you access
-the interpreter's state..</para>
+the interpreter's state.</para>
     <sect2 id="r-simplesetexpressions">
       <title>Simple Set Expressions</title>
+      <para>
+      Simple set expressions define the set of objects that provides the initial scope of the query.
+      You apply transforms and value expressions to the result of the simple set expression
+      to traverse the object graph to retrieve the set of objects you want.
+      </para>
+      <para>
+      Sometimes the simple set expression is just a constant.
+      When you are searching from a particular type, the simple set is the name of the type as a string,
+      and you apply the <userinput><link linkend="r-type">type</link></userinput>
+      value expression to get the type object, and go from there.
+      </para>
+      <para>
+      The other simple set expressions are listed in this section.
+      </para>
 	</sect2>
       <refentry id="r-all-classes">
 	<refnamediv>
@@ -939,7 +1052,7 @@ of your system.
 </para>
 	</refsect1>
       </refentry>
-     <refentry>
+     <refentry id="r-all-packages">
 	<refnamediv>
 	  <refname>all packages</refname>
 	  <refpurpose>Returns all the packages in the analyzed system</refpurpose>
@@ -962,7 +1075,7 @@ of your system.
 </para>
 	</refsect1>
       </refentry>
-	<refentry>
+	<refentry id="r-all-strings">
 	  <refnamediv>
 	    <refname>all strings</refname>
 	    <refpurpose>Return all the string constants defined in the analyzed system</refpurpose>
@@ -1024,7 +1137,7 @@ as you would type it in a Java program.</para>
 	    <para><link linkend="r-type-package">package</link></para>
 	  </refsect1>
 	</refentry>
-	<refentry>
+	<refentry id="r-strings">
 	  <refnamediv>
 	    <refname>strings "string"</refname>
 	    <refpurpose>Return a specific string constant</refpurpose>
@@ -1567,7 +1680,9 @@ input methods.
 			some special-purpose transforms (such as <link linkend="r-recursive-derived-classes">recursive derived classes</link>) for this purpose; this transform operator
 			lets you recursively apply an arbitrary transform.
 			Use care when using this operator, since you might accidentally
-			specify a recursion that does not end (i.e. <userinput>recursive ( same )</userinput>).  This can cause the &p-bbq; environment to hang or crash.
+			specify a recursion that does not end (i.e. <userinput>recursive ( same )</userinput>).
+			To prevent a hang or crash, the operator will stop recursing at an
+			arbitrary depth (50).
 			</para>
 			<para>
 			The effect of this transform operator can be most concisely
@@ -1988,11 +2103,11 @@ Applied to a field reference object, this value expression returns the field ref
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-object">object</link></para>
+		  	<para>Any</para>
 		  </refsect1>
 		  <refsect1>
 			<title>Results in Type</title>
-		  	<para><link linkend="r-type-object">object</link></para>
+		  	<para>The type of the underlying expression</para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-group-of">
@@ -2651,10 +2766,28 @@ if it updates the value of the field.
   		</sect2>
   		<sect2 id="r-value-operators">
   			<title>Value Operators</title>
+  			<para>
+  			There are two kinds of operators that work only with value expressions: relational operators and
+  			value operators.
+  			</para>
+  			<sect3>
+  				<title id="r-relational-operators">Relational Operators</title>
+  				<para>
+  				&p-bbq; supports relational operators that compare two value expressions; the result of
+  				the comparison is a filter.  The <userinput>=</userinput> and <userinput>!=</userinput>
+  				operators can compare any value expression type;
+  				the remaining relational operators <userinput>&lt; &lt;= >= ></userinput>
+  				can only compare values of type <link linkend="r-type-integer">integer</link>,
+  				<link linkend="r-type-string">string</link>, or <link linkend="r-type-date">date</link>.
+  				</para>
+  			</sect3>
+  			<sect3>
+  				<title id="r-value-expression-operators">Value Expression Operators</title>
   			<para>Value operators combine two value expressions into a single value expression.</para>
   			<para>&p-bbq; currently defines only one value operator, <userinput>&amp;</userinput>.
   			This operator concatenates two <link linkend="r-type-string">string</link>-type expressions.
   			</para>
+  			</sect3>
   		</sect2>
   	</sect1>
   </chapter>
