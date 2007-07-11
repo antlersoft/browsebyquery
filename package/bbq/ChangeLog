@@ -1,0 +1,55 @@
+--bbq0.5.4
+
+static filter
+
+Relational expressions (making value expressions useful)
+
+Manual changes, including tutorial examples
+
+--bbq0.5.2
+
+New object types: Type, Argument, Package
+
+Track inner classes
+
+Persist state of the query engine between sessions
+
+Refactor query engine; implement value expressions
+
+User interface changes
+
+Make database detect version changes
+
+Change indexing in the database to make it faster and more robust.
+
+--bbq0.4.2
+Set command lets you assign a name to transforms as well as set expressions.
+
+recursive operator for general recursive transforms
+
+Lexer improvements so you don't have to set off parentheses with spaces
+
+Updates to the language manual
+
+--bbq0.3.13
+Add eclipse plugin
+Update storage engine memory management
+Fix bugs in storage engine
+
+--bbq20050721
+Added ant build.xml and properties file
+
+Make standalone work with no command line argument, opening a default database in the current directory
+
+Make opening an obsolete database work, although it gets cleared and you have to re-analyze
+
+Add ability to clear (reset) a database at will
+
+
+--bbq20050601
+Initial version
+
+Java BBQ in standalone and JBuilder opentool flavors.
+
+C++ BBQ standalone; basically only handles preprocessor constructs and string constants at this point.
+
