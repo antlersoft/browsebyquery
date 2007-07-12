@@ -575,14 +575,14 @@ to the same type resolution rules applicable to sets and transforms.
 	    	and classes within a package tree.
 	    	</para>	    	
 	    	<informalexample>
-	    		<programlisting>recursive derived classes of class "Persistent" intersection classes in recursive ( packages in ) package "com.antlersoft"</programlisting>
+	    		<programlisting>recursive derived classes of class "java.io.Serializable" intersection classes in recursive ( packages in ) package "com.antlersoft"</programlisting>
 	    	</informalexample>
 	    	<para>
 	    	When we construct the full expression we have to use parentheses to group the
 	    	set expression because the intersection operator has low precedence:
 	    	</para>
 	    	<informalexample>
-	    		<programlisting>not exists ( matching "serialVersionUID" fields in ) ( recursive derived classes of class "Persistent" intersection classes in recursive ( packages in ) package "com.antlersoft" )</programlisting>
+	    		<programlisting>not exists ( matching "serialVersionUID" fields in ) ( ( recursive derived classes of class "java.io.Serializable" ) intersection classes in recursive ( packages in ) package "com.antlersoft" )</programlisting>
 	    	</informalexample>
 	    	<para>
 	    	When we deal with longer examples, it can help to use line breaks and indenting to see the structure of
@@ -596,7 +596,9 @@ to the same type resolution rules applicable to sets and transforms.
 	    		matching "serialVersionUID" fields in
 	    	)
 	    	(
-	    		recursive derived classes of class "Persistent"
+	    		(
+	    			recursive derived classes of class "java.io.Serializable"
+	    		)
 	    	  intersection
 	    		classes in recursive (
 	    			packages in
