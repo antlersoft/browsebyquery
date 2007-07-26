@@ -33,4 +33,11 @@
 		<nature>org.eclipse.jem.workbench.JavaEMFNature</nature>
 		<nature>com.antlersoft.bbq_eclipse.BBQNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>WebContent/WEB-INF/classes</name>
+			<type>2</type>
+			<location>/home/mike/src/eclipse-workspaces/bbq/bbq_eclipse/bin</location>
+		</link>
+	</linkedResources>
 </projectDescription>

@@ -10,4 +10,9 @@
 		<welcome-file>default.htm</welcome-file>
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
+	<listener>
+		<listener-class>
+			com.antlersoft.bbqweb.DBListener
+		</listener-class>
+	</listener>
 </web-app>
