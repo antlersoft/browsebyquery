@@ -4,65 +4,17 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
-<title>Insert title here</title>
+<title>Browse-by-Query Demo Page</title>
 </head>
 <body>
-Hi there
-<%!
-	AnalyzerDB m_db;
-	AnalyzerQuery m_query;
-	
-	public void jspInit()
-	{
-		m_db=new IndexAnalyzeDB();
-		try
-		{
-			m_db.openDB( "/mnt/external2/scratch/eclipse_eclipse.pj");
-		}
-		catch ( Exception e)
-		{
-			m_db=null;
-			log( "Failed to open database:", e);
-		}
-		m_query=new AnalyzerQuery();
-	}
-	
-	public void jspDestroy()
-	{
-		if ( m_db!=null)
-		{
-			try
-			{
-				m_db.closeDB();				
-			}
-			catch ( Exception e)
-			{
-				log( "Exception closing database:", e);
-			}
-		}
-	}
-%>
-<%
-String q=request.getParameter( "query");
-if ( q!=null)
-{
-out.write( q);
-}
-%>
+<jsp:useBean id="b_db" class="com.antlersoft.bbqweb.DBBean" scope="application"/>
+<jsp:useBean id="b_query" class="com.antlersoft.bbqweb.QueryBean" scope="session"/>
+<jsp:setProperty name="b_query" property="DB" value="<%= b_db.getDB() %>"/>
+<jsp:setProperty name="b_query" property="queryText" value="<%= request.getParameter("query") %>"/>
+<jsp:getProperty name="b_query" property="queryText"/>
 <form>
 <input type="text" name="query"/>
 </form>
-<%
-if ( q!=null)
-{
-	out.write("<br>");
-	m_query.setLine( q);
-	for ( Enumeration e = m_query.getExpression().evaluate(m_db); e.hasMoreElements();)
-	{
-		out.write( e.nextElement().toString());
-		out.write( "<br>");
-	}
-}
-%>
+<jsp:getProperty name="b_query" property="htmlQueryResult"/>
 </body>
 </html>

@@ -16,7 +16,7 @@ public class DBListener implements ServletContextListener {
 	 * @see javax.servlet.ServletContextListener#contextDestroyed(javax.servlet.ServletContextEvent)
 	 */
 	public void contextDestroyed(ServletContextEvent arg0) {
-		Object o=arg0.getServletContext().getAttribute( "com.antlersoft.bbqweb.DBBean");
+		Object o=arg0.getServletContext().getAttribute( "b_db");
 		if ( o!=null && o instanceof DBBean)
 		{
 			((DBBean)o).destroy();
@@ -27,7 +27,7 @@ public class DBListener implements ServletContextListener {
 	 * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
 	 */
 	public void contextInitialized(ServletContextEvent arg0) {
-		arg0.getServletContext().setAttribute( "com.antlersoft.bbqweb.DBBean", new DBBean());
+		arg0.getServletContext().setAttribute( "b_db", new DBBean());
 	}
 
 }
