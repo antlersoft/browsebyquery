@@ -6,6 +6,7 @@ package com.antlersoft.bbqweb;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 
@@ -29,7 +30,8 @@ public class QueryBean {
 	
 	private ArrayList m_history;
 	
-	ServletContext m_context;
+	private static Logger m_logger=Logger.getLogger("com.antlersoft.bbq_web_demo"); 
+	private ServletContext m_context;
 	
 	public void setContext( ServletContext context)
 	{
@@ -46,6 +48,7 @@ public class QueryBean {
 	{
 		if ( text!=null)
 		{
+			m_logger.info( text);
 			int l;
 			for ( l=text.length(); l>0; --l)
 			{
