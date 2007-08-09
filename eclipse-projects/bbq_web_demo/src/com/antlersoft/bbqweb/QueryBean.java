@@ -76,6 +76,9 @@ public class QueryBean {
 	
 	public void setDB(AnalyzerDB db)
 	{
+		m_logger.finer( "Setting db");
+		if ( db==null)
+			m_logger.warning( "db=null");
 		m_result=null;
 		m_text=null;
 		m_db=db;

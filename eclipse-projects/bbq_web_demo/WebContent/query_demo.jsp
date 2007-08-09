@@ -42,7 +42,7 @@
 				<td><a href="http://browsebyquery.sourceforge.net">browse-by-query home</td>
                <td >   <a href="http://www.antlersoft.com/freesoftwarenews.html">antlersoft free software</a>          </td>
 				<td><a href="http://sourceforge.net/projects/browsebyquery">sourceforge project page</a></td>
-<td><a href="http://sourceforge.net" target="_top"><span class="inlinemediaobject"><img src="http://sourceforge.net/sflogo.php?group_id=139907&amp;type=1" height="31" width="88" longdesc="ld-id2764673.html"></span>    </a></td>
+<td></td>
                 </tr>
   </tbody>            
 </table>
@@ -129,7 +129,7 @@ Sample Queries:
 				<td><a href="http://browsebyquery.sourceforge.net">browse-by-query home</td>
                <td>   <a href="http://www.antlersoft.com/freesoftwarenews.html">antlersoft free software</a>          </td>
 				<td><a href="http://sourceforge.net/projects/browsebyquery">sourceforge project page</a></td>
-<td><a href="http://sourceforge.net" target="_top"><span class="inlinemediaobject"><img src="http://sourceforge.net/sflogo.php?group_id=139907&amp;type=1" height="31" width="88" longdesc="ld-id2764673.html"></span>    </a></td>
+<td></td>
                 </tr>
   </tbody>            
 </table></body>
