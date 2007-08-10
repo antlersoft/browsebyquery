@@ -56,6 +56,10 @@
 <tbody>
 <tr>
 <td valign="top" class="bar">
+<p>
+This demo lets you query a large Browse-by-Query database, which was built from all the Eclipse 3.1 base and Java development jars as well as the Browse-by-Query code,
+totaling more than 200,000 methods in about 24,000 classes.
+</p>
 <h3>Links</h3>
 <p>
 <a href="http://browsebyquery.sourceforge.net">Project Home</a>
@@ -117,6 +121,7 @@ Sample Queries:
 <div id="t1" name="t1">
 </div>
 </form>
+<h3>Results</h3>
 <jsp:getProperty name="b_query" property="htmlQueryResult"/>
 </td>
 </tr>
