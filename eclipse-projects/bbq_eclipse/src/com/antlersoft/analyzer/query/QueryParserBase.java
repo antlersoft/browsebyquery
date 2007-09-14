@@ -25,8 +25,6 @@ import java.util.NoSuchElementException;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import sun.security.krb5.internal.crypto.b;
-
 import com.antlersoft.analyzer.*;
 
 import com.antlersoft.parser.ParseState;
