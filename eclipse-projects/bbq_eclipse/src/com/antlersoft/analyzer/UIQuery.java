@@ -193,6 +193,11 @@ t.printStackTrace();
         	db_cleared=true;
             app.analyzerDB.clearDB( app.analyzerDBOpenString);
         }
+        catch ( RuntimeException rte)
+        {
+        	db_cleared=true;
+            app.analyzerDB.clearDB( app.analyzerDBOpenString);
+        }
 
         JFrame appFrame=new JFrame( (argv.length>0 ? "Querying " : "Querying default DB ")+app.analyzerDBOpenString );
         app.frameWindow=appFrame;

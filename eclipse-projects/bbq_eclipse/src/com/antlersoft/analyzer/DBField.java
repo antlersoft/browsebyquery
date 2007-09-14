@@ -67,7 +67,7 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 
     public String toString()
     {
-    	return ((DBClass)dbclass.getReferenced()).name+":"+name+descriptor;
+    	return ((DBClass)dbclass.getReferenced()).name+":"+name+" "+DBType.TypeStringMap.descriptorToUser(descriptor);
     }
 
     public int fieldStatus()

@@ -19,6 +19,12 @@
  */
 package com.antlersoft.query;
 
+/**
+ * A single Bindable that results from resolving the binding types
+ * of two other Bindables that will be used together in the same context.
+ * @author Michael A. MacDonald
+ *
+ */
 public class ResolvePairBinding implements Bindable {
 	public ResolvePairBinding( Bindable a, Bindable b)
 	throws BindException

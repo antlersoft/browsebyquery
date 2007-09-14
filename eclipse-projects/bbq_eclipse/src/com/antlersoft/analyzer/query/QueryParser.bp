@@ -42,10 +42,8 @@ reserved rightParen ")"
 reserved set
 reserved SetExpressionSymbol "((#1"
 reserved Static "static" 4 right
-reserved stringconstant "string"
 reserved stringconstants "strings"
 reserved that
-reserved to
 reserved TransformSymbol "((#2"
 reserved type
 reserved types

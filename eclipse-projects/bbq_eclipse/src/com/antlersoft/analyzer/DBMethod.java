@@ -91,7 +91,52 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 
     public String toString()
     {
-		return ((DBClass)dbclass.getReferenced()).name+":"+name+signature;
+    	StringBuilder signature_builder=new StringBuilder();
+    	signature_builder.append('(');
+  		char[] array=signature.toCharArray();
+  		int argument_count=0;
+  		int start_offset=1;
+  		int current_offset=1;
+  		String return_type="";
+  		try
+  		{
+	    	try
+	     	{
+		    	if ( array.length<3 || array[0]!='(')
+		     	{
+					throw new CodeCheckException( "Bad method signature "+signature);
+		   		}
+		    	for ( char ch; ( ch=array[current_offset])!=')'; ++current_offset)
+		    	{
+		    		switch ( ch)
+		    		{
+		    		case 'L' :
+		    			for ( ++current_offset; array[current_offset]!=';'; ++current_offset);
+		    			break;
+		    		case '[' :
+		    			continue;
+		    		default :
+		    			break;
+		    		}
+		    		if ( argument_count++ >0)
+		    			signature_builder.append(", ");
+		    		signature_builder.append(DBType.TypeStringMap.descriptorToUser(signature.subSequence(start_offset,current_offset+1)));
+		    		start_offset=current_offset+1;
+		    	}
+		    	if ( name.indexOf('<')==-1)
+		    		return_type=DBType.TypeStringMap.descriptorToUser(signature.subSequence(current_offset+1,array.length))+" ";
+	         }
+	         catch ( ArrayIndexOutOfBoundsException bounds)
+	         {
+	             throw new CodeCheckException( "MethodType truncated");
+	         }
+  		}
+  		catch ( CodeCheckException cce)
+  		{
+  			signature_builder.append( cce.getMessage());
+  		}
+  		signature_builder.append( ')');
+		return ((DBClass)dbclass.getReferenced()).name+":"+return_type+name+signature_builder.toString();
     }
 
     public int methodStatus()

@@ -19,6 +19,9 @@ reserved Or "or" 3 left
 reserved previous
 reserved recursive
 reserved same
+reserved stringconstant "string"
+reserved substitute
+reserved to
 reserved uncorrelated
 reserved union 2 left
 reserved unique 5 right
@@ -27,6 +30,8 @@ reserved Xor "xor" 3 left
 reserved left_paren "("
 reserved right_paren ")"
 
+reserved TILDE "~"
+reserved TILDE_EQUALS "~=" 6 left
 reserved LT "<" 7 left
 reserved LTE "<=" 7 left
 reserved ET "=" 6 left
@@ -99,6 +104,14 @@ VALUE_EXPRESSION : number
 		val=new Integer(0);
 	}
 	return new Constant( val); }" .
+VALUE_EXPRESSION : to stringconstant
+"{ return new ToString(); }" .
+VALUE_EXPRESSION : substitute left_paren VALUE_EXPRESSION comma VALUE_EXPRESSION right_paren
+"{ return new RegExpSubstitute( (ValueExpression)valueStack.get(valueStack.size()-4), (ValueExpression)valueStack.get(valueStack.size()-2)); }"
+.
+VALUE_EXPRESSION : substitute left_paren VALUE_EXPRESSION comma VALUE_EXPRESSION comma VALUE_EXPRESSION right_paren
+"{ return new RegExpSubstitute( (ValueExpression)valueStack.get(valueStack.size()-6), (ValueExpression)valueStack.get(valueStack.size()-4), (ValueExpression)valueStack.get(valueStack.size()-2)); }"
+.
 	
 VALUE_EXPRESSION : GROUP_EXPRESSION
 "{ return valueStack.get( valueStack.size()-1); }" .
@@ -189,6 +202,10 @@ FILTER : VALUE_EXPRESSION RELATIONAL_OPERATOR VALUE_EXPRESSION
 "{ return new RelationalFilter( ((ArrayList)valueStack.get( valueStack.size()-2)).get(0).toString(),
 (ValueExpression)valueStack.get( valueStack.size()-3),
 (ValueExpression)valueStack.get( valueStack.size()-1)); }" 7 .
+FILTER : VALUE_EXPRESSION TILDE_EQUALS VALUE_EXPRESSION
+"{ return new ValueRegExpMatch((ValueExpression)valueStack.get( valueStack.size()-3), (ValueExpression)valueStack.get( valueStack.size()-1)); }" 7 .
+FILTER : TILDE literalString
+"{ return new RegExpMatch( valueStack.get( valueStack.size()-1).toString()); }" .
 FILTER : matching literalString
 "{ return new Matches( valueStack.get( valueStack.size()-1).toString()); }" .
 
@@ -208,3 +225,4 @@ RELATIONAL_OPERATOR : ET .
 RELATIONAL_OPERATOR : NE .
 RELATIONAL_OPERATOR : GTE .
 RELATIONAL_OPERATOR : GT .
+

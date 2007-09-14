@@ -27,6 +27,9 @@ class Lexer {
 	private static final int IN_NUMBER=3;
 	private static final int IN_WORD=4;
 	private static final int IN_PUNC=5;
+	private static final int IN_FIRST_SLASH=6;
+	private static final int IN_SLASH_QUOTE=7;
+	private static final int IN_SLASH_ESCAPE=8;
 	
 	private Parser m_parser;
 	
@@ -116,6 +119,10 @@ class Lexer {
 	        		currentString.append(c);
 	        		lex_state=IN_NUMBER;
 	        	}
+	        	else if ( c=='/')
+	        	{
+	        		lex_state=IN_FIRST_SLASH;
+	        	}
 	        	else if ( CharClass.isOperator( c))
 	        	{
 	        		lex_state=addPunctuationCharacter( currentString, c, tokens);
@@ -161,6 +168,37 @@ class Lexer {
 	        		lex_state=INITIAL;
 	        	}
 	        	break;
+	        case IN_FIRST_SLASH :
+	        	if ( c=='/')
+	        		lex_state=IN_SLASH_QUOTE;
+	        	else
+	        	{
+	        		lex_state=addPunctuationCharacter( currentString, '/', tokens);
+	        		--i;
+	        	}
+	        	break;
+	        case IN_SLASH_QUOTE :
+	        	if ( c=='\\')
+	        	{
+	        		lex_state=IN_SLASH_ESCAPE;
+	        	}
+	        	else if ( c=='/')
+	        	{
+	        		tokens.addElement( new LiteralToken( currentString.toString()));
+	        		currentString.setLength(0);
+	        		lex_state=INITIAL;
+	        	}
+	        	else
+	        		currentString.append( c);
+	        	break;
+	        case IN_SLASH_ESCAPE :
+	        	if ( c!='/')
+	        	{
+	        		currentString.append('\\');
+	        	}
+	        	currentString.append( c);
+	        	lex_state=IN_SLASH_QUOTE;
+	        	break;
 	        case IN_WORD :
 	        	if ( CharClass.isIdentifierPart(c))
 	        	{
@@ -189,8 +227,16 @@ class Lexer {
 	    {
 	    case IN_QUOTE :
 	    case IN_QUOTE_ESCAPE :
+	    case IN_SLASH_QUOTE :
     		tokens.addElement( new LiteralToken( currentString.toString()));
     		break;
+	    case IN_SLASH_ESCAPE :
+	    	currentString.append('\\');
+	    	tokens.addElement( new LiteralToken( currentString.toString()));
+	    	break;
+	    case IN_FIRST_SLASH:
+	    	addPunctuationCharacter( currentString, '\\', tokens);
+	    	break;
 	    case IN_NUMBER :
 	    	tokens.addElement( new Token( BasicBase.number, currentString.toString()));
 	    	break;

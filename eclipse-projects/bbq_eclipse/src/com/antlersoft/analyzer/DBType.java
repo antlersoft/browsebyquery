@@ -219,6 +219,35 @@ public class DBType implements Persistent, Cloneable {
 			user=u;
 		}
 		
+		public static String descriptorToUser( CharSequence descriptor)
+		{
+			int array_count=0;
+			for ( ; descriptor.charAt(array_count)=='['; ++array_count);
+			String base_type;
+			if ( descriptor.charAt(array_count)==TypeParse.ARG_OBJREF.charAt(0))
+			{
+				base_type=TypeParse.convertFromInternalClassName(descriptor.subSequence(array_count+1, descriptor.length()-1).toString());
+				if ( base_type.indexOf("java.lang")==0)
+					base_type=base_type.substring(10);
+			}
+			else
+				base_type=internalToUser(descriptor.subSequence(array_count, array_count+1).toString());
+			
+			if ( array_count==0)
+				return base_type;
+			
+			StringBuilder sb=new StringBuilder( base_type.length()+2*array_count);
+			sb.append(base_type);
+			for ( ; array_count>0; --array_count)
+				sb.append( "[]");
+			return sb.toString();
+		}
+		
+		/**
+		 * Convert a built-in type code
+		 * @param s
+		 * @return
+		 */
 		public static String internalToUser( String s)
 		{
 			String result=null;

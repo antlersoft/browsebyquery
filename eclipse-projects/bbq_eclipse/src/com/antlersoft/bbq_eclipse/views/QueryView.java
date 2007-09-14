@@ -51,7 +51,7 @@ public class QueryView extends ViewPart {
 	
 	private String[] _savedState;
 	
-	private final static String QUERY_VIEW_TYPE="com.antlersoft.bbq_eclipse.views.QueryView";
+	final static String QUERY_VIEW_TYPE="com.antlersoft.bbq_eclipse.views.QueryView";
 
 	/**
 	 * The constructor.
@@ -131,6 +131,11 @@ public class QueryView extends ViewPart {
 			Bbq_eclipsePlugin.getDefault().getLog().log( pie.getStatus());
 			_savedState=null;
 		}
+	}
+	
+	void addText( String text)
+	{
+		_queryText.append( " "+text+" ");
 	}
 
 	private synchronized void initializeHistoryList()

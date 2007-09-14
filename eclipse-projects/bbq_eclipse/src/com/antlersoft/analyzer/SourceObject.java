@@ -26,6 +26,12 @@
  */
 package com.antlersoft.analyzer;
 
+/**
+ * Any object that can be associated with a file and line number;
+ * the file is obtained by looking for the class in the source path.
+ * @author Michael A. MacDonald
+ *
+ */
 public interface SourceObject
 {
     public DBClass getDBClass();
