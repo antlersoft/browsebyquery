@@ -60,8 +60,13 @@ Requires ant 1.6+
 		<delete dir="dist"/>
 	</target>
 	<target name="buildeclipse" depends="buildcommon">
-		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes"
-		classpath="${classpath};${plugins.path}/org.eclipse.swt.gtk.linux.x86_64${plugins.suffix};${plugins.path}/org.eclipse.osgi${plugins.suffix};${plugins.path}/org.eclipse.ui${plugins.suffix};${plugins.path}/org.eclipse.jface${plugins.suffix};${plugins.path}/org.eclipse.core.runtime${plugins.suffix};${plugins.path}/org.eclipse.core.resources${plugins.suffix};${plugins.path}/org.eclipse.jface.text${plugins.suffix};${plugins.path}/org.eclipse.ui.editors${plugins.suffix};${plugins.path}/org.eclipse.ui.workbench${plugins.suffix};${plugins.path}/org.eclipse.ui.workbench.texteditor${plugins.suffix};${plugins.path}/org.eclipse.search${plugins.suffix};${plugins.path}/org.eclipse.jdt${plugins.suffix};${plugins.path}/org.eclipse.jdt.core${plugins.suffix};${plugins.path}/org.eclipse.jdt.ui${plugins.suffix}">
+		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
+			<classpath>
+			  <pathelement path="${classpath}"/>
+			  <fileset dir="${plugins.path}">
+			    <include name="*.jar"/>
+		      </fileset>
+			</classpath>
 			<src path="com/antlersoft/bbq_eclipse"/>
 		</javac>
 		<copy todir="classes" file="plugin.xml">
