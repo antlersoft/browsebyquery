@@ -1,500 +1,1445 @@
-symbol AsmDecl
-symbol AsmDecls
-symbol AsmRefDecl
-symbol AsmRefDecls
-symbol Bound
-symbol Bounds
-symbol BuiltinIntType
-symbol BuiltinType
-symbol BuiltinRefType
-symbol Bytes
-symbol BytesSpec
-symbol CallConv
-symbol CallKind
-symbol ClassAttr
-symbol ClassAttrs
-symbol ClassHeader
-symbol ClassHeaderSTART
-symbol ClassHeaderMIDDLE
-symbol ClassHeaderIMPLEMENTS
-symbol ClassMember
-symbol ClassMembers
-symbol ClassTypeSpec
-symbol CodeLabel
-symbol CustomDecl
-symbol CustomSpec
-symbol DataLabel
-symbol DataDecl
-symbol Decl
-symbol DottedName
-symbol EventHeader
-symbol EventMember
-symbol EventMembers
-symbol ExportAttr
-symbol ExternClassDecls
-symbol ExternClassDecl
-symbol ExternName
-symbol ExternSourceDecl
-symbol ExternSourceDeclMID
-symbol ExternSourceDeclSTART
-symbol FieldAttr
-symbol FieldAttrs
-symbol FieldDecl
-symbol FileDeclSTART
-symbol Filename
-symbol Float32
-symbol Float64
-symbol GenArgs
-symbol GenArity
-symbol GenConstraints
-symbol GenericMethodParameter
-symbol GenericTypeParameter
-symbol GenPar
-symbol GenParAttrib
-symbol GenParAttribs
-symbol GenPars
-symbol HashSpec
-symbol Id
-symbol ILFile
-symbol ILFileDone
-symbol ImplAttr
-symbol ImplAttrs
-symbol LabelOrOffset
-symbol Labels
-symbol ManResDecl
-symbol ManResDecls
-symbol MethAttr
-symbol MethAttrs
-symbol MethodHeader
-symbol MethodBodyItem
-symbol MethodBodyItems
-symbol MethodName
-symbol ModifiedType
-symbol Parameters
-symbol PropHeader
-symbol PropMember
-symbol PropMembers
-symbol Range
-symbol ResolutionScope
-symbol SecurityDecl
-# For TypeReference-- II.7.3
-symbol SlashedName
-symbol Type
-symbol TypeReference
-symbol TypeSpec
-symbol VersionSpec
-symbol VTFixupDecl
-
-reserved assemblyDirective ".assembly"
-reserved classDirective ".class"
-reserved corflagsDirective ".corflags"
-reserved ctorDirective ".ctor"
-reserved cultureDirective ".culture"
-reserved customDirective ".custom"
-reserved dataDirective ".data"
-reserved entrypointDirective ".entrypoint"
-reserved eventDirective ".event"
-reserved fieldDirective ".field"
-reserved fileDirective ".file"
-reserved hashDirective ".hash"
-reserved methodDirective ".method"
-reserved moduleDirective ".module"
-reserved mresourceDirective ".mresource"
-reserved namespaceDirective ".namespace"
-reserved overrideDirective ".override"
-reserved packDirective ".pack"
-reserved paramDirective ".param"
-reserved propertyDirective ".property"
-reserved sizeDirective ".size"
-reserved subsystemDirective ".subsytem"
-reserved verDirective ".ver"
-reserved vtfixupDirective ".vtfixup"
-reserved Abstract "abstract"
-reserved algorithm
-reserved ampersand "&"
-reserved ansi
-reserved as
-reserved assembly
-reserved asterisk "*"
-reserved at
-reserved auto
-reserved autochar
-reserved beforefieldinit
-reserved cdecl
-reserved colon ":"
-reserved comma ","
-reserved Default "default"
-reserved equals "="
-reserved exclamation "!"
-reserved explicit
-reserved Extends "extends"
-reserved Extern "extern"
-reserved famandassem
-reserved family
-reserved famorassem
-reserved fastcall
-reserved float32
-reserved float64
-reserved HexByte "^HexByte"
-reserved ID "^ID"
-reserved Implements
-reserved instance
-reserved Int32 "^Int32"
-reserved Int64 "^Int64"
-reserved Interface "interface"
-reserved left_angle "<"
-reserved left_brace "{"
-reserved left_paren "("
-reserved left_square "["
-reserved lineDirective ".line"
-reserved method
-reserved minus "-"
-reserved modopt
-reserved modreq
-reserved Native "native"
-reserved nested
-reserved nometadata
-reserved object
-reserved period "."
-reserved pinned
-reserved Private "private"
-reserved plus "+"
-reserved Public "public"
-reserved publickey
-reserved publickeytoken
-reserved QSTRING "^QSTRING"
-reserved RealNumber "^RealNumber"
-reserved right_angle ">"
-reserved right_brace "}"
-reserved right_paren ")"
-reserved right_square "]"
-reserved rtspecialname
-reserved sealed
-reserved sequential
-reserved serializable
-reserved slash "/"
-reserved specialname
-reserved SQSTRING "^SQSTRING"
-reserved stdcall
-reserved string
+symbol n_INSTR_BRTARGET
+symbol n_INSTR_FIELD
+symbol n_INSTR_I
+symbol n_INSTR_I8
+symbol n_INSTR_METHOD
+symbol n_INSTR_NONE
+symbol n_INSTR_R
+symbol n_INSTR_SIG
+symbol n_INSTR_STRING
+symbol n_INSTR_SWITCH
+symbol n_INSTR_TOK
+symbol n_INSTR_TYPE
+symbol n_INSTR_VAR
+symbol n_START
+symbol n_asmAttr
+symbol n_asmOrRefDecl
+symbol n_assemblyDecl
+symbol n_assemblyDecls
+symbol n_assemblyHead
+symbol n_assemblyRefDecl
+symbol n_assemblyRefDecls
+symbol n_assemblyRefHead
+symbol n_atOpt
+symbol n_bound
+symbol n_bounds1
+symbol n_bytearrayhead
+symbol n_bytes
+symbol n_caValue
+symbol n_callConv
+symbol n_callKind
+symbol n_catchClause
+symbol n_classAttr
+symbol n_classDecl
+symbol n_classDecls
+symbol n_classHead
+symbol n_className
+symbol n_classNames
+symbol n_compQstring
+symbol n_comtAttr
+symbol n_comtypeDecl
+symbol n_comtypeDecls
+symbol n_comtypeHead
+symbol n_customAttrDecl
+symbol n_customHead
+symbol n_customHeadWithOwner
+symbol n_customType
+symbol n_dataDecl
+symbol n_ddBody
+symbol n_ddHead
+symbol n_ddItem
+symbol n_ddItemCount
+symbol n_ddItemList
+symbol n_decl
+symbol n_decls
+symbol n_eventAttr
+symbol n_eventDecl
+symbol n_eventDecls
+symbol n_eventHead
+symbol n_exportHead
+symbol n_extSourcePosition
+symbol n_extSourceSpec
+symbol n_extendsClause
+symbol n_faultClause
+symbol n_fieldAttr
+symbol n_fieldDecl
+symbol n_fieldInit
+symbol n_fileAttr
+symbol n_fileDecl
+symbol n_fileEntry
+symbol n_filterClause
+symbol n_filterHead
+symbol n_finallyClause
+symbol n_float64
+symbol n_handlerBlock
+symbol n_hashHead
+symbol n_hexbytes
+symbol n_id
+symbol n_implAttr
+symbol n_implClause
+symbol n_initOpt
+symbol n_instr
+symbol n_instr_r_head
+symbol n_instr_tok_head
+symbol n_int16s
+symbol n_int32
+symbol n_int64
+symbol n_labels
+symbol n_languageDecl
+symbol n_localeHead
+symbol n_localsHead
+symbol n_manifestResDecl
+symbol n_manifestResDecls
+symbol n_manifestResHead
+symbol n_manresAttr
+symbol n_memberRef
+symbol n_methAttr
+symbol n_methodDecl
+symbol n_methodDecls
+symbol n_methodHead
+symbol n_methodHeadPart1
+symbol n_methodName
+symbol n_methodSpec
+symbol n_moduleHead
+symbol n_name1
+symbol n_nameSpaceHead
+symbol n_nameValPair
+symbol n_nameValPairs
+symbol n_nativeType
+symbol n_ownerType
+symbol n_paramAttr
+symbol n_pinvAttr
+symbol n_propAttr
+symbol n_propDecl
+symbol n_propDecls
+symbol n_propHead
+symbol n_psetHead
+symbol n_publicKeyHead
+symbol n_publicKeyTokenHead
+symbol n_repeatOpt
+symbol n_scopeBlock
+symbol n_scopeOpen
+symbol n_secAction
+symbol n_secDecl
+symbol n_sehBlock
+symbol n_sehClause
+symbol n_sehClauses
+symbol n_sigArg
+symbol n_sigArgs0
+symbol n_sigArgs1
+symbol n_slashedName
+symbol n_tlsSpec
+symbol n_truefalse
+symbol n_tryBlock
+symbol n_tryHead
+symbol n_type
+symbol n_typeSpec
+symbol n_variantType
+symbol n_vtableDecl
+symbol n_vtableHead
+symbol n_vtfixupAttr
+symbol n_vtfixupDecl
+reserved t_exclamation "!"
+reserved t_ampersand "&"
+reserved t_left_paren "("
+reserved t_right_paren ")"
+reserved t_asterisk "*"
+reserved t_plus "+"
+reserved t_comma ","
+reserved t_period "."
+reserved t_ellipsis "..."
+reserved t_addonDirective ".addon"
+reserved t_assemblyDirective ".assembly"
+reserved t_cctorDirective ".cctor"
+reserved t_classDirective ".class"
+reserved t_corflagsDirective ".corflags"
+reserved t_ctorDirective ".ctor"
+reserved t_customDirective ".custom"
+reserved t_dataDirective ".data"
+reserved t_emitbyteDirective ".emitbyte"
+reserved t_entrypointDirective ".entrypoint"
+reserved t_eventDirective ".event"
+reserved t_exportDirective ".export"
+reserved t_fieldDirective ".field"
+reserved t_fileDirective ".file"
+reserved t_fireDirective ".fire"
+reserved t_getDirective ".get"
+reserved t_hashDirective ".hash"
+reserved t_imagebaseDirective ".imagebase"
+reserved t_languageDirective ".language"
+reserved t_lineDirective ".line"
+reserved t_localeDirective ".locale"
+reserved t_localsDirective ".locals"
+reserved t_maxstackDirective ".maxstack"
+reserved t_methodDirective ".method"
+reserved t_moduleDirective ".module"
+reserved t_mresourceDirective ".mresource"
+reserved t_namespaceDirective ".namespace"
+reserved t_otherDirective ".other"
+reserved t_overrideDirective ".override"
+reserved t_packDirective ".pack"
+reserved t_paramDirective ".param"
+reserved t_permissionDirective ".permission"
+reserved t_permissionsetDirective ".permissionset"
+reserved t_propertyDirective ".property"
+reserved t_publickeyDirective ".publickey"
+reserved t_publickeytokenDirective ".publickeytoken"
+reserved t_removeonDirective ".removeon"
+reserved t_setDirective ".set"
+reserved t_sizeDirective ".size"
+reserved t_subsystemDirective ".subsystem"
+reserved t_tryDirective ".try"
+reserved t_verDirective ".ver"
+reserved t_vtableDirective ".vtable"
+reserved t_vtentryDirective ".vtentry"
+reserved t_vtfixupDirective ".vtfixup"
+reserved t_zeroinitDirective ".zeroinit"
+reserved t_slash "/"
+reserved t_colon ":"
+reserved t_member_op "::"
+reserved t_equals "="
+reserved t_left_square "["
+reserved t_right_square "]"
+reserved t_abstract "abstract"
+reserved t_add "add"
+reserved t_add_ovf "add.ovf"
+reserved t_add_ovf_un "add.ovf.un"
+reserved t_algorithm "algorithm"
+reserved t_alignment "alignment"
+reserved t_and "and"
+reserved t_ansi "ansi"
+reserved t_any "any"
+reserved t_arglist "arglist"
+reserved t_array "array"
+reserved t_as "as"
+reserved t_assembly "assembly"
+reserved t_assert "assert"
+reserved t_at "at"
+reserved t_auto "auto"
+reserved t_autochar "autochar"
+reserved t_beforefieldinit "beforefieldinit"
+reserved t_beq "beq"
+reserved t_beq_s "beq.s"
+reserved t_bge "bge"
+reserved t_bge_s "bge.s"
+reserved t_bge_un "bge.un"
+reserved t_bge_un_s "bge.un.s"
+reserved t_bgt "bgt"
+reserved t_bgt_s "bgt.s"
+reserved t_bgt_un "bgt.un"
+reserved t_bgt_un_s "bgt.un.s"
+reserved t_ble "ble"
+reserved t_ble_s "ble.s"
+reserved t_ble_un "ble.un"
+reserved t_ble_un_s "ble.un.s"
+reserved t_blob "blob"
+reserved t_blob_object "blob_object"
+reserved t_blt "blt"
+reserved t_blt_s "blt.s"
+reserved t_blt_un "blt.un"
+reserved t_blt_un_s "blt.un.s"
+reserved t_bne_un "bne.un"
+reserved t_bne_un_s "bne.un.s"
 reserved t_bool "bool"
+reserved t_box "box"
+reserved t_br "br"
+reserved t_br_s "br.s"
+reserved t_break "break"
+reserved t_brfalse "brfalse"
+reserved t_brfalse_s "brfalse.s"
+reserved t_brinst "brinst"
+reserved t_brinst_s "brinst.s"
+reserved t_brnull "brnull"
+reserved t_brnull_s "brnull.s"
+reserved t_brtrue "brtrue"
+reserved t_brtrue_s "brtrue.s"
+reserved t_brzero "brzero"
+reserved t_brzero_s "brzero.s"
+reserved t_bstr "bstr"
+reserved t_bytearray "bytearray"
+reserved t_byvalstr "byvalstr"
+reserved t_call "call"
+reserved t_calli "calli"
+reserved t_callmostderived "callmostderived"
+reserved t_callvirt "callvirt"
+reserved t_carray "carray"
+reserved t_castclass "castclass"
+reserved t_catch "catch"
+reserved t_cdecl "cdecl"
+reserved t_ceq "ceq"
+reserved t_cf "cf"
+reserved t_cgt "cgt"
+reserved t_cgt_un "cgt.un"
 reserved t_char "char"
+reserved t_cil "cil"
+reserved t_ckfinite "ckfinite"
 reserved t_class "class"
+reserved t_clsid "clsid"
+reserved t_clt "clt"
+reserved t_clt_un "clt.un"
+reserved t_conv_i "conv.i"
+reserved t_conv_i1 "conv.i1"
+reserved t_conv_i2 "conv.i2"
+reserved t_conv_i4 "conv.i4"
+reserved t_conv_i8 "conv.i8"
+reserved t_conv_ovf_i "conv.ovf.i"
+reserved t_conv_ovf_i_un "conv.ovf.i.un"
+reserved t_conv_ovf_i1 "conv.ovf.i1"
+reserved t_conv_ovf_i1_un "conv.ovf.i1.un"
+reserved t_conv_ovf_i2 "conv.ovf.i2"
+reserved t_conv_ovf_i2_un "conv.ovf.i2.un"
+reserved t_conv_ovf_i4 "conv.ovf.i4"
+reserved t_conv_ovf_i4_un "conv.ovf.i4.un"
+reserved t_conv_ovf_i8 "conv.ovf.i8"
+reserved t_conv_ovf_i8_un "conv.ovf.i8.un"
+reserved t_conv_ovf_u "conv.ovf.u"
+reserved t_conv_ovf_u_un "conv.ovf.u.un"
+reserved t_conv_ovf_u1 "conv.ovf.u1"
+reserved t_conv_ovf_u1_un "conv.ovf.u1.un"
+reserved t_conv_ovf_u2 "conv.ovf.u2"
+reserved t_conv_ovf_u2_un "conv.ovf.u2.un"
+reserved t_conv_ovf_u4 "conv.ovf.u4"
+reserved t_conv_ovf_u4_un "conv.ovf.u4.un"
+reserved t_conv_ovf_u8 "conv.ovf.u8"
+reserved t_conv_ovf_u8_un "conv.ovf.u8.un"
+reserved t_conv_r_un "conv.r.un"
+reserved t_conv_r4 "conv.r4"
+reserved t_conv_r8 "conv.r8"
+reserved t_conv_u "conv.u"
+reserved t_conv_u1 "conv.u1"
+reserved t_conv_u2 "conv.u2"
+reserved t_conv_u4 "conv.u4"
+reserved t_conv_u8 "conv.u8"
+reserved t_cpblk "cpblk"
+reserved t_cpobj "cpobj"
+reserved t_currency "currency"
+reserved t_custom "custom"
+reserved t_date "date"
+reserved t_decimal "decimal"
+reserved t_default "default"
+reserved t_demand "demand"
+reserved t_deny "deny"
+reserved t_div "div"
+reserved t_div_un "div.un"
+reserved t_dup "dup"
+reserved t_endfault "endfault"
+reserved t_endfilter "endfilter"
+reserved t_endfinally "endfinally"
+reserved t_endmac "endmac"
+reserved t_enum "enum"
+reserved t_error "error"
+reserved t_explicit "explicit"
+reserved t_extends "extends"
+reserved t_extern "extern"
+reserved t_false "false"
+reserved t_famandassem "famandassem"
+reserved t_family "family"
+reserved t_famorassem "famorassem"
+reserved t_fastcall "fastcall"
+reserved t_fault "fault"
+reserved t_field "field"
+reserved t_filetime "filetime"
+reserved t_filter "filter"
+reserved t_final "final"
+reserved t_finally "finally"
+reserved t_fixed "fixed"
+reserved t_float "float"
+reserved t_float32 "float32"
+reserved t_float64 "float64"
+reserved t_forwardref "forwardref"
+reserved t_fromunmanaged "fromunmanaged"
+reserved t_handler "handler"
+reserved t_hidebysig "hidebysig"
+reserved t_hresult "hresult"
+reserved t_idispatch "idispatch"
+reserved t_illegal "illegal"
+reserved t_implements "implements"
+reserved t_import "import"
+reserved t_in "in"
+reserved t_inheritcheck "inheritcheck"
+reserved t_init "init"
+reserved t_initblk "initblk"
+reserved t_initobj "initobj"
+reserved t_initonly "initonly"
+reserved t_instance "instance"
 reserved t_int "int"
-reserved t_int8 "int8"
 reserved t_int16 "int16"
 reserved t_int32 "int32"
 reserved t_int64 "int64"
-reserved t_type "type"
+reserved t_int8 "int8"
+reserved t_interface "interface"
+reserved t_internalcall "internalcall"
+reserved t_isinst "isinst"
+reserved t_iunknown "iunknown"
+reserved t_jmp "jmp"
+reserved t_lasterr "lasterr"
+reserved t_ldarg "ldarg"
+reserved t_ldarg_0 "ldarg.0"
+reserved t_ldarg_1 "ldarg.1"
+reserved t_ldarg_2 "ldarg.2"
+reserved t_ldarg_3 "ldarg.3"
+reserved t_ldarg_s "ldarg.s"
+reserved t_ldarga "ldarga"
+reserved t_ldarga_s "ldarga.s"
+reserved t_ldc_i4 "ldc.i4"
+reserved t_ldc_i4_0 "ldc.i4.0"
+reserved t_ldc_i4_1 "ldc.i4.1"
+reserved t_ldc_i4_2 "ldc.i4.2"
+reserved t_ldc_i4_3 "ldc.i4.3"
+reserved t_ldc_i4_4 "ldc.i4.4"
+reserved t_ldc_i4_5 "ldc.i4.5"
+reserved t_ldc_i4_6 "ldc.i4.6"
+reserved t_ldc_i4_7 "ldc.i4.7"
+reserved t_ldc_i4_8 "ldc.i4.8"
+reserved t_ldc_i4_M1 "ldc.i4.M1"
+reserved t_ldc_i4_m1 "ldc.i4.m1"
+reserved t_ldc_i4_s "ldc.i4.s"
+reserved t_ldc_i8 "ldc.i8"
+reserved t_ldc_r4 "ldc.r4"
+reserved t_ldc_r8 "ldc.r8"
+reserved t_ldelem_i "ldelem.i"
+reserved t_ldelem_i1 "ldelem.i1"
+reserved t_ldelem_i2 "ldelem.i2"
+reserved t_ldelem_i4 "ldelem.i4"
+reserved t_ldelem_i8 "ldelem.i8"
+reserved t_ldelem_r4 "ldelem.r4"
+reserved t_ldelem_r8 "ldelem.r8"
+reserved t_ldelem_ref "ldelem.ref"
+reserved t_ldelem_u1 "ldelem.u1"
+reserved t_ldelem_u2 "ldelem.u2"
+reserved t_ldelem_u4 "ldelem.u4"
+reserved t_ldelem_u8 "ldelem.u8"
+reserved t_ldelema "ldelema"
+reserved t_ldfld "ldfld"
+reserved t_ldflda "ldflda"
+reserved t_ldftn "ldftn"
+reserved t_ldind_i "ldind.i"
+reserved t_ldind_i1 "ldind.i1"
+reserved t_ldind_i2 "ldind.i2"
+reserved t_ldind_i4 "ldind.i4"
+reserved t_ldind_i8 "ldind.i8"
+reserved t_ldind_r4 "ldind.r4"
+reserved t_ldind_r8 "ldind.r8"
+reserved t_ldind_ref "ldind.ref"
+reserved t_ldind_u1 "ldind.u1"
+reserved t_ldind_u2 "ldind.u2"
+reserved t_ldind_u4 "ldind.u4"
+reserved t_ldind_u8 "ldind.u8"
+reserved t_ldlen "ldlen"
+reserved t_ldloc "ldloc"
+reserved t_ldloc_0 "ldloc.0"
+reserved t_ldloc_1 "ldloc.1"
+reserved t_ldloc_2 "ldloc.2"
+reserved t_ldloc_3 "ldloc.3"
+reserved t_ldloc_s "ldloc.s"
+reserved t_ldloca "ldloca"
+reserved t_ldloca_s "ldloca.s"
+reserved t_ldnull "ldnull"
+reserved t_ldobj "ldobj"
+reserved t_ldsfld "ldsfld"
+reserved t_ldsflda "ldsflda"
+reserved t_ldstr "ldstr"
+reserved t_ldtoken "ldtoken"
+reserved t_ldvirtftn "ldvirtftn"
+reserved t_leave "leave"
+reserved t_leave_s "leave.s"
+reserved t_linkcheck "linkcheck"
+reserved t_literal "literal"
+reserved t_localloc "localloc"
+reserved t_lpstr "lpstr"
+reserved t_lpstruct "lpstruct"
+reserved t_lptstr "lptstr"
+reserved t_lpwstr "lpwstr"
+reserved t_managed "managed"
+reserved t_marshal "marshal"
+reserved t_method "method"
+reserved t_mkrefany "mkrefany"
+reserved t_modopt "modopt"
+reserved t_modreq "modreq"
+reserved t_mul "mul"
+reserved t_mul_ovf "mul.ovf"
+reserved t_mul_ovf_un "mul.ovf.un"
+reserved t_native "native"
+reserved t_neg "neg"
+reserved t_nested "nested"
+reserved t_newarr "newarr"
+reserved t_newobj "newobj"
+reserved t_newslot "newslot"
+reserved t_noappdomain "noappdomain"
+reserved t_noinlining "noinlining"
+reserved t_nomachine "nomachine"
+reserved t_nomangle "nomangle"
+reserved t_nometadata "nometadata"
+reserved t_noncasdemand "noncasdemand"
+reserved t_noncasinheritance "noncasinheritance"
+reserved t_noncaslinkdemand "noncaslinkdemand"
+reserved t_nop "nop"
+reserved t_noprocess "noprocess"
+reserved t_not "not"
+reserved t_notserialized "notserialized"
+reserved t_null "null"
+reserved t_nullref "nullref"
+reserved t_object "object"
+reserved t_objectref "objectref"
+reserved t_opt "opt"
+reserved t_optil "optil"
+reserved t_or "or"
+reserved t_out "out"
+reserved t_permitonly "permitonly"
+reserved t_pinned "pinned"
+reserved t_pinvokeimpl "pinvokeimpl"
+reserved t_pop "pop"
+reserved t_prefix1 "prefix1"
+reserved t_prefix2 "prefix2"
+reserved t_prefix3 "prefix3"
+reserved t_prefix4 "prefix4"
+reserved t_prefix5 "prefix5"
+reserved t_prefix6 "prefix6"
+reserved t_prefix7 "prefix7"
+reserved t_prefixref "prefixref"
+reserved t_prejitdeny "prejitdeny"
+reserved t_prejitgrant "prejitgrant"
+reserved t_preservesig "preservesig"
+reserved t_private "private"
+reserved t_privatescope "privatescope"
+reserved t_public "public"
+reserved t_record "record"
+reserved t_refanytype "refanytype"
+reserved t_refanyval "refanyval"
+reserved t_rem "rem"
+reserved t_rem_un "rem.un"
+reserved t_reqmin "reqmin"
+reserved t_reqopt "reqopt"
+reserved t_reqrefuse "reqrefuse"
+reserved t_reqsecobj "reqsecobj"
+reserved t_request "request"
+reserved t_ret "ret"
+reserved t_rethrow "rethrow"
+reserved t_rtspecialname "rtspecialname"
+reserved t_runtime "runtime"
+reserved t_safearray "safearray"
+reserved t_sealed "sealed"
+reserved t_sequential "sequential"
+reserved t_serializable "serializable"
+reserved t_shl "shl"
+reserved t_shr "shr"
+reserved t_shr_un "shr.un"
+reserved t_sizeof "sizeof"
+reserved t_specialname "specialname"
+reserved t_starg "starg"
+reserved t_starg_s "starg.s"
+reserved t_static "static"
+reserved t_stdcall "stdcall"
+reserved t_stelem_i "stelem.i"
+reserved t_stelem_i1 "stelem.i1"
+reserved t_stelem_i2 "stelem.i2"
+reserved t_stelem_i4 "stelem.i4"
+reserved t_stelem_i8 "stelem.i8"
+reserved t_stelem_r4 "stelem.r4"
+reserved t_stelem_r8 "stelem.r8"
+reserved t_stelem_ref "stelem.ref"
+reserved t_stfld "stfld"
+reserved t_stind_i "stind.i"
+reserved t_stind_i1 "stind.i1"
+reserved t_stind_i2 "stind.i2"
+reserved t_stind_i4 "stind.i4"
+reserved t_stind_i8 "stind.i8"
+reserved t_stind_r4 "stind.r4"
+reserved t_stind_r8 "stind.r8"
+reserved t_stind_ref "stind.ref"
+reserved t_stloc "stloc"
+reserved t_stloc_0 "stloc.0"
+reserved t_stloc_1 "stloc.1"
+reserved t_stloc_2 "stloc.2"
+reserved t_stloc_3 "stloc.3"
+reserved t_stloc_s "stloc.s"
+reserved t_stobj "stobj"
+reserved t_storage "storage"
+reserved t_stored_object "stored_object"
+reserved t_stream "stream"
+reserved t_streamed_object "streamed_object"
+reserved t_string "string"
+reserved t_struct "struct"
+reserved t_stsfld "stsfld"
+reserved t_sub "sub"
+reserved t_sub_ovf "sub.ovf"
+reserved t_sub_ovf_un "sub.ovf.un"
+reserved t_switch "switch"
+reserved t_synchronized "synchronized"
+reserved t_syschar "syschar"
+reserved t_sysstring "sysstring"
+reserved t_tail_ "tail."
+reserved t_tbstr "tbstr"
+reserved t_thiscall "thiscall"
+reserved t_throw "throw"
+reserved t_tls "tls"
+reserved t_to "to"
+reserved t_true "true"
+reserved t_typedref "typedref"
+reserved t_unaligned_ "unaligned."
+reserved t_unbox "unbox"
+reserved t_unicode "unicode"
+reserved t_unmanaged "unmanaged"
+reserved t_unmanagedexp "unmanagedexp"
 reserved t_unsigned "unsigned"
+reserved t_userdefined "userdefined"
+reserved t_value "value"
+reserved t_valuetype "valuetype"
+reserved t_vararg "vararg"
+reserved t_variant "variant"
+reserved t_vector "vector"
+reserved t_virtual "virtual"
 reserved t_void "void"
-reserved thiscall
-reserved typedref
-reserved unicode
-reserved unmanaged
-reserved valuetype
-reserved vararg
-reserved with
-
-ILFileDone : ILFile .
-
-ILFile : Decl .
-
-ILFile : ILFile Decl .
-
-Id : ID .
-
-Id : SQSTRING .
-
-DottedName : Id .
-
-DottedName : DottedName period Id .
-
-LabelOrOffset : Id .
-
-Labels : LabelOrOffset .
-Labels : Labels comma LabelOrOffset .
-
-CodeLabel : Id colon .
-
-DataLabel : Id .
-
-Bytes : HexByte .
-Bytes : Bytes HexByte .
-
-Float32 : RealNumber .
-Float32 : float32 left_paren Int32 right_paren .
-Float64 : RealNumber .
-Float64 : float64 left_paren Int64 right_paren .
-
-Range : Int32 .
-Range : Int32 comma Int32 .
-
-
-ExternSourceDeclSTART : lineDirective Range .
-
-ExternSourceDeclMID : ExternSourceDeclSTART .
-
-ExternSourceDeclMID : ExternSourceDeclSTART colon Range .
-
-ExternSourceDecl : ExternSourceDeclMID .
-ExternSourceDecl : ExternSourceDeclMID SQSTRING .
-
-Filename : DottedName .
-
-Decl : ExternSourceDecl .
-
-Decl : assemblyDirective DottedName left_brace AsmDecls right_brace .
-
-AsmDecls : AsmDecl .
-AsmDecls : AsmDecls AsmDecl .
-
-AsmDecl : CustomSpec .
-AsmDecl : cultureDirective QSTRING .
-AsmDecl : hashDirective algorithm Int32 .
-AsmDecl : publickey BytesSpec .
-AsmDecl : VersionSpec .
-AsmDecl : SecurityDecl .
-
-ExternName : Extern DottedName .
-ExternName : Extern DottedName as DottedName .
-
-Decl : assemblyDirective ExternName left_brace AsmRefDecls right_brace .
-
-AsmRefDecls : AsmRefDecl .
-AsmRefDecls : AsmRefDecls AsmRefDecl .
-
-AsmRefDecl : cultureDirective QSTRING .
-AsmRefDecl : publickeytoken BytesSpec .
-AsmRefDecl : HashSpec .
-AsmRefDecl : publickey BytesSpec .
-AsmRefDecl : VersionSpec .
-AsmRefDecl : CustomSpec .
-
-VersionSpec : verDirective Int32 colon Int32 colon Int32 colon Int32 .
-
-Decl : classDirective ClassHeader left_brace ClassMembers right_brace .
-Decl : classDirective Extern ExportAttr DottedName left_brace ExternClassDecls right_brace .
-
-ClassMembers : ClassMember .
-Classmembers : ClassMembers ClassMember .
-
-ExternClassDecls : ExternClassDecl .
-ExternClassDecls : ExternClassDecls ExternClassDecl .
-
-ExportAttr : Public .
-ExportAttr : nested Public .
-
-ExternClassDecl : fileDirective DottedName .
-ExternClassDecl : classDirective Extern DottedName .
-ExternClassDecl : CustomSpec .
-
-Decl : corflagsDirective Int32 .
-
-CustomSpec : customDirective CustomDecl .
-
-Decl : CustomSpec .
-
-Decl : fieldDirective FieldDecl .
-
-BytesSpec : equals left_paren Bytes right_paren .
-
-HashSpec : hashDirective BytesSpec .
-
-FileDeclSTART : fileDirective Filename HashSpec .
-FileDeclSTART : fileDirective nometadata Filename HashSpec .
-Decl : FileDeclSTART .
-Decl : FileDeclSTART entrypointDirective .
-
-Decl : methodDirective MethodHeader left_brace MethodBodyItems right_brace .
-MethodBodyItems : MethodBodyItem .
-MethodBodyItems : MethodBodyItems MethodBodyItem .
-
-Decl : moduleDirective .
-Decl : moduleDirective Filename .
-Decl : moduleDirective Extern Filename .
-
-ManResDecls : ManResDecl .
-ManResDecls : ManResDecls ManResDecl .
-
-Decl : mresourceDirective Public DottedName left_brace ManResDecls right_brace .
-Decl : mresourceDirective Private DottedName left_brace ManResDecls right_brace .
-
-ManResDecl : assemblyDirective ExternName .
-ManResDecl : CustomSpec .
-ManResDecl : fileDirective DottedName at Int32 .
-
-Decl : subsystemDirective Int32 .
-
-Decl : SecurityDecl .
-
-Decl : namespaceDirective DottedName left_brace ILFile right_brace .
-
-GenericTypeParameter : exclamation Int32 .
-GenericMethodParameter : exclamation exclamation Int32 .
-
-Type : GenericTypeParameter .
-Type : GenericMethodParameter .
-Type : BuiltinType .
-Type : ClassTypeSpec .
-Type : BuiltinRefType .
-Type : method CallConv Type asterisk left_paren Parameters right_paren .
-Type : Type ampersand .
-Type : Type asterisk .
-Type : Type left_angle GenArgs right_angle .
-Type : Type left_square right_square .
-Type : Type left_square Bounds right_square .
-Type : Type pinned .
-Type : valuetype TypeReference .
-Type : ModifiedType .
-
-ModifiedType : Type modopt left_paren TypeReference right_paren .
-ModifiedType : Type modreq left_paren TypeReference right_paren .
-
-Bounds : Bound .
-Bounds : Bounds comma Bound .
-
-BuiltinType : t_bool .
-BuiltinType : t_char .
-BuiltinType : float32 .
-BuiltinType : float64 .
-BuiltinIntType : t_int8 .
-BuiltinIntType : t_int16 .
-BuiltinIntType : t_int32 .
-BuiltinIntType : t_int64 .
-BuiltinType : BuiltinIntType .
-BuiltinType : t_unsigned BuiltinIntType .
-BuiltinType : Native t_int .
-BuiltinType : Native t_unsigned t_int .
-BuiltinType : t_void .
-BuiltinRefType : object .
-BuiltinRefType : string .
-BuiltinRefType : typedref .
-
-ClassTypeSpec : t_class TypeReference .
-
-TypeSpec : left_square DottedName right_square .
-TypeSpec : left_square moduleDirective DottedName right_square .
-TypeSpec : TypeReference .
-TypeSpec : Type .
-
-SlashedName : DottedName .
-SlashedName : SlashedName slash DottedName .
-
-TypeReference : SlashedName .
-TypeReference : ResolutionScope SlashedName .
-
-ResolutionScope : left_square moduleDirective Filename right_square .
-# Dotted name is the AssemblyRefName here
-ResolutionScope : left_square DottedName right_square .
-
-# Not implementing II.7.4 related to marshaling?
-
-# II.9.4
-GenArgs : Type .
-GenArgs : GenArgs comma Type .
-
-ClassAttrs : .
-ClassAttrs : ClassAttrs ClassAttr .
-
-ClassHeaderSTART : ClassAttrs Id .
-ClassHeaderSTART : ClassAttrs Id left_angle GenPars right_angle .
-ClassHeaderMIDDLE : ClassHeaderSTART .
-ClassHeaderMIDDLE : ClassHeaderSTART Extends TypeSpec .
-ClassHeader : ClassHeaderMIDDLE .
-ClassHeaderIMPLEMENTS : Implements TypeSpec .
-ClassHeaderIMPLEMENTS : ClassHeaderIMPLEMENTS comma TypeSpec .
-ClassHeader : ClassHeaderMIDDLE ClassHeaderIMPLEMENTS .
-
-ClassAttr : Abstract .
-ClassAttr : ansi .
-ClassAttr : auto .
-ClassAttr : autochar .
-ClassAttr : beforefieldinit .
-ClassAttr : explicit .
-ClassAttr : Interface .
-ClassAttr : nested assembly .
-ClassAttr : nested famandassem .
-ClassAttr : nested family .
-ClassAttr : nested Private .
-ClassAttr : nested Public .
-ClassAttr : Private .
-ClassAttr : Public .
-ClassAttr : rtspecialname .
-ClassAttr : sealed .
-ClassAttr : sequential .
-ClassAttr : serializable .
-ClassAttr : specialname .
-ClassAttr : unicode .
-
-GenPars : GenPar .
-GenPars : GenPars comma GenPar .
-
-GenParAttribs : .
-GenParAttribs : GenParAttribs GenParAttrib .
-
-GenParAttrib : plus .
-GenParAttrib : minus .
-GenParAttrib : t_class .
-GenParAttrib : valuetype .
-GenParAttrib : ctorDirective .
-
-GenPar : GenParAttribs left_paren GenConstraints right_paren Id .
-GenPar : GenParAttribs Id .
-
-GenConstraints : Type .
-GenConstraints : GenConstraints comma Type .
-
-ClassMember : classDirective ClassHeader left_brace ClassMembers right_brace .
-ClassMember : CustomSpec .
-ClassMember : dataDirective DataDecl .
-ClassMember : eventDirective EventHeader left_brace EventMembers right_brace .
-ClassMember : fieldDirective FieldDecl .
-ClassMember : methodDirective MethodHeader left_brace MethodBodyItems right_brace .
-ClassMember : overrideDirective TypeSpec colon colon MethodName with CallConv Type TypeSpec colon colon MethodName left_paren Parameters right_paren .
-ClassMember : overrideDirective method CallConv Type TypeSpec colon colon MethodName GenArity left_paren Parameters right_paren with method CallConv Type TypeSpec colon colon MethodName GenArity left_paren Parameters right_paren .
-ClassMember : paramDirective t_type left_square Int32 right_square .
-ClassMember : propertyDirective PropHeader left_brace PropMembers right_brace .
-ClassMember : sizeDirective Int32 .
-ClassMember : ExternSourceDecl .
-ClassMember : SecurityDecl .
-
-EventMembers : EventMember .
-EventMembers : EventMembers EventMember .
-
-GenArity : left_angle left_square Int32 right_square right_angle .
-GenArity : .
-
-PropMembers : PropMember .
-PropMembers : PropMembers PropMember .
-
-FieldAttrs : .
-FieldAttrs : FieldAttrs FieldAttr .
-
-FieldDecl : FieldAttrs Type Id .
-FieldDecl : left_square Int32 right_square FieldAttrs Type Id .
-
-Bound : .
-Bound : period period period .
-Bound : Int32 .
-Bound : Int32 period period period .
-Bound : Int32 period period period Int32 .
-
-CallConv : .
-CallConv : instance .
-CallConv : instance explicit .
-CallConv : CallKind .
-CallConv : instance CallKind .
-CallConv : instance explicit CallKind .
-
-CallKind : Default .
-CallKind : unmanaged cdecl .
-CallKind : unmanaged fastcall .
-CallKind : unmanaged stdcall .
-CallKind : unmanaged thiscall .
-CallKind : vararg .
-
-
-
-
-
+reserved t_volatile_ "volatile."
+reserved t_winapi "winapi"
+reserved t_with "with"
+reserved t_xor "xor"
+reserved t_left_brace "{"
+reserved t_right_brace "}"
+reserved t_DOTTEDNAME "DOTTEDNAME"
+reserved t_FLOAT64 "FLOAT64"
+reserved t_HEXBYTE "HEXBYTE"
+reserved t_ID "ID"
+reserved t_INSTR_PHI "INSTR_PHI"
+reserved t_INSTR_RVA "INSTR_RVA"
+reserved t_INT64 "INT64"
+reserved t_P_LINE "P_LINE"
+reserved t_QSTRING "QSTRING"
+reserved t_SQSTRING "SQSTRING"
+n_INSTR_BRTARGET : t_br_s .
+n_INSTR_BRTARGET : t_brfalse_s .
+n_INSTR_BRTARGET : t_brtrue_s .
+n_INSTR_BRTARGET : t_beq_s .
+n_INSTR_BRTARGET : t_bge_s .
+n_INSTR_BRTARGET : t_bgt_s .
+n_INSTR_BRTARGET : t_ble_s .
+n_INSTR_BRTARGET : t_blt_s .
+n_INSTR_BRTARGET : t_bne_un_s .
+n_INSTR_BRTARGET : t_bge_un_s .
+n_INSTR_BRTARGET : t_bgt_un_s .
+n_INSTR_BRTARGET : t_ble_un_s .
+n_INSTR_BRTARGET : t_blt_un_s .
+n_INSTR_BRTARGET : t_br .
+n_INSTR_BRTARGET : t_brfalse .
+n_INSTR_BRTARGET : t_brtrue .
+n_INSTR_BRTARGET : t_beq .
+n_INSTR_BRTARGET : t_bge .
+n_INSTR_BRTARGET : t_bgt .
+n_INSTR_BRTARGET : t_ble .
+n_INSTR_BRTARGET : t_blt .
+n_INSTR_BRTARGET : t_bne_un .
+n_INSTR_BRTARGET : t_bge_un .
+n_INSTR_BRTARGET : t_bgt_un .
+n_INSTR_BRTARGET : t_ble_un .
+n_INSTR_BRTARGET : t_blt_un .
+n_INSTR_BRTARGET : t_leave .
+n_INSTR_BRTARGET : t_leave_s .
+n_INSTR_BRTARGET : t_brnull .
+n_INSTR_BRTARGET : t_brnull_s .
+n_INSTR_BRTARGET : t_brzero .
+n_INSTR_BRTARGET : t_brzero_s .
+n_INSTR_BRTARGET : t_brinst .
+n_INSTR_BRTARGET : t_brinst_s .
+n_INSTR_FIELD : t_ldfld .
+n_INSTR_FIELD : t_ldflda .
+n_INSTR_FIELD : t_stfld .
+n_INSTR_FIELD : t_ldsfld .
+n_INSTR_FIELD : t_ldsflda .
+n_INSTR_FIELD : t_stsfld .
+n_INSTR_I : t_ldc_i4_s .
+n_INSTR_I : t_ldc_i4 .
+n_INSTR_I : t_unaligned_ .
+n_INSTR_I8 : t_ldc_i8 .
+n_INSTR_METHOD : t_jmp .
+n_INSTR_METHOD : t_call .
+n_INSTR_METHOD : t_callvirt .
+n_INSTR_METHOD : t_newobj .
+n_INSTR_METHOD : t_ldftn .
+n_INSTR_METHOD : t_ldvirtftn .
+n_INSTR_NONE : t_nop .
+n_INSTR_NONE : t_break .
+n_INSTR_NONE : t_ldarg_0 .
+n_INSTR_NONE : t_ldarg_1 .
+n_INSTR_NONE : t_ldarg_2 .
+n_INSTR_NONE : t_ldarg_3 .
+n_INSTR_NONE : t_ldloc_0 .
+n_INSTR_NONE : t_ldloc_1 .
+n_INSTR_NONE : t_ldloc_2 .
+n_INSTR_NONE : t_ldloc_3 .
+n_INSTR_NONE : t_stloc_0 .
+n_INSTR_NONE : t_stloc_1 .
+n_INSTR_NONE : t_stloc_2 .
+n_INSTR_NONE : t_stloc_3 .
+n_INSTR_NONE : t_ldnull .
+n_INSTR_NONE : t_ldc_i4_m1 .
+n_INSTR_NONE : t_ldc_i4_0 .
+n_INSTR_NONE : t_ldc_i4_1 .
+n_INSTR_NONE : t_ldc_i4_2 .
+n_INSTR_NONE : t_ldc_i4_3 .
+n_INSTR_NONE : t_ldc_i4_4 .
+n_INSTR_NONE : t_ldc_i4_5 .
+n_INSTR_NONE : t_ldc_i4_6 .
+n_INSTR_NONE : t_ldc_i4_7 .
+n_INSTR_NONE : t_ldc_i4_8 .
+n_INSTR_NONE : t_dup .
+n_INSTR_NONE : t_pop .
+n_INSTR_NONE : t_ret .
+n_INSTR_NONE : t_ldind_i1 .
+n_INSTR_NONE : t_ldind_u1 .
+n_INSTR_NONE : t_ldind_i2 .
+n_INSTR_NONE : t_ldind_u2 .
+n_INSTR_NONE : t_ldind_i4 .
+n_INSTR_NONE : t_ldind_u4 .
+n_INSTR_NONE : t_ldind_i8 .
+n_INSTR_NONE : t_ldind_i .
+n_INSTR_NONE : t_ldind_r4 .
+n_INSTR_NONE : t_ldind_r8 .
+n_INSTR_NONE : t_ldind_ref .
+n_INSTR_NONE : t_stind_ref .
+n_INSTR_NONE : t_stind_i1 .
+n_INSTR_NONE : t_stind_i2 .
+n_INSTR_NONE : t_stind_i4 .
+n_INSTR_NONE : t_stind_i8 .
+n_INSTR_NONE : t_stind_r4 .
+n_INSTR_NONE : t_stind_r8 .
+n_INSTR_NONE : t_add .
+n_INSTR_NONE : t_sub .
+n_INSTR_NONE : t_mul .
+n_INSTR_NONE : t_div .
+n_INSTR_NONE : t_div_un .
+n_INSTR_NONE : t_rem .
+n_INSTR_NONE : t_rem_un .
+n_INSTR_NONE : t_and .
+n_INSTR_NONE : t_or .
+n_INSTR_NONE : t_xor .
+n_INSTR_NONE : t_shl .
+n_INSTR_NONE : t_shr .
+n_INSTR_NONE : t_shr_un .
+n_INSTR_NONE : t_neg .
+n_INSTR_NONE : t_not .
+n_INSTR_NONE : t_conv_i1 .
+n_INSTR_NONE : t_conv_i2 .
+n_INSTR_NONE : t_conv_i4 .
+n_INSTR_NONE : t_conv_i8 .
+n_INSTR_NONE : t_conv_r4 .
+n_INSTR_NONE : t_conv_r8 .
+n_INSTR_NONE : t_conv_u4 .
+n_INSTR_NONE : t_conv_u8 .
+n_INSTR_NONE : t_conv_r_un .
+n_INSTR_NONE : t_throw .
+n_INSTR_NONE : t_conv_ovf_i1_un .
+n_INSTR_NONE : t_conv_ovf_i2_un .
+n_INSTR_NONE : t_conv_ovf_i4_un .
+n_INSTR_NONE : t_conv_ovf_i8_un .
+n_INSTR_NONE : t_conv_ovf_u1_un .
+n_INSTR_NONE : t_conv_ovf_u2_un .
+n_INSTR_NONE : t_conv_ovf_u4_un .
+n_INSTR_NONE : t_conv_ovf_u8_un .
+n_INSTR_NONE : t_conv_ovf_i_un .
+n_INSTR_NONE : t_conv_ovf_u_un .
+n_INSTR_NONE : t_ldlen .
+n_INSTR_NONE : t_ldelem_i1 .
+n_INSTR_NONE : t_ldelem_u1 .
+n_INSTR_NONE : t_ldelem_i2 .
+n_INSTR_NONE : t_ldelem_u2 .
+n_INSTR_NONE : t_ldelem_i4 .
+n_INSTR_NONE : t_ldelem_u4 .
+n_INSTR_NONE : t_ldelem_i8 .
+n_INSTR_NONE : t_ldelem_i .
+n_INSTR_NONE : t_ldelem_r4 .
+n_INSTR_NONE : t_ldelem_r8 .
+n_INSTR_NONE : t_ldelem_ref .
+n_INSTR_NONE : t_stelem_i .
+n_INSTR_NONE : t_stelem_i1 .
+n_INSTR_NONE : t_stelem_i2 .
+n_INSTR_NONE : t_stelem_i4 .
+n_INSTR_NONE : t_stelem_i8 .
+n_INSTR_NONE : t_stelem_r4 .
+n_INSTR_NONE : t_stelem_r8 .
+n_INSTR_NONE : t_stelem_ref .
+n_INSTR_NONE : t_conv_ovf_i1 .
+n_INSTR_NONE : t_conv_ovf_u1 .
+n_INSTR_NONE : t_conv_ovf_i2 .
+n_INSTR_NONE : t_conv_ovf_u2 .
+n_INSTR_NONE : t_conv_ovf_i4 .
+n_INSTR_NONE : t_conv_ovf_u4 .
+n_INSTR_NONE : t_conv_ovf_i8 .
+n_INSTR_NONE : t_conv_ovf_u8 .
+n_INSTR_NONE : t_ckfinite .
+n_INSTR_NONE : t_conv_u2 .
+n_INSTR_NONE : t_conv_u1 .
+n_INSTR_NONE : t_conv_i .
+n_INSTR_NONE : t_conv_ovf_i .
+n_INSTR_NONE : t_conv_ovf_u .
+n_INSTR_NONE : t_add_ovf .
+n_INSTR_NONE : t_add_ovf_un .
+n_INSTR_NONE : t_mul_ovf .
+n_INSTR_NONE : t_mul_ovf_un .
+n_INSTR_NONE : t_sub_ovf .
+n_INSTR_NONE : t_sub_ovf_un .
+n_INSTR_NONE : t_endfinally .
+n_INSTR_NONE : t_stind_i .
+n_INSTR_NONE : t_conv_u .
+n_INSTR_NONE : t_prefix7 .
+n_INSTR_NONE : t_prefix6 .
+n_INSTR_NONE : t_prefix5 .
+n_INSTR_NONE : t_prefix4 .
+n_INSTR_NONE : t_prefix3 .
+n_INSTR_NONE : t_prefix2 .
+n_INSTR_NONE : t_prefix1 .
+n_INSTR_NONE : t_prefixref .
+n_INSTR_NONE : t_arglist .
+n_INSTR_NONE : t_ceq .
+n_INSTR_NONE : t_cgt .
+n_INSTR_NONE : t_cgt_un .
+n_INSTR_NONE : t_clt .
+n_INSTR_NONE : t_clt_un .
+n_INSTR_NONE : t_localloc .
+n_INSTR_NONE : t_endfilter .
+n_INSTR_NONE : t_volatile_ .
+n_INSTR_NONE : t_tail_ .
+n_INSTR_NONE : t_cpblk .
+n_INSTR_NONE : t_initblk .
+n_INSTR_NONE : t_rethrow .
+n_INSTR_NONE : t_refanytype .
+n_INSTR_NONE : t_illegal .
+n_INSTR_NONE : t_endmac .
+n_INSTR_NONE : t_ldind_u8 .
+n_INSTR_NONE : t_ldelem_u8 .
+n_INSTR_NONE : t_ldc_i4_M1 .
+n_INSTR_NONE : t_endfault .
+n_INSTR_R : t_ldc_r4 .
+n_INSTR_R : t_ldc_r8 .
+n_INSTR_SIG : t_calli .
+n_INSTR_STRING : t_ldstr .
+n_INSTR_SWITCH : t_switch .
+n_INSTR_TOK : t_ldtoken .
+n_INSTR_TYPE : t_cpobj .
+n_INSTR_TYPE : t_ldobj .
+n_INSTR_TYPE : t_castclass .
+n_INSTR_TYPE : t_isinst .
+n_INSTR_TYPE : t_unbox .
+n_INSTR_TYPE : t_stobj .
+n_INSTR_TYPE : t_box .
+n_INSTR_TYPE : t_newarr .
+n_INSTR_TYPE : t_ldelema .
+n_INSTR_TYPE : t_refanyval .
+n_INSTR_TYPE : t_mkrefany .
+n_INSTR_TYPE : t_initobj .
+n_INSTR_TYPE : t_sizeof .
+n_INSTR_VAR : t_ldarg_s .
+n_INSTR_VAR : t_ldarga_s .
+n_INSTR_VAR : t_starg_s .
+n_INSTR_VAR : t_ldloc_s .
+n_INSTR_VAR : t_ldloca_s .
+n_INSTR_VAR : t_stloc_s .
+n_INSTR_VAR : t_ldarg .
+n_INSTR_VAR : t_ldarga .
+n_INSTR_VAR : t_starg .
+n_INSTR_VAR : t_ldloc .
+n_INSTR_VAR : t_ldloca .
+n_INSTR_VAR : t_stloc .
+n_START : n_decls .
+n_asmAttr : .
+n_asmAttr : n_asmAttr t_noappdomain .
+n_asmAttr : n_asmAttr t_noprocess .
+n_asmAttr : n_asmAttr t_nomachine .
+n_asmOrRefDecl : n_publicKeyHead n_bytes t_right_paren .
+n_asmOrRefDecl : t_verDirective n_int32 t_colon n_int32 t_colon n_int32 t_colon n_int32 .
+n_asmOrRefDecl : t_localeDirective n_compQstring .
+n_asmOrRefDecl : n_localeHead n_bytes t_right_paren .
+n_asmOrRefDecl : n_customAttrDecl .
+n_assemblyDecl : t_hashDirective t_algorithm n_int32 .
+n_assemblyDecl : n_secDecl .
+n_assemblyDecl : n_asmOrRefDecl .
+n_assemblyDecls : .
+n_assemblyDecls : n_assemblyDecls n_assemblyDecl .
+n_assemblyHead : t_assemblyDirective n_asmAttr n_name1 .
+n_assemblyRefDecl : n_hashHead n_bytes t_right_paren .
+n_assemblyRefDecl : n_asmOrRefDecl .
+n_assemblyRefDecl : n_publicKeyTokenHead n_bytes t_right_paren .
+n_assemblyRefDecls : .
+n_assemblyRefDecls : n_assemblyRefDecls n_assemblyRefDecl .
+n_assemblyRefHead : t_assemblyDirective t_extern n_name1 .
+n_assemblyRefHead : t_assemblyDirective t_extern n_name1 t_as n_name1 .
+n_atOpt : .
+n_atOpt : t_at n_id .
+n_bound : .
+n_bound : t_ellipsis .
+n_bound : n_int32 .
+n_bound : n_int32 t_ellipsis n_int32 .
+n_bound : n_int32 t_ellipsis .
+n_bounds1 : n_bound .
+n_bounds1 : n_bounds1 t_comma n_bound .
+n_bytearrayhead : t_bytearray t_left_paren .
+n_bytes : .
+n_bytes : n_hexbytes .
+n_caValue : n_truefalse .
+n_caValue : n_int32 .
+n_caValue : n_int32 t_left_paren n_int32 t_right_paren .
+n_caValue : n_compQstring .
+n_caValue : n_className t_left_paren t_int8 t_colon n_int32 t_right_paren .
+n_caValue : n_className t_left_paren t_int16 t_colon n_int32 t_right_paren .
+n_caValue : n_className t_left_paren n_int32 t_colon n_int32 t_right_paren .
+n_caValue : n_className t_left_paren n_int32 t_right_paren .
+n_callConv : t_instance n_callConv .
+n_callConv : t_explicit n_callConv .
+n_callConv : n_callKind .
+n_callKind : .
+n_callKind : t_default .
+n_callKind : t_vararg .
+n_callKind : t_unmanaged t_cdecl .
+n_callKind : t_unmanaged t_stdcall .
+n_callKind : t_unmanaged t_thiscall .
+n_callKind : t_unmanaged t_fastcall .
+n_catchClause : t_catch n_className .
+n_classAttr : .
+n_classAttr : n_classAttr t_public .
+n_classAttr : n_classAttr t_private .
+n_classAttr : n_classAttr t_value .
+n_classAttr : n_classAttr t_enum .
+n_classAttr : n_classAttr t_interface .
+n_classAttr : n_classAttr t_sealed .
+n_classAttr : n_classAttr t_abstract .
+n_classAttr : n_classAttr t_auto .
+n_classAttr : n_classAttr t_sequential .
+n_classAttr : n_classAttr t_explicit .
+n_classAttr : n_classAttr t_ansi .
+n_classAttr : n_classAttr t_unicode .
+n_classAttr : n_classAttr t_autochar .
+n_classAttr : n_classAttr t_import .
+n_classAttr : n_classAttr t_serializable .
+n_classAttr : n_classAttr t_nested t_public .
+n_classAttr : n_classAttr t_nested t_private .
+n_classAttr : n_classAttr t_nested t_family .
+n_classAttr : n_classAttr t_nested t_assembly .
+n_classAttr : n_classAttr t_nested t_famandassem .
+n_classAttr : n_classAttr t_nested t_famorassem .
+n_classAttr : n_classAttr t_beforefieldinit .
+n_classAttr : n_classAttr t_specialname .
+n_classAttr : n_classAttr t_rtspecialname .
+n_classDecl : n_methodHead n_methodDecls t_right_brace .
+n_classDecl : n_classHead t_left_brace n_classDecls t_right_brace .
+n_classDecl : n_eventHead t_left_brace n_eventDecls t_right_brace .
+n_classDecl : n_propHead t_left_brace n_propDecls t_right_brace .
+n_classDecl : n_fieldDecl .
+n_classDecl : n_dataDecl .
+n_classDecl : n_secDecl .
+n_classDecl : n_extSourceSpec .
+n_classDecl : n_customAttrDecl .
+n_classDecl : t_sizeDirective n_int32 .
+n_classDecl : t_packDirective n_int32 .
+n_classDecl : n_exportHead t_left_brace n_comtypeDecls t_right_brace .
+n_classDecl : t_overrideDirective n_typeSpec t_member_op n_methodName t_with n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_classDecl : n_languageDecl .
+n_classDecls : .
+n_classDecls : n_classDecls n_classDecl .
+n_classHead : t_classDirective n_classAttr n_id n_extendsClause n_implClause .
+n_className : t_left_square n_name1 t_right_square n_slashedName .
+n_className : t_left_square t_moduleDirective n_name1 t_right_square n_slashedName .
+n_className : n_slashedName .
+n_classNames : n_classNames t_comma n_className .
+n_classNames : n_className .
+n_compQstring : t_QSTRING .
+n_compQstring : n_compQstring t_plus t_QSTRING .
+n_comtAttr : .
+n_comtAttr : n_comtAttr t_private .
+n_comtAttr : n_comtAttr t_public .
+n_comtAttr : n_comtAttr t_nested t_public .
+n_comtAttr : n_comtAttr t_nested t_private .
+n_comtAttr : n_comtAttr t_nested t_family .
+n_comtAttr : n_comtAttr t_nested t_assembly .
+n_comtAttr : n_comtAttr t_nested t_famandassem .
+n_comtAttr : n_comtAttr t_nested t_famorassem .
+n_comtypeDecl : t_fileDirective n_name1 .
+n_comtypeDecl : t_classDirective t_extern n_name1 .
+n_comtypeDecl : t_classDirective n_int32 .
+n_comtypeDecl : n_customAttrDecl .
+n_comtypeDecls : .
+n_comtypeDecls : n_comtypeDecls n_comtypeDecl .
+n_comtypeHead : t_classDirective t_extern n_comtAttr n_name1 .
+n_customAttrDecl : t_customDirective n_customType .
+n_customAttrDecl : t_customDirective n_customType t_equals n_compQstring .
+n_customAttrDecl : n_customHead n_bytes t_right_paren .
+n_customAttrDecl : t_customDirective t_left_paren n_ownerType t_right_paren n_customType .
+n_customAttrDecl : t_customDirective t_left_paren n_ownerType t_right_paren n_customType t_equals n_compQstring .
+n_customAttrDecl : n_customHeadWithOwner n_bytes t_right_paren .
+n_customHead : t_customDirective n_customType t_equals t_left_paren .
+n_customHeadWithOwner : t_customDirective t_left_paren n_ownerType t_right_paren n_customType t_equals t_left_paren .
+n_customType : n_callConv n_type n_typeSpec t_member_op t_ctorDirective t_left_paren n_sigArgs0 t_right_paren .
+n_customType : n_callConv n_type t_ctorDirective t_left_paren n_sigArgs0 t_right_paren .
+n_dataDecl : n_ddHead n_ddBody .
+n_ddBody : t_left_brace n_ddItemList t_right_brace .
+n_ddBody : n_ddItem .
+n_ddHead : t_dataDirective n_tlsSpec n_id t_equals .
+n_ddHead : t_dataDirective n_tlsSpec .
+n_ddItem : t_char t_asterisk t_left_paren n_compQstring t_right_paren .
+n_ddItem : t_ampersand t_left_paren n_id t_right_paren .
+n_ddItem : n_bytearrayhead n_bytes t_right_paren .
+n_ddItem : t_float32 t_left_paren n_float64 t_right_paren n_ddItemCount .
+n_ddItem : n_float64 t_left_paren n_float64 t_right_paren n_ddItemCount .
+n_ddItem : n_int64 t_left_paren n_int64 t_right_paren n_ddItemCount .
+n_ddItem : n_int32 t_left_paren n_int32 t_right_paren n_ddItemCount .
+n_ddItem : t_int16 t_left_paren n_int32 t_right_paren n_ddItemCount .
+n_ddItem : t_int8 t_left_paren n_int32 t_right_paren n_ddItemCount .
+n_ddItem : t_float32 n_ddItemCount .
+n_ddItem : n_float64 n_ddItemCount .
+n_ddItem : n_int64 n_ddItemCount .
+n_ddItem : n_int32 n_ddItemCount .
+n_ddItem : t_int16 n_ddItemCount .
+n_ddItem : t_int8 n_ddItemCount .
+n_ddItemCount : .
+n_ddItemCount : t_left_square n_int32 t_right_square .
+n_ddItemList : n_ddItem t_comma n_ddItemList .
+n_ddItemList : n_ddItem .
+n_decl : n_classHead t_left_brace n_classDecls t_right_brace .
+n_decl : n_nameSpaceHead t_left_brace n_decls t_right_brace .
+n_decl : n_methodHead n_methodDecls t_right_brace .
+n_decl : n_fieldDecl .
+n_decl : n_dataDecl .
+n_decl : n_vtableDecl .
+n_decl : n_vtfixupDecl .
+n_decl : n_extSourceSpec .
+n_decl : n_fileDecl .
+n_decl : n_assemblyHead t_left_brace n_assemblyDecls t_right_brace .
+n_decl : n_assemblyRefHead t_left_brace n_assemblyRefDecls t_right_brace .
+n_decl : n_comtypeHead t_left_brace n_comtypeDecls t_right_brace .
+n_decl : n_manifestResHead t_left_brace n_manifestResDecls t_right_brace .
+n_decl : n_moduleHead .
+n_decl : n_secDecl .
+n_decl : n_customAttrDecl .
+n_decl : t_subsystemDirective n_int32 .
+n_decl : t_corflagsDirective n_int32 .
+n_decl : t_fileDirective t_alignment n_int32 .
+n_decl : t_imagebaseDirective n_int64 .
+n_decl : n_languageDecl .
+n_decls : .
+n_decls : n_decls n_decl .
+n_eventAttr : .
+n_eventAttr : n_eventAttr t_rtspecialname .
+n_eventAttr : n_eventAttr t_specialname .
+n_eventDecl : t_addonDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_addonDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_removeonDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_removeonDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_fireDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_fireDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_otherDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_otherDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : n_extSourceSpec .
+n_eventDecl : n_customAttrDecl .
+n_eventDecl : n_languageDecl .
+n_eventDecls : .
+n_eventDecls : n_eventDecls n_eventDecl .
+n_eventHead : t_eventDirective n_eventAttr n_typeSpec n_id .
+n_eventHead : t_eventDirective n_eventAttr n_id .
+n_exportHead : t_exportDirective n_comtAttr n_name1 .
+n_extSourcePosition : n_int32 .
+n_extSourcePosition : n_int32 t_comma n_int32 .
+n_extSourceSpec : t_lineDirective n_extSourcePosition t_SQSTRING .
+n_extSourceSpec : t_lineDirective n_extSourcePosition .
+n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition t_SQSTRING .
+n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition .
+n_extSourceSpec : t_P_LINE n_extSourcePosition t_QSTRING .
+n_extendsClause : .
+n_extendsClause : t_extends n_className .
+n_faultClause : t_fault .
+n_fieldAttr : .
+n_fieldAttr : n_fieldAttr t_static .
+n_fieldAttr : n_fieldAttr t_public .
+n_fieldAttr : n_fieldAttr t_private .
+n_fieldAttr : n_fieldAttr t_family .
+n_fieldAttr : n_fieldAttr t_initonly .
+n_fieldAttr : n_fieldAttr t_rtspecialname .
+n_fieldAttr : n_fieldAttr t_specialname .
+n_fieldAttr : n_fieldAttr t_marshal t_left_paren n_nativeType t_right_paren .
+n_fieldAttr : n_fieldAttr t_assembly .
+n_fieldAttr : n_fieldAttr t_famandassem .
+n_fieldAttr : n_fieldAttr t_famorassem .
+n_fieldAttr : n_fieldAttr t_privatescope .
+n_fieldAttr : n_fieldAttr t_literal .
+n_fieldAttr : n_fieldAttr t_notserialized .
+n_fieldDecl : t_fieldDirective n_repeatOpt n_fieldAttr n_type n_id n_atOpt n_initOpt .
+n_fieldInit : t_float32 t_left_paren n_float64 t_right_paren .
+n_fieldInit : n_float64 t_left_paren n_float64 t_right_paren .
+n_fieldInit : t_float32 t_left_paren n_int64 t_right_paren .
+n_fieldInit : n_float64 t_left_paren n_int64 t_right_paren .
+n_fieldInit : n_int64 t_left_paren n_int64 t_right_paren .
+n_fieldInit : n_int32 t_left_paren n_int64 t_right_paren .
+n_fieldInit : t_int16 t_left_paren n_int64 t_right_paren .
+n_fieldInit : t_char t_left_paren n_int64 t_right_paren .
+n_fieldInit : t_int8 t_left_paren n_int64 t_right_paren .
+n_fieldInit : t_bool t_left_paren n_truefalse t_right_paren .
+n_fieldInit : n_compQstring .
+n_fieldInit : n_bytearrayhead n_bytes t_right_paren .
+n_fieldInit : t_nullref .
+n_fileAttr : .
+n_fileAttr : n_fileAttr t_nometadata .
+n_fileDecl : t_fileDirective n_fileAttr n_name1 n_fileEntry n_hashHead n_bytes t_right_paren n_fileEntry .
+n_fileDecl : t_fileDirective n_fileAttr n_name1 n_fileEntry .
+n_fileEntry : .
+n_fileEntry : t_entrypointDirective .
+n_filterClause : n_filterHead n_scopeBlock .
+n_filterClause : n_filterHead n_id .
+n_filterClause : n_filterHead n_int32 .
+n_filterHead : t_filter .
+n_finallyClause : t_finally .
+n_float64 : t_FLOAT64 .
+n_float64 : t_float32 t_left_paren n_int32 t_right_paren .
+n_float64 : n_float64 t_left_paren n_int64 t_right_paren .
+n_handlerBlock : n_scopeBlock .
+n_handlerBlock : t_handler n_id t_to n_id .
+n_handlerBlock : t_handler n_int32 t_to n_int32 .
+n_hashHead : t_hashDirective t_equals t_left_paren .
+n_hexbytes : t_HEXBYTE .
+n_hexbytes : n_hexbytes t_HEXBYTE .
+n_id : t_ID .
+n_id : t_SQSTRING .
+n_implAttr : .
+n_implAttr : n_implAttr t_native .
+n_implAttr : n_implAttr t_cil .
+n_implAttr : n_implAttr t_optil .
+n_implAttr : n_implAttr t_managed .
+n_implAttr : n_implAttr t_unmanaged .
+n_implAttr : n_implAttr t_forwardref .
+n_implAttr : n_implAttr t_preservesig .
+n_implAttr : n_implAttr t_runtime .
+n_implAttr : n_implAttr t_internalcall .
+n_implAttr : n_implAttr t_synchronized .
+n_implAttr : n_implAttr t_noinlining .
+n_implClause : .
+n_implClause : t_implements n_classNames .
+n_initOpt : .
+n_initOpt : t_equals n_fieldInit .
+n_instr : n_INSTR_NONE .
+n_instr : n_INSTR_VAR n_int32 .
+n_instr : n_INSTR_VAR n_id .
+n_instr : n_INSTR_I n_int32 .
+n_instr : n_INSTR_I8 n_int64 .
+n_instr : n_INSTR_R n_float64 .
+n_instr : n_INSTR_R n_int64 .
+n_instr : n_instr_r_head n_bytes t_right_paren .
+n_instr : n_INSTR_BRTARGET n_int32 .
+n_instr : n_INSTR_BRTARGET n_id .
+n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_instr : n_INSTR_METHOD n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_instr : n_INSTR_FIELD n_type n_typeSpec t_member_op n_id .
+n_instr : n_INSTR_FIELD n_type n_id .
+n_instr : n_INSTR_TYPE n_typeSpec .
+n_instr : n_INSTR_STRING n_compQstring .
+n_instr : n_INSTR_STRING n_bytearrayhead n_bytes t_right_paren .
+n_instr : n_INSTR_SIG n_callConv n_type t_left_paren n_sigArgs0 t_right_paren .
+n_instr : t_INSTR_RVA n_id .
+n_instr : t_INSTR_RVA n_int32 .
+n_instr : n_instr_tok_head n_ownerType .
+n_instr : n_INSTR_SWITCH t_left_paren n_labels t_right_paren .
+n_instr : t_INSTR_PHI n_int16s .
+n_instr_r_head : n_INSTR_R t_left_paren .
+n_instr_tok_head : n_INSTR_TOK .
+n_int16s : .
+n_int16s : n_int16s n_int32 .
+n_int32 : t_INT64 .
+n_int64 : t_INT64 .
+n_labels : .
+n_labels : n_id t_comma n_labels .
+n_labels : n_int32 t_comma n_labels .
+n_labels : n_id .
+n_labels : n_int32 .
+n_languageDecl : t_languageDirective t_SQSTRING .
+n_languageDecl : t_languageDirective t_SQSTRING t_comma t_SQSTRING .
+n_languageDecl : t_languageDirective t_SQSTRING t_comma t_SQSTRING t_comma t_SQSTRING .
+n_localeHead : t_localeDirective t_equals t_left_paren .
+n_localsHead : t_localsDirective .
+n_manifestResDecl : t_fileDirective n_name1 t_at n_int32 .
+n_manifestResDecl : t_assemblyDirective t_extern n_name1 .
+n_manifestResDecl : n_customAttrDecl .
+n_manifestResDecls : .
+n_manifestResDecls : n_manifestResDecls n_manifestResDecl .
+n_manifestResHead : t_mresourceDirective n_manresAttr n_name1 .
+n_manresAttr : .
+n_manresAttr : n_manresAttr t_public .
+n_manresAttr : n_manresAttr t_private .
+n_memberRef : n_methodSpec n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_memberRef : n_methodSpec n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_memberRef : t_field n_type n_typeSpec t_member_op n_id .
+n_memberRef : t_field n_type n_id .
+n_methAttr : .
+n_methAttr : n_methAttr t_static .
+n_methAttr : n_methAttr t_public .
+n_methAttr : n_methAttr t_private .
+n_methAttr : n_methAttr t_family .
+n_methAttr : n_methAttr t_final .
+n_methAttr : n_methAttr t_specialname .
+n_methAttr : n_methAttr t_virtual .
+n_methAttr : n_methAttr t_abstract .
+n_methAttr : n_methAttr t_assembly .
+n_methAttr : n_methAttr t_famandassem .
+n_methAttr : n_methAttr t_famorassem .
+n_methAttr : n_methAttr t_privatescope .
+n_methAttr : n_methAttr t_hidebysig .
+n_methAttr : n_methAttr t_newslot .
+n_methAttr : n_methAttr t_rtspecialname .
+n_methAttr : n_methAttr t_unmanagedexp .
+n_methAttr : n_methAttr t_reqsecobj .
+n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring t_as n_compQstring n_pinvAttr t_right_paren .
+n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring n_pinvAttr t_right_paren .
+n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_pinvAttr t_right_paren .
+n_methodDecl : t_emitbyteDirective n_int32 .
+n_methodDecl : n_sehBlock .
+n_methodDecl : t_maxstackDirective n_int32 .
+n_methodDecl : n_localsHead t_left_paren n_sigArgs0 t_right_paren .
+n_methodDecl : n_localsHead t_init t_left_paren n_sigArgs0 t_right_paren .
+n_methodDecl : t_entrypointDirective .
+n_methodDecl : t_zeroinitDirective .
+n_methodDecl : n_dataDecl .
+n_methodDecl : n_instr .
+n_methodDecl : n_id t_colon .
+n_methodDecl : n_secDecl .
+n_methodDecl : n_extSourceSpec .
+n_methodDecl : n_languageDecl .
+n_methodDecl : n_customAttrDecl .
+n_methodDecl : t_exportDirective t_left_square n_int32 t_right_square .
+n_methodDecl : t_exportDirective t_left_square n_int32 t_right_square t_as n_id .
+n_methodDecl : t_vtentryDirective n_int32 t_colon n_int32 .
+n_methodDecl : t_overrideDirective n_typeSpec t_member_op n_methodName .
+n_methodDecl : n_scopeBlock .
+n_methodDecl : t_paramDirective t_left_square n_int32 t_right_square n_initOpt .
+n_methodDecls : .
+n_methodDecls : n_methodDecls n_methodDecl .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
+n_methodHeadPart1 : t_methodDirective .
+n_methodName : t_ctorDirective .
+n_methodName : t_cctorDirective .
+n_methodName : n_name1 .
+n_methodSpec : t_method .
+n_moduleHead : t_moduleDirective .
+n_moduleHead : t_moduleDirective n_name1 .
+n_moduleHead : t_moduleDirective t_extern n_name1 .
+n_name1 : n_id .
+n_name1 : t_DOTTEDNAME .
+n_name1 : n_name1 t_period n_name1 .
+n_nameSpaceHead : t_namespaceDirective n_name1 .
+n_nameValPair : n_compQstring t_equals n_caValue .
+n_nameValPairs : n_nameValPair .
+n_nameValPairs : n_nameValPair t_comma n_nameValPairs .
+n_nativeType : .
+n_nativeType : t_custom t_left_paren n_compQstring t_comma n_compQstring t_comma n_compQstring t_comma n_compQstring t_right_paren .
+n_nativeType : t_custom t_left_paren n_compQstring t_comma n_compQstring t_right_paren .
+n_nativeType : t_fixed t_sysstring t_left_square n_int32 t_right_square .
+n_nativeType : t_fixed t_array t_left_square n_int32 t_right_square .
+n_nativeType : t_variant .
+n_nativeType : t_currency .
+n_nativeType : t_syschar .
+n_nativeType : t_void .
+n_nativeType : t_bool .
+n_nativeType : t_int8 .
+n_nativeType : t_int16 .
+n_nativeType : n_int32 .
+n_nativeType : n_int64 .
+n_nativeType : t_float32 .
+n_nativeType : n_float64 .
+n_nativeType : t_error .
+n_nativeType : t_unsigned t_int8 .
+n_nativeType : t_unsigned t_int16 .
+n_nativeType : t_unsigned n_int32 .
+n_nativeType : t_unsigned n_int64 .
+n_nativeType : n_nativeType t_asterisk .
+n_nativeType : n_nativeType t_left_square t_right_square .
+n_nativeType : n_nativeType t_left_square n_int32 t_right_square .
+n_nativeType : n_nativeType t_left_square n_int32 t_plus n_int32 t_right_square .
+n_nativeType : n_nativeType t_left_square t_plus n_int32 t_right_square .
+n_nativeType : t_decimal .
+n_nativeType : t_date .
+n_nativeType : t_bstr .
+n_nativeType : t_lpstr .
+n_nativeType : t_lpwstr .
+n_nativeType : t_lptstr .
+n_nativeType : t_objectref .
+n_nativeType : t_iunknown .
+n_nativeType : t_idispatch .
+n_nativeType : t_struct .
+n_nativeType : t_interface .
+n_nativeType : t_safearray n_variantType .
+n_nativeType : t_safearray n_variantType t_comma n_compQstring .
+n_nativeType : t_int .
+n_nativeType : t_unsigned t_int .
+n_nativeType : t_nested t_struct .
+n_nativeType : t_byvalstr .
+n_nativeType : t_ansi t_bstr .
+n_nativeType : t_tbstr .
+n_nativeType : t_variant t_bool .
+n_nativeType : n_methodSpec .
+n_nativeType : t_as t_any .
+n_nativeType : t_lpstruct .
+n_ownerType : n_typeSpec .
+n_ownerType : n_memberRef .
+n_paramAttr : .
+n_paramAttr : n_paramAttr t_left_square t_in t_right_square .
+n_paramAttr : n_paramAttr t_left_square t_out t_right_square .
+n_paramAttr : n_paramAttr t_left_square t_opt t_right_square .
+n_paramAttr : n_paramAttr t_left_square n_int32 t_right_square .
+n_pinvAttr : .
+n_pinvAttr : n_pinvAttr t_nomangle .
+n_pinvAttr : n_pinvAttr t_ansi .
+n_pinvAttr : n_pinvAttr t_unicode .
+n_pinvAttr : n_pinvAttr t_autochar .
+n_pinvAttr : n_pinvAttr t_lasterr .
+n_pinvAttr : n_pinvAttr t_winapi .
+n_pinvAttr : n_pinvAttr t_cdecl .
+n_pinvAttr : n_pinvAttr t_stdcall .
+n_pinvAttr : n_pinvAttr t_thiscall .
+n_pinvAttr : n_pinvAttr t_fastcall .
+n_propAttr : .
+n_propAttr : n_propAttr t_rtspecialname .
+n_propAttr : n_propAttr t_specialname .
+n_propDecl : t_setDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_propDecl : t_setDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_propDecl : t_getDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_propDecl : t_getDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_propDecl : t_otherDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_propDecl : t_otherDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_propDecl : n_customAttrDecl .
+n_propDecl : n_extSourceSpec .
+n_propDecl : n_languageDecl .
+n_propDecls : .
+n_propDecls : n_propDecls n_propDecl .
+n_propHead : t_propertyDirective n_propAttr n_callConv n_type n_id t_left_paren n_sigArgs0 t_right_paren n_initOpt .
+n_psetHead : t_permissionsetDirective n_secAction t_equals t_left_paren .
+n_publicKeyHead : t_publickeyDirective t_equals t_left_paren .
+n_publicKeyTokenHead : t_publickeytokenDirective t_equals t_left_paren .
+n_repeatOpt : .
+n_repeatOpt : t_left_square n_int32 t_right_square .
+n_scopeBlock : n_scopeOpen n_methodDecls t_right_brace .
+n_scopeOpen : t_left_brace .
+n_secAction : t_request .
+n_secAction : t_demand .
+n_secAction : t_assert .
+n_secAction : t_deny .
+n_secAction : t_permitonly .
+n_secAction : t_linkcheck .
+n_secAction : t_inheritcheck .
+n_secAction : t_reqmin .
+n_secAction : t_reqopt .
+n_secAction : t_reqrefuse .
+n_secAction : t_prejitgrant .
+n_secAction : t_prejitdeny .
+n_secAction : t_noncasdemand .
+n_secAction : t_noncaslinkdemand .
+n_secAction : t_noncasinheritance .
+n_secDecl : t_permissionDirective n_secAction n_typeSpec t_left_paren n_nameValPairs t_right_paren .
+n_secDecl : t_permissionDirective n_secAction n_typeSpec .
+n_secDecl : n_psetHead n_bytes t_right_paren .
+n_sehBlock : n_tryBlock n_sehClauses .
+n_sehClause : n_catchClause n_handlerBlock .
+n_sehClause : n_filterClause n_handlerBlock .
+n_sehClause : n_finallyClause n_handlerBlock .
+n_sehClause : n_faultClause n_handlerBlock .
+n_sehClauses : n_sehClause n_sehClauses .
+n_sehClauses : n_sehClause .
+n_sigArg : t_ellipsis .
+n_sigArg : n_paramAttr n_type .
+n_sigArg : n_paramAttr n_type n_id .
+n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren .
+n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_id .
+n_sigArgs0 : .
+n_sigArgs0 : n_sigArgs1 .
+n_sigArgs1 : n_sigArg .
+n_sigArgs1 : n_sigArgs1 t_comma n_sigArg .
+n_slashedName : n_name1 .
+n_slashedName : n_slashedName t_slash n_name1 .
+n_tlsSpec : .
+n_tlsSpec : t_tls .
+n_truefalse : t_true .
+n_truefalse : t_false .
+n_tryBlock : n_tryHead n_scopeBlock .
+n_tryBlock : n_tryHead n_id t_to n_id .
+n_tryBlock : n_tryHead n_int32 t_to n_int32 .
+n_tryHead : t_tryDirective .
+n_type : t_class n_className .
+n_type : t_object .
+n_type : t_string .
+n_type : t_value t_class n_className .
+n_type : t_valuetype n_className .
+n_type : n_type t_left_square t_right_square .
+n_type : n_type t_left_square n_bounds1 t_right_square .
+n_type : n_type t_ampersand .
+n_type : n_type t_asterisk .
+n_type : n_type t_pinned .
+n_type : n_type t_modreq t_left_paren n_className t_right_paren .
+n_type : n_type t_modopt t_left_paren n_className t_right_paren .
+n_type : t_exclamation n_int32 .
+n_type : n_methodSpec n_callConv n_type t_asterisk t_left_paren n_sigArgs0 t_right_paren .
+n_type : t_typedref .
+n_type : t_char .
+n_type : t_void .
+n_type : t_bool .
+n_type : t_int8 .
+n_type : t_int16 .
+n_type : n_int32 .
+n_type : n_int64 .
+n_type : t_float32 .
+n_type : n_float64 .
+n_type : t_unsigned t_int8 .
+n_type : t_unsigned t_int16 .
+n_type : t_unsigned n_int32 .
+n_type : t_unsigned n_int64 .
+n_type : t_native t_int .
+n_type : t_native t_unsigned t_int .
+n_type : t_native t_float .
+n_typeSpec : n_className .
+n_typeSpec : t_left_square n_name1 t_right_square .
+n_typeSpec : t_left_square t_moduleDirective n_name1 t_right_square .
+n_typeSpec : n_type .
+n_variantType : .
+n_variantType : t_null .
+n_variantType : t_variant .
+n_variantType : t_currency .
+n_variantType : t_void .
+n_variantType : t_bool .
+n_variantType : t_int8 .
+n_variantType : t_int16 .
+n_variantType : n_int32 .
+n_variantType : n_int64 .
+n_variantType : t_float32 .
+n_variantType : n_float64 .
+n_variantType : t_unsigned t_int8 .
+n_variantType : t_unsigned t_int16 .
+n_variantType : t_unsigned n_int32 .
+n_variantType : t_unsigned n_int64 .
+n_variantType : t_asterisk .
+n_variantType : n_variantType t_left_square t_right_square .
+n_variantType : n_variantType t_vector .
+n_variantType : n_variantType t_ampersand .
+n_variantType : t_decimal .
+n_variantType : t_date .
+n_variantType : t_bstr .
+n_variantType : t_lpstr .
+n_variantType : t_lpwstr .
+n_variantType : t_iunknown .
+n_variantType : t_idispatch .
+n_variantType : t_safearray .
+n_variantType : t_int .
+n_variantType : t_unsigned t_int .
+n_variantType : t_error .
+n_variantType : t_hresult .
+n_variantType : t_carray .
+n_variantType : t_userdefined .
+n_variantType : t_record .
+n_variantType : t_filetime .
+n_variantType : t_blob .
+n_variantType : t_stream .
+n_variantType : t_storage .
+n_variantType : t_streamed_object .
+n_variantType : t_stored_object .
+n_variantType : t_blob_object .
+n_variantType : t_cf .
+n_variantType : t_clsid .
+n_vtableDecl : n_vtableHead n_bytes t_right_paren .
+n_vtableHead : t_vtableDirective t_equals t_left_paren .
+n_vtfixupAttr : .
+n_vtfixupAttr : n_vtfixupAttr n_int32 .
+n_vtfixupAttr : n_vtfixupAttr n_int64 .
+n_vtfixupAttr : n_vtfixupAttr t_fromunmanaged .
+n_vtfixupAttr : n_vtfixupAttr t_callmostderived .
+n_vtfixupDecl : t_vtfixupDirective t_left_square n_int32 t_right_square n_vtfixupAttr t_at n_id .
