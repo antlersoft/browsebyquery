@@ -1,0 +1,18 @@
+/**
+ * Copyright (c) 2007 Michael A. MacDonald
+ */
+ package com.antlersoft.ilanalyze.parseildasm;
+ 
+import com.antlersoft.parser.*;
+
+class IldasmParser extends IldasmParserBase
+{
+	IldasmParser( ParseState[] states)
+	{
+		super( states);
+	}
+
+	private static final ReservedScope reservedScope=new ReservedScope();
+	public ReservedScope getReservedScope() { return reservedScope; }
+// Output goes here
+

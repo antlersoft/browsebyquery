@@ -606,6 +606,8 @@ reserved t_INT64 "INT64"
 reserved t_P_LINE "P_LINE"
 reserved t_QSTRING "QSTRING"
 reserved t_SQSTRING "SQSTRING"
+n_decls : .
+n_decls : n_decls n_decl .
 n_INSTR_BRTARGET : t_br_s .
 n_INSTR_BRTARGET : t_brfalse_s .
 n_INSTR_BRTARGET : t_brtrue_s .
@@ -1013,8 +1015,6 @@ n_decl : t_corflagsDirective n_int32 .
 n_decl : t_fileDirective t_alignment n_int32 .
 n_decl : t_imagebaseDirective n_int64 .
 n_decl : n_languageDecl .
-n_decls : .
-n_decls : n_decls n_decl .
 n_eventAttr : .
 n_eventAttr : n_eventAttr t_rtspecialname .
 n_eventAttr : n_eventAttr t_specialname .
