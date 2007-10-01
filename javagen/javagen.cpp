@@ -28,6 +28,91 @@ static SymbolScope non_terminal_scope;
 static SymbolScope terminal_scope;
 static int java_goal_set=0;
 
+// Placeholder action for generated rules
+class RuleReduceAction : public RuleAction
+{
+private:
+	string java_action;
+
+public:
+	RuleReduceAction( const string& ja) : java_action( ja) {};
+
+	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
+	{
+		return value_stack.copy();
+	}
+
+	const string& getJavaAction()
+	{
+		return java_action;
+	}
+};
+
+// Output code to initialize Java parse state
+void writeParseState( ParseState& out_state)
+{
+	cout<<"new ParseState( new ShiftRule[] {";
+	unsigned int count=0;
+	for ( ShiftRuleIter sri( out_state.shift_rules.begin()); sri!=out_state.shift_rules.end(); sri++)
+	{
+		ShiftRule& sr= *sri;
+		cout<<" new ShiftRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
+		if ( count<out_state.shift_rules.size()-1)
+			cout<<",";
+		cout<<endl;
+		count++;
+	}
+	cout<<"},\n";
+	cout<<"new GotoRule[] {";
+	count=0;
+	for ( GotoRuleIter gri( out_state.goto_rules.begin()); gri!=out_state.goto_rules.end(); gri++)
+	{
+		GotoRule& sr= *gri;
+		cout<<" new GotoRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
+		if ( count<out_state.goto_rules.size()-1)
+			cout<<",";
+		cout<<endl;
+		count++;
+	}
+	cout<<"},\n";
+	if ( out_state.reduce_rule)
+	{
+		cout<<"new ReduceRule( "<<out_state.reduce_rule->result.name()<<", "<<out_state.reduce_rule->states_to_pop<<", ";
+		if ( out_state.reduce_rule->reduce_action)
+		{
+			cout<<"new RuleAction() { public Object ruleFire( Parser parser, List valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
+		}
+		else
+			cout<<"null";
+		cout<<")\n";
+	}
+	else
+		cout<<"null";
+	cout<<")";
+}
+
+int bigParserOutput( Parser* out_parser)
+{
+	ParseState* out_states=const_cast<ParseState*>(out_parser->getParseStates());
+	size_t max_index=out_parser->getStateCount();
+	for ( size_t index=0; index<max_index; index++)
+	{
+		cout<<"static ParseState get_ParseState"<<index<<"() { return\n";
+		writeParseState( out_states[index]);
+		cout<<";\n}\n";
+	}
+	cout<<"static ParseState[] parseStates={\n";
+	for ( size_t index=0; index<max_index; ++index)
+	{
+		cout<<"get_ParseState"<<index<<"()";
+		if ( index<max_index-1)
+			cout<<",";
+		cout<<"\n";
+	}
+	cout<<"};\n";
+	return 0;
+}
+
 class ReservedWordDefAction : public RuleAction
 {
 public :
@@ -144,26 +229,6 @@ public :
 			java_goal_set=1;
 		}
 		return new Sequence();		
-	}
-};
-
-// Placeholder action for generated rules
-class RuleReduceAction : public RuleAction
-{
-private:
-	string java_action;
-
-public:
-	RuleReduceAction( const string& ja) : java_action( ja) {};
-
-	SeqData* ruleFire( void*& parse_data, Sequence value_stack) throw(RuleActionException)
-	{
-		return value_stack.copy();
-	}
-
-	const string& getJavaAction()
-	{
-		return java_action;
 	}
 };
 
@@ -370,56 +435,18 @@ int main( int argc, char* argv[])
 			}
 		while ( ! ( ts==Parser::_end_));
 		Parser* out_parser=java_parser.build( cerr);
+		if ( out_parser->getStateCount()>300)
+		{
+			return bigParserOutput( out_parser);
+		}
 		cout<<"static ParseState[] parseStates={\n";
 		ParseState* out_states=const_cast<ParseState*>(out_parser->getParseStates());
-		for ( int index=0, max_index=0; index<=max_index; index++)
+		for ( int index=0, max_index=out_parser->getStateCount(); index<max_index; index++)
 		{
 			ParseState& out_state=out_states[index];
+			writeParseState( out_state);
 
-			cout<<"new ParseState( new ShiftRule[] {";
-			unsigned int count=0;
-			for ( ShiftRuleIter sri( out_state.shift_rules.begin()); sri!=out_state.shift_rules.end(); sri++)
-			{
-				ShiftRule& sr= *sri;
-				if ( sr.state_index>max_index)
-					max_index=sr.state_index;
-				cout<<" new ShiftRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
-				if ( count<out_state.shift_rules.size()-1)
-					cout<<",";
-				cout<<endl;
-				count++;
-			}
-			cout<<"},\n";
-			cout<<"new GotoRule[] {";
-			count=0;
-			for ( GotoRuleIter gri( out_state.goto_rules.begin()); gri!=out_state.goto_rules.end(); gri++)
-			{
-				GotoRule& sr= *gri;
-				if ( sr.state_index>max_index)
-					max_index=sr.state_index;
-				cout<<" new GotoRule( "<<sr.looked_for.name()<<", "<<sr.state_index<<")";
-				if ( count<out_state.goto_rules.size()-1)
-					cout<<",";
-				cout<<endl;
-				count++;
-			}
-			cout<<"},\n";
-			if ( out_state.reduce_rule)
-			{
-				cout<<"new ReduceRule( "<<out_state.reduce_rule->result.name()<<", "<<out_state.reduce_rule->states_to_pop<<", ";
-				if ( out_state.reduce_rule->reduce_action)
-				{
-					cout<<"new RuleAction() { public Object ruleFire( Parser parser, List valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
-				}
-				else
-					cout<<"null";
-				cout<<")\n";
-			}
-			else
-				cout<<"null";
-			// Output code to initialize Java parse state
-			cout<<")";
-			if ( index<max_index)
+			if ( index<max_index-1)
 				cout<<",";
 
 			cout<<endl;
