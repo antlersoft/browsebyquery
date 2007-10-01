@@ -1,0 +1,500 @@
+symbol AsmDecl
+symbol AsmDecls
+symbol AsmRefDecl
+symbol AsmRefDecls
+symbol Bound
+symbol Bounds
+symbol BuiltinIntType
+symbol BuiltinType
+symbol BuiltinRefType
+symbol Bytes
+symbol BytesSpec
+symbol CallConv
+symbol CallKind
+symbol ClassAttr
+symbol ClassAttrs
+symbol ClassHeader
+symbol ClassHeaderSTART
+symbol ClassHeaderMIDDLE
+symbol ClassHeaderIMPLEMENTS
+symbol ClassMember
+symbol ClassMembers
+symbol ClassTypeSpec
+symbol CodeLabel
+symbol CustomDecl
+symbol CustomSpec
+symbol DataLabel
+symbol DataDecl
+symbol Decl
+symbol DottedName
+symbol EventHeader
+symbol EventMember
+symbol EventMembers
+symbol ExportAttr
+symbol ExternClassDecls
+symbol ExternClassDecl
+symbol ExternName
+symbol ExternSourceDecl
+symbol ExternSourceDeclMID
+symbol ExternSourceDeclSTART
+symbol FieldAttr
+symbol FieldAttrs
+symbol FieldDecl
+symbol FileDeclSTART
+symbol Filename
+symbol Float32
+symbol Float64
+symbol GenArgs
+symbol GenArity
+symbol GenConstraints
+symbol GenericMethodParameter
+symbol GenericTypeParameter
+symbol GenPar
+symbol GenParAttrib
+symbol GenParAttribs
+symbol GenPars
+symbol HashSpec
+symbol Id
+symbol ILFile
+symbol ILFileDone
+symbol ImplAttr
+symbol ImplAttrs
+symbol LabelOrOffset
+symbol Labels
+symbol ManResDecl
+symbol ManResDecls
+symbol MethAttr
+symbol MethAttrs
+symbol MethodHeader
+symbol MethodBodyItem
+symbol MethodBodyItems
+symbol MethodName
+symbol ModifiedType
+symbol Parameters
+symbol PropHeader
+symbol PropMember
+symbol PropMembers
+symbol Range
+symbol ResolutionScope
+symbol SecurityDecl
+# For TypeReference-- II.7.3
+symbol SlashedName
+symbol Type
+symbol TypeReference
+symbol TypeSpec
+symbol VersionSpec
+symbol VTFixupDecl
+
+reserved assemblyDirective ".assembly"
+reserved classDirective ".class"
+reserved corflagsDirective ".corflags"
+reserved ctorDirective ".ctor"
+reserved cultureDirective ".culture"
+reserved customDirective ".custom"
+reserved dataDirective ".data"
+reserved entrypointDirective ".entrypoint"
+reserved eventDirective ".event"
+reserved fieldDirective ".field"
+reserved fileDirective ".file"
+reserved hashDirective ".hash"
+reserved methodDirective ".method"
+reserved moduleDirective ".module"
+reserved mresourceDirective ".mresource"
+reserved namespaceDirective ".namespace"
+reserved overrideDirective ".override"
+reserved packDirective ".pack"
+reserved paramDirective ".param"
+reserved propertyDirective ".property"
+reserved sizeDirective ".size"
+reserved subsystemDirective ".subsytem"
+reserved verDirective ".ver"
+reserved vtfixupDirective ".vtfixup"
+reserved Abstract "abstract"
+reserved algorithm
+reserved ampersand "&"
+reserved ansi
+reserved as
+reserved assembly
+reserved asterisk "*"
+reserved at
+reserved auto
+reserved autochar
+reserved beforefieldinit
+reserved cdecl
+reserved colon ":"
+reserved comma ","
+reserved Default "default"
+reserved equals "="
+reserved exclamation "!"
+reserved explicit
+reserved Extends "extends"
+reserved Extern "extern"
+reserved famandassem
+reserved family
+reserved famorassem
+reserved fastcall
+reserved float32
+reserved float64
+reserved HexByte "^HexByte"
+reserved ID "^ID"
+reserved Implements
+reserved instance
+reserved Int32 "^Int32"
+reserved Int64 "^Int64"
+reserved Interface "interface"
+reserved left_angle "<"
+reserved left_brace "{"
+reserved left_paren "("
+reserved left_square "["
+reserved lineDirective ".line"
+reserved method
+reserved minus "-"
+reserved modopt
+reserved modreq
+reserved Native "native"
+reserved nested
+reserved nometadata
+reserved object
+reserved period "."
+reserved pinned
+reserved Private "private"
+reserved plus "+"
+reserved Public "public"
+reserved publickey
+reserved publickeytoken
+reserved QSTRING "^QSTRING"
+reserved RealNumber "^RealNumber"
+reserved right_angle ">"
+reserved right_brace "}"
+reserved right_paren ")"
+reserved right_square "]"
+reserved rtspecialname
+reserved sealed
+reserved sequential
+reserved serializable
+reserved slash "/"
+reserved specialname
+reserved SQSTRING "^SQSTRING"
+reserved stdcall
+reserved string
+reserved t_bool "bool"
+reserved t_char "char"
+reserved t_class "class"
+reserved t_int "int"
+reserved t_int8 "int8"
+reserved t_int16 "int16"
+reserved t_int32 "int32"
+reserved t_int64 "int64"
+reserved t_type "type"
+reserved t_unsigned "unsigned"
+reserved t_void "void"
+reserved thiscall
+reserved typedref
+reserved unicode
+reserved unmanaged
+reserved valuetype
+reserved vararg
+reserved with
+
+ILFileDone : ILFile .
+
+ILFile : Decl .
+
+ILFile : ILFile Decl .
+
+Id : ID .
+
+Id : SQSTRING .
+
+DottedName : Id .
+
+DottedName : DottedName period Id .
+
+LabelOrOffset : Id .
+
+Labels : LabelOrOffset .
+Labels : Labels comma LabelOrOffset .
+
+CodeLabel : Id colon .
+
+DataLabel : Id .
+
+Bytes : HexByte .
+Bytes : Bytes HexByte .
+
+Float32 : RealNumber .
+Float32 : float32 left_paren Int32 right_paren .
+Float64 : RealNumber .
+Float64 : float64 left_paren Int64 right_paren .
+
+Range : Int32 .
+Range : Int32 comma Int32 .
+
+
+ExternSourceDeclSTART : lineDirective Range .
+
+ExternSourceDeclMID : ExternSourceDeclSTART .
+
+ExternSourceDeclMID : ExternSourceDeclSTART colon Range .
+
+ExternSourceDecl : ExternSourceDeclMID .
+ExternSourceDecl : ExternSourceDeclMID SQSTRING .
+
+Filename : DottedName .
+
+Decl : ExternSourceDecl .
+
+Decl : assemblyDirective DottedName left_brace AsmDecls right_brace .
+
+AsmDecls : AsmDecl .
+AsmDecls : AsmDecls AsmDecl .
+
+AsmDecl : CustomSpec .
+AsmDecl : cultureDirective QSTRING .
+AsmDecl : hashDirective algorithm Int32 .
+AsmDecl : publickey BytesSpec .
+AsmDecl : VersionSpec .
+AsmDecl : SecurityDecl .
+
+ExternName : Extern DottedName .
+ExternName : Extern DottedName as DottedName .
+
+Decl : assemblyDirective ExternName left_brace AsmRefDecls right_brace .
+
+AsmRefDecls : AsmRefDecl .
+AsmRefDecls : AsmRefDecls AsmRefDecl .
+
+AsmRefDecl : cultureDirective QSTRING .
+AsmRefDecl : publickeytoken BytesSpec .
+AsmRefDecl : HashSpec .
+AsmRefDecl : publickey BytesSpec .
+AsmRefDecl : VersionSpec .
+AsmRefDecl : CustomSpec .
+
+VersionSpec : verDirective Int32 colon Int32 colon Int32 colon Int32 .
+
+Decl : classDirective ClassHeader left_brace ClassMembers right_brace .
+Decl : classDirective Extern ExportAttr DottedName left_brace ExternClassDecls right_brace .
+
+ClassMembers : ClassMember .
+Classmembers : ClassMembers ClassMember .
+
+ExternClassDecls : ExternClassDecl .
+ExternClassDecls : ExternClassDecls ExternClassDecl .
+
+ExportAttr : Public .
+ExportAttr : nested Public .
+
+ExternClassDecl : fileDirective DottedName .
+ExternClassDecl : classDirective Extern DottedName .
+ExternClassDecl : CustomSpec .
+
+Decl : corflagsDirective Int32 .
+
+CustomSpec : customDirective CustomDecl .
+
+Decl : CustomSpec .
+
+Decl : fieldDirective FieldDecl .
+
+BytesSpec : equals left_paren Bytes right_paren .
+
+HashSpec : hashDirective BytesSpec .
+
+FileDeclSTART : fileDirective Filename HashSpec .
+FileDeclSTART : fileDirective nometadata Filename HashSpec .
+Decl : FileDeclSTART .
+Decl : FileDeclSTART entrypointDirective .
+
+Decl : methodDirective MethodHeader left_brace MethodBodyItems right_brace .
+MethodBodyItems : MethodBodyItem .
+MethodBodyItems : MethodBodyItems MethodBodyItem .
+
+Decl : moduleDirective .
+Decl : moduleDirective Filename .
+Decl : moduleDirective Extern Filename .
+
+ManResDecls : ManResDecl .
+ManResDecls : ManResDecls ManResDecl .
+
+Decl : mresourceDirective Public DottedName left_brace ManResDecls right_brace .
+Decl : mresourceDirective Private DottedName left_brace ManResDecls right_brace .
+
+ManResDecl : assemblyDirective ExternName .
+ManResDecl : CustomSpec .
+ManResDecl : fileDirective DottedName at Int32 .
+
+Decl : subsystemDirective Int32 .
+
+Decl : SecurityDecl .
+
+Decl : namespaceDirective DottedName left_brace ILFile right_brace .
+
+GenericTypeParameter : exclamation Int32 .
+GenericMethodParameter : exclamation exclamation Int32 .
+
+Type : GenericTypeParameter .
+Type : GenericMethodParameter .
+Type : BuiltinType .
+Type : ClassTypeSpec .
+Type : BuiltinRefType .
+Type : method CallConv Type asterisk left_paren Parameters right_paren .
+Type : Type ampersand .
+Type : Type asterisk .
+Type : Type left_angle GenArgs right_angle .
+Type : Type left_square right_square .
+Type : Type left_square Bounds right_square .
+Type : Type pinned .
+Type : valuetype TypeReference .
+Type : ModifiedType .
+
+ModifiedType : Type modopt left_paren TypeReference right_paren .
+ModifiedType : Type modreq left_paren TypeReference right_paren .
+
+Bounds : Bound .
+Bounds : Bounds comma Bound .
+
+BuiltinType : t_bool .
+BuiltinType : t_char .
+BuiltinType : float32 .
+BuiltinType : float64 .
+BuiltinIntType : t_int8 .
+BuiltinIntType : t_int16 .
+BuiltinIntType : t_int32 .
+BuiltinIntType : t_int64 .
+BuiltinType : BuiltinIntType .
+BuiltinType : t_unsigned BuiltinIntType .
+BuiltinType : Native t_int .
+BuiltinType : Native t_unsigned t_int .
+BuiltinType : t_void .
+BuiltinRefType : object .
+BuiltinRefType : string .
+BuiltinRefType : typedref .
+
+ClassTypeSpec : t_class TypeReference .
+
+TypeSpec : left_square DottedName right_square .
+TypeSpec : left_square moduleDirective DottedName right_square .
+TypeSpec : TypeReference .
+TypeSpec : Type .
+
+SlashedName : DottedName .
+SlashedName : SlashedName slash DottedName .
+
+TypeReference : SlashedName .
+TypeReference : ResolutionScope SlashedName .
+
+ResolutionScope : left_square moduleDirective Filename right_square .
+# Dotted name is the AssemblyRefName here
+ResolutionScope : left_square DottedName right_square .
+
+# Not implementing II.7.4 related to marshaling?
+
+# II.9.4
+GenArgs : Type .
+GenArgs : GenArgs comma Type .
+
+ClassAttrs : .
+ClassAttrs : ClassAttrs ClassAttr .
+
+ClassHeaderSTART : ClassAttrs Id .
+ClassHeaderSTART : ClassAttrs Id left_angle GenPars right_angle .
+ClassHeaderMIDDLE : ClassHeaderSTART .
+ClassHeaderMIDDLE : ClassHeaderSTART Extends TypeSpec .
+ClassHeader : ClassHeaderMIDDLE .
+ClassHeaderIMPLEMENTS : Implements TypeSpec .
+ClassHeaderIMPLEMENTS : ClassHeaderIMPLEMENTS comma TypeSpec .
+ClassHeader : ClassHeaderMIDDLE ClassHeaderIMPLEMENTS .
+
+ClassAttr : Abstract .
+ClassAttr : ansi .
+ClassAttr : auto .
+ClassAttr : autochar .
+ClassAttr : beforefieldinit .
+ClassAttr : explicit .
+ClassAttr : Interface .
+ClassAttr : nested assembly .
+ClassAttr : nested famandassem .
+ClassAttr : nested family .
+ClassAttr : nested Private .
+ClassAttr : nested Public .
+ClassAttr : Private .
+ClassAttr : Public .
+ClassAttr : rtspecialname .
+ClassAttr : sealed .
+ClassAttr : sequential .
+ClassAttr : serializable .
+ClassAttr : specialname .
+ClassAttr : unicode .
+
+GenPars : GenPar .
+GenPars : GenPars comma GenPar .
+
+GenParAttribs : .
+GenParAttribs : GenParAttribs GenParAttrib .
+
+GenParAttrib : plus .
+GenParAttrib : minus .
+GenParAttrib : t_class .
+GenParAttrib : valuetype .
+GenParAttrib : ctorDirective .
+
+GenPar : GenParAttribs left_paren GenConstraints right_paren Id .
+GenPar : GenParAttribs Id .
+
+GenConstraints : Type .
+GenConstraints : GenConstraints comma Type .
+
+ClassMember : classDirective ClassHeader left_brace ClassMembers right_brace .
+ClassMember : CustomSpec .
+ClassMember : dataDirective DataDecl .
+ClassMember : eventDirective EventHeader left_brace EventMembers right_brace .
+ClassMember : fieldDirective FieldDecl .
+ClassMember : methodDirective MethodHeader left_brace MethodBodyItems right_brace .
+ClassMember : overrideDirective TypeSpec colon colon MethodName with CallConv Type TypeSpec colon colon MethodName left_paren Parameters right_paren .
+ClassMember : overrideDirective method CallConv Type TypeSpec colon colon MethodName GenArity left_paren Parameters right_paren with method CallConv Type TypeSpec colon colon MethodName GenArity left_paren Parameters right_paren .
+ClassMember : paramDirective t_type left_square Int32 right_square .
+ClassMember : propertyDirective PropHeader left_brace PropMembers right_brace .
+ClassMember : sizeDirective Int32 .
+ClassMember : ExternSourceDecl .
+ClassMember : SecurityDecl .
+
+EventMembers : EventMember .
+EventMembers : EventMembers EventMember .
+
+GenArity : left_angle left_square Int32 right_square right_angle .
+GenArity : .
+
+PropMembers : PropMember .
+PropMembers : PropMembers PropMember .
+
+FieldAttrs : .
+FieldAttrs : FieldAttrs FieldAttr .
+
+FieldDecl : FieldAttrs Type Id .
+FieldDecl : left_square Int32 right_square FieldAttrs Type Id .
+
+Bound : .
+Bound : period period period .
+Bound : Int32 .
+Bound : Int32 period period period .
+Bound : Int32 period period period Int32 .
+
+CallConv : .
+CallConv : instance .
+CallConv : instance explicit .
+CallConv : CallKind .
+CallConv : instance CallKind .
+CallConv : instance explicit CallKind .
+
+CallKind : Default .
+CallKind : unmanaged cdecl .
+CallKind : unmanaged fastcall .
+CallKind : unmanaged stdcall .
+CallKind : unmanaged thiscall .
+CallKind : vararg .
+
+
+
+
+
