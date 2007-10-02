@@ -3,13 +3,18 @@
  */
  package com.antlersoft.ilanalyze.parseildasm;
  
+import com.antlersoft.ilanalyze.DBDriver;
+
 import com.antlersoft.parser.*;
 
 class IldasmParser extends IldasmParserBase
 {
-	IldasmParser( ParseState[] states)
+	DBDriver m_driver;
+	
+	IldasmParser( DBDriver driver)
 	{
-		super( states);
+		super( parseStates);
+		m_driver=driver;
 	}
 
 	private static final ReservedScope reservedScope=new ReservedScope();
