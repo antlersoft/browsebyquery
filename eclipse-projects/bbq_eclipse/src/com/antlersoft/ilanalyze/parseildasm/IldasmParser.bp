@@ -73,6 +73,7 @@ symbol n_finallyClause
 symbol n_float64
 symbol n_genArgs
 symbol n_genArity
+symbol n_genClause
 symbol n_genConstraints
 symbol n_genPar
 symbol n_genParAttrib
@@ -106,7 +107,6 @@ symbol n_methodDecls
 symbol n_methodHead
 symbol n_methodHeadPart1
 symbol n_methodName
-symbol n_methodSpec
 symbol n_moduleHead
 symbol n_name1
 symbol n_nameSpaceHead
@@ -1103,7 +1103,7 @@ n_genArgs : n_genArgs t_comma n_type .
 n_genArity : .
 n_genArity : t_left_angle t_left_square n_int32 t_right_square t_right_angle .
 n_genClause : .
-n_genClause : t_left_angle n_genPars n_right_angle .
+n_genClause : t_left_angle n_genPars t_right_angle .
 n_genConstraints : n_type .
 n_genConstraints : n_genConstraints t_comma n_type .
 n_genPar : n_genParAttribs n_id .
@@ -1189,8 +1189,8 @@ n_manifestResHead : t_mresourceDirective n_manresAttr n_name1 .
 n_manresAttr : .
 n_manresAttr : n_manresAttr t_public .
 n_manresAttr : n_manresAttr t_private .
-n_memberRef : n_methodSpec n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_memberRef : n_methodSpec n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_memberRef : t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren .
+n_memberRef : t_method n_callConv n_type n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren .
 n_memberRef : t_field n_type n_typeSpec t_member_op n_id .
 n_memberRef : t_field n_type n_id .
 n_methAttr : .
@@ -1242,7 +1242,6 @@ n_methodHeadPart1 : t_methodDirective .
 n_methodName : t_ctorDirective .
 n_methodName : t_cctorDirective .
 n_methodName : n_name1 .
-n_methodSpec : t_method .
 n_moduleHead : t_moduleDirective .
 n_moduleHead : t_moduleDirective n_name1 .
 n_moduleHead : t_moduleDirective t_extern n_name1 .
@@ -1299,11 +1298,12 @@ n_nativeType : t_byvalstr .
 n_nativeType : t_ansi t_bstr .
 n_nativeType : t_tbstr .
 n_nativeType : t_variant t_bool .
-n_nativeType : n_methodSpec .
+n_nativeType : t_method .
 n_nativeType : t_as t_any .
 n_nativeType : t_lpstruct .
 n_ownerType : n_typeSpec .
 n_ownerType : n_memberRef .
+n_sigArgs0 : .
 n_paramAttr : .
 n_paramAttr : n_paramAttr t_left_square t_in t_right_square .
 n_paramAttr : n_paramAttr t_left_square t_out t_right_square .
@@ -1372,7 +1372,6 @@ n_sigArg : n_paramAttr n_type .
 n_sigArg : n_paramAttr n_type n_id .
 n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren .
 n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_id .
-n_sigArgs0 : .
 n_sigArgs0 : n_sigArgs1 .
 n_sigArgs1 : n_sigArg .
 n_sigArgs1 : n_sigArgs1 t_comma n_sigArg .
@@ -1401,7 +1400,7 @@ n_type : n_type t_modreq t_left_paren n_className t_right_paren .
 n_type : n_type t_modopt t_left_paren n_className t_right_paren .
 n_type : t_exclamation n_int32 .
 n_type : t_exclamation t_exclamation n_int32 .
-n_type : n_methodSpec n_callConv n_type t_asterisk t_left_paren n_sigArgs0 t_right_paren .
+n_type : t_method n_callConv n_type t_asterisk t_left_paren n_sigArgs0 t_right_paren .
 n_type : t_typedref .
 n_type : t_char .
 n_type : t_void .
