@@ -71,6 +71,13 @@ symbol n_filterClause
 symbol n_filterHead
 symbol n_finallyClause
 symbol n_float64
+symbol n_genArgs
+symbol n_genArity
+symbol n_genConstraints
+symbol n_genPar
+symbol n_genParAttrib
+symbol n_genParAttribs
+symbol n_genPars
 symbol n_handlerBlock
 symbol n_hashHead
 symbol n_hexbytes
@@ -145,6 +152,9 @@ reserved t_left_paren "("
 reserved t_right_paren ")"
 reserved t_asterisk "*"
 reserved t_plus "+"
+reserved t_minus "-"
+reserved t_left_angle "<"
+reserved t_right_angle ">"
 reserved t_comma ","
 reserved t_period "."
 reserved t_ellipsis "..."
@@ -933,10 +943,11 @@ n_classDecl : t_sizeDirective n_int32 .
 n_classDecl : t_packDirective n_int32 .
 n_classDecl : n_exportHead t_left_brace n_comtypeDecls t_right_brace .
 n_classDecl : t_overrideDirective n_typeSpec t_member_op n_methodName t_with n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_classDecl : t_overrideDirective t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genArity t_left_paren n_sigArgs0 t_right_paren t_with t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genArity left_paren n_sigArgs0 right_paren .
 n_classDecl : n_languageDecl .
 n_classDecls : .
 n_classDecls : n_classDecls n_classDecl .
-n_classHead : t_classDirective n_classAttr n_id n_extendsClause n_implClause .
+n_classHead : t_classDirective n_classAttr n_id n_genClause n_extendsClause n_implClause .
 n_className : t_left_square n_name1 t_right_square n_slashedName .
 n_className : t_left_square t_moduleDirective n_name1 t_right_square n_slashedName .
 n_className : n_slashedName .
@@ -1087,6 +1098,25 @@ n_finallyClause : t_finally .
 n_float64 : t_FLOAT64 .
 n_float64 : t_float32 t_left_paren n_int32 t_right_paren .
 n_float64 : n_float64 t_left_paren n_int64 t_right_paren .
+n_genArgs : n_type .
+n_genArgs : n_genArgs t_comma n_type .
+n_genArity : .
+n_genArity : t_left_angle t_left_square n_int32 t_right_square t_right_angle .
+n_genClause : .
+n_genClause : t_left_angle n_genPars n_right_angle .
+n_genConstraints : n_type .
+n_genConstraints : n_genConstraints t_comma n_type .
+n_genPar : n_genParAttribs n_id .
+n_genPar : n_genParAttribs t_left_paren n_genConstraints t_right_paren n_id .
+n_genPars : n_genPar .
+n_genPars : n_genPars t_comma n_genPar .
+n_genParAttrib : t_plus .
+n_genParAttrib : t_minus .
+n_genParAttrib : t_class .
+n_genParAttrib : t_valuetype .
+n_genParAttrib : t_ctorDirective .
+n_genParAttribs : .
+n_genParAttribs : n_genParAttribs n_genParAttrib .
 n_handlerBlock : n_scopeBlock .
 n_handlerBlock : t_handler n_id t_to n_id .
 n_handlerBlock : t_handler n_int32 t_to n_int32 .
@@ -1206,8 +1236,8 @@ n_methodDecl : n_scopeBlock .
 n_methodDecl : t_paramDirective t_left_square n_int32 t_right_square n_initOpt .
 n_methodDecls : .
 n_methodDecls : n_methodDecls n_methodDecl .
-n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
-n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
 n_methodHeadPart1 : t_methodDirective .
 n_methodName : t_ctorDirective .
 n_methodName : t_cctorDirective .
@@ -1365,10 +1395,12 @@ n_type : n_type t_left_square t_right_square .
 n_type : n_type t_left_square n_bounds1 t_right_square .
 n_type : n_type t_ampersand .
 n_type : n_type t_asterisk .
+n_type : n_type t_left_angle n_genArgs t_right_angle .
 n_type : n_type t_pinned .
 n_type : n_type t_modreq t_left_paren n_className t_right_paren .
 n_type : n_type t_modopt t_left_paren n_className t_right_paren .
 n_type : t_exclamation n_int32 .
+n_type : t_exclamation t_exclamation n_int32 .
 n_type : n_methodSpec n_callConv n_type t_asterisk t_left_paren n_sigArgs0 t_right_paren .
 n_type : t_typedref .
 n_type : t_char .
