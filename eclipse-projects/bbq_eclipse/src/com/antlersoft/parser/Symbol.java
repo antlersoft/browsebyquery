@@ -1,5 +1,5 @@
 /*
- * <p>Copyright (c) 2000-2005  Michael A. MacDonald<p>
+ * <p>Copyright (c) 2000-2005, 2007  Michael A. MacDonald<p>
  * ----- - - -- - - --
  * <p>
  *     This package is free software; you can redistribute it and/or modify
@@ -40,6 +40,11 @@ public class Symbol
 
     private static HashMap _scope=new HashMap();
 
+    /**
+     * Creates a symbol for a name, or return the symbol if it already exists
+     * @param symbol_name
+     * @return symbol with that name
+     */
     public static Symbol get( String symbol_name)
     {
     	Symbol s=(Symbol)_scope.get( symbol_name);
