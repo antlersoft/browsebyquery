@@ -3,6 +3,8 @@
  */
 package com.antlersoft.parser;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 
 /**
@@ -56,5 +58,14 @@ public class ReservedScope {
 	public Symbol findReserved( String name)
 	{
 		return (Symbol)m_scope.get( name);
+	}
+	
+	/**
+	 * Returns a collection of all the reserved words in this scope
+	 * @return A collection of strings that are the keys to this scope
+	 */
+	public Collection getReservedStrings()
+	{
+		return Collections.unmodifiableSet(m_scope.keySet());
 	}
 }
