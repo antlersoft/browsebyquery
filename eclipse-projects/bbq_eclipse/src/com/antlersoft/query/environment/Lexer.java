@@ -49,7 +49,7 @@ class Lexer {
 	 * @param tokens Token list
 	 * @return Parser state when finished
 	 */
-	int addPunctuationCharacter( StringBuffer currentString, char c, Vector tokens)
+	int addPunctuationCharacter( StringBuilder currentString, char c, Vector tokens)
 	{
 		int result=IN_PUNC;
 		if ( currentString.length()==0)
@@ -83,7 +83,7 @@ class Lexer {
 	 * @param currentString Current buffer of received characters
 	 * @param tokens List of tokens
 	 */
-	private void addCurrentString( StringBuffer currentString, Vector tokens)
+	private void addCurrentString( StringBuilder currentString, Vector tokens)
 	{
 	    if ( currentString.length()>0)
 	    {
@@ -105,7 +105,7 @@ class Lexer {
 	{
 	    char[] chars=toTokenize.toCharArray();
 	    Vector tokens=new Vector();
-	    StringBuffer currentString=new StringBuffer();
+	    StringBuilder currentString=new StringBuilder();
 	    int i=0;
 	    int lex_state=INITIAL;
 	    for ( ; i<chars.length; i++)
