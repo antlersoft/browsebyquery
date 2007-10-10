@@ -81,8 +81,8 @@ void writeParseState( ParseState& out_state)
 		if ( out_state.reduce_rule->reduce_action)
 		{
 			string java_action=static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction();
-			if ( java_action.c_str()[0]=='{')
-				cout<<"new RuleAction() { public >>Object ruleFire( Parser parser, List valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
+			if ( java_action.find('{')!=string::npos)
+				cout<<"new RuleAction() { public Object ruleFire( Parser parser, ValueStack valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
 			else
 				cout<<java_action;
 		}
