@@ -254,7 +254,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						}
 						int ch=0;
 						int offset=0;
-						StringBuffer sb=new StringBuffer();
+						StringBuilder sb=new StringBuilder();
 						try
 						{
 							InputStreamReader input=new InputStreamReader( file.getContents(), "UTF-8");

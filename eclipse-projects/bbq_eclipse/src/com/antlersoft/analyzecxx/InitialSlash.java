@@ -23,6 +23,8 @@ import java.io.IOException;
 
 import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 class InitialSlash implements LexState {
 	private LexReader m_reader;

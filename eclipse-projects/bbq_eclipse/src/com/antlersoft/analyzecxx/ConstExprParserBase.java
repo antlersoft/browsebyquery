@@ -22,6 +22,7 @@ package com.antlersoft.analyzecxx;
 import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.ParseState;
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
 
 class ConstExprParserBase extends Parser implements LexReader {
 	static final Integer ZERO=new Integer(0);

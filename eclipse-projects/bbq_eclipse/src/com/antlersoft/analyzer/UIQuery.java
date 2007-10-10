@@ -115,7 +115,7 @@ public class UIQuery
                         while ( e.hasMoreElements())
                             resultSorter.add( e.nextElement().toString());
                         Iterator iterator=resultSorter.iterator();
-                        StringBuffer results=new StringBuffer();
+                        StringBuilder results=new StringBuilder();
                         while ( iterator.hasNext())
                         {
                             results.append( (String)iterator.next());

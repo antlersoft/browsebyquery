@@ -32,6 +32,10 @@ public abstract class Parser
 
 	public List getValueStack() { return (List)value_stack.clone(); }
 
+	/**
+	 * Get error message associated with parse failure
+	 * @return Error message text
+	 */
 	public String getRuleMessage()
 	{
 		return ruleMessage;

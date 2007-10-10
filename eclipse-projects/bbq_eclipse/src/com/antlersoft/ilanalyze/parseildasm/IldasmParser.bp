@@ -197,6 +197,7 @@ reserved t_publickeytokenDirective ".publickeytoken"
 reserved t_removeonDirective ".removeon"
 reserved t_setDirective ".set"
 reserved t_sizeDirective ".size"
+reserved t_stackreserveDirective ".stackreserve"
 reserved t_subsystemDirective ".subsystem"
 reserved t_tryDirective ".try"
 reserved t_verDirective ".ver"
@@ -942,12 +943,12 @@ n_classDecl : n_customAttrDecl .
 n_classDecl : t_sizeDirective n_int32 .
 n_classDecl : t_packDirective n_int32 .
 n_classDecl : n_exportHead t_left_brace n_comtypeDecls t_right_brace .
-n_classDecl : t_overrideDirective n_typeSpec t_member_op n_methodName t_with n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_classDecl : t_overrideDirective t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genArity t_left_paren n_sigArgs0 t_right_paren t_with t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genArity left_paren n_sigArgs0 right_paren .
+n_classDecl : t_overrideDirective n_typeSpec t_member_op n_methodName t_with n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_classDecl : t_overrideDirective t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genArity n_sigArgs0 t_with t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genArity n_sigArgs0 .
 n_classDecl : n_languageDecl .
 n_classDecls : .
 n_classDecls : n_classDecls n_classDecl .
-n_classHead : t_classDirective n_classAttr n_id n_genClause n_extendsClause n_implClause .
+n_classHead : t_classDirective n_classAttr n_name1 n_genClause n_extendsClause n_implClause .
 n_className : t_left_square n_name1 t_right_square n_slashedName .
 n_className : t_left_square t_moduleDirective n_name1 t_right_square n_slashedName .
 n_className : n_slashedName .
@@ -979,8 +980,8 @@ n_customAttrDecl : t_customDirective t_left_paren n_ownerType t_right_paren n_cu
 n_customAttrDecl : n_customHeadWithOwner n_bytes t_right_paren .
 n_customHead : t_customDirective n_customType t_equals t_left_paren .
 n_customHeadWithOwner : t_customDirective t_left_paren n_ownerType t_right_paren n_customType t_equals t_left_paren .
-n_customType : n_callConv n_type n_typeSpec t_member_op t_ctorDirective t_left_paren n_sigArgs0 t_right_paren .
-n_customType : n_callConv n_type t_ctorDirective t_left_paren n_sigArgs0 t_right_paren .
+n_customType : n_callConv n_type n_typeSpec t_member_op t_ctorDirective n_sigArgs0 .
+n_customType : n_callConv n_type t_ctorDirective n_sigArgs0 .
 n_dataDecl : n_ddHead n_ddBody .
 n_ddBody : t_left_brace n_ddItemList t_right_brace .
 n_ddBody : n_ddItem .
@@ -1025,18 +1026,19 @@ n_decl : t_subsystemDirective n_int32 .
 n_decl : t_corflagsDirective n_int32 .
 n_decl : t_fileDirective t_alignment n_int32 .
 n_decl : t_imagebaseDirective n_int64 .
+n_decl : t_stackreserveDirective n_int64 .
 n_decl : n_languageDecl .
 n_eventAttr : .
 n_eventAttr : n_eventAttr t_rtspecialname .
 n_eventAttr : n_eventAttr t_specialname .
-n_eventDecl : t_addonDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_eventDecl : t_addonDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_eventDecl : t_removeonDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_eventDecl : t_removeonDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_eventDecl : t_fireDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_eventDecl : t_fireDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_eventDecl : t_otherDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_eventDecl : t_otherDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_eventDecl : t_addonDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_eventDecl : t_addonDirective n_callConv n_type n_methodName n_sigArgs0 .
+n_eventDecl : t_removeonDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_eventDecl : t_removeonDirective n_callConv n_type n_methodName n_sigArgs0 .
+n_eventDecl : t_fireDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_eventDecl : t_fireDirective n_callConv n_type n_methodName n_sigArgs0 .
+n_eventDecl : t_otherDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_eventDecl : t_otherDirective n_callConv n_type n_methodName n_sigArgs0 .
 n_eventDecl : n_extSourceSpec .
 n_eventDecl : n_customAttrDecl .
 n_eventDecl : n_languageDecl .
@@ -1151,14 +1153,14 @@ n_instr : n_INSTR_R n_int64 .
 n_instr : n_instr_r_head n_bytes t_right_paren .
 n_instr : n_INSTR_BRTARGET n_int32 .
 n_instr : n_INSTR_BRTARGET n_id .
-n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_instr : n_INSTR_METHOD n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_instr : n_INSTR_METHOD n_callConv n_type n_methodName n_sigArgs0 .
 n_instr : n_INSTR_FIELD n_type n_typeSpec t_member_op n_id .
 n_instr : n_INSTR_FIELD n_type n_id .
 n_instr : n_INSTR_TYPE n_typeSpec .
 n_instr : n_INSTR_STRING n_compQstring .
 n_instr : n_INSTR_STRING n_bytearrayhead n_bytes t_right_paren .
-n_instr : n_INSTR_SIG n_callConv n_type t_left_paren n_sigArgs0 t_right_paren .
+n_instr : n_INSTR_SIG n_callConv n_type n_sigArgs0 .
 n_instr : t_INSTR_RVA n_id .
 n_instr : t_INSTR_RVA n_int32 .
 n_instr : n_instr_tok_head n_ownerType .
@@ -1189,8 +1191,8 @@ n_manifestResHead : t_mresourceDirective n_manresAttr n_name1 .
 n_manresAttr : .
 n_manresAttr : n_manresAttr t_public .
 n_manresAttr : n_manresAttr t_private .
-n_memberRef : t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren .
-n_memberRef : t_method n_callConv n_type n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren .
+n_memberRef : t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genClause n_sigArgs0 .
+n_memberRef : t_method n_callConv n_type n_methodName n_genClause n_sigArgs0 .
 n_memberRef : t_field n_type n_typeSpec t_member_op n_id .
 n_memberRef : t_field n_type n_id .
 n_methAttr : .
@@ -1217,8 +1219,8 @@ n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_pinvAttr t_right_paren .
 n_methodDecl : t_emitbyteDirective n_int32 .
 n_methodDecl : n_sehBlock .
 n_methodDecl : t_maxstackDirective n_int32 .
-n_methodDecl : n_localsHead t_left_paren n_sigArgs0 t_right_paren .
-n_methodDecl : n_localsHead t_init t_left_paren n_sigArgs0 t_right_paren .
+n_methodDecl : n_localsHead n_sigArgs0 .
+n_methodDecl : n_localsHead t_init n_sigArgs0 .
 n_methodDecl : t_entrypointDirective .
 n_methodDecl : t_zeroinitDirective .
 n_methodDecl : n_dataDecl .
@@ -1236,18 +1238,18 @@ n_methodDecl : n_scopeBlock .
 n_methodDecl : t_paramDirective t_left_square n_int32 t_right_square n_initOpt .
 n_methodDecls : .
 n_methodDecls : n_methodDecls n_methodDecl .
-n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
-n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName n_genClause t_left_paren n_sigArgs0 t_right_paren n_implAttr t_left_brace .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
 n_methodHeadPart1 : t_methodDirective .
 n_methodName : t_ctorDirective .
 n_methodName : t_cctorDirective .
-n_methodName : n_name1 .
 n_moduleHead : t_moduleDirective .
 n_moduleHead : t_moduleDirective n_name1 .
 n_moduleHead : t_moduleDirective t_extern n_name1 .
 n_name1 : n_id .
 n_name1 : t_DOTTEDNAME .
 n_name1 : n_name1 t_period n_name1 .
+n_methodName : n_id .
 n_nameSpaceHead : t_namespaceDirective n_name1 .
 n_nameValPair : n_compQstring t_equals n_caValue .
 n_nameValPairs : n_nameValPair .
@@ -1303,7 +1305,7 @@ n_nativeType : t_as t_any .
 n_nativeType : t_lpstruct .
 n_ownerType : n_typeSpec .
 n_ownerType : n_memberRef .
-n_sigArgs0 : .
+n_sigArgs0 : t_left_paren t_right_paren .
 n_paramAttr : .
 n_paramAttr : n_paramAttr t_left_square t_in t_right_square .
 n_paramAttr : n_paramAttr t_left_square t_out t_right_square .
@@ -1323,18 +1325,18 @@ n_pinvAttr : n_pinvAttr t_fastcall .
 n_propAttr : .
 n_propAttr : n_propAttr t_rtspecialname .
 n_propAttr : n_propAttr t_specialname .
-n_propDecl : t_setDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_propDecl : t_setDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_propDecl : t_getDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_propDecl : t_getDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_propDecl : t_otherDirective n_callConv n_type n_typeSpec t_member_op n_methodName t_left_paren n_sigArgs0 t_right_paren .
-n_propDecl : t_otherDirective n_callConv n_type n_methodName t_left_paren n_sigArgs0 t_right_paren .
+n_propDecl : t_setDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_propDecl : t_setDirective n_callConv n_type n_methodName n_sigArgs0 .
+n_propDecl : t_getDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_propDecl : t_getDirective n_callConv n_type n_methodName n_sigArgs0 .
+n_propDecl : t_otherDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
+n_propDecl : t_otherDirective n_callConv n_type n_methodName n_sigArgs0 .
 n_propDecl : n_customAttrDecl .
 n_propDecl : n_extSourceSpec .
 n_propDecl : n_languageDecl .
 n_propDecls : .
 n_propDecls : n_propDecls n_propDecl .
-n_propHead : t_propertyDirective n_propAttr n_callConv n_type n_id t_left_paren n_sigArgs0 t_right_paren n_initOpt .
+n_propHead : t_propertyDirective n_propAttr n_callConv n_type n_id n_sigArgs0 n_initOpt .
 n_psetHead : t_permissionsetDirective n_secAction t_equals t_left_paren .
 n_publicKeyHead : t_publickeyDirective t_equals t_left_paren .
 n_publicKeyTokenHead : t_publickeytokenDirective t_equals t_left_paren .
@@ -1372,7 +1374,7 @@ n_sigArg : n_paramAttr n_type .
 n_sigArg : n_paramAttr n_type n_id .
 n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren .
 n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_id .
-n_sigArgs0 : n_sigArgs1 .
+n_sigArgs0 : t_left_paren n_sigArgs1 t_right_paren .
 n_sigArgs1 : n_sigArg .
 n_sigArgs1 : n_sigArgs1 t_comma n_sigArg .
 n_slashedName : n_name1 .
@@ -1400,21 +1402,21 @@ n_type : n_type t_modreq t_left_paren n_className t_right_paren .
 n_type : n_type t_modopt t_left_paren n_className t_right_paren .
 n_type : t_exclamation n_int32 .
 n_type : t_exclamation t_exclamation n_int32 .
-n_type : t_method n_callConv n_type t_asterisk t_left_paren n_sigArgs0 t_right_paren .
+n_type : t_method n_callConv n_type t_asterisk n_sigArgs0 .
 n_type : t_typedref .
 n_type : t_char .
 n_type : t_void .
 n_type : t_bool .
 n_type : t_int8 .
 n_type : t_int16 .
-n_type : n_int32 .
-n_type : n_int64 .
+n_type : t_int32 .
+n_type : t_int64 .
 n_type : t_float32 .
-n_type : n_float64 .
+n_type : t_float64 .
 n_type : t_unsigned t_int8 .
 n_type : t_unsigned t_int16 .
-n_type : t_unsigned n_int32 .
-n_type : t_unsigned n_int64 .
+n_type : t_unsigned t_int32 .
+n_type : t_unsigned t_int64 .
 n_type : t_native t_int .
 n_type : t_native t_unsigned t_int .
 n_type : t_native t_float .

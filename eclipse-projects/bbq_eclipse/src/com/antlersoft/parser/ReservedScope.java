@@ -62,7 +62,7 @@ public class ReservedScope {
 	
 	/**
 	 * Returns a collection of all the reserved words in this scope
-	 * @return A collection of strings that are the keys to this scope
+	 * @return A collection of strings that are the keys to this scope; the collection is unmodifiable
 	 */
 	public Collection getReservedStrings()
 	{

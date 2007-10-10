@@ -33,7 +33,7 @@ class LexToken extends Token
 {
 	private HashSet m_no_expand;
 
-	HashSet m_empty_set=new HashSet();
+	static HashSet m_empty_set=new HashSet();
 
 	LexToken( Symbol symbol, String value)
 	{

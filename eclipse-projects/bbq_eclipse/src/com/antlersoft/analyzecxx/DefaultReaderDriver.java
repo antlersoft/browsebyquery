@@ -20,6 +20,7 @@
 package com.antlersoft.analyzecxx;
 
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
 
 import java.io.BufferedInputStream;
 import java.io.File;

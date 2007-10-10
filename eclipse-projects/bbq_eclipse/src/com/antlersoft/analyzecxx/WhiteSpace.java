@@ -23,6 +23,8 @@ import java.io.IOException;
 
 import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 /**
  * Processes whitespace found by the calling LexState (PreprocessorTokens)

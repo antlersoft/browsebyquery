@@ -19,6 +19,8 @@
  */
 package com.antlersoft.analyzecxx;
 
+import com.antlersoft.parser.lex.LexException;
+
 class NumericLiteral extends LexToken
 {
 	static final int DECIMAL=1;

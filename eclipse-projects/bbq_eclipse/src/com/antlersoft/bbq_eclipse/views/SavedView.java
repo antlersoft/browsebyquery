@@ -3,6 +3,8 @@ package com.antlersoft.bbq_eclipse.views;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import java.util.Iterator;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
@@ -13,6 +15,10 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.SWT;
 
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
+
+import com.antlersoft.query.Transform;
+
+import com.antlersoft.query.environment.TokenSequence;
 
 
 /**
@@ -55,7 +61,33 @@ public class SavedView extends ViewPart {
 	}
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 		public String getColumnText(Object obj, int index) {
-			return getText(obj);
+			String name=(String)obj;
+			String result=null;
+			TokenSequence seq;
+			switch ( index)
+			{
+			case 0:
+				result=name;
+				break;
+			case 1:
+				seq=Bbq_eclipsePlugin.getDefault().getQueryParser().getStoredSequence(name);
+				if ( seq!=null)
+				{
+					if ( seq.getResult() instanceof Transform)
+						result="Transform";
+					else
+						result="Set Expression";
+				}
+				break;
+			case 2:
+				seq=Bbq_eclipsePlugin.getDefault().getQueryParser().getStoredSequence(name);
+				if ( seq!=null)
+				{
+					StringBuilder sb=new StringBuilder();
+				}
+				break;
+			}
+			return result;
 		}
 		public Image getColumnImage(Object obj, int index) {
 			return getImage(obj);

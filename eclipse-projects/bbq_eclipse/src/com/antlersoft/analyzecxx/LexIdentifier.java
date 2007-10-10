@@ -21,6 +21,10 @@ package com.antlersoft.analyzecxx;
 
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.Symbol;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
+import com.antlersoft.parser.lex.SymbolFinder;
+import com.antlersoft.parser.lex.SymbolFinderTree;
 
 import java.io.IOException;
 

@@ -22,6 +22,8 @@ package com.antlersoft.analyzecxx;
 import java.io.IOException;
 
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 /**
  * Performs first two stages of translation processing described in

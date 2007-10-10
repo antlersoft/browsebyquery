@@ -149,7 +149,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 
     public static String makeKey( String className, String methodName, String descriptor)
     {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append( className);
 		sb.append( "\t");
 		sb.append( methodName);
@@ -358,14 +358,24 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 				try
 				{
 					ClassWriter.CPTypeRef methodRef=instruction.getSymbolicReference( ac);
-					calls.addElement( new DBCall(
-						DBMethod.this,
-						(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
-						DBMethod.makeKey(
-						ac.getInternalClassName( methodRef.getClassIndex()),
-						methodRef.getSymbolName(),
-						methodRef.getSymbolType()
-						)), codeAttribute.getLineNumber( instruction.getInstructionStart())));
+					DBCall call=new DBCall(
+							DBMethod.this,
+							(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
+							DBMethod.makeKey(
+							ac.getInternalClassName( methodRef.getClassIndex()),
+							methodRef.getSymbolName(),
+							methodRef.getSymbolType()
+							)), codeAttribute.getLineNumber( instruction.getInstructionStart()));
+					calls.addElement( call);
+					if ( opcode.getMnemonic().equals("invokestatic"))
+					{
+						DBMethod method=call.getTarget();
+						if ( ( method.accessFlags & ClassWriter.ACC_STATIC)==0)
+						{
+							method.accessFlags|=ClassWriter.ACC_STATIC;
+							ObjectDB.makeDirty(method);
+						}
+					}
 				}
 				catch ( Exception e)
 				{

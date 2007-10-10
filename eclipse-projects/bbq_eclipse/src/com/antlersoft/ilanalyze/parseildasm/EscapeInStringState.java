@@ -5,9 +5,9 @@ package com.antlersoft.ilanalyze.parseildasm;
 
 import java.io.IOException;
 
-import com.antlersoft.analyzecxx.LexException;
-import com.antlersoft.analyzecxx.LexState;
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 /**
  * Handles the character right after a string escape
@@ -43,6 +43,11 @@ class EscapeInStringState extends LexStateBase {
 		if ( c=='t')
 		{
 			m_sb.append('\t');
+			return m_parent;
+		}
+		if ( c=='\\')
+		{
+			m_sb.append('\\');
 			return m_parent;
 		}
 		StringBuilder excep_builder=new StringBuilder( "bad escaped character in string: \"");

@@ -94,6 +94,11 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	    return (String[])storedValues.keySet().toArray( new String[0]);
 	}
 	
+	public TokenSequence getStoredSequence( String name)
+	{
+		return (TokenSequence)storedValues.get( name);
+	}
+	
 	public void addStoredValuesListener( PropertyChangeListener l)
 	{
 	    storedValuesSupport.addPropertyChangeListener( "storedValues", l);
@@ -102,6 +107,12 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	public void removeStoredValuesListener( PropertyChangeListener l)
 	{
 	    storedValuesSupport.removePropertyChangeListener( l);
+	}
+	
+	public void unsaveName( String name)
+	{
+		storedValues.remove( name);
+		storedValuesSupport.firePropertyChange( "storedValues", null, this);
 	}
 	
 	public SavingName startSavingName( String name, int token_count)

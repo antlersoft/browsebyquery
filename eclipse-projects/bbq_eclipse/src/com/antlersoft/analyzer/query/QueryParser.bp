@@ -48,12 +48,18 @@ reserved TransformSymbol "((#2"
 reserved type
 reserved types
 reserved uncalled
+reserved unset
 reserved with
 reserved write
 
 SAVING_NAME : set nameSymbol to "{
 	return ((QueryLanguageEnvironment)parser.getParserEnvironment()).startSavingName( (String)valueStack.get(
 		valueStack.size()-2), 3);
+}" 1 .
+
+SET_EXPRESSION : unset nameSymbol "{
+	((QueryLanguageEnvironment)parser.getParserEnvironment()).unsaveName( (String)valueStack.get( valueStack.size()-1));
+	return new EmptySetExpression(); 
 }" 1 .
 
 SET_EXPRESSION : SAVING_NAME SET_EXPRESSION "{

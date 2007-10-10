@@ -5,9 +5,9 @@ package com.antlersoft.ilanalyze.parseildasm;
 
 import java.io.IOException;
 
-import com.antlersoft.analyzecxx.LexException;
-import com.antlersoft.analyzecxx.LexState;
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 /**
  * @author Michael A. MacDonald

@@ -5,7 +5,9 @@ package com.antlersoft.query.environment;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -32,7 +34,7 @@ import com.antlersoft.util.xml.SimpleHandler;
  * @author Michael A. MacDonald
  *
  */
-class TokenSequence {
+public class TokenSequence {
 	/**
 	 * Array of Token and Replacement objects that, when complete, is interpreted
 	 * as a unit.
@@ -69,14 +71,14 @@ class TokenSequence {
 		m_result=result;
 	}
 	
-	Object getResult()
+	public Object getResult()
 	{
 		return m_result;
 	}
 	
-	Collection getContents()
+	public List getContents()
 	{
-		return m_contents;
+		return Collections.unmodifiableList(m_contents);
 	}
 	
 	/**
@@ -121,7 +123,7 @@ class TokenSequence {
 	 * @author Michael A. MacDonald
 	 *
 	 */
-	static class Replacement extends DefaultHandler implements IElement
+	public static class Replacement extends DefaultHandler implements IElement
 	{
 		private TokenSequence m_replacer;
 		private ArrayList m_replaced;

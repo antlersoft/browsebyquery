@@ -3,8 +3,6 @@
  */
 package com.antlersoft.query.environment;
 
-import java.lang.StringBuffer;
-
 import com.antlersoft.parser.Token;
 
 import com.antlersoft.query.BasicBase;
@@ -19,7 +17,7 @@ public class LiteralToken extends Token
     public String toString()
     {
     	int len=value.length();
-    	StringBuffer sb=new StringBuffer( len+5);
+    	StringBuilder sb=new StringBuilder( len+5);
     	sb.append( '"');
     	for ( int i=0; i<len; ++i)
     	{

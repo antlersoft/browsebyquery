@@ -3,21 +3,25 @@
  */
 package com.antlersoft.ilanalyze.parseildasm;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 
-import com.antlersoft.analyzecxx.LexException;
-import com.antlersoft.analyzecxx.LexState;
 
 import com.antlersoft.ilanalyze.DBDriver;
 
-import com.antlersoft.parser.ReservedScope;
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.Symbol;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 /**
+ * Manages reading an IL assembly-language file and putting the information in the BBQ database
+ * (via the DBDriver interface)
  * @author Michael A. MacDonald
  *
  */
@@ -25,7 +29,22 @@ public class IldasmReader {
 	
 	private IldasmParser m_parser;
 	private DBDriver m_driver;
+	/** Number of lines seen */
+	private int m_line_count;
+	/** Text of current line (for error messages) */
+	private StringBuilder m_line;
+	
+	/**
+	 * Map of symbol name to symbol; cache of expected symbols so we can identify if multiple symbols
+	 * are expected efficiently.
+	 */
 	private HashMap m_expected;
+	
+	public IldasmReader()
+	{
+		m_parser=new IldasmParser();
+		m_line=new StringBuilder();
+	}
 	
 	/**
 	 * Read a sequence of characters that represents an ildasm file, and add the contents to
@@ -35,17 +54,37 @@ public class IldasmReader {
 	 * @throws LexException
 	 * @throws RuleActionException
 	 */
-	public void Read( DBDriver driver, Reader reader) throws IOException, LexException, RuleActionException
+	public void Read( DBDriver driver, Reader reader) throws IOException, RuleActionException
 	{
 		LexState state=new InitialState( this);
 		m_driver=driver;
+		m_parser.reset();
+		m_parser.setDriver(m_driver);
 		m_expected=null;
-		m_parser=new IldasmParser( m_driver);
-		for ( int i=reader.read(); i>=0; i=reader.read())
+		m_line_count=1;
+		m_line.setLength(0);
+		try
 		{
-			state=state.nextCharacter((char)i);
+			for ( int i=reader.read(); i>=0; i=reader.read())
+			{
+				char c=(char)i;
+				if ( c=='\n')
+				{
+					m_line_count++;
+					m_line.setLength(0);
+				}
+				else
+					m_line.append(c);
+			}
+			state.endOfFile();
+			System.out.println( "lines read: "+m_line_count);
 		}
-		state.endOfFile();
+		catch ( Exception e)
+		{
+			RuleActionException rae=new RuleActionException( "error: "+e.getMessage()+" at line: "+m_line_count+"\n"+m_line.toString());
+			rae.setStackTrace(e.getStackTrace());
+			throw rae;
+		}
 	}
 	
 	/**
@@ -53,18 +92,48 @@ public class IldasmReader {
 	 * @param symbol Symbol representing token from the IL file
 	 * @param value Value of the symbol
 	 */
-	void processToken( Symbol symbol, Object value)
+	void processToken( Symbol symbol, Object value) throws RuleActionException
 	{
-	
+		m_expected=null;
+		if ( m_parser.parse(symbol, value))
+		{
+			String message=m_parser.getRuleMessage();
+			if ( message==null)
+				message="Parsing error";
+			throw new RuleActionException(message);
+		}
 	}
 
 	/**
 	 * Find if a string matches one of the expected terminals of the parser
 	 * @param found String that has been found by the lexer
-	 * @result Symbol expected by the parser, or null if no matching symbol
+	 * @return Symbol expected by the parser, or null if no matching symbol
 	 */
-	Symbol expectedReserved( )
+	Symbol expectedReserved( String found)
 	{
+		if ( m_expected==null)
+		{
+			m_expected=new HashMap();
+			for ( Enumeration e=m_parser.getExpectedSymbols(); e.hasMoreElements();)
+			{
+				Symbol s=(Symbol)e.nextElement();
+				m_expected.put(s.toString(), s);
+			}
+		}
+		return (Symbol)m_expected.get( found);
+	}
 	
+	/**
+	 * Return a collection of strings representing the parser's reserved words
+	 * @return Collection of strings
+	 */
+	Collection getReservedWords()
+	{
+		return m_parser.getReservedScope().getReservedStrings();
+	}
+	
+	public static void main( String[] args) throws Exception
+	{
+		new IldasmReader().Read(null, new FileReader(args[0]));
 	}
 }

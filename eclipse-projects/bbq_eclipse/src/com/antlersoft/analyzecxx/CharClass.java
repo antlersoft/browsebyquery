@@ -19,12 +19,14 @@
  */
 package com.antlersoft.analyzecxx;
 
+import com.antlersoft.parser.lex.LexException;
+
 public class CharClass extends com.antlersoft.util.CharClass
 {
 	static String convertEscapes( String s)
 	throws LexException
 	{
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		int len=s.length();
 		boolean escaped=false;
 		for ( int i=0; i<len; ++i)
@@ -62,7 +64,7 @@ public class CharClass extends com.antlersoft.util.CharClass
 						sb.append( '\026');
 						break;
 					case 'x': {
-						StringBuffer hex_buffer = new StringBuffer();
+						StringBuilder hex_buffer = new StringBuilder();
 						++i;
 						for (; i < len && isHexDigit(s.charAt(i)); ++i)
 							hex_buffer.append(ch);
@@ -76,7 +78,7 @@ public class CharClass extends com.antlersoft.util.CharClass
 					default :
 					if ( isOctalDigit( ch))
 					{
-						StringBuffer octal_buffer=new StringBuffer();
+						StringBuilder octal_buffer=new StringBuilder();
 						for ( ; i<len && isOctalDigit( s.charAt(i)); ++i)
 							octal_buffer.append(ch);
 						--i;

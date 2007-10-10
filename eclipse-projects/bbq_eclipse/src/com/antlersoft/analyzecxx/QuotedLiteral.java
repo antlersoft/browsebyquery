@@ -20,6 +20,9 @@
 package com.antlersoft.analyzecxx;
 
 import com.antlersoft.parser.RuleActionException;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
+
 import java.io.IOException;
 
 public class QuotedLiteral implements LexState

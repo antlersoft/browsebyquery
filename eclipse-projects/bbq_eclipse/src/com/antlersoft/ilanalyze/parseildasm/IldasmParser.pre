@@ -9,12 +9,9 @@ import com.antlersoft.parser.*;
 
 class IldasmParser extends IldasmParserBase
 {
-	DBDriver m_driver;
-	
-	IldasmParser( DBDriver driver)
+	IldasmParser()
 	{
 		super( parseStates);
-		m_driver=driver;
 	}
 
 	private static final ReservedScope reservedScope=new ReservedScope();

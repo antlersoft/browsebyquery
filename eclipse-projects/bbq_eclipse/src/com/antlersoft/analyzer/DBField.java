@@ -80,7 +80,7 @@ public class DBField implements Persistent, Cloneable, SourceObject, AccessFlags
 
     static String makeKey( String className, String fieldName)
     {
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 		sb.append( className);
 		sb.append( "\t");
 		sb.append( fieldName);

@@ -16,11 +16,10 @@ import com.antlersoft.util.CharClass;
  *
  */
 public abstract class LexWithSymbolTree implements LexState {
-	private LexState m_caller;
+	protected LexState m_caller;
 	SymbolFinder m_finder;
 
 	public LexWithSymbolTree( SymbolFinderTree tree, LexState caller)
-		throws RuleActionException, LexException
 	{
 		m_caller=caller;
 		m_finder=new SymbolFinder( tree);

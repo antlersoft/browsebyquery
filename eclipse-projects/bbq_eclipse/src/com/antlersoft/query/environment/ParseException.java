@@ -23,7 +23,7 @@ public class ParseException extends QueryException
 {
     static String parseMessage( QueryLanguageEnvironment qp)
     {
-        StringBuffer retval=new StringBuffer();
+        StringBuilder retval=new StringBuilder();
 
         if ( qp.getParser().getRuleMessage()!=null)
         {

@@ -25,6 +25,8 @@ import java.util.Properties;
 
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.Parser;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 /**
  * This class processes C++ files according to the spec implemented.

@@ -37,7 +37,7 @@ class StringExpander extends LexToken implements SpecialExpander
 	}
     public void expandTo(MacroExpander reader, HashSet no_expand, ArrayList arguments, ArrayList expanded_arguments) throws RuleActionException {
 		ArrayList tokens=(ArrayList)arguments.get( m_arg_index);
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=new StringBuilder();
 
 		for ( Iterator it=tokens.iterator(); it.hasNext();)
 		{

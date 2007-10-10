@@ -35,6 +35,8 @@ import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.ParseState;
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.Symbol;
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 
 /**
  * This class extends the basic Parser to support the preprocessor-specific
@@ -484,7 +486,7 @@ e.printStackTrace();
 	    if ( tokens.size()>=3 && first_token.value.equals("<") &&
 			 ((LexToken)tokens.get(tokens.size()-1)).value.equals(">"))
 		{
-			StringBuffer sb=new StringBuffer();
+			StringBuilder sb=new StringBuilder();
 			for ( int i=1; i<tokens.size()-1; i++)
 				sb.append( ((LexToken)tokens.get(i)).value);
 			return new LexToken( PreprocessParser.lex_include_header, sb.toString());

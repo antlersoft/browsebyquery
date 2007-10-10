@@ -10,40 +10,37 @@ import com.antlersoft.parser.lex.LexException;
 import com.antlersoft.parser.lex.LexState;
 
 /**
+ * 0 encounted at the beginning of a token-- might be a hex int, might just be a zero
  * @author Michael A. MacDonald
  *
  */
-class InitialSlash extends LexStateBase {
+class InitialZero extends LexStateBase {
 
 	/**
 	 * @param parent
 	 * @param reader
 	 */
-	public InitialSlash(LexState parent, IldasmReader reader) {
+	public InitialZero(LexState parent, IldasmReader reader) {
 		super(parent, reader);
 	}
-
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.analyzecxx.LexState#nextCharacter(char)
 	 */
 	public LexState nextCharacter(char c) throws IOException,
 			RuleActionException, LexException {
-		if ( c!='/')
+		if ( c=='x')
 		{
-			m_reader.processToken( IldasmParser.t_slash, "/");
-			return m_parent.nextCharacter(c);
+			return new HexNumber( m_parent, m_reader);
 		}
-		
-		return new CommentState( m_parent, m_reader);
+		return new NumberState( m_parent, m_reader).nextCharacter('0').nextCharacter(c);
 	}
 
 	/* (non-Javadoc)
-	 * @see com.antlersoft.analyzecxx.LexState#endOfFile()
+	 * @see com.antlersoft.ilanalyze.parseildasm.LexStateBase#endOfFile()
 	 */
-	public LexState endOfFile() throws IOException, RuleActionException,
-			LexException {
-		m_reader.processToken( IldasmParser.t_slash, "/");
-		return m_parent.endOfFile();
+	public LexState endOfFile() throws IOException, RuleActionException, LexException {
+		return new NumberState( m_parent, m_reader).nextCharacter('0').endOfFile();
 	}
+
 }
