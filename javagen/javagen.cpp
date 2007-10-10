@@ -80,7 +80,11 @@ void writeParseState( ParseState& out_state)
 		cout<<"new ReduceRule( "<<out_state.reduce_rule->result.name()<<", "<<out_state.reduce_rule->states_to_pop<<", ";
 		if ( out_state.reduce_rule->reduce_action)
 		{
-			cout<<"new RuleAction() { public Object ruleFire( Parser parser, List valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
+			string java_action=static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction();
+			if ( java_action.c_str()[0]=='{')
+				cout<<"new RuleAction() { public >>Object ruleFire( Parser parser, List valueStack) throws RuleActionException "<<static_cast<RuleReduceAction*>( out_state.reduce_rule->reduce_action)->getJavaAction()<<"}";
+			else
+				cout<<java_action;
 		}
 		else
 			cout<<"null";
