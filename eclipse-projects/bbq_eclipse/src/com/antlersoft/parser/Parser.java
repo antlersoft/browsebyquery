@@ -30,7 +30,7 @@ public abstract class Parser
 	public static Symbol _end_=Symbol.get( "_end");
 	public static Symbol _error_=Symbol.get( "_error_");
 
-	public List getValueStack() { return (List)value_stack.clone(); }
+	public ValueStack getValueStack() { return (ValueStack)value_stack.clone(); }
 
 	/**
 	 * Get error message associated with parse failure
@@ -170,7 +170,7 @@ public abstract class Parser
 		recovery_count=0;
 		state_stack=new ArrayList();
 		state_stack.add( parse_states[0]);
-		value_stack=new ArrayList();
+		value_stack=new ValueStack();
 		value_stack.add( "");
 		next_value=new ArrayList(2);
 	}
@@ -247,7 +247,7 @@ public abstract class Parser
 	private String ruleMessage;
 	private int recovery_count;
 	private ParseState[] parse_states;
-	private ArrayList value_stack;
+	private ValueStack value_stack;
 	private ArrayList state_stack;
 	private ArrayList next_value;
 	private ParseState pushError()

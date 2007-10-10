@@ -24,15 +24,13 @@ import com.antlersoft.parser.lex.SymbolFinderTree;
  */
 class PunctuationState extends LexWithSymbolTree {
 	private IldasmReader m_reader;
+	/**
+	 * Set this to true when you think you've recognized a period token but it is really the start
+	 * of a directive.
+	 */
+	private boolean m_period_exception;
 	private static SymbolFinderTree m_tree;
-	
-	static class PeriodException extends RuleActionException
-	{
-		PeriodException( String s)
-		{
-			super(s);
-		}
-	}
+
 	/**
 	 * @param parent
 	 * @param reader
@@ -59,7 +57,8 @@ class PunctuationState extends LexWithSymbolTree {
 		}
 		if ( s==IldasmParser.t_period && m_reader.expectedReserved(value)==null)
 		{
-			throw new PeriodException(value);
+			m_period_exception=true;
+			return;
 		}
 		m_reader.processToken(s, value);
 	}
@@ -105,14 +104,11 @@ class PunctuationState extends LexWithSymbolTree {
 	 * @see com.antlersoft.parser.lex.LexWithSymbolTree#nextCharacter(char)
 	 */
 	public LexState nextCharacter(char c) throws IOException, RuleActionException, LexException {
-		try
-		{
-			return super.nextCharacter(c);
-		}
-		catch ( PeriodException pe)
-		{
-			return new InitialPeriod( m_caller, m_reader).nextCharacter(c);
-		}
+		m_period_exception=false;
+		LexState result=super.nextCharacter(c);
+		if ( m_period_exception)
+			result=new InitialPeriod( m_caller, m_reader).nextCharacter(c);
+		return result;
 	}
 
 }

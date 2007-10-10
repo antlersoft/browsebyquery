@@ -954,8 +954,8 @@ n_className : t_left_square t_moduleDirective n_name1 t_right_square n_slashedNa
 n_className : n_slashedName .
 n_classNames : n_classNames t_comma n_className .
 n_classNames : n_className .
-n_compQstring : t_QSTRING .
-n_compQstring : n_compQstring t_plus t_QSTRING .
+n_compQstring : t_QSTRING "m_TopString" .
+n_compQstring : n_compQstring t_plus t_QSTRING "m_StringConcat" .
 n_comtAttr : .
 n_comtAttr : n_comtAttr t_private .
 n_comtAttr : n_comtAttr t_public .
@@ -1047,8 +1047,8 @@ n_eventDecls : n_eventDecls n_eventDecl .
 n_eventHead : t_eventDirective n_eventAttr n_typeSpec n_id .
 n_eventHead : t_eventDirective n_eventAttr n_id .
 n_exportHead : t_exportDirective n_comtAttr n_name1 .
-n_extSourcePosition : n_int32 .
-n_extSourcePosition : n_int32 t_comma n_int32 .
+n_extSourcePosition : n_int32 "m_TopObject" .
+n_extSourcePosition : n_int32 t_comma n_int32 "{ return valueStack.o_2(); }" .
 n_extSourceSpec : t_lineDirective n_extSourcePosition t_SQSTRING .
 n_extSourceSpec : t_lineDirective n_extSourcePosition .
 n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition t_SQSTRING .
@@ -1125,8 +1125,8 @@ n_handlerBlock : t_handler n_int32 t_to n_int32 .
 n_hashHead : t_hashDirective t_equals t_left_paren .
 n_hexbytes : t_HEXBYTE .
 n_hexbytes : n_hexbytes t_HEXBYTE .
-n_id : t_ID .
-n_id : t_SQSTRING .
+n_id : t_ID "m_TopString" .
+n_id : t_SQSTRING "m_TopString" .
 n_implAttr : .
 n_implAttr : n_implAttr t_native .
 n_implAttr : n_implAttr t_cil .
@@ -1170,8 +1170,8 @@ n_instr_r_head : n_INSTR_R t_left_paren .
 n_instr_tok_head : n_INSTR_TOK .
 n_int16s : .
 n_int16s : n_int16s n_int32 .
-n_int32 : t_INT64 .
-n_int64 : t_INT64 .
+n_int32 : t_INT64 "m_TopObject" .
+n_int64 : t_INT64 "m_TopObject" .
 n_labels : .
 n_labels : n_id t_comma n_labels .
 n_labels : n_int32 t_comma n_labels .
@@ -1241,15 +1241,15 @@ n_methodDecls : n_methodDecls n_methodDecl .
 n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
 n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
 n_methodHeadPart1 : t_methodDirective .
-n_methodName : t_ctorDirective .
-n_methodName : t_cctorDirective .
+n_methodName : t_ctorDirective "m_TopString" .
+n_methodName : t_cctorDirective "m_TopString" .
 n_moduleHead : t_moduleDirective .
 n_moduleHead : t_moduleDirective n_name1 .
 n_moduleHead : t_moduleDirective t_extern n_name1 .
-n_name1 : n_id .
-n_name1 : t_DOTTEDNAME .
-n_name1 : n_name1 t_period n_name1 .
-n_methodName : n_id .
+n_name1 : n_id "m_TopString" .
+n_name1 : t_DOTTEDNAME "m_TopString" .
+n_name1 : n_name1 t_period n_name1 "{ return valueStack.s_2() + \".\" + valueStack.s_0(); }" .
+n_methodName : n_id "m_TopString" .
 n_nameSpaceHead : t_namespaceDirective n_name1 .
 n_nameValPair : n_compQstring t_equals n_caValue .
 n_nameValPairs : n_nameValPair .

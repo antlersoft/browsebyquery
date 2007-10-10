@@ -3,13 +3,18 @@
  */
 package com.antlersoft.ilanalyze.parseildasm;
 
+import java.io.File;
 import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.Reader;
+
+import java.text.MessageFormat;
 
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 
 import com.antlersoft.ilanalyze.DBDriver;
@@ -27,8 +32,11 @@ import com.antlersoft.parser.lex.LexState;
  */
 public class IldasmReader {
 	
+    private static Logger logger=Logger.getLogger( IldasmReader.class.getName());
 	private IldasmParser m_parser;
 	private DBDriver m_driver;
+	/** A format string for forming the disassembly command for an assembly from the commands path */
+	private String m_disassembly_command_format;
 	/** Number of lines seen */
 	private int m_line_count;
 	/** Text of current line (for error messages) */
@@ -44,6 +52,7 @@ public class IldasmReader {
 	{
 		m_parser=new IldasmParser();
 		m_line=new StringBuilder();
+		m_disassembly_command_format="monodis {0}";
 	}
 	
 	/**
@@ -77,7 +86,7 @@ public class IldasmReader {
 					m_line.append(c);
 			}
 			state.endOfFile();
-			System.out.println( "lines read: "+m_line_count);
+			logger.fine( "lines read: "+m_line_count);
 		}
 		catch ( Exception e)
 		{
@@ -132,8 +141,43 @@ public class IldasmReader {
 		return m_parser.getReservedScope().getReservedStrings();
 	}
 	
+	public void sendFileToDriver( File file, DBDriver driver) throws IOException, RuleActionException
+	{
+		if ( file.isDirectory())
+		{
+			File[] files=file.listFiles();
+			for ( int i=0; i<files.length; ++i)
+			{
+				sendFileToDriver( files[i], driver);
+			}
+		}
+		else
+		{
+			String lower_file=file.getName().toLowerCase();
+			if ( lower_file.endsWith(".il"))
+			{
+				logger.fine( "Reading .il file "+file.getAbsolutePath());
+				Read( driver, new FileReader(file));
+			}
+			else if ( lower_file.endsWith(".dll") || lower_file.endsWith(".exe"))
+			{
+				logger.fine("Reading assembly file "+file.getAbsolutePath());
+				Process process=Runtime.getRuntime().exec(MessageFormat.format(m_disassembly_command_format, new Object[] { file.getAbsolutePath() }));
+				Read( driver, new InputStreamReader(process.getInputStream()));
+				try
+				{
+					process.waitFor();
+				}
+				catch ( InterruptedException ie)
+				{
+					logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
+				}
+			}
+		}
+	}
+	
 	public static void main( String[] args) throws Exception
 	{
-		new IldasmReader().Read(null, new FileReader(args[0]));
+		new IldasmReader().sendFileToDriver( new File(args[0]), null);
 	}
 }
