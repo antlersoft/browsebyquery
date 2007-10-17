@@ -72,6 +72,7 @@ symbol n_filterHead
 symbol n_finallyClause
 symbol n_float64
 symbol n_genArgs
+symbol n_genArgClause
 symbol n_genArity
 symbol n_genClause
 symbol n_genConstraints
@@ -91,7 +92,6 @@ symbol n_instr_r_head
 symbol n_instr_tok_head
 symbol n_int16s
 symbol n_int32
-symbol n_int64
 symbol n_labels
 symbol n_languageDecl
 symbol n_localeHead
@@ -288,6 +288,7 @@ reserved t_class "class"
 reserved t_clsid "clsid"
 reserved t_clt "clt"
 reserved t_clt_un "clt.un"
+reserved t_constrained_ "constrained."
 reserved t_conv_i "conv.i"
 reserved t_conv_i1 "conv.i1"
 reserved t_conv_i2 "conv.i2"
@@ -408,6 +409,7 @@ reserved t_ldc_i4_s "ldc.i4.s"
 reserved t_ldc_i8 "ldc.i8"
 reserved t_ldc_r4 "ldc.r4"
 reserved t_ldc_r8 "ldc.r8"
+reserved t_ldelem_any "ldelem.any"
 reserved t_ldelem_i "ldelem.i"
 reserved t_ldelem_i1 "ldelem.i1"
 reserved t_ldelem_i2 "ldelem.i2"
@@ -541,6 +543,7 @@ reserved t_starg "starg"
 reserved t_starg_s "starg.s"
 reserved t_static "static"
 reserved t_stdcall "stdcall"
+reserved t_stelem_any "stelem.any"
 reserved t_stelem_i "stelem.i"
 reserved t_stelem_i1 "stelem.i1"
 reserved t_stelem_i2 "stelem.i2"
@@ -589,6 +592,7 @@ reserved t_true "true"
 reserved t_typedref "typedref"
 reserved t_unaligned_ "unaligned."
 reserved t_unbox "unbox"
+reserved t_unbox_any "unbox.any"
 reserved t_unicode "unicode"
 reserved t_unmanaged "unmanaged"
 reserved t_unmanagedexp "unmanagedexp"
@@ -827,6 +831,7 @@ n_INSTR_SIG : t_calli .
 n_INSTR_STRING : t_ldstr .
 n_INSTR_SWITCH : t_switch .
 n_INSTR_TOK : t_ldtoken .
+n_INSTR_TYPE : t_constrained_ .
 n_INSTR_TYPE : t_cpobj .
 n_INSTR_TYPE : t_ldobj .
 n_INSTR_TYPE : t_castclass .
@@ -835,11 +840,14 @@ n_INSTR_TYPE : t_unbox .
 n_INSTR_TYPE : t_stobj .
 n_INSTR_TYPE : t_box .
 n_INSTR_TYPE : t_newarr .
+n_INSTR_TYPE : t_ldelem_any .
 n_INSTR_TYPE : t_ldelema .
 n_INSTR_TYPE : t_refanyval .
 n_INSTR_TYPE : t_mkrefany .
 n_INSTR_TYPE : t_initobj .
 n_INSTR_TYPE : t_sizeof .
+n_INSTR_TYPE : t_stelem_any .
+n_INSTR_TYPE : t_unbox_any .
 n_INSTR_VAR : t_ldarg_s .
 n_INSTR_VAR : t_ldarga_s .
 n_INSTR_VAR : t_starg_s .
@@ -867,7 +875,7 @@ n_assemblyDecl : n_secDecl .
 n_assemblyDecl : n_asmOrRefDecl .
 n_assemblyDecls : .
 n_assemblyDecls : n_assemblyDecls n_assemblyDecl .
-n_assemblyHead : t_assemblyDirective n_asmAttr n_name1 .
+n_assemblyHead : t_assemblyDirective n_asmAttr n_name1 "{ Driver(parser).startAssembly( valueStack.s_0()); return \"\"; }" .
 n_assemblyRefDecl : n_hashHead n_bytes t_right_paren .
 n_assemblyRefDecl : n_asmOrRefDecl .
 n_assemblyRefDecl : n_publicKeyTokenHead n_bytes t_right_paren .
@@ -882,8 +890,9 @@ n_bound : t_ellipsis .
 n_bound : n_int32 .
 n_bound : n_int32 t_ellipsis n_int32 .
 n_bound : n_int32 t_ellipsis .
-n_bounds1 : n_bound .
-n_bounds1 : n_bounds1 t_comma n_bound .
+# A n_bounds1 is an int on the stack, giving the number of array dimensions
+n_bounds1 : n_bound "{ return new Integer(1); }" .
+n_bounds1 : n_bounds1 t_comma n_bound "{ return new Integer( valueStack.i_2()+1); }" .
 n_bytearrayhead : t_bytearray t_left_paren .
 n_bytes : .
 n_bytes : n_hexbytes .
@@ -906,33 +915,35 @@ n_callKind : t_unmanaged t_stdcall .
 n_callKind : t_unmanaged t_thiscall .
 n_callKind : t_unmanaged t_fastcall .
 n_catchClause : t_catch n_className .
-n_classAttr : .
-n_classAttr : n_classAttr t_public .
-n_classAttr : n_classAttr t_private .
-n_classAttr : n_classAttr t_value .
-n_classAttr : n_classAttr t_enum .
-n_classAttr : n_classAttr t_interface .
-n_classAttr : n_classAttr t_sealed .
-n_classAttr : n_classAttr t_abstract .
-n_classAttr : n_classAttr t_auto .
-n_classAttr : n_classAttr t_sequential .
-n_classAttr : n_classAttr t_explicit .
-n_classAttr : n_classAttr t_ansi .
-n_classAttr : n_classAttr t_unicode .
-n_classAttr : n_classAttr t_autochar .
-n_classAttr : n_classAttr t_import .
-n_classAttr : n_classAttr t_serializable .
-n_classAttr : n_classAttr t_nested t_public .
-n_classAttr : n_classAttr t_nested t_private .
-n_classAttr : n_classAttr t_nested t_family .
-n_classAttr : n_classAttr t_nested t_assembly .
-n_classAttr : n_classAttr t_nested t_famandassem .
-n_classAttr : n_classAttr t_nested t_famorassem .
-n_classAttr : n_classAttr t_beforefieldinit .
-n_classAttr : n_classAttr t_specialname .
-n_classAttr : n_classAttr t_rtspecialname .
+# n_classAttr is an int on the stack with bit flags or'd together
+n_classAttr : "m_EmptyAttribute" .
+n_classAttr : n_classAttr t_public "new AttribAddToStack( DBDriver.IS_PUBLIC)" .
+n_classAttr : n_classAttr t_private "new AttribAddToStack( DBDriver.IS_PRIVATE)" .
+n_classAttr : n_classAttr t_value "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_enum "new AttribAddToStack( DBDriver.IS_ENUM)" .
+n_classAttr : n_classAttr t_interface "new AttribAddToStack( DBDriver.IS_INTERFACE)" .
+n_classAttr : n_classAttr t_sealed "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_abstract "new AttribAddToStack( DBDriver.IS_ABSTRACT)" .
+n_classAttr : n_classAttr t_auto "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_sequential "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_explicit "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_ansi "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_unicode "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_autochar "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_import "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_serializable "new AttribAddToStack( DBDriver.IS_SERIALIZABLE)" .
+n_classAttr : n_classAttr t_nested t_public "new AttribAddToStack2( DBDriver.IS_PUBLIC)" .
+n_classAttr : n_classAttr t_nested t_private "new AttribAddToStack2(DBDriver.IS_PUBLIC)" .
+n_classAttr : n_classAttr t_nested t_family "new AttribAddToStack2(DBDriver.IS_FAMILY)" .
+n_classAttr : n_classAttr t_nested t_assembly "new AttribAddToStack2( DBDriver.IS_ASSEMBLY)" .
+n_classAttr : n_classAttr t_nested t_famandassem "new AttribAddToStack2(DBDriver.IS_FAMANDASSEM)" .
+n_classAttr : n_classAttr t_nested t_famorassem "new AttribAddToStack2(DBDriver.IS_FAMORASSEM)" .
+# might need this later
+n_classAttr : n_classAttr t_beforefieldinit "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_specialname "m_AddIgnoredAttrib" .
+n_classAttr : n_classAttr t_rtspecialname "m_AddIgnoredAttrib" .
 n_classDecl : n_methodHead n_methodDecls t_right_brace .
-n_classDecl : n_classHead t_left_brace n_classDecls t_right_brace .
+n_classDecl : n_classHead t_left_brace n_classDecls t_right_brace "{ Driver(parser).endClass(); return \"\"; }" .
 n_classDecl : n_eventHead t_left_brace n_eventDecls t_right_brace .
 n_classDecl : n_propHead t_left_brace n_propDecls t_right_brace .
 n_classDecl : n_fieldDecl .
@@ -948,14 +959,14 @@ n_classDecl : t_overrideDirective t_method n_callConv n_type n_typeSpec t_member
 n_classDecl : n_languageDecl .
 n_classDecls : .
 n_classDecls : n_classDecls n_classDecl .
-n_classHead : t_classDirective n_classAttr n_name1 n_genClause n_extendsClause n_implClause .
-n_className : t_left_square n_name1 t_right_square n_slashedName .
-n_className : t_left_square t_moduleDirective n_name1 t_right_square n_slashedName .
-n_className : n_slashedName .
-n_classNames : n_classNames t_comma n_className .
-n_classNames : n_className .
+n_classHead : t_classDirective n_classAttr n_name1 n_genClause n_extendsClause n_implClause "{ Driver(parser).startClass( valueStack.s_n(3), (List)valueStack.o_2(), valueStack.i_n(4), (ReadType)valueStack.o_1(), (List)valueStack.o_0()); return \"\"; }" .
+n_className : t_left_square n_name1 t_right_square n_slashedName "m_TopString" .
+n_className : t_left_square t_moduleDirective n_name1 t_right_square n_slashedName "m_TopString" .
+n_className : n_slashedName "m_TopString" .
+n_classNames : n_typeSpec "m_StartList" .
+n_classNames : n_classNames t_comma n_typeSpec "m_AddToList" .
 n_compQstring : t_QSTRING "m_TopString" .
-n_compQstring : n_compQstring t_plus t_QSTRING "m_StringConcat" .
+n_compQstring : n_compQstring t_plus t_QSTRING "{ return valueStack.s_2() + valueStack.s_0(); }" .
 n_comtAttr : .
 n_comtAttr : n_comtAttr t_private .
 n_comtAttr : n_comtAttr t_public .
@@ -992,21 +1003,21 @@ n_ddItem : t_ampersand t_left_paren n_id t_right_paren .
 n_ddItem : n_bytearrayhead n_bytes t_right_paren .
 n_ddItem : t_float32 t_left_paren n_float64 t_right_paren n_ddItemCount .
 n_ddItem : n_float64 t_left_paren n_float64 t_right_paren n_ddItemCount .
-n_ddItem : n_int64 t_left_paren n_int64 t_right_paren n_ddItemCount .
-n_ddItem : n_int32 t_left_paren n_int32 t_right_paren n_ddItemCount .
+n_ddItem : t_int64 t_left_paren t_INT64 t_right_paren n_ddItemCount .
+n_ddItem : t_int32 t_left_paren n_int32 t_right_paren n_ddItemCount .
 n_ddItem : t_int16 t_left_paren n_int32 t_right_paren n_ddItemCount .
 n_ddItem : t_int8 t_left_paren n_int32 t_right_paren n_ddItemCount .
 n_ddItem : t_float32 n_ddItemCount .
-n_ddItem : n_float64 n_ddItemCount .
-n_ddItem : n_int64 n_ddItemCount .
-n_ddItem : n_int32 n_ddItemCount .
+n_ddItem : t_float64 n_ddItemCount .
+n_ddItem : t_int64 n_ddItemCount .
+n_ddItem : t_int32 n_ddItemCount .
 n_ddItem : t_int16 n_ddItemCount .
 n_ddItem : t_int8 n_ddItemCount .
 n_ddItemCount : .
 n_ddItemCount : t_left_square n_int32 t_right_square .
 n_ddItemList : n_ddItem t_comma n_ddItemList .
 n_ddItemList : n_ddItem .
-n_decl : n_classHead t_left_brace n_classDecls t_right_brace .
+n_decl : n_classHead t_left_brace n_classDecls t_right_brace "{ Driver(parser).endClass(); return \"\"; }" .
 n_decl : n_nameSpaceHead t_left_brace n_decls t_right_brace .
 n_decl : n_methodHead n_methodDecls t_right_brace .
 n_decl : n_fieldDecl .
@@ -1025,8 +1036,8 @@ n_decl : n_customAttrDecl .
 n_decl : t_subsystemDirective n_int32 .
 n_decl : t_corflagsDirective n_int32 .
 n_decl : t_fileDirective t_alignment n_int32 .
-n_decl : t_imagebaseDirective n_int64 .
-n_decl : t_stackreserveDirective n_int64 .
+n_decl : t_imagebaseDirective t_INT64 .
+n_decl : t_stackreserveDirective t_INT64 .
 n_decl : n_languageDecl .
 n_eventAttr : .
 n_eventAttr : n_eventAttr t_rtspecialname .
@@ -1047,15 +1058,16 @@ n_eventDecls : n_eventDecls n_eventDecl .
 n_eventHead : t_eventDirective n_eventAttr n_typeSpec n_id .
 n_eventHead : t_eventDirective n_eventAttr n_id .
 n_exportHead : t_exportDirective n_comtAttr n_name1 .
+# Ext source position is a single integer; we don't care about column position or range
 n_extSourcePosition : n_int32 "m_TopObject" .
 n_extSourcePosition : n_int32 t_comma n_int32 "{ return valueStack.o_2(); }" .
-n_extSourceSpec : t_lineDirective n_extSourcePosition t_SQSTRING .
-n_extSourceSpec : t_lineDirective n_extSourcePosition .
-n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition t_SQSTRING .
-n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition .
+n_extSourceSpec : t_lineDirective n_extSourcePosition t_SQSTRING "{ Driver(parser).setFileAndLine( valueStack.s_0(), valueStack.i_1()); return \"\"; }" .
+n_extSourceSpec : t_lineDirective n_extSourcePosition "{ Driver(parser).setFileAndLine( null, valueStack.i_0()); return \"\"; }" .
+n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition t_SQSTRING "{ Driver(parser).setFileAndLine( valueStack.s_0(), valueStack.i_n(3)); return \"\"; }" .
+n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition "{ Driver(parser).setFileAndLine( null, valueStack.i_2()); return \"\"; }" .
 n_extSourceSpec : t_P_LINE n_extSourcePosition t_QSTRING .
-n_extendsClause : .
-n_extendsClause : t_extends n_className .
+n_extendsClause : "{ return new BasicType(\"object\"); }" .
+n_extendsClause : t_extends n_typeSpec "m_TopObject" .
 n_faultClause : t_fault .
 n_fieldAttr : .
 n_fieldAttr : n_fieldAttr t_static .
@@ -1074,14 +1086,14 @@ n_fieldAttr : n_fieldAttr t_literal .
 n_fieldAttr : n_fieldAttr t_notserialized .
 n_fieldDecl : t_fieldDirective n_repeatOpt n_fieldAttr n_type n_id n_atOpt n_initOpt .
 n_fieldInit : t_float32 t_left_paren n_float64 t_right_paren .
-n_fieldInit : n_float64 t_left_paren n_float64 t_right_paren .
-n_fieldInit : t_float32 t_left_paren n_int64 t_right_paren .
-n_fieldInit : n_float64 t_left_paren n_int64 t_right_paren .
-n_fieldInit : n_int64 t_left_paren n_int64 t_right_paren .
-n_fieldInit : n_int32 t_left_paren n_int64 t_right_paren .
-n_fieldInit : t_int16 t_left_paren n_int64 t_right_paren .
-n_fieldInit : t_char t_left_paren n_int64 t_right_paren .
-n_fieldInit : t_int8 t_left_paren n_int64 t_right_paren .
+n_fieldInit : t_float64 t_left_paren n_float64 t_right_paren .
+n_fieldInit : t_float32 t_left_paren t_INT64 t_right_paren .
+n_fieldInit : t_float64 t_left_paren t_INT64 t_right_paren .
+n_fieldInit : t_int64 t_left_paren t_INT64 t_right_paren .
+n_fieldInit : t_int32 t_left_paren t_INT64 t_right_paren .
+n_fieldInit : t_int16 t_left_paren t_INT64 t_right_paren .
+n_fieldInit : t_char t_left_paren t_INT64 t_right_paren .
+n_fieldInit : t_int8 t_left_paren t_INT64 t_right_paren .
 n_fieldInit : t_bool t_left_paren n_truefalse t_right_paren .
 n_fieldInit : n_compQstring .
 n_fieldInit : n_bytearrayhead n_bytes t_right_paren .
@@ -1099,26 +1111,31 @@ n_filterHead : t_filter .
 n_finallyClause : t_finally .
 n_float64 : t_FLOAT64 .
 n_float64 : t_float32 t_left_paren n_int32 t_right_paren .
-n_float64 : n_float64 t_left_paren n_int64 t_right_paren .
-n_genArgs : n_type .
-n_genArgs : n_genArgs t_comma n_type .
+n_float64 : n_float64 t_left_paren t_INT64 t_right_paren .
+# n_genArgs is represented by an ArrayList of ReadType objects on the stack
+n_genArgs : n_type "m_StartList" .
+n_genArgs : n_genArgs t_comma n_type "m_AddToList" .
+n_genArgClause : .
+n_genArgClause : t_left_angle n_genArgs t_right_angle .
 n_genArity : .
 n_genArity : t_left_angle t_left_square n_int32 t_right_square t_right_angle .
-n_genClause : .
-n_genClause : t_left_angle n_genPars t_right_angle .
-n_genConstraints : n_type .
-n_genConstraints : n_genConstraints t_comma n_type .
-n_genPar : n_genParAttribs n_id .
-n_genPar : n_genParAttribs t_left_paren n_genConstraints t_right_paren n_id .
-n_genPars : n_genPar .
-n_genPars : n_genPars t_comma n_genPar .
-n_genParAttrib : t_plus .
-n_genParAttrib : t_minus .
-n_genParAttrib : t_class .
-n_genParAttrib : t_valuetype .
-n_genParAttrib : t_ctorDirective .
-n_genParAttribs : .
-n_genParAttribs : n_genParAttribs n_genParAttrib .
+n_genClause : "{ return new ArrayList(); }" .
+n_genClause : t_left_angle n_genPars t_right_angle "{ return valueStack.o_1(); }" .
+# Gen constraints is always represents by a list of ReadType objects
+n_genConstraints : n_type "m_StartList" .
+n_genConstraints : n_genConstraints t_comma n_type "m_AddToList" .
+n_genPar : n_genParAttribs n_id "{ return new GenericTypeParameter( valueStack.s_0(), new ArrayList(), valueStack.i_1()); }" .
+n_genPar : n_genParAttribs t_left_paren n_genConstraints t_right_paren n_id "{ return new GenericTypeParameter( valueStack.s_0(), (List)valueStack.o_2(), valueStack.i_n(4)); }" .
+# n_genPars is represented by a List of GenericTypeParameter objects
+n_genPars : n_genPar "m_StartList" .
+n_genPars : n_genPars t_comma n_genPar "m_AddToList" .
+n_genParAttrib : t_plus "new AttribOnStack( GenericTypeParameter.IS_COVARIANT)" .
+n_genParAttrib : t_minus "new AttribOnStack(GenericTypeParameter.IS_CONTRAVARIANT)" .
+n_genParAttrib : t_class "m_EmptyAttribute" .
+n_genParAttrib : t_valuetype "m_EmptyAttribute" .
+n_genParAttrib : t_ctorDirective "m_EmptyAttribute" .
+n_genParAttribs : "m_EmptyAttribute" .
+n_genParAttribs : n_genParAttribs n_genParAttrib "m_AddAttribute" .
 n_handlerBlock : n_scopeBlock .
 n_handlerBlock : t_handler n_id t_to n_id .
 n_handlerBlock : t_handler n_int32 t_to n_int32 .
@@ -1139,26 +1156,28 @@ n_implAttr : n_implAttr t_runtime .
 n_implAttr : n_implAttr t_internalcall .
 n_implAttr : n_implAttr t_synchronized .
 n_implAttr : n_implAttr t_noinlining .
-n_implClause : .
-n_implClause : t_implements n_classNames .
+# implClause is a possibly empty list of types
+n_implClause : "{ return new ArrayList(); }" .
+n_implClause : t_implements n_classNames "{ return valueStack.o_0(); }" .
 n_initOpt : .
 n_initOpt : t_equals n_fieldInit .
 n_instr : n_INSTR_NONE .
 n_instr : n_INSTR_VAR n_int32 .
 n_instr : n_INSTR_VAR n_id .
 n_instr : n_INSTR_I n_int32 .
-n_instr : n_INSTR_I8 n_int64 .
+n_instr : n_INSTR_I8 t_INT64 .
 n_instr : n_INSTR_R n_float64 .
-n_instr : n_INSTR_R n_int64 .
+n_instr : n_INSTR_R t_INT64 .
 n_instr : n_instr_r_head n_bytes t_right_paren .
 n_instr : n_INSTR_BRTARGET n_int32 .
 n_instr : n_INSTR_BRTARGET n_id .
-n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
-n_instr : n_INSTR_METHOD n_callConv n_type n_methodName n_sigArgs0 .
+n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName n_genArgClause n_sigArgs0 .
+n_instr : n_INSTR_METHOD n_callConv n_type n_methodName n_genArgClause n_sigArgs0 .
 n_instr : n_INSTR_FIELD n_type n_typeSpec t_member_op n_id .
-n_instr : n_INSTR_FIELD n_type n_id .
+# Below, the typespec is interpreted as a simple id
+n_instr : n_INSTR_FIELD n_type n_typeSpec .
 n_instr : n_INSTR_TYPE n_typeSpec .
-n_instr : n_INSTR_STRING n_compQstring .
+n_instr : n_INSTR_STRING n_compQstring "{ Driver(parser).addStringReference( valueStack.s_0()); return \"\"; }" .
 n_instr : n_INSTR_STRING n_bytearrayhead n_bytes t_right_paren .
 n_instr : n_INSTR_SIG n_callConv n_type n_sigArgs0 .
 n_instr : t_INSTR_RVA n_id .
@@ -1170,8 +1189,7 @@ n_instr_r_head : n_INSTR_R t_left_paren .
 n_instr_tok_head : n_INSTR_TOK .
 n_int16s : .
 n_int16s : n_int16s n_int32 .
-n_int32 : t_INT64 "m_TopObject" .
-n_int64 : t_INT64 "m_TopObject" .
+n_int32 : t_INT64 "{ return new Integer( ((Long)valueStack.o_0()).intValue()); }" .
 n_labels : .
 n_labels : n_id t_comma n_labels .
 n_labels : n_int32 t_comma n_labels .
@@ -1193,8 +1211,9 @@ n_manresAttr : n_manresAttr t_public .
 n_manresAttr : n_manresAttr t_private .
 n_memberRef : t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genClause n_sigArgs0 .
 n_memberRef : t_method n_callConv n_type n_methodName n_genClause n_sigArgs0 .
+# Below, the n_typeSpec is interpreted as a n_id
+n_memberRef : t_field n_type n_typeSpec .
 n_memberRef : t_field n_type n_typeSpec t_member_op n_id .
-n_memberRef : t_field n_type n_id .
 n_methAttr : .
 n_methAttr : n_methAttr t_static .
 n_methAttr : n_methAttr t_public .
@@ -1234,11 +1253,13 @@ n_methodDecl : t_exportDirective t_left_square n_int32 t_right_square .
 n_methodDecl : t_exportDirective t_left_square n_int32 t_right_square t_as n_id .
 n_methodDecl : t_vtentryDirective n_int32 t_colon n_int32 .
 n_methodDecl : t_overrideDirective n_typeSpec t_member_op n_methodName .
+n_methodDecl : t_overrideDirective t_method n_callConv n_type n_typeSpec t_member_op n_methodName n_genArity n_sigArgs0 .
 n_methodDecl : n_scopeBlock .
 n_methodDecl : t_paramDirective t_left_square n_int32 t_right_square n_initOpt .
 n_methodDecls : .
 n_methodDecls : n_methodDecls n_methodDecl .
 n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_DOTTEDNAME n_genClause n_sigArgs0 n_implAttr t_left_brace .
 n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
 n_methodHeadPart1 : t_methodDirective .
 n_methodName : t_ctorDirective "m_TopString" .
@@ -1248,7 +1269,7 @@ n_moduleHead : t_moduleDirective n_name1 .
 n_moduleHead : t_moduleDirective t_extern n_name1 .
 n_name1 : n_id "m_TopString" .
 n_name1 : t_DOTTEDNAME "m_TopString" .
-n_name1 : n_name1 t_period n_name1 "{ return valueStack.s_2() + \".\" + valueStack.s_0(); }" .
+n_name1 : n_name1 t_period n_name1 "m_StringConcat" .
 n_methodName : n_id "m_TopString" .
 n_nameSpaceHead : t_namespaceDirective n_name1 .
 n_nameValPair : n_compQstring t_equals n_caValue .
@@ -1266,15 +1287,15 @@ n_nativeType : t_void .
 n_nativeType : t_bool .
 n_nativeType : t_int8 .
 n_nativeType : t_int16 .
-n_nativeType : n_int32 .
-n_nativeType : n_int64 .
+n_nativeType : t_int32 .
+n_nativeType : t_int64 .
 n_nativeType : t_float32 .
-n_nativeType : n_float64 .
+n_nativeType : t_float64 .
 n_nativeType : t_error .
 n_nativeType : t_unsigned t_int8 .
 n_nativeType : t_unsigned t_int16 .
-n_nativeType : t_unsigned n_int32 .
-n_nativeType : t_unsigned n_int64 .
+n_nativeType : t_unsigned t_int32 .
+n_nativeType : t_unsigned t_int64 .
 n_nativeType : n_nativeType t_asterisk .
 n_nativeType : n_nativeType t_left_square t_right_square .
 n_nativeType : n_nativeType t_left_square n_int32 t_right_square .
@@ -1305,7 +1326,7 @@ n_nativeType : t_as t_any .
 n_nativeType : t_lpstruct .
 n_ownerType : n_typeSpec .
 n_ownerType : n_memberRef .
-n_sigArgs0 : t_left_paren t_right_paren .
+n_sigArgs0 : t_left_paren t_right_paren "{ return new Signature(); }" .
 n_paramAttr : .
 n_paramAttr : n_paramAttr t_left_square t_in t_right_square .
 n_paramAttr : n_paramAttr t_left_square t_out t_right_square .
@@ -1336,7 +1357,7 @@ n_propDecl : n_extSourceSpec .
 n_propDecl : n_languageDecl .
 n_propDecls : .
 n_propDecls : n_propDecls n_propDecl .
-n_propHead : t_propertyDirective n_propAttr n_callConv n_type n_id n_sigArgs0 n_initOpt .
+n_propHead : t_propertyDirective n_propAttr n_callConv n_type n_name1 n_sigArgs0 n_initOpt .
 n_psetHead : t_permissionsetDirective n_secAction t_equals t_left_paren .
 n_publicKeyHead : t_publickeyDirective t_equals t_left_paren .
 n_publicKeyTokenHead : t_publickeytokenDirective t_equals t_left_paren .
@@ -1377,8 +1398,8 @@ n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren 
 n_sigArgs0 : t_left_paren n_sigArgs1 t_right_paren .
 n_sigArgs1 : n_sigArg .
 n_sigArgs1 : n_sigArgs1 t_comma n_sigArg .
-n_slashedName : n_name1 .
-n_slashedName : n_slashedName t_slash n_name1 .
+n_slashedName : n_name1 "m_TopString" .
+n_slashedName : n_slashedName t_slash n_name1 "m_StringConcat" .
 n_tlsSpec : .
 n_tlsSpec : t_tls .
 n_truefalse : t_true .
@@ -1387,43 +1408,46 @@ n_tryBlock : n_tryHead n_scopeBlock .
 n_tryBlock : n_tryHead n_id t_to n_id .
 n_tryBlock : n_tryHead n_int32 t_to n_int32 .
 n_tryHead : t_tryDirective .
-n_type : t_class n_className .
-n_type : t_object .
-n_type : t_string .
-n_type : t_value t_class n_className .
-n_type : t_valuetype n_className .
-n_type : n_type t_left_square t_right_square .
-n_type : n_type t_left_square n_bounds1 t_right_square .
-n_type : n_type t_ampersand .
-n_type : n_type t_asterisk .
-n_type : n_type t_left_angle n_genArgs t_right_angle .
-n_type : n_type t_pinned .
-n_type : n_type t_modreq t_left_paren n_className t_right_paren .
-n_type : n_type t_modopt t_left_paren n_className t_right_paren .
-n_type : t_exclamation n_int32 .
-n_type : t_exclamation t_exclamation n_int32 .
-n_type : t_method n_callConv n_type t_asterisk n_sigArgs0 .
-n_type : t_typedref .
-n_type : t_char .
-n_type : t_void .
-n_type : t_bool .
-n_type : t_int8 .
-n_type : t_int16 .
-n_type : t_int32 .
-n_type : t_int64 .
-n_type : t_float32 .
-n_type : t_float64 .
-n_type : t_unsigned t_int8 .
-n_type : t_unsigned t_int16 .
-n_type : t_unsigned t_int32 .
-n_type : t_unsigned t_int64 .
-n_type : t_native t_int .
-n_type : t_native t_unsigned t_int .
-n_type : t_native t_float .
-n_typeSpec : n_className .
-n_typeSpec : t_left_square n_name1 t_right_square .
-n_typeSpec : t_left_square t_moduleDirective n_name1 t_right_square .
-n_typeSpec : n_type .
+# Every n_type is represented by a ReadType in the value stack
+n_type : t_class n_className "m_BasicType" .
+n_type : t_object "m_BasicType" .
+n_type : t_string "m_BasicType" .
+n_type : t_value t_class n_className "m_BasicType" .
+n_type : t_valuetype n_className "m_BasicType" .
+n_type : n_type t_left_square t_right_square "{ return new ReadArray( (ReadType)valueStack.o_2(), 1); }" .
+n_type : n_type t_left_square n_bounds1 t_right_square "{ return new ReadArray( (ReadType)valueStack.o_n(3), valueStack.i_1());}" .
+n_type : n_type t_ampersand "{ return (ReadType)valueStack.o_1(); }" .
+n_type : n_type t_asterisk "{ return (ReadType)valueStack.o_1(); }" .
+n_type : n_type t_left_angle n_genArgs t_right_angle "{ return new ParameterizedReadType( valueStack.o_n(3).toString(), (List)valueStack.o_1()); }" .
+n_type : n_type t_pinned "{ return (ReadType)valueStack.o_1(); }" .
+n_type : n_type t_modreq t_left_paren n_className t_right_paren "{ return valueStack.o_n(4); }" .
+n_type : n_type t_modopt t_left_paren n_className t_right_paren "{ return valueStack.o_n(4); }" .
+n_type : t_exclamation n_int32 "{ return new GenericArgRef( valueStack.i_0(), false); }" .
+n_type : t_exclamation t_exclamation n_int32 "{ return new GenericArgRef( valueStack.i_0(), true); }" .
+n_type : t_exclamation n_id "{ return new GenericArgRef( valueStack.s_0(), false); }" .
+n_type : t_exclamation t_exclamation n_id "{ return new GenericArgRef( valueStack.s_0(), true); }" .
+n_type : t_method n_callConv n_type t_asterisk n_sigArgs0 "{ return new BasicType(\"METHOD_PTR\"); }" .
+n_type : t_typedref "m_BasicType" .
+n_type : t_char "m_BasicType" .
+n_type : t_void "m_BasicType" .
+n_type : t_bool "m_BasicType" .
+n_type : t_int8 "m_BasicType" .
+n_type : t_int16 "m_BasicType" .
+n_type : t_int32 "m_BasicType" .
+n_type : t_int64 "m_BasicType" .
+n_type : t_float32 "m_BasicType" .
+n_type : t_float64 "m_BasicType" .
+n_type : t_unsigned t_int8 "m_BasicType2Words" .
+n_type : t_unsigned t_int16 "m_BasicType2Words" .
+n_type : t_unsigned t_int32 "m_BasicType2Words" .
+n_type : t_unsigned t_int64 "m_BasicType2Words" .
+n_type : t_native t_int "m_BasicType2Words" .
+n_type : t_native t_unsigned t_int "{ return new BasicType( valueStack.s_2()+\" \"+valueStack.s_1()+\" \"+valueStack.s_0()); }" .
+n_type : t_native t_float "m_BasicType2Words" .
+n_typeSpec : n_className "m_BasicType" .
+n_typeSpec : t_left_square n_name1 t_right_square "{ return new BasicType( valueStack.s_1()); }" .
+n_typeSpec : t_left_square t_moduleDirective n_name1 t_right_square "{ return new BasicType( valueStack.s_1()); }" .
+n_typeSpec : n_type "{ return valueStack.o_0(); }" .
 n_variantType : .
 n_variantType : t_null .
 n_variantType : t_variant .
@@ -1432,14 +1456,14 @@ n_variantType : t_void .
 n_variantType : t_bool .
 n_variantType : t_int8 .
 n_variantType : t_int16 .
-n_variantType : n_int32 .
-n_variantType : n_int64 .
+n_variantType : t_int32 .
+n_variantType : t_int64 .
 n_variantType : t_float32 .
-n_variantType : n_float64 .
+n_variantType : t_float64 .
 n_variantType : t_unsigned t_int8 .
 n_variantType : t_unsigned t_int16 .
-n_variantType : t_unsigned n_int32 .
-n_variantType : t_unsigned n_int64 .
+n_variantType : t_unsigned t_int32 .
+n_variantType : t_unsigned t_int64 .
 n_variantType : t_asterisk .
 n_variantType : n_variantType t_left_square t_right_square .
 n_variantType : n_variantType t_vector .
@@ -1471,8 +1495,8 @@ n_variantType : t_clsid .
 n_vtableDecl : n_vtableHead n_bytes t_right_paren .
 n_vtableHead : t_vtableDirective t_equals t_left_paren .
 n_vtfixupAttr : .
-n_vtfixupAttr : n_vtfixupAttr n_int32 .
-n_vtfixupAttr : n_vtfixupAttr n_int64 .
+n_vtfixupAttr : n_vtfixupAttr t_int32 .
+n_vtfixupAttr : n_vtfixupAttr t_int64 .
 n_vtfixupAttr : n_vtfixupAttr t_fromunmanaged .
 n_vtfixupAttr : n_vtfixupAttr t_callmostderived .
 n_vtfixupDecl : t_vtfixupDirective t_left_square n_int32 t_right_square n_vtfixupAttr t_at n_id .

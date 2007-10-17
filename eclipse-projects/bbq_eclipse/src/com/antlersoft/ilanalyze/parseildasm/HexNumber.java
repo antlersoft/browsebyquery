@@ -63,6 +63,12 @@ class HexNumber extends LexStateBase {
 	{
 		try
 		{
+			if ( m_sb.length()==16 && m_sb.charAt(0)>'7')
+			{
+				// Large negative number
+				m_reader.processToken(IldasmParser.t_INT64, new Long(0));
+				return;
+			}
 			long val=Long.parseLong( m_sb.toString(), 16);
 			m_reader.processToken(IldasmParser.t_INT64, new Long(val));
 		}

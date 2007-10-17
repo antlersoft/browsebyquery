@@ -73,7 +73,7 @@
             class="com.antlersoft.bbq_eclipse.views.SavedView"
             icon="icons/weber.gif"
             id="com.antlersoft.bbq_eclipse.views.SavedView"
-            name="Browse-by-Query User-Defined Items"/>
+            name="User-Set BBQ"/>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">

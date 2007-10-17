@@ -97,7 +97,7 @@ class PunctuationState extends LexWithSymbolTree {
 	
 	private static boolean isOp( char c)
 	{
-		return ! CharClass.isIDPart(c) && ! CharClass.isWhiteSpace(c) && c!='\032' && c!='\000';
+		return ! CharClass.isIDPart(c) && ! CharClass.isWhiteSpace(c) && c!='\032' && c!='\000' && c!='"' && c!='\'' && c!='/';
 	}
 
 	/* (non-Javadoc)

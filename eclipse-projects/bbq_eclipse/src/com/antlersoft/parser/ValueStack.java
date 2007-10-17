@@ -62,6 +62,16 @@ public class ValueStack extends ArrayList {
 	{
 		return get(size()-3);
 	}
+	
+	/**
+	 * Get object at arbitrary stack depth
+	 * @param n How deep in the stack (top is 0)
+	 * @return Object at nth depth
+	 */
+	public final Object o_n( int n)
+	{
+		return get(size()-(n+1));
+	}
 
 	/**
 	 * Returns the string at the top of the stack. 
@@ -88,4 +98,51 @@ public class ValueStack extends ArrayList {
 	{
 		return (String)get( size()-3);
 	}
+
+	/**
+	 * Get String at arbitrary stack depth
+	 * @param n How deep in the stack (top is 0)
+	 * @return String at nth depth
+	 */
+	public final String s_n( int n)
+	{
+		return (String)get(size()-(n+1));
+	}
+
+	/**
+	 * Returns the int at the top of the stack. 
+	 */
+	public final int i_0()
+	{
+		return ((Integer)get( size()-1)).intValue();
+	}
+
+	/**
+	 * 
+	 * @return int 1 deep in stack
+	 */
+	public final int i_1()
+	{
+		return ((Integer)get( size()-2)).intValue();
+	}
+	
+	/**
+	 * 
+	 * @return int 2 deep in stack
+	 */
+	public final int i_2()
+	{
+		return ((Integer)get( size()-3)).intValue();
+	}
+
+	/**
+	 * Get int at arbitrary stack depth
+	 * @param n How deep in the stack (top is 0)
+	 * @return int at nth depth
+	 */
+	public final int i_n( int n)
+	{
+		return ((Integer)get( size()-(n+1))).intValue();
+	}
+
 }

@@ -50,6 +50,16 @@ class EscapeInStringState extends LexStateBase {
 			m_sb.append('\\');
 			return m_parent;
 		}
+		if ( c=='\'' || c=='"')
+		{
+			m_sb.append(c);
+			return m_parent;
+		}
+		if ( c=='r')
+		{
+			m_sb.append('\r');
+			return m_parent;
+		}
 		StringBuilder excep_builder=new StringBuilder( "bad escaped character in string: \"");
 		excep_builder.append( m_sb.toString());
 		excep_builder.append( "\":");

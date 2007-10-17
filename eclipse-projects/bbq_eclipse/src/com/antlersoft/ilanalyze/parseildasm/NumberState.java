@@ -71,8 +71,8 @@ class NumberState extends LexStateBase {
 	{
 		try
 		{
-			int value=Integer.parseInt( m_sb.toString());
-			m_reader.processToken( IldasmParser.t_INT64, new Integer(value));
+			long value=Long.parseLong( m_sb.toString());
+			m_reader.processToken( IldasmParser.t_INT64, new Long(value));
 		}
 		catch (NumberFormatException nfe)
 		{

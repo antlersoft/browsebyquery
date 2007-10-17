@@ -14,10 +14,13 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 import com.antlersoft.ilanalyze.DBDriver;
+import com.antlersoft.ilanalyze.LoggingDBDriver;
 
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.Symbol;
@@ -76,14 +79,16 @@ public class IldasmReader {
 		{
 			for ( int i=reader.read(); i>=0; i=reader.read())
 			{
+				if ( i>256)
+					continue;
 				char c=(char)i;
+				m_line.append(c);
+				state=state.nextCharacter(c);
 				if ( c=='\n')
 				{
 					m_line_count++;
 					m_line.setLength(0);
 				}
-				else
-					m_line.append(c);
 			}
 			state.endOfFile();
 			logger.fine( "lines read: "+m_line_count);
@@ -104,11 +109,15 @@ public class IldasmReader {
 	void processToken( Symbol symbol, Object value) throws RuleActionException
 	{
 		m_expected=null;
+		if ( logger.isLoggable(Level.FINEST))
+			logger.finest("Parsing "+value.toString());
 		if ( m_parser.parse(symbol, value))
 		{
 			String message=m_parser.getRuleMessage();
 			if ( message==null)
-				message="Parsing error";
+			{
+				message="Parsing error parsing "+symbol.toString()+": '"+value.toString()+"'";
+			}
 			throw new RuleActionException(message);
 		}
 	}
@@ -178,6 +187,6 @@ public class IldasmReader {
 	
 	public static void main( String[] args) throws Exception
 	{
-		new IldasmReader().sendFileToDriver( new File(args[0]), null);
+		new IldasmReader().sendFileToDriver( new File(args[0]), new LoggingDBDriver());
 	}
 }

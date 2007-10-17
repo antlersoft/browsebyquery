@@ -21,10 +21,14 @@ package com.antlersoft.parser;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public abstract class Parser
 {
+	Logger logger=Logger.getLogger(Parser.class.getName());
+	
     // Public interface
 	public static int max_recovery=3;
 	public static Symbol _end_=Symbol.get( "_end");
@@ -68,6 +72,10 @@ public abstract class Parser
 							++recovery_count;
 							if ( recovery_count>max_recovery)
 							   recovery_count=0;
+						}
+						if ( logger.isLoggable(Level.FINEST))
+						{
+							logger.finest( "Shift to "+cur.shift_rules[sri].state_index);
 						}
 						cur=parse_states[cur.shift_rules[sri].state_index];
 						state_stack.add( cur);
@@ -204,6 +212,10 @@ public abstract class Parser
 			throw new IllegalStateException(
 				"Reduced symbol not found in goto list");
 
+		if ( logger.isLoggable(Level.FINEST))
+		{
+			logger.finest( "Reduce "+cur.reduce_rule.states_to_pop+" and go to state "+next.goto_rules[i].state_index);
+		}
 		if ( cur.reduce_rule.reduce_action!=null)
 		{
 			Object to_push=cur.reduce_rule.reduce_action.ruleFire( this, getValueStack());

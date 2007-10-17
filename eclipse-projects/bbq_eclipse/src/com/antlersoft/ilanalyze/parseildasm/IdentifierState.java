@@ -61,7 +61,10 @@ public class IdentifierState extends LexStateBase {
 			m_reader.processToken(symbol, value);
 		else
 		{
-			m_reader.processToken( value.indexOf('.')== -1 ? IldasmParser.t_ID : IldasmParser.t_DOTTEDNAME, value);
+			Symbol id_symbol=IldasmParser.t_ID;
+			if ( value.indexOf('.')!= -1 && m_reader.expectedReserved(IldasmParser.t_DOTTEDNAME.toString())!=null)
+					id_symbol=IldasmParser.t_DOTTEDNAME;
+			m_reader.processToken( id_symbol, value);
 		}
 	}
 }
