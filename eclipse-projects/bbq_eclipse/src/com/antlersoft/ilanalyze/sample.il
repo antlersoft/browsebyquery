@@ -543,4 +543,3 @@
 
 // *********** DISASSEMBLY COMPLETE ***********************
 // WARNING: Created Win32 resource file z:\sample.res
- ×´ö«·M5ÓP¼Ó^A:pö

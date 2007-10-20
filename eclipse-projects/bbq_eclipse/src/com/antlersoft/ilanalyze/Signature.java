@@ -5,6 +5,7 @@ package com.antlersoft.ilanalyze;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -39,4 +40,18 @@ public class Signature {
 	 * @return Return type of the method for which this is the signature
 	 */
 	public ReadType getReturnType() { return m_return_type; }
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuilder sb=new StringBuilder();
+		sb.append( '(');
+		LoggingDBDriver.formatList(sb, m_arguments);
+		sb.append( ')');
+		sb.append( m_return_type.toString());
+		return sb.toString();
+	}
+	
+
 }

@@ -658,12 +658,12 @@ n_INSTR_BRTARGET : t_brzero .
 n_INSTR_BRTARGET : t_brzero_s .
 n_INSTR_BRTARGET : t_brinst .
 n_INSTR_BRTARGET : t_brinst_s .
-n_INSTR_FIELD : t_ldfld .
-n_INSTR_FIELD : t_ldflda .
-n_INSTR_FIELD : t_stfld .
-n_INSTR_FIELD : t_ldsfld .
-n_INSTR_FIELD : t_ldsflda .
-n_INSTR_FIELD : t_stsfld .
+n_INSTR_FIELD : t_ldfld "m_TopString" .
+n_INSTR_FIELD : t_ldflda "m_TopString" .
+n_INSTR_FIELD : t_stfld "m_TopString" .
+n_INSTR_FIELD : t_ldsfld "m_TopString" .
+n_INSTR_FIELD : t_ldsflda "m_TopString" .
+n_INSTR_FIELD : t_stsfld "m_TopString" .
 n_INSTR_I : t_ldc_i4_s .
 n_INSTR_I : t_ldc_i4 .
 n_INSTR_I : t_unaligned_ .
@@ -943,7 +943,7 @@ n_classAttr : n_classAttr t_nested t_famorassem "new AttribAddToStack2(DBDriver.
 n_classAttr : n_classAttr t_beforefieldinit "m_AddIgnoredAttrib" .
 n_classAttr : n_classAttr t_specialname "m_AddIgnoredAttrib" .
 n_classAttr : n_classAttr t_rtspecialname "m_AddIgnoredAttrib" .
-n_classDecl : n_methodHead n_methodDecls t_right_brace .
+n_classDecl : n_methodHead n_methodDecls t_right_brace "{ Driver(parser).endMethod(); return null; }" .
 n_classDecl : n_classHead t_left_brace n_classDecls t_right_brace "{ Driver(parser).endClass(); return \"\"; }" .
 n_classDecl : n_eventHead t_left_brace n_eventDecls t_right_brace .
 n_classDecl : n_propHead t_left_brace n_propDecls t_right_brace .
@@ -1019,8 +1019,8 @@ n_ddItemCount : t_left_square n_int32 t_right_square .
 n_ddItemList : n_ddItem t_comma n_ddItemList .
 n_ddItemList : n_ddItem .
 n_decl : n_classHead t_left_brace n_classDecls t_right_brace "{ Driver(parser).endClass(); return \"\"; }" .
-n_decl : n_nameSpaceHead t_left_brace n_decls t_right_brace .
-n_decl : n_methodHead n_methodDecls t_right_brace .
+n_decl : n_nameSpaceHead t_left_brace n_decls t_right_brace "{ Driver(parser).endNamespace(); return \"\"; }" .
+n_decl : n_methodHead n_methodDecls t_right_brace "{ Driver(parser).endMethod(); return \"\"; }" .
 n_decl : n_fieldDecl .
 n_decl : n_dataDecl .
 n_decl : n_vtableDecl .
@@ -1116,8 +1116,8 @@ n_float64 : n_float64 t_left_paren t_INT64 t_right_paren .
 # n_genArgs is represented by an ArrayList of ReadType objects on the stack
 n_genArgs : n_type "m_StartList" .
 n_genArgs : n_genArgs t_comma n_type "m_AddToList" .
-n_genArgClause : .
-n_genArgClause : t_left_angle n_genArgs t_right_angle .
+n_genArgClause : "{ return new ArrayList(); }" .
+n_genArgClause : t_left_angle n_genArgs t_right_angle "{ return valueStack.o_1(); }" .
 n_genArity : .
 n_genArity : t_left_angle t_left_square n_int32 t_right_square t_right_angle .
 n_genClause : "{ return new ArrayList(); }" .
@@ -1172,11 +1172,11 @@ n_instr : n_INSTR_R t_INT64 .
 n_instr : n_instr_r_head n_bytes t_right_paren .
 n_instr : n_INSTR_BRTARGET n_int32 .
 n_instr : n_INSTR_BRTARGET n_id .
-n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName n_genArgClause n_sigArgs0 .
-n_instr : n_INSTR_METHOD n_callConv n_type n_methodName n_genArgClause n_sigArgs0 .
-n_instr : n_INSTR_FIELD n_type n_typeSpec t_member_op n_id .
+n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName n_genArgClause n_sigArgs0 "{ Signature sig=(Signature)valueStack.o_0(); sig.setReturnType( (ReadType)valueStack.o_n(5)); Driver(parser).addMethodCall( (ReadType)valueStack.o_n(4), valueStack.s_2(), (List)valueStack.o_1(), sig); return null; }" .
+n_instr : n_INSTR_METHOD n_callConv n_type n_methodName n_genArgClause n_sigArgs0 "{ Signature sig=(Signature)valueStack.o_0(); sig.setReturnType( (ReadType)valueStack.o_n(3)); Driver(parser).addMethodCall( null, valueStack.s_2(), (List)valueStack.o_1(), sig); return null; }" .
+n_instr : n_INSTR_FIELD n_type n_typeSpec t_member_op n_id "{ Driver(parser).addFieldReference( (ReadType)valueStack.o_2(), (ReadType)valueStack.o_n(3), valueStack.s_0(), valueStack.s_n(4).startsWith(\"st\")); return null; }" .
 # Below, the typespec is interpreted as a simple id
-n_instr : n_INSTR_FIELD n_type n_typeSpec .
+n_instr : n_INSTR_FIELD n_type n_typeSpec "{ Driver(parser).addFieldReference( null, (ReadType)valueStack.o_1(), valueStack.o_0().toString(), valueStack.s_2().startsWith(\"st\")); return null; }".
 n_instr : n_INSTR_TYPE n_typeSpec .
 n_instr : n_INSTR_STRING n_compQstring "{ Driver(parser).addStringReference( valueStack.s_0()); return \"\"; }" .
 n_instr : n_INSTR_STRING n_bytearrayhead n_bytes t_right_paren .
@@ -1215,27 +1215,27 @@ n_memberRef : t_method n_callConv n_type n_methodName n_genClause n_sigArgs0 .
 # Below, the n_typeSpec is interpreted as a n_id
 n_memberRef : t_field n_type n_typeSpec .
 n_memberRef : t_field n_type n_typeSpec t_member_op n_id .
-n_methAttr : .
-n_methAttr : n_methAttr t_static .
-n_methAttr : n_methAttr t_public .
-n_methAttr : n_methAttr t_private .
-n_methAttr : n_methAttr t_family .
-n_methAttr : n_methAttr t_final .
-n_methAttr : n_methAttr t_specialname .
-n_methAttr : n_methAttr t_virtual .
-n_methAttr : n_methAttr t_abstract .
-n_methAttr : n_methAttr t_assembly .
-n_methAttr : n_methAttr t_famandassem .
-n_methAttr : n_methAttr t_famorassem .
-n_methAttr : n_methAttr t_privatescope .
-n_methAttr : n_methAttr t_hidebysig .
-n_methAttr : n_methAttr t_newslot .
-n_methAttr : n_methAttr t_rtspecialname .
-n_methAttr : n_methAttr t_unmanagedexp .
-n_methAttr : n_methAttr t_reqsecobj .
-n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring t_as n_compQstring n_pinvAttr t_right_paren .
-n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring n_pinvAttr t_right_paren .
-n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_pinvAttr t_right_paren .
+n_methAttr : "m_EmptyAttribute" .
+n_methAttr : n_methAttr t_static "new AttribAddToStack( DBDriver.IS_STATIC)" .
+n_methAttr : n_methAttr t_public "new AttribAddToStack( DBDriver.IS_PUBLIC)" .
+n_methAttr : n_methAttr t_private "new AttribAddToStack(DBDriver.IS_PRIVATE)" .
+n_methAttr : n_methAttr t_family "new AttribAddToStack(DBDriver.IS_FAMILY)" .
+n_methAttr : n_methAttr t_final "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_specialname "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_virtual "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_abstract "new AttribAddToStack(DBDriver.IS_ABSTRACT)" .
+n_methAttr : n_methAttr t_assembly "new AttribAddToStack(DBDriver.IS_ASSEMBLY)" .
+n_methAttr : n_methAttr t_famandassem "new AttribAddToStack(DBDriver.IS_FAMANDASSEM)" .
+n_methAttr : n_methAttr t_famorassem "new AttribAddToStack(DBDriver.IS_FAMORASSEM)" .
+n_methAttr : n_methAttr t_privatescope "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_hidebysig "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_newslot "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_rtspecialname "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_unmanagedexp "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_reqsecobj "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring t_as n_compQstring n_pinvAttr t_right_paren "{ return new Integer( valueStack.i_n(7)); }" .
+n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring n_pinvAttr t_right_paren "{ return new Integer( valueStack.i_n(5)); }" .
+n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_pinvAttr t_right_paren "{ return new Integer( valueStack.i_n(4)); }" .
 n_methodDecl : t_emitbyteDirective n_int32 .
 n_methodDecl : n_sehBlock .
 n_methodDecl : t_maxstackDirective n_int32 .
@@ -1259,20 +1259,21 @@ n_methodDecl : n_scopeBlock .
 n_methodDecl : t_paramDirective t_left_square n_int32 t_right_square n_initOpt .
 n_methodDecls : .
 n_methodDecls : n_methodDecls n_methodDecl .
-n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
-n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_DOTTEDNAME n_genClause n_sigArgs0 n_implAttr t_left_brace .
-n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace "m_StartMethod" .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_DOTTEDNAME n_genClause n_sigArgs0 n_implAttr t_left_brace "m_StartMethod" .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_methodName n_genClause n_sigArgs0 n_implAttr t_left_brace "m_StartMarshalMethod" .
+n_methodHead : n_methodHeadPart1 n_methAttr n_callConv n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren t_DOTTEDNAME n_genClause n_sigArgs0 n_implAttr t_left_brace "m_StartMarshalMethod" .
 n_methodHeadPart1 : t_methodDirective .
 n_methodName : t_ctorDirective "m_TopString" .
 n_methodName : t_cctorDirective "m_TopString" .
 n_moduleHead : t_moduleDirective .
-n_moduleHead : t_moduleDirective n_name1 .
+n_moduleHead : t_moduleDirective n_name1 "{ Driver(parser).startModule( valueStack.s_0()); return valueStack.s_0(); }" .
 n_moduleHead : t_moduleDirective t_extern n_name1 .
 n_name1 : n_id "m_TopString" .
 n_name1 : t_DOTTEDNAME "m_TopString" .
 n_name1 : n_name1 t_period n_name1 "m_StringConcat" .
 n_methodName : n_id "m_TopString" .
-n_nameSpaceHead : t_namespaceDirective n_name1 .
+n_nameSpaceHead : t_namespaceDirective n_name1 "{ Driver(parser).startNamespace( valueStack.s_0()); return \"\"; }" .
 n_nameValPair : n_compQstring t_equals n_caValue .
 n_nameValPairs : n_nameValPair .
 n_nameValPairs : n_nameValPair t_comma n_nameValPairs .
@@ -1391,14 +1392,14 @@ n_sehClause : n_finallyClause n_handlerBlock .
 n_sehClause : n_faultClause n_handlerBlock .
 n_sehClauses : n_sehClause n_sehClauses .
 n_sehClauses : n_sehClause .
-n_sigArg : t_ellipsis .
-n_sigArg : n_paramAttr n_type .
-n_sigArg : n_paramAttr n_type n_id .
-n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren .
-n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_id .
-n_sigArgs0 : t_left_paren n_sigArgs1 t_right_paren .
-n_sigArgs1 : n_sigArg .
-n_sigArgs1 : n_sigArgs1 t_comma n_sigArg .
+n_sigArg : t_ellipsis "{ return new ReadArg(); }" .
+n_sigArg : n_paramAttr n_type "{ return new ReadArg( (ReadType)valueStack.o_0()); }" .
+n_sigArg : n_paramAttr n_type n_id "{ return new ReadArg( (ReadType)valueStack.o_1(), valueStack.s_0()); }" .
+n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren "{ return new ReadArg( (ReadType)valueStack.o_n(4)); }" .
+n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren n_id "{ return new ReadArg( (ReadType)valueStack.o_n(5), valueStack.s_0()); }" .
+n_sigArgs0 : t_left_paren n_sigArgs1 t_right_paren "{ return valueStack.o_1(); }" .
+n_sigArgs1 : n_sigArg "{ Signature result=new Signature(); result.addArgument( (ReadArg)valueStack.o_0()); return result; }" .
+n_sigArgs1 : n_sigArgs1 t_comma n_sigArg "{ Signature result=((Signature)valueStack.o_2()); result.addArgument( (ReadArg)valueStack.o_0()); return result; }" .
 n_slashedName : n_name1 "m_TopString" .
 n_slashedName : n_slashedName t_slash n_name1 "m_StringConcat" .
 n_tlsSpec : .

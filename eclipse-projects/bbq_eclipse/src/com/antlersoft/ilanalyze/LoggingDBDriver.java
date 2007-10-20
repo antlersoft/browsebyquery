@@ -3,6 +3,8 @@
  */
 package com.antlersoft.ilanalyze;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import java.util.logging.Logger;
@@ -13,24 +15,58 @@ import java.util.logging.Logger;
  */
 public class LoggingDBDriver implements DBDriver {
 	
-	Logger logger=Logger.getLogger(LoggingDBDriver.class.getName());
+	static Logger logger=Logger.getLogger(LoggingDBDriver.class.getName());
+	
+	private DBDriver m_nested;
+	
+	public LoggingDBDriver()
+	{
+		m_nested=null;
+	}
+	
+	public LoggingDBDriver( DBDriver nested)
+	{
+		m_nested=nested;
+	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#addFieldReference(com.antlersoft.ilanalyze.ReadType, com.antlersoft.ilanalyze.ReadType, java.lang.String, boolean)
 	 */
 	public void addFieldReference(ReadType containing_type,
 			ReadType field_type, String name, boolean is_write) {
-		// TODO Auto-generated method stub
-
+		StringBuilder sb=new StringBuilder();
+		if ( is_write)
+			sb.append( "Write");
+		else
+			sb.append( "Read");
+		sb.append( " reference to ");
+		if ( containing_type==null)
+			sb.append( "(containing type)");
+		else
+			sb.append( containing_type.toString());
+		sb.append('.');
+		sb.append( name);
+		sb.append(" with type ");
+		sb.append( field_type.toString());
+		logger.fine( sb.toString());
+		if ( m_nested!=null)
+			m_nested.addFieldReference(containing_type, field_type, name, is_write);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#addMethodCall(com.antlersoft.ilanalyze.ReadType, java.lang.String, com.antlersoft.ilanalyze.Signature)
 	 */
-	public void addMethodCall(ReadType containing_type, String method_name,
+	public void addMethodCall(ReadType containing_type, String method_name, List genericArgs,
 			Signature sig) {
-		// TODO Auto-generated method stub
-
+		StringBuilder sb=new StringBuilder("Call to ");
+		sb.append( containing_type==null ? "(containing type)" : containing_type.toString());
+		sb.append( '.');
+		sb.append( method_name);
+		formatGenericParams( sb, genericArgs);
+		sb.append( sig.toString());
+		logger.fine( sb.toString());
+		if ( m_nested!=null)
+			m_nested.addMethodCall(containing_type, method_name, genericArgs, sig);
 	}
 
 	/* (non-Javadoc)
@@ -38,6 +74,8 @@ public class LoggingDBDriver implements DBDriver {
 	 */
 	public void addStringReference(String referenced) {
 		logger.fine( "Reference to \""+referenced+"\"");
+		if ( m_nested!=null)
+			m_nested.addStringReference(referenced);
 	}
 
 	/* (non-Javadoc)
@@ -45,6 +83,8 @@ public class LoggingDBDriver implements DBDriver {
 	 */
 	public void endClass() {
 		logger.fine( "End class");
+		if ( m_nested!=null)
+			m_nested.endClass();
 	}
 
 	/* (non-Javadoc)
@@ -52,6 +92,8 @@ public class LoggingDBDriver implements DBDriver {
 	 */
 	public void setFileAndLine(String name, int line) {
 		logger.fine( "File: "+name+" line: "+line);
+		if ( m_nested!=null)
+			m_nested.setFileAndLine(name, line);
 	}
 
 	/* (non-Javadoc)
@@ -59,6 +101,8 @@ public class LoggingDBDriver implements DBDriver {
 	 */
 	public void startAssembly(String name) {
 		logger.fine( "Start assembly: "+name);
+		if ( m_nested!=null)
+			m_nested.startAssembly(name);
 	}
 
 	/* (non-Javadoc)
@@ -66,7 +110,23 @@ public class LoggingDBDriver implements DBDriver {
 	 */
 	public void startClass(String className, List genericParams,
 			int properties, ReadType extendsType, List implementsList) {
-		logger.fine( "Start class: "+className);
+		StringBuilder sb=new StringBuilder();
+		sb.append( "Start class: ");
+		sb.append( className);
+		sb.append(' ');
+		sb.append( properties);
+		sb.append(' ');
+		formatGenericParams( sb, genericParams);
+		sb.append( " extends ");
+		sb.append( extendsType.toString());
+		if ( implementsList.size()>0)
+		{
+			sb.append( " implements ");
+			formatList( sb, implementsList);
+		}
+		logger.fine( sb.toString());
+		if ( m_nested!=null)
+			m_nested.startClass(className, genericParams, properties, extendsType, implementsList);
 	}
 
 	/* (non-Javadoc)
@@ -74,24 +134,76 @@ public class LoggingDBDriver implements DBDriver {
 	 */
 	public void startMethod(String name, List genericParams,
 			Signature signature, int properties) {
-		// TODO Auto-generated method stub
-
+		StringBuilder sb=new StringBuilder();
+		sb.append( "Start method: ");
+		sb.append( name);
+		sb.append(' ');
+		sb.append( properties);
+		sb.append(' ');
+		formatGenericParams( sb, genericParams);
+		sb.append( signature.toString());
+		logger.fine( sb.toString());
+		if ( m_nested!=null)
+			m_nested.startMethod(name, genericParams, signature, properties);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#startModule(java.lang.String)
 	 */
 	public void startModule(String name) {
-		// TODO Auto-generated method stub
-
+		logger.fine( "Start module: "+name);
+		if ( m_nested!=null)
+			m_nested.startModule(name);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#startNamespace(java.lang.String)
 	 */
 	public void startNamespace(String name) {
-		// TODO Auto-generated method stub
+		logger.fine( "Start namespace: "+name);
+		if ( m_nested!=null)
+			m_nested.startNamespace(name);
+	}
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#endMethod()
+	 */
+	public void endMethod() {
+		logger.fine( "End method");
+		if ( m_nested!=null)
+			m_nested.endMethod();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#endNamespace()
+	 */
+	public void endNamespace() {
+		logger.fine( "End namespace");
+		if ( m_nested!=null)
+		{
+			m_nested.endNamespace();
+		}
+	}
+
+	static private void formatGenericParams( StringBuilder sb, List genericParams)
+	{
+		if ( genericParams!=null && genericParams.size()>0)
+		{
+			sb.append('<');
+			formatList( sb, genericParams);
+			sb.append('>');
+		}
+	}
+	
+	static public void formatList( StringBuilder sb, Collection l)
+	{
+		for ( Iterator i=l.iterator(); i.hasNext();)
+		{
+			sb.append( i.next().toString());
+			if ( i.hasNext())
+				sb.append(',');
+		}
+		
 	}
 
 }

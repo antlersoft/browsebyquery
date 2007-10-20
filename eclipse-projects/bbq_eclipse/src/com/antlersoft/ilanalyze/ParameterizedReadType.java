@@ -55,15 +55,7 @@ public class ParameterizedReadType implements ReadType {
 		
 		sb.append( m_name);
 		sb.append( '<');
-		boolean first=true;
-		for ( Iterator i=m_gen_args.iterator(); i.hasNext();)
-		{
-			if ( first)
-				first=false;
-			else
-				sb.append(',');
-			sb.append(i.next().toString());
-		}
+		LoggingDBDriver.formatList( sb, m_gen_args);
 		sb.append('>');
 		
 		return sb.toString();

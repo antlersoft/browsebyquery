@@ -238,13 +238,16 @@ public class QueryView extends ViewPart {
                 {
                 	SetExpression se=qp.getExpression();
                 	NewSearchUI.runQueryInBackground( new Query( se, line));
-                }
+                    _historyList.add( line, 0);
+               }
                 catch ( ParseException pe)
                 {
-                	displayException( pe.getMessage(), pe);
+                    MessageBox mb=new MessageBox( getSite().getShell(), SWT.ICON_ERROR|SWT.OK);
+                    mb.setText( "Error parsing query");
+                    mb.setMessage( pe.getMessage());
+                    mb.open();
                 }
-                _historyList.add( line, 0);
-        	}
+         	}
         };
         _queryAction.setText( "Query");
         

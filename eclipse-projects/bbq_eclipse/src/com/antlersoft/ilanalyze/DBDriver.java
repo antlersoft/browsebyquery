@@ -21,6 +21,7 @@ public interface DBDriver {
 	public final static int IS_SERIALIZABLE=128;
 	public final static int IS_FAMANDASSEM=256;
 	public final static int IS_FAMORASSEM=512;
+	public final static int IS_STATIC=1024;
 	
 	/**
 	 * Introducing an assembly that is being read (not referenced)
@@ -37,6 +38,12 @@ public interface DBDriver {
 	 * @param name
 	 */
 	public void startNamespace( String name);
+	
+	/**
+	 * Pop the implicit stack of nested namespaces
+	 *
+	 */
+	public void endNamespace();
 
 	/**
 	 * Start a class that is being read (not referenced).  The namespace
@@ -44,9 +51,9 @@ public interface DBDriver {
 	 * namespace (if any) is ignored.
 	 * If the namespace is null parameter is null, uses the containing namespace.
 	 * There is always a containing namespace; it may be the "" (empty name) namespace.
-	 * @param namespace 
 	 * @param className This may be a slashed name to indicate an inner class (components
-	 * will be separated by slashes, rather than periods)
+	 * will be separated by slashes, rather than periods).  Names separated with periods indicate
+	 * possibly nested namespace.
 	 * @param genericParams List of ReadGenericParam objects.  If the list is null or empty, create
 	 * a regular (not a parameterized) class
 	 * @param properties Visibility/etc bits or'd together
@@ -74,6 +81,11 @@ public interface DBDriver {
 	public void startMethod( String name, List genericParams, Signature signature, int properties);
 	
 	/**
+	 * End currently evaluating method
+	 */
+	public void endMethod();
+	
+	/**
 	 * Set file and line number.  If the file name is null or empty,
 	 * the existing file name is not changed.
 	 * @param name Name of file
@@ -89,15 +101,16 @@ public interface DBDriver {
 	
 	/**
 	 * Add a method call to the current method
-	 * @param containing_type Type that contains the called method
+	 * @param containing_type Type that contains the called method; may be null, in which case it is current class
 	 * @param method_name
+	 * @param genericArgs List of ReadType representing the arguments to the generic parameters for the method
 	 * @param sig Signature of methd
 	 */
-	public void addMethodCall( ReadType containing_type, String method_name, Signature sig);
+	public void addMethodCall( ReadType containing_type, String method_name, List genericArgs, Signature sig);
 	
 	/**
 	 * Add a field reference to the current method
-	 * @param containing_type Type that contains the referenced field
+	 * @param containing_type Type that contains the referenced field; may be null, in which case it is the current class
 	 * @param field_type
 	 * @param name
 	 * @param is_write True if the reference is a write reference

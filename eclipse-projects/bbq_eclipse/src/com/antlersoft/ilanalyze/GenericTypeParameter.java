@@ -3,7 +3,6 @@
  */
 package com.antlersoft.ilanalyze;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -42,12 +41,8 @@ public class GenericTypeParameter {
 		if ( m_constraints!=null && m_constraints.size()>0)
 		{
 			sb.append('(');
-			for ( Iterator i=m_constraints.iterator(); i.hasNext();)
-			{
-				sb.append( i.next().toString());
-				if ( i.hasNext())
-					sb.append(',');
-			}
+			LoggingDBDriver.formatList( sb, m_constraints);
+			sb.append(')');
 		}
 		return sb.toString();
 	}

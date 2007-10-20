@@ -3,6 +3,7 @@
  */
 package com.antlersoft.ilanalyze.parseildasm;
 
+import java.util.List;
 import java.util.ArrayList;
 
 import com.antlersoft.ilanalyze.*;
@@ -18,7 +19,7 @@ import com.antlersoft.parser.ValueStack;
  *
  */
 class IldasmParserBase extends Parser {
-	
+
 	DBDriver m_driver;
 	
 	IldasmParserBase( ParseState[] states)
@@ -121,6 +122,12 @@ class IldasmParserBase extends Parser {
 			return new Integer( valueStack.i_1()|valueStack.i_0());
 		} };
 		
+	/** Start a method without marshaling */
+	static RuleAction m_StartMethod=new MethodStarter( 5);
+	
+	/** Start a method with marshaling */
+	static RuleAction m_StartMarshalMethod=new MethodStarter( 9);
+		
 	/**
 	 * Puts an int value on to the stack.
 	 * @author Michael A. MacDonald
@@ -186,6 +193,37 @@ class IldasmParserBase extends Parser {
 		public Object ruleFire(Parser parser, ValueStack valueStack)
 				throws RuleActionException {
 			return new Integer( valueStack.i_2()|m_v);
+		}
+
+	}
+	
+	/**
+	 * Rule that runs the driver to start a method, assembling elements from the value stack
+	 * looking for a certain depth in the stack.
+	 * @author Michael A. MacDonald
+	 *
+	 */
+	static class MethodStarter implements RuleAction {
+		int m_type_depth;
+		
+		/**
+		 * 
+		 * @param type_depth Position in the stack to find return type; method attrs are 3 further in
+		 */
+		MethodStarter( int type_depth)
+		{
+			m_type_depth=type_depth;
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.parser.RuleAction#ruleFire(com.antlersoft.parser.Parser, com.antlersoft.parser.ValueStack)
+		 */
+		public Object ruleFire(Parser parser, ValueStack valueStack)
+				throws RuleActionException {
+			Signature sig=(Signature)valueStack.o_2();
+			sig.setReturnType((ReadType)valueStack.o_n(m_type_depth));
+			Driver(parser).startMethod( valueStack.s_n(4), (List)valueStack.o_n(3), sig, valueStack.i_n(m_type_depth+3));
+			return null;
 		}
 
 	}

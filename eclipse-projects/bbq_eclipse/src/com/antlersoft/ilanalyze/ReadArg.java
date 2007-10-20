@@ -30,6 +30,22 @@ public class ReadArg {
 		m_type=type;;
 		m_name=name;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		if ( m_type==null)
+			return "...";
+		StringBuilder sb=new StringBuilder();
+		sb.append( m_type.toString());
+		if ( m_name!=null)
+		{
+			sb.append(' ');
+			sb.append( m_name);
+		}
+		return sb.toString();
+	}
 }
 
 
