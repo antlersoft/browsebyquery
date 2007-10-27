@@ -3,7 +3,7 @@
  * Title:        antlersoft java software<p>
  * Description:  antlersoft Moose
  * antlersoft BBQ<p>
- * <p>Copyright (c) 2000-2005  Michael A. MacDonald<p>
+ * <p>Copyright (c) 2000-2005, 2007  Michael A. MacDonald<p>
  * ----- - - -- - - --
  * <p>
  *     This package is free software; you can redistribute it and/or modify
@@ -85,6 +85,13 @@ class EntryPageList implements Serializable
         deleteLock=new Semaphore();
     }
 
+    /**
+     * Delete the object with the given key
+     * @param key Object key
+     * @param streams Overhead streams
+     * @param classList List of class schema definitions
+     * @throws ObjectStoreException
+     */
     synchronized void deleteObject( DAKey key, StreamPair streams,
         ClassList classList)
         throws ObjectStoreException
@@ -108,7 +115,7 @@ class EntryPageList implements Serializable
                     throw new InvalidObjectKeyException();
                 if ( classEntry.indices.size()!=0)
                 {
-                    Object toDelete=streams.readObjectWithPrefix(
+                    Object toDelete=classEntry.objectStreams.readObjectWithPrefix(
                         page.offset[localOffset]);
                     for ( Iterator i=classEntry.indices.iterator();
                         i.hasNext();)
@@ -156,6 +163,17 @@ class EntryPageList implements Serializable
         }
     }
 
+    /**
+     * Get the next available ObjectKey (DAKey).  The ObjectKey is associated with a particular
+     * class, represented by its index and reuse count.
+     * @param streams Overhead streams
+     * @param classIndex Index of class to associate with object key in its entry
+     * @param classReuse Reuse count of class to associate with object key in its entry
+     * @return Newly created object key
+     * @throws ClassNotFoundException
+     * @throws DiskAllocatorException
+     * @throws IOException
+     */
     synchronized DAKey getNewKey( StreamPair streams, int classIndex,
         int classReuse)
         throws ClassNotFoundException, DiskAllocatorException, IOException
@@ -232,6 +250,15 @@ class EntryPageList implements Serializable
         return new DAKey( offset, reuseCount);
     }
 
+    /**
+     * Associate a region (position in Object allocator) with a DAKey's entry in the key table
+     * @param key DAKey to associate with a region
+     * @param region Presumably, offset in the allocator associated with objects of the entry's class
+     * @param streams Overhead streams
+     * @throws ClassNotFoundException
+     * @throws DiskAllocatorException
+     * @throws IOException
+     */
     void setRegion( DAKey key, int region, StreamPair streams)
         throws ClassNotFoundException, DiskAllocatorException, IOException
     {
