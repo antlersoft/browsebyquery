@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class LoggingDBDriver implements DBDriver {
 	
-	static Logger logger=Logger.getLogger(LoggingDBDriver.class.getName());
+	static public Logger logger=Logger.getLogger(LoggingDBDriver.class.getName());
 	
 	private DBDriver m_nested;
 	
@@ -185,6 +185,36 @@ public class LoggingDBDriver implements DBDriver {
 		}
 	}
 
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#endAnalyzedFile()
+	 */
+	public void endAnalyzedFile() {
+		logger.fine( "End analyzed file");
+		if ( m_nested!=null)
+			m_nested.endAnalyzedFile();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#startAnalyzedFile(java.lang.String)
+	 */
+	public void startAnalyzedFile(String file) {
+		logger.fine( "Start analyzed file "+file);
+		if ( m_nested!=null)
+			m_nested.startAnalyzedFile(file);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addField(java.lang.String, com.antlersoft.ilanalyze.ReadType, int)
+	 */
+	public void addField(String name, ReadType type, int properties) {
+		logger.fine( "Add field "+type.toString()+" "+name+" "+properties);
+		if ( m_nested!=null)
+		{
+			m_nested.addField(name, type, properties);
+		}
+	}
+
 	static private void formatGenericParams( StringBuilder sb, List genericParams)
 	{
 		if ( genericParams!=null && genericParams.size()>0)
@@ -205,5 +235,4 @@ public class LoggingDBDriver implements DBDriver {
 		}
 		
 	}
-
 }

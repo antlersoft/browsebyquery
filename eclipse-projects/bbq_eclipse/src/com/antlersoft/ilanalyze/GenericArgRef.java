@@ -58,6 +58,14 @@ public class GenericArgRef implements ReadType {
 		return false;
 	}
 	
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#isClassType()
+	 */
+	public boolean isClassType() {
+		return true;
+	}
+
 	/**
 	 * 
 	 * @return 0-based index in parameter list, or -1 if parameter is reference by name

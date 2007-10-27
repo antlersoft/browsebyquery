@@ -162,6 +162,7 @@ public class IldasmReader {
 		}
 		else
 		{
+			driver.startAnalyzedFile(file.getAbsolutePath());
 			String lower_file=file.getName().toLowerCase();
 			if ( lower_file.endsWith(".il"))
 			{
@@ -182,11 +183,20 @@ public class IldasmReader {
 					logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
 				}
 			}
+			driver.endAnalyzedFile();
 		}
 	}
 	
 	public static void main( String[] args) throws Exception
 	{
-		new IldasmReader().sendFileToDriver( new File(args[0]), new LoggingDBDriver());
+		com.antlersoft.ilanalyze.db.ILDB db=new com.antlersoft.ilanalyze.db.ILDB(new File(args[1]));
+		try
+		{
+			new IldasmReader().sendFileToDriver( new File(args[0]), new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db)));
+		}
+		finally
+		{
+			db.close();
+		}
 	}
 }

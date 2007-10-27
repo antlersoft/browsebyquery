@@ -27,6 +27,7 @@ public class DBCall extends DBReference
     {
         super( s, l);	
         target=new ObjectRef( t);
+        
     }
 
     ObjectRef target;

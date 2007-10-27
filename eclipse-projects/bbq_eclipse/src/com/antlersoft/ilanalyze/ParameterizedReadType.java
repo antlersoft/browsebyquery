@@ -49,6 +49,18 @@ public class ParameterizedReadType implements ReadType {
 		return specified;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#isClassType()
+	 */
+	public boolean isClassType() {
+		return true;
+	}
+	
+	public String getSimpleName()
+	{
+		return m_name;
+	}
+	
 	public String toString()
 	{
 		StringBuilder sb=new StringBuilder();

@@ -9,22 +9,22 @@ import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
 /**
- * An assembly that has been analyzed
+ * A string that appears in the analyzed system
  * 
  * @author Michael A. MacDonald
  *
  */
-public class DBAssembly implements Persistent {
+public class DBString implements Persistent {
 	
-	/** Primary key on assembly name */
-	static final String ASSEMBLY_NAME_INDEX="ASSEMBLY_NAME_INDEX";
+	/** Primary key on string name */
+	static final String STRING_INDEX="STRING_INDEX";
 	private transient PersistentImpl _persistentImpl;
 	
-	private String m_assembly_name;
+	private String m_string_name;
 	
-	private DBAssembly( String assembly_name)
+	private DBString( String string_name)
 	{
-		m_assembly_name=assembly_name;
+		m_string_name=string_name;
 		ObjectDB.makePersistent( this);
 	}
 
@@ -37,17 +37,17 @@ public class DBAssembly implements Persistent {
 		return _persistentImpl;
 	}
 	
-	static DBAssembly get( IndexObjectDB db, String f)
+	static DBString get( IndexObjectDB db, String f)
 	{
-		DBAssembly result=(DBAssembly)db.findObject( ASSEMBLY_NAME_INDEX,
+		DBString result=(DBString)db.findObject( STRING_INDEX,
 			f);
 		if ( result==null)
-			result=new DBAssembly( f);
+			result=new DBString( f);
 		return result;
 	}
 	
 	public String toString()
 	{
-		return m_assembly_name;
+		return m_string_name;
 	}
 }

@@ -34,6 +34,13 @@ public class ReadArray implements ReadType {
 		return m_underlying.isFullySpecified();
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#isClassType()
+	 */
+	public boolean isClassType() {
+		return false;
+	}
+
 	public int getDimensions()
 	{
 		return m_dimensions;

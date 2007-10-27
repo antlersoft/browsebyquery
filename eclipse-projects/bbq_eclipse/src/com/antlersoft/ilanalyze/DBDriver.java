@@ -86,6 +86,14 @@ public interface DBDriver {
 	public void endMethod();
 	
 	/**
+	 * Add a field to the current class
+	 * @param name Name of the field
+	 * @param type Type of the field
+	 * @param properties Flags associated with the fiel
+	 */
+	public void addField( String name, ReadType type, int properties);
+	
+	/**
 	 * Set file and line number.  If the file name is null or empty,
 	 * the existing file name is not changed.
 	 * @param name Name of file
@@ -116,4 +124,16 @@ public interface DBDriver {
 	 * @param is_write True if the reference is a write reference
 	 */
 	public void addFieldReference( ReadType containing_type, ReadType field_type, String name, boolean is_write);
+	
+	/**
+	 * Start analyzing a particular file (.il, dll or exe)
+	 * @param file
+	 */
+	public void startAnalyzedFile( String file);
+	
+	/**
+	 * Finish analyzing a particular file
+	 *
+	 */
+	public void endAnalyzedFile();
 }

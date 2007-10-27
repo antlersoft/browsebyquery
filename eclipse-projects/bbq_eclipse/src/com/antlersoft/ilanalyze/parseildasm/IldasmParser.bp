@@ -1067,25 +1067,25 @@ n_extSourceSpec : t_lineDirective n_extSourcePosition "{ Driver(parser).setFileA
 n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition t_SQSTRING "{ Driver(parser).setFileAndLine( valueStack.s_0(), valueStack.i_n(3)); return \"\"; }" .
 n_extSourceSpec : t_lineDirective n_extSourcePosition t_colon n_extSourcePosition "{ Driver(parser).setFileAndLine( null, valueStack.i_2()); return \"\"; }" .
 n_extSourceSpec : t_P_LINE n_extSourcePosition t_QSTRING .
-n_extendsClause : "{ return new BasicType(\"object\"); }" .
+n_extendsClause : "{ return new BasicType(\"System.Object\"); }" .
 n_extendsClause : t_extends n_typeSpec "m_TopObject" .
 n_faultClause : t_fault .
-n_fieldAttr : .
-n_fieldAttr : n_fieldAttr t_static .
-n_fieldAttr : n_fieldAttr t_public .
-n_fieldAttr : n_fieldAttr t_private .
-n_fieldAttr : n_fieldAttr t_family .
-n_fieldAttr : n_fieldAttr t_initonly .
-n_fieldAttr : n_fieldAttr t_rtspecialname .
-n_fieldAttr : n_fieldAttr t_specialname .
-n_fieldAttr : n_fieldAttr t_marshal t_left_paren n_nativeType t_right_paren .
-n_fieldAttr : n_fieldAttr t_assembly .
-n_fieldAttr : n_fieldAttr t_famandassem .
-n_fieldAttr : n_fieldAttr t_famorassem .
-n_fieldAttr : n_fieldAttr t_privatescope .
-n_fieldAttr : n_fieldAttr t_literal .
-n_fieldAttr : n_fieldAttr t_notserialized .
-n_fieldDecl : t_fieldDirective n_repeatOpt n_fieldAttr n_type n_id n_atOpt n_initOpt .
+n_fieldAttr : "m_EmptyAttribute".
+n_fieldAttr : n_fieldAttr t_static "new AttribAddToStack( DBDriver.IS_STATIC)" .
+n_fieldAttr : n_fieldAttr t_public "new AttribAddToStack( DBDriver.IS_PUBLIC)" .
+n_fieldAttr : n_fieldAttr t_private "new AttribAddToStack( DBDriver.IS_PRIVATE)" .
+n_fieldAttr : n_fieldAttr t_family "new AttribAddToStack( DBDriver.IS_FAMILY)" .
+n_fieldAttr : n_fieldAttr t_initonly "m_AddIgnoredAttrib" .
+n_fieldAttr : n_fieldAttr t_rtspecialname "m_AddIgnoredAttrib" .
+n_fieldAttr : n_fieldAttr t_specialname "m_AddIgnoredAttrib" .
+n_fieldAttr : n_fieldAttr t_marshal t_left_paren n_nativeType t_right_paren "{ return new Integer( valueStack.i_n(4)); }" .
+n_fieldAttr : n_fieldAttr t_assembly "new AttribAddToStack( DBDriver.IS_ASSEMBLY)" .
+n_fieldAttr : n_fieldAttr t_famandassem "new AttribAddToStack( DBDriver.IS_FAMANDASSEM)" .
+n_fieldAttr : n_fieldAttr t_famorassem "new AttribAddToStack( DBDriver.IS_FAMORASSEM)" .
+n_fieldAttr : n_fieldAttr t_privatescope "m_AddIgnoredAttrib" .
+n_fieldAttr : n_fieldAttr t_literal "m_AddIgnoredAttrib" .
+n_fieldAttr : n_fieldAttr t_notserialized "m_AddIgnoredAttrib" .
+n_fieldDecl : t_fieldDirective n_repeatOpt n_fieldAttr n_type n_id n_atOpt n_initOpt "{ Driver(parser).addField( valueStack.s_2(), (ReadType)valueStack.o_n(3), valueStack.i_n(4)); return null; }" .
 n_fieldInit : t_float32 t_left_paren n_float64 t_right_paren .
 n_fieldInit : t_float64 t_left_paren n_float64 t_right_paren .
 n_fieldInit : t_float32 t_left_paren t_INT64 t_right_paren .
@@ -1412,8 +1412,8 @@ n_tryBlock : n_tryHead n_int32 t_to n_int32 .
 n_tryHead : t_tryDirective .
 # Every n_type is represented by a ReadType in the value stack
 n_type : t_class n_className "m_BasicType" .
-n_type : t_object "m_BasicType" .
-n_type : t_string "m_BasicType" .
+n_type : t_object "{ return new BasicType( \"System.Object\"); }" .
+n_type : t_string "{ return new BasicType( \"System.String\"); }" .
 n_type : t_value t_class n_className "m_BasicType" .
 n_type : t_valuetype n_className "m_BasicType" .
 n_type : n_type t_left_square t_right_square "{ return new ReadArray( (ReadType)valueStack.o_2(), 1); }" .
@@ -1429,24 +1429,24 @@ n_type : t_exclamation t_exclamation n_int32 "{ return new GenericArgRef( valueS
 n_type : t_exclamation n_id "{ return new GenericArgRef( valueStack.s_0(), false); }" .
 n_type : t_exclamation t_exclamation n_id "{ return new GenericArgRef( valueStack.s_0(), true); }" .
 n_type : t_method n_callConv n_type t_asterisk n_sigArgs0 "{ return new BasicType(\"METHOD_PTR\"); }" .
-n_type : t_typedref "m_BasicType" .
-n_type : t_char "m_BasicType" .
-n_type : t_void "m_BasicType" .
-n_type : t_bool "m_BasicType" .
-n_type : t_int8 "m_BasicType" .
-n_type : t_int16 "m_BasicType" .
-n_type : t_int32 "m_BasicType" .
-n_type : t_int64 "m_BasicType" .
-n_type : t_float32 "m_BasicType" .
-n_type : t_float64 "m_BasicType" .
-n_type : t_uint8 "m_BasicType" .
-n_type : t_unsigned t_int8 "m_BasicType2Words" .
-n_type : t_unsigned t_int16 "m_BasicType2Words" .
-n_type : t_unsigned t_int32 "m_BasicType2Words" .
-n_type : t_unsigned t_int64 "m_BasicType2Words" .
-n_type : t_native t_int "m_BasicType2Words" .
-n_type : t_native t_unsigned t_int "{ return new BasicType( valueStack.s_2()+\" \"+valueStack.s_1()+\" \"+valueStack.s_0()); }" .
-n_type : t_native t_float "m_BasicType2Words" .
+n_type : t_typedref "m_BuiltinType" .
+n_type : t_char "m_BuiltinType" .
+n_type : t_void "m_BuiltinType" .
+n_type : t_bool "m_BuiltinType" .
+n_type : t_int8 "m_BuiltinType" .
+n_type : t_int16 "m_BuiltinType" .
+n_type : t_int32 "m_BuiltinType" .
+n_type : t_int64 "m_BuiltinType" .
+n_type : t_float32 "m_BuiltinType" .
+n_type : t_float64 "m_BuiltinType" .
+n_type : t_uint8 "m_BuiltinType" .
+n_type : t_unsigned t_int8 "m_BuiltinType2Words" .
+n_type : t_unsigned t_int16 "m_BuiltinType2Words" .
+n_type : t_unsigned t_int32 "m_BuiltinType2Words" .
+n_type : t_unsigned t_int64 "m_BuiltinType2Words" .
+n_type : t_native t_int "m_BuiltinType2Words" .
+n_type : t_native t_unsigned t_int "{ return new BuiltinType( valueStack.s_2()+\" \"+valueStack.s_1()+\" \"+valueStack.s_0()); }" .
+n_type : t_native t_float "m_BuiltinType2Words" .
 n_typeSpec : n_className "m_BasicType" .
 n_typeSpec : t_left_square n_name1 t_right_square "{ return new BasicType( valueStack.s_1()); }" .
 n_typeSpec : t_left_square t_moduleDirective n_name1 t_right_square "{ return new BasicType( valueStack.s_1()); }" .

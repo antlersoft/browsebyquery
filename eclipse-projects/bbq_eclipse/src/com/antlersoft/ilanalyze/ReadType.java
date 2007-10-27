@@ -24,4 +24,10 @@ public interface ReadType {
 	 * specify this type, or null if it is not a generic type.
 	 */
 	public Collection getGenericArgs();
+	
+	/**
+	 * 
+	 * @return true if the type represents a class type
+	 */
+	public boolean isClassType();
 }

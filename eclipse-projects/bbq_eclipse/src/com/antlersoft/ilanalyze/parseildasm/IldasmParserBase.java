@@ -77,14 +77,24 @@ class IldasmParserBase extends Parser {
 			return new BasicType( valueStack.s_0());
 		} };
 
-	/** Create a basic type from top two strings concated together */
-	static RuleAction m_BasicType2Words=new RuleAction() {
+	/** Create a builtin type from the top string */
+	static RuleAction m_BuiltinType=new RuleAction() {
 
 		/* (non-Javadoc)
 		 * @see com.antlersoft.parser.RuleAction#ruleFire(com.antlersoft.parser.Parser, com.antlersoft.parser.ValueStack)
 		 */
 		public Object ruleFire(Parser parser, ValueStack valueStack) throws RuleActionException {
-			return new BasicType( valueStack.s_1()+" "+valueStack.s_0());
+			return new BuiltinType( valueStack.s_0());
+		} };
+
+	/** Create a builtin type from top two strings concated together */
+	static RuleAction m_BuiltinType2Words=new RuleAction() {
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.parser.RuleAction#ruleFire(com.antlersoft.parser.Parser, com.antlersoft.parser.ValueStack)
+		 */
+		public Object ruleFire(Parser parser, ValueStack valueStack) throws RuleActionException {
+			return new BuiltinType( valueStack.s_1()+" "+valueStack.s_0());
 		} };
 
 	/** Start a list with the top item on the stack */

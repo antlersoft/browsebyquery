@@ -37,4 +37,11 @@ public class BasicType implements ReadType {
 		return m_name;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#isClassType()
+	 */
+	public boolean isClassType() {
+		return true;
+	}
+
 }

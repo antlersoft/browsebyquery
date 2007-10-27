@@ -30,6 +30,16 @@ public class ReadArg {
 		m_type=type;;
 		m_name=name;
 	}
+	
+	public ReadType getType()
+	{
+		return m_type;
+	}
+	
+	public String getName()
+	{
+		return m_name;
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()

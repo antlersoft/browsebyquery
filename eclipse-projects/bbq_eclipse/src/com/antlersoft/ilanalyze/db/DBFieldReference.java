@@ -1,0 +1,46 @@
+/**
+ * Copyright (c) 2007 Michael A. MacDonald
+ */
+package com.antlersoft.ilanalyze.db;
+
+import com.antlersoft.odb.ObjectDB;
+
+/**
+ * A reference from an analyzed method to a field in the analyzed system
+ * @author Michael A. MacDonald
+ *
+ */
+public class DBFieldReference extends DBReference {
+
+	static final String FRTARGET="FRTARGET";
+	private boolean m_write;
+	
+	/**
+	 * @param source
+	 * @param target
+	 */
+	public DBFieldReference(DBMethod source, DBField target, boolean isWrite) {
+		super(source, target);
+		m_write=isWrite;
+		ObjectDB.makePersistent(this);
+	}
+
+	public boolean isWrite()
+	{
+		return m_write;
+	}
+	
+	public DBField getDBField()
+	{
+		return (DBField)m_target.getReferenced();
+	}
+	
+	synchronized void setWrite( boolean isWrite)
+	{
+		if ( isWrite!=m_write)
+		{
+			m_write=isWrite;
+			ObjectDB.makeDirty(this);
+		}
+	}
+}

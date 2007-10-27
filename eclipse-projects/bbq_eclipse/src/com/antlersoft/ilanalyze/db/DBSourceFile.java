@@ -9,22 +9,22 @@ import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
 /**
- * An assembly that has been analyzed
+ * A source file that has been referenced by a source declaration in the analyzed system
  * 
  * @author Michael A. MacDonald
  *
  */
-public class DBAssembly implements Persistent {
+public class DBSourceFile implements Persistent {
 	
-	/** Primary key on assembly name */
-	static final String ASSEMBLY_NAME_INDEX="ASSEMBLY_NAME_INDEX";
+	/** Primary key on source file name */
+	static final String SOURCE_FILE_NAME_INDEX="SOURCE_FILE_NAME_INDEX";
 	private transient PersistentImpl _persistentImpl;
 	
-	private String m_assembly_name;
+	private String m_source_file_name;
 	
-	private DBAssembly( String assembly_name)
+	private DBSourceFile( String source_file_name)
 	{
-		m_assembly_name=assembly_name;
+		m_source_file_name=source_file_name;
 		ObjectDB.makePersistent( this);
 	}
 
@@ -37,17 +37,17 @@ public class DBAssembly implements Persistent {
 		return _persistentImpl;
 	}
 	
-	static DBAssembly get( IndexObjectDB db, String f)
+	static DBSourceFile get( IndexObjectDB db, String f)
 	{
-		DBAssembly result=(DBAssembly)db.findObject( ASSEMBLY_NAME_INDEX,
+		DBSourceFile result=(DBSourceFile)db.findObject( SOURCE_FILE_NAME_INDEX,
 			f);
 		if ( result==null)
-			result=new DBAssembly( f);
+			result=new DBSourceFile( f);
 		return result;
 	}
 	
 	public String toString()
 	{
-		return m_assembly_name;
+		return m_source_file_name;
 	}
 }
