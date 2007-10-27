@@ -1,4 +1,4 @@
 anyclass|com.antlersoft.ilanalyze.parseildasm.IldasmReader|main|/home/mike/src/eclipse-workspaces/bbq/bbq_eclipse/src/com/antlersoft/ilanalyze/sample.il|/mnt/external2/scratch/il.pj
 #anyclass|com.antlersoft.ilanalyze.parseildasm.IldasmReader|main|/usr/lib/mono/monodoc
 #anyclass|com.antlersoft.ilanalyze.parseildasm.IldasmReader|main|/usr/lib/mono/2.0/System.dll
-anyclass|com.antlersoft.ilanalyze.parseildasm.IldasmReader|main|/tmp/sample2.il|/mnt/external2/scratch/il.pj
+#anyclass|com.antlersoft.ilanalyze.parseildasm.IldasmReader|main|/tmp/sample2.il|/mnt/external2/scratch/il.pj

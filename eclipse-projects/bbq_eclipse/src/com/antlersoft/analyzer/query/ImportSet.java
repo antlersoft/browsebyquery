@@ -19,8 +19,8 @@
  */
 package com.antlersoft.analyzer.query;
 
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.TreeSet;
 
 import com.antlersoft.query.DataSource;
 import com.antlersoft.query.SetExpression;
@@ -28,8 +28,8 @@ import com.antlersoft.query.SetExpression;
 import com.antlersoft.util.IteratorEnumeration;
 
 class ImportSet extends SetExpression {
-    private TreeSet m_set;
-    ImportSet( TreeSet set)
+    private Collection m_set;
+    ImportSet( Collection set)
     {
         m_set=set;
     }

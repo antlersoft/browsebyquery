@@ -93,7 +93,7 @@ SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 	}" .
 
 SET_EXPRESSION : Class literalString "{
-	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages);
+	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((AnalyzerQuery)parser.getParserEnvironment()).getImported());
 	}" .
 	
 SET_EXPRESSION : Package literalString "{
@@ -112,15 +112,15 @@ SET_EXPRESSION : all packages "{
 	return new PackagesGet();
 	}" .
 
-SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages); }" .
+SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((AnalyzerQuery)parser.getParserEnvironment()).getImported()); }" .
 
 ImportExpression : Import .
 ImportExpression : ImportExpression set "{
-    ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages.clear();
+    ((AnalyzerQuery)parser.getParserEnvironment()).getImported().clear();
     return \"\";
 }" .
 ImportExpression : ImportExpression literalString "{
-    ((AnalyzerQuery)parser.getParserEnvironment()).importedPackages.add( valueStack.get( valueStack.size()-1));
+    ((AnalyzerQuery)parser.getParserEnvironment()).getImported().add( valueStack.get( valueStack.size()-1));
     return \"\";
 }" .
 

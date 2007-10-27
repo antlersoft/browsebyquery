@@ -21,12 +21,12 @@ import org.osgi.framework.BundleContext;
 
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 
-import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 import com.antlersoft.bbq_eclipse.preferences.PreferenceConstants;
 
 import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.ObjectDBException;
+import com.antlersoft.query.environment.AnalyzerQuery;
 
 /**
  * The main plugin class to be used in the desktop.

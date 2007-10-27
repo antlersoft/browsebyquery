@@ -24,6 +24,7 @@ import com.antlersoft.parser.ValueStack;
 
 import com.antlersoft.query.*;
 
+import com.antlersoft.query.environment.AnalyzerQuery;
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
 import com.antlersoft.query.environment.SavingName;
 

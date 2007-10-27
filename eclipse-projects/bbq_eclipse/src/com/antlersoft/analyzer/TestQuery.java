@@ -25,9 +25,9 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.Enumeration;
 
-import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 import com.antlersoft.query.SetExpression;
+import com.antlersoft.query.environment.AnalyzerQuery;
 import com.antlersoft.query.environment.ParseException;
 
 public class TestQuery

@@ -34,12 +34,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 
 import com.antlersoft.odb.ObjectDBException;
 
 import com.antlersoft.query.SetExpression;
+import com.antlersoft.query.environment.AnalyzerQuery;
 import com.antlersoft.query.environment.ParseException;
 import com.antlersoft.query.environment.ui.HistoryList;
 import com.antlersoft.query.environment.ui.StoredValuesList;

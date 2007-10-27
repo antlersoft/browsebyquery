@@ -1,8 +1,9 @@
 /**
  * Copyright (c) 2006 Michael A. MacDonald
  */
-package com.antlersoft.analyzer.query;
+package com.antlersoft.query.environment;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -11,7 +12,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.antlersoft.query.environment.QueryLanguageEnvironment;
+import com.antlersoft.analyzer.query.QueryParser;
 
 import com.antlersoft.util.xml.IElement;
 import com.antlersoft.util.xml.IHandlerStack;
@@ -19,6 +20,8 @@ import com.antlersoft.util.xml.ISimpleElement;
 import com.antlersoft.util.xml.SimpleHandler;
 
 /**
+ * A query language environment specialized to support a set of strings as part of its state representing imported
+ * packages (or namespaces...)
  * @author Michael A. MacDonald
  *
  */
@@ -105,8 +108,13 @@ public class AnalyzerQuery extends QueryLanguageEnvironment {
 	{
 		return new AnalyzerQueryElement( super.getElement());
 	}
+	
+	public Collection getImported()
+	{
+		return importedPackages;
+	}
 
     // Package interface
-    TreeSet importedPackages;
+    private TreeSet importedPackages;
     
 }

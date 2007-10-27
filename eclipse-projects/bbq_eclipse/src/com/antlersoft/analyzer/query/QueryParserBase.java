@@ -20,10 +20,10 @@
 package com.antlersoft.analyzer.query;
 
 import java.util.Vector;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Iterator;
-import java.util.TreeSet;
 
 import com.antlersoft.analyzer.*;
 
@@ -72,9 +72,9 @@ class QueryParserBase extends BasicBase
     static class ClassGet extends SetExpression
     {
         private String _className;
-        private TreeSet _set;
+        private Collection _set;
 
-        ClassGet( String className, TreeSet set)
+        ClassGet( String className, Collection set)
         {
             _className=className;
             _set=set;
