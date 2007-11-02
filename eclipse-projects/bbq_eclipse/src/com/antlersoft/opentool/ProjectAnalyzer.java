@@ -44,11 +44,12 @@ import com.borland.primetime.vfs.Url;
 
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
-import com.antlersoft.analyzer.query.AnalyzerQuery;
 
 import com.antlersoft.classwriter.ClassWriter;
 
 import com.antlersoft.odb.ObjectDBException;
+
+import com.antlersoft.query.environment.AnalyzerQuery;
 
 class ProjectAnalyzer
 {
@@ -156,10 +157,7 @@ e.printStackTrace();
     throws Exception
     {
         File environment_file=new File( goodPath, "environment.xml");
-        if ( environment_file.canWrite())
-        {
-            qp.writeEnvironment( new FileWriter( environment_file));
-        }
+		qp.writeEnvironment( new FileWriter( environment_file));
     }
 
     class UpdateDBThread extends Thread
