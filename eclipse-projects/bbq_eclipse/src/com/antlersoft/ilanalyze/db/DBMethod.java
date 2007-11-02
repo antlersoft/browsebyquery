@@ -12,9 +12,11 @@ import com.antlersoft.ilanalyze.ReadArg;
 import com.antlersoft.ilanalyze.ReadType;
 import com.antlersoft.ilanalyze.Signature;
 
+import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.FromRefEnumeration;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
 
 import com.antlersoft.util.IteratorEnumeration;
 
@@ -37,6 +39,8 @@ public class DBMethod extends DBMember {
 	private ArrayList m_string_references;
 	/** True if the method has been read from an assembly, rather than just being referenced */
 	private boolean m_visited;
+	/** Signature key (signature as a single string) */
+	private String m_signature_key;
 
 	/**
 	 * @param container
@@ -44,12 +48,13 @@ public class DBMethod extends DBMember {
 	 * @param type
 	 * @param sig_string String representing argument signature
 	 */
-	DBMethod(DBClass container, String name, DBType type) {
+	DBMethod(DBClass container, String name, DBType type, String signature_key) {
 		super(container, name, type);
 		m_arguments=new ArrayList();
 		m_calls=new ArrayList();
 		m_field_references=new ArrayList();
 		m_string_references=new ArrayList();
+		m_signature_key=signature_key;
 		ObjectDB.makePersistent( this);
 	}
 
@@ -64,11 +69,49 @@ public class DBMethod extends DBMember {
 	
 	/**
 	 * 
+	 * @return Enumeration over DBFieldReference of references from this method
+	 */
+	public Enumeration getReferences()
+	{
+		return new FromRefEnumeration( new IteratorEnumeration( m_field_references.iterator()));
+	}
+	
+	
+	/**
+	 * 
+	 * @return Enumeration over DBStringReference representing string references from this method
+	 */
+	public Enumeration getStringReferences()
+	{
+		return new FromRefEnumeration( new IteratorEnumeration( m_string_references.iterator()));		
+	}
+	
+	/**
+	 * 
 	 * @return Enumeration over calls <i>from</i> this method
 	 */
 	public Enumeration getCalls()
 	{
 		return new FromRefEnumeration( new IteratorEnumeration( m_calls.iterator()));
+	}
+	
+	/**
+	 * Return an enumeration over calls to this method
+	 * @param db ILDB for this analyzed system
+	 * @return an enumeration over calls to this method
+	 */
+	public Enumeration getCallsTo( ILDB db)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBCall.CALL_TARGET, new ObjectRefKey(this)));
+	}
+	
+	/**
+	 * 
+	 * @return Arguments with type as a single string
+	 */
+	public String getSignatureKey()
+	{
+		return m_signature_key;
 	}
 	
 	/**

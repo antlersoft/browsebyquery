@@ -15,7 +15,7 @@ import com.antlersoft.odb.PersistentImpl;
  * @author Michael A. MacDonald
  *
  */
-public class DBArgument implements Persistent {
+public class DBArgument implements Persistent, HasDBType {
 	
 	static final String ARG_TYPE_INDEX="ARG_TYPE_INDEX";
 	
@@ -51,6 +51,11 @@ public class DBArgument implements Persistent {
 	public DBType getDBType()
 	{
 		return (DBType)m_type.getReferenced();
+	}
+	
+	public DBType getDBType( ILDB db)
+	{
+		return getDBType();
 	}
 	
 	synchronized void setDBType( DBType t)

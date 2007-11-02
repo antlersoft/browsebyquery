@@ -3,8 +3,12 @@
  */
 package com.antlersoft.ilanalyze.db;
 
+import java.util.Enumeration;
+
+import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
@@ -44,6 +48,16 @@ public class DBString implements Persistent {
 		if ( result==null)
 			result=new DBString( f);
 		return result;
+	}
+	
+	/**
+	 * Return an enumeration over references to this string
+	 * @param db ILDB for this analyzed system
+	 * @return an enumeration over references to this string
+	 */
+	public Enumeration getReferencesTo( ILDB db)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBStringReference.SRTARGET, new ObjectRefKey(this)));
 	}
 	
 	public String toString()

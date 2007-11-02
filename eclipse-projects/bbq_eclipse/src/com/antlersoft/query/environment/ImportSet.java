@@ -17,7 +17,7 @@
  * <p>
  * ----- - - -- - - --
  */
-package com.antlersoft.analyzer.query;
+package com.antlersoft.query.environment;
 
 import java.util.Collection;
 import java.util.Enumeration;
@@ -27,9 +27,9 @@ import com.antlersoft.query.SetExpression;
 
 import com.antlersoft.util.IteratorEnumeration;
 
-class ImportSet extends SetExpression {
+public class ImportSet extends SetExpression {
     private Collection m_set;
-    ImportSet( Collection set)
+    public ImportSet( Collection set)
     {
         m_set=set;
     }

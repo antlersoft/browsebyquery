@@ -1,13 +1,10 @@
 /**
  * Copyright (c) 2006 Michael A. MacDonald
  */
-package com.antlersoft.analyzer.query;
+package com.antlersoft.query;
 
 import java.util.Enumeration;
 
-import com.antlersoft.query.DataSource;
-import com.antlersoft.query.EmptyEnum;
-import com.antlersoft.query.SetExpression;
 
 /**
  * @author mike

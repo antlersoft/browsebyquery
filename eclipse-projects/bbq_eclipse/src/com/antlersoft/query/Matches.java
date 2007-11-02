@@ -19,23 +19,16 @@
  */
 package com.antlersoft.query;
 
-public class Matches extends CountPreservingFilter {
+public class Matches extends CountPreservingBoundFilter {
 	public Matches( String to_match)
 	{
+		super(null);
 		m_to_match=to_match;
-		m_binding=new BindImpl( BOOLEAN_CLASS, null);
 	}
-    public void lateBindApplies(Class new_applies) throws com.antlersoft.query.BindException {
-		m_binding.lateBindApplies( new_applies);
-    }
-    public Class appliesClass() {
-		return m_binding.appliesClass();
-    }
-	protected boolean getCountPreservingFilterValue( DataSource source, Object to_transform)
+ 	protected boolean getCountPreservingFilterValue( DataSource source, Object to_transform)
 	{
 		return to_transform.toString().indexOf( m_to_match)!= -1;
 	}
 
-	private BindImpl m_binding;
 	private String m_to_match;
 }

@@ -13,12 +13,14 @@ import com.antlersoft.odb.diralloc.CustomizerFactory;
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
 
+import com.antlersoft.query.DataSource;
+
 /**
  * The object database for IL analyzed objects
  * @author Michael A. MacDonald
  *
  */
-public class ILDB extends IndexObjectDB {
+public class ILDB extends IndexObjectDB implements DataSource {
 
 	/**
 	 * Create interface to ILDB stored in a directory
@@ -73,6 +75,16 @@ public class ILDB extends IndexObjectDB {
 			defineIndex( DBClass.CLASS_KEY_INDEX,
 					DBClass.class,
 					new DBClass.ClassKeyGenerator(),
+					false, true, null);
+		}
+		catch ( IndexExistsException iee)
+		{
+		}
+		try
+		{
+			defineIndex( DBClass.CLASS_BY_NAME_INDEX,
+					DBClass.class,
+					new StringKeyGenerator(),
 					false, true, null);
 		}
 		catch ( IndexExistsException iee)

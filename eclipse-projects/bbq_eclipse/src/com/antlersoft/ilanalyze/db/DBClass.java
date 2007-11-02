@@ -28,10 +28,12 @@ import com.antlersoft.query.EmptyEnum;
  * @author Michael A. MacDonald
  *
  */
-public class DBClass extends DBSourceObject {
+public class DBClass extends DBSourceObject implements HasProperties, HasDBType {
 	
 	/** Primary key on class name in key form */
-	static final String CLASS_KEY_INDEX="CLASS_KEY_INDEX";
+	public static final String CLASS_KEY_INDEX="CLASS_KEY_INDEX";
+	/** Primary key on class name in key form */
+	public static final String CLASS_BY_NAME_INDEX="CLASS_BY_NAME_INDEX";
 
 	/**
 	 * Base classes
@@ -241,6 +243,15 @@ public class DBClass extends DBSourceObject {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @return Enumeration over all the methods (including static and constructor) in the class
+	 */
+	public Enumeration getMethods()
+	{
+		return new FromRefEnumeration( new IteratorEnumeration( m_methods.values().iterator()));
+	}
+	
 	DBMethod getMethod( String name, DBType type, String signature_key)
 	{
 		DBMethod result;
@@ -248,7 +259,7 @@ public class DBClass extends DBSourceObject {
 		ObjectRef ref=(ObjectRef)m_methods.get( method_key);
 		if ( ref==null)
 		{
-			result=new DBMethod( this, name, type);
+			result=new DBMethod( this, name, type, signature_key);
 			m_methods.put( method_key, new ObjectRef(result));
 			ObjectDB.makeDirty( this);
 		}
@@ -257,6 +268,17 @@ public class DBClass extends DBSourceObject {
 			result=(DBMethod)ref.getReferenced();
 			result.setDBType( type);
 		}
+		
+		return result;
+	}
+	
+	public DBMethod findMethod( String name, String signature_key)
+	{
+		DBMethod result=null;
+		String method_key=name+signature_key;
+		ObjectRef ref=(ObjectRef)m_methods.get( method_key);
+		if ( ref!=null)
+			result=(DBMethod)ref.getReferenced();
 		
 		return result;
 	}
@@ -271,6 +293,26 @@ public class DBClass extends DBSourceObject {
 			m_contained=new ObjectKeyHashSet();
 		if ( m_contained.add( new ObjectRef(to_add)))
 			ObjectDB.makeDirty(this);
+	}
+	
+	
+	/**
+	 * 
+	 * @return Enumeration over immediate base classes (extends and implements) for this class
+	 */
+	public Enumeration getBaseClasses()
+	{
+		return new FromRefEnumeration( new IteratorEnumeration( m_base.iterator()));
+	}
+	
+	
+	/**
+	 * 
+	 * @return Enumeration over the immediate derived classes (if any) of this class
+	 */
+	public Enumeration getDerivedClasses()
+	{
+		return m_derived==null ? (Enumeration)EmptyEnum.empty : (Enumeration)new FromRefEnumeration( new IteratorEnumeration( m_derived.iterator()));
 	}
 	
 	/**
@@ -336,6 +378,13 @@ public class DBClass extends DBSourceObject {
 		return result;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.db.HasDBType#getDBType()
+	 */
+	public DBType getDBType( ILDB db) {
+		return (DBType)db.findObject(DBType.TYPE_KEY_INDEX, m_class_key);
+	}
+
 	public String toString()
 	{
 		return m_class_key.replace('/', '.');

@@ -1,0 +1,314 @@
+#include ../../query/BasicBase.bp
+
+symbol Identity
+symbol ImportExpression
+symbol Reference
+symbol StringConstant
+symbol Types
+symbol UncalledPolymorphic
+symbol SAVING_NAME
+
+reserved Abstract "abstract" 4 right
+reserved all
+reserved are
+reserved arguments
+reserved array
+reserved base
+reserved by
+reserved called
+reserved calls
+reserved Class "class"
+reserved classes
+reserved containing
+#reserved deprecated 4 right
+reserved derived
+reserved fields
+reserved from
+reserved Import "using"
+reserved in
+reserved Internal "internal"
+reserved is
+reserved Interface "interface" 4 right
+reserved methods
+reserved Package "namespace" 4 right
+reserved packages "namespaces"
+reserved polymorphic
+reserved Protected "protected" 4 right
+reserved Private "private" 4 right
+reserved Public "public" 4 right
+reserved references
+reserved reference
+reserved referenced
+reserved rightParen ")"
+reserved set
+reserved SetExpressionSymbol "((#1"
+reserved Static "static" 4 right
+reserved stringconstants "strings"
+reserved that
+reserved TransformSymbol "((#2"
+reserved type
+reserved types
+reserved uncalled
+reserved unset
+reserved with
+reserved write
+
+SAVING_NAME : set nameSymbol to "{
+	return ((QueryLanguageEnvironment)parser.getParserEnvironment()).startSavingName( valueStack.s_1(), 3);
+}" 1 .
+
+SET_EXPRESSION : unset nameSymbol "{
+	((QueryLanguageEnvironment)parser.getParserEnvironment()).unsaveName( valueStack.s_0());
+	return new EmptySetExpression(); 
+}" 1 .
+
+SET_EXPRESSION : SAVING_NAME SET_EXPRESSION "{
+    int size=valueStack.size();
+    SetExpression se=(SetExpression)valueStack.o_0();
+    SavingName valueName=(SavingName)valueStack.o_1();
+    ((QueryLanguageEnvironment)parser.getParserEnvironment()).finishSavingName( valueName, se);
+    return se; }" 1 .
+
+SET_EXPRESSION : SAVING_NAME TRANSFORM "{
+    int size=valueStack.size();
+    Transform se=(Transform)valueStack.get( size-1);
+    SavingName valueName=(SavingName)valueStack.get( size-2);
+    ((QueryLanguageEnvironment)parser.getParserEnvironment()).finishSavingName( valueName, se);
+	return new EmptySetExpression();
+	}" 1 .
+	
+SET_EXPRESSION : VALUE_EXPRESSION SET_EXPRESSION "
+	{
+		int size=valueStack.size();
+		return new TransformSet( new ValueExpressionTransform( (ValueExpression)valueStack.get( size-2)),
+			(SetExpression)valueStack.get( size-1));
+	}" .
+
+SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).replaceWithStoredValue( valueStack.s_0(), 1); }" .
+
+SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
+	int size=valueStack.size();
+	return new TransformSet( new FilterTransform( (Filter)valueStack.get( size-1),
+		(SetExpression)valueStack.get( size-4)));
+	}" .
+
+SET_EXPRESSION : Class literalString "{
+	return new ClassGet( (String)valueStack.s_0(), ((AnalyzerQuery)parser.getParserEnvironment()).getImported());
+	}" .
+	
+VALUE_EXPRESSION : Package "{
+	return new CountPreservingValueExpression( DBNamespace.class, String.class) {
+	    protected Object transformSingleObject(DataSource source, Object inputObject)
+	    {
+	    	return ((ILDB)source).findObject( DBNamespace.NAMESPACE_NAME_KEY, (String)inputObject);
+	    }
+			
+		};
+	}" 10 .
+
+SET_EXPRESSION : all classes "{
+	return new AllGet( DBClass.class);
+	}" .
+
+SET_EXPRESSION : all StringConstant "{
+    return new AllGet( DBString.class);
+    }" .
+    
+SET_EXPRESSION : all packages "{
+	return new AllGet( DBNamespace.class);
+	}" .
+
+SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((AnalyzerQuery)parser.getParserEnvironment()).getImported()); }" .
+
+ImportExpression : Import .
+ImportExpression : ImportExpression set "{
+    ((AnalyzerQuery)parser.getParserEnvironment()).getImported().clear();
+    return \"\";
+}" .
+ImportExpression : ImportExpression literalString "{
+    ((AnalyzerQuery)parser.getParserEnvironment()).getImported().add( valueStack.s_0());
+    return \"\";
+}" .
+
+SET_EXPRESSION : TRANSFORM SET_EXPRESSION
+"{ return new TransformSet( (Transform)valueStack.get( valueStack.size()-2),
+(SetExpression)valueStack.get( valueStack.size()-1)); }" .
+
+TRANSFORM : VALUE_EXPRESSION TRANSFORM "
+	{
+		int size=valueStack.size();
+		return new TransformTransform( (Transform)valueStack.get(size-1),
+			new ValueExpressionTransform( (ValueExpression)valueStack.get( size-2)));
+	}" .
+
+TRANSFORM : TRANSFORM TRANSFORM
+"{ return new TransformTransform( (Transform)valueStack.get( valueStack.size()-1),
+(Transform)valueStack.get( valueStack.size()-2)); }" 5 .
+
+TRANSFORM : TRANSFORM that Identity FILTER "{
+	int size=valueStack.size();
+	return new TransformTransform(
+		(Transform)valueStack.get( size-4),
+		new FilterTransform((Filter)valueStack.get( size-1)));
+	};" 2 .
+TRANSFORM : arguments of "{
+		return new TransformImpl( DBArgument.class, DBMethod.class) {
+			public Enumeration transformObject( DataSource source, Object to_transform)
+			{
+				return ((DBMethod)to_transform).getArguments();
+			}
+		};
+	}" .
+
+TRANSFORM : recursive base classes of "{ return new RecursiveBaseClasses(); }" .
+TRANSFORM : base classes of "{ return new TransformImpl( DBClass.class, DBClass.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBClass)to_transform).getBaseClasses(); } }; }" .
+TRANSFORM : recursive derived classes of "{ return new RecursiveDerivedClasses(); }" .
+TRANSFORM : derived classes of "{ return new TransformImpl( DBClass.class, DBClass.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBClass)to_transform).getDerivedClasses(); } }; }" .
+TRANSFORM : methods in "{ return new TransformImpl( DBMethod.class, DBClass.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBClass)to_transform).getMethods(); } }; }" .
+TRANSFORM : fields in "{ return new TransformImpl( DBField.class, DBClass.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBClass)to_transform).getFields(); } }; }" .
+TRANSFORM : polymorphic "{ return new Polymorphic(); }" .
+TRANSFORM : calls from "{ return new TransformImpl( DBCall.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getCalls(); } }; }" .
+TRANSFORM : Reference from "{ return new TransformImpl( DBFieldReference.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getReferences(); } }; }" .
+TRANSFORM : StringConstant Reference from "{ return new TransformImpl( DBStringReference.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getStringReferences(); } }; }" .
+TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
+TRANSFORM : calls to ""{ return new TransformImpl( DBCall.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getCallsTo(); } }; }" .
+TRANSFORM : TransformSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).replaceWithStoredValue( (String)valueStack.get( valueStack.size()-1), 1); }" .
+TRANSFORM : fields with "{
+	return new TransformImpl( DBField.class, DBType.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getFields((AnalyzerDB)source);
+		}
+	};}" .
+TRANSFORM : methods with "{
+	return new TransformImpl( DBMethod.class, DBType.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getReturningMethods((AnalyzerDB)source);
+		}
+	};}" .
+TRANSFORM : arguments with "{
+	return new TransformImpl( DBArgument.class, DBType.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getArguments((AnalyzerDB)source);
+		}
+	};}" .
+	
+TRANSFORM : packages in "{
+	return new TransformImpl( DBPackage.class, DBPackage.class) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBPackage)to_transform).getSubPackages();
+		}
+	};}" .
+	
+TRANSFORM : classes in "{
+	return new TransformImpl( DBClass.class, null) {
+		public void lateBindApplies( Class new_applies)
+		throws BindException
+		{
+			if ( DBClass.class.isAssignableFrom( new_applies)
+				|| DBPackage.class.isAssignableFrom( new_applies))
+				super.lateBindApplies( new_applies);
+			else
+				throw new BindException( \"Can only bind DBClass or DBPackage\");
+		}
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			if ( to_transform instanceof DBClass)
+				return ((DBClass)to_transform).getInnerClasses();
+			return ((DBPackage)to_transform).getContainedClasses();
+		}
+	};
+	}" .
+	
+
+FILTER : write "{ return new WriteReference(); }" .
+
+FILTER : is array "{ return new IsArray(); }" .
+
+FILTER : is reference type "{ return new IsReferenceType(); }" .
+
+FILTER : Public "{
+	return new AccessFilter( DBDriver.IS_PUBLIC); }" .
+FILTER : Private "{
+	return new AccessFilter( DBDriver.IS_PRIVATE); }" .
+FILTER : Protected "{
+	return new AccessFilter( DBDriver.IS_FAMILY); }" .
+FILTER : Internal "{
+    return new AccessFilter( DBDriver.IS_ASSEMBLY);
+    }" .
+FILTER : Abstract "{ return new AccessFilter( DBDriver.IS_ABSTRACT); }" .
+FILTER : Static "{ return new AccessFilter( DBDriver.IS_STATIC); }" .
+FILTER : Interface "{ return new AccessFilter( DBDriver.IS_INTERFACE); }" .
+#FILTER : deprecated "{ return new DeprecatedFilter(); }" .
+
+FILTER : uncalled "{ return new UncalledMethod(); }" .
+FILTER : UncalledPolymorphic "{ return new UncalledPolymorphic(); }" .
+
+VALUE_EXPRESSION : Types of "{
+	return new CountPreservingValueExpression( DBType.class, HasDBType.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return ((HasDBType)toTransform).getDBType();
+		}
+	}; 
+	}" .
+
+VALUE_EXPRESSION : VALUE_EXPRESSION VALUE_EXPRESSION
+"{ return new CompoundExpression( (ValueExpression)valueStack.get( valueStack.size()-1),
+(ValueExpression)valueStack.get( valueStack.size()-2)); }" .
+
+VALUE_EXPRESSION : StringConstant "{
+	return new StringGet();
+	}" .
+	
+VALUE_EXPRESSION : Types "{
+	return new TypeGet();
+	}" .
+	
+VALUE_EXPRESSION : classes containing "{ return new ClassContaining(); }" .
+
+VALUE_EXPRESSION : classes with "{ return new ClassForType(); }" .
+VALUE_EXPRESSION : methods containing "{ return new MethodsContaining(); }" .
+VALUE_EXPRESSION : methods called by "{ return new MethodsOf(); }" .
+VALUE_EXPRESSION : fields referenced by "{ return new FieldsOf(); }" .
+VALUE_EXPRESSION : StringConstant referenced by "{ return new StringsOf(); }" .
+VALUE_EXPRESSION : type referenced by "{
+	return new CountPreservingValueExpression( DBType.class, DBType.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getArrayReferencedType();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : methods of "{
+	return new CountPreservingValueExpression( DBMethod.class, DBArgument.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBArgument)to_transform).getMethod();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : packages of "{
+	return new CountPreservingValueExpression( DBPackage.class, DBClass.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBClass)to_transform).getPackage();
+		}
+	};		
+	}" .
+Reference : reference .
+Reference : references .
+
+StringConstant : stringconstant .
+StringConstant : stringconstants .
+
+UncalledPolymorphic : uncalled polymorphic 16 .
+
+Types : type .
+Types : types .
+
+Identity : is .
+Identity : are .

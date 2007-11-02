@@ -34,12 +34,12 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexIterator;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.IndexExistsException;
@@ -335,43 +335,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
         {
             return ((Lookup)keyed).key;
         }
-    }
-    
-    private static class ExactMatchIndexEnumeration implements Enumeration
-    {
-    	private IndexIterator _ii;
-    	private Object _nextObject;
-    	
-    	ExactMatchIndexEnumeration( IndexIterator ii)
-    	{
-    		_ii=ii;
-    		determineNextObject();
-    	}
-    	
-    	public boolean hasMoreElements()
-    	{
-    		return _nextObject!=null;
-    	}
-    	
-    	public Object nextElement()
-    	throws NoSuchElementException
-    	{
-    		if ( _nextObject==null)
-    			throw new NoSuchElementException();
-    		Object result=_nextObject;
-    		determineNextObject();
-    		return result;
-    	}
-    	
-    	private void determineNextObject()
-    	{
-    		Object result=null;
-			if ( _ii.hasNext() && _ii.isExactMatch())
-			{
-				result=_ii.next();
-			}
-			_nextObject=result;
-    	}
     }
     
     static void printStatistics( DirectoryAllocator store, String index_name)

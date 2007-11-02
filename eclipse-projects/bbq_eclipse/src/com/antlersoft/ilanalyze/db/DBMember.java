@@ -15,7 +15,7 @@ import com.antlersoft.odb.ObjectRefKey;
  * @author Michael A. MacDonald
  *
  */
-public abstract class DBMember extends DBSourceObject {
+public abstract class DBMember extends DBSourceObject implements HasProperties, HasDBType {
 	private String m_name;
 	private ObjectRef m_class;
 	private ObjectRef m_type;
@@ -38,6 +38,11 @@ public abstract class DBMember extends DBSourceObject {
 	public DBType getDBType()
 	{
 		return (DBType)m_type.getReferenced();
+	}
+	
+	public DBType getDBType( ILDB db)
+	{
+		return getDBType();
 	}
 	
 	public DBClass getDBClass()

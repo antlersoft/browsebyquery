@@ -21,36 +21,18 @@ package com.antlersoft.analyzer.query;
 
 import com.antlersoft.analyzer.DBFieldReference;
 
-import com.antlersoft.query.BindException;
-import com.antlersoft.query.BindImpl;
-import com.antlersoft.query.CountPreservingFilter;
+import com.antlersoft.query.CountPreservingBoundFilter;
 import com.antlersoft.query.DataSource;
 
-class WriteReferences extends CountPreservingFilter
+class WriteReferences extends CountPreservingBoundFilter
 {
 	WriteReferences()
 	{
-		m_bind=new BindImpl( BOOLEAN_CLASS, DBFieldReference.class);
+		super(DBFieldReference.class);
 	}
 
 	protected boolean getCountPreservingFilterValue( DataSource source, Object toFilter)
 	{
 		return ((DBFieldReference)toFilter).isWrite();
-	}
-	
-	private BindImpl m_bind;
-
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.BindImpl#appliesClass()
-	 */
-	public Class appliesClass() {
-		return m_bind.appliesClass();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.BindImpl#lateBindApplies(java.lang.Class)
-	 */
-	public void lateBindApplies(Class new_applies) throws BindException {
-		m_bind.lateBindApplies(new_applies);
 	}
 }

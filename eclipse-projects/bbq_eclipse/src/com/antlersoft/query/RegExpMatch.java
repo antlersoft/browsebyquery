@@ -29,7 +29,7 @@ import com.antlersoft.parser.RuleActionException;
  * @author Michael A. MacDonald
  *
  */
-public class RegExpMatch extends CountPreservingFilter {
+public class RegExpMatch extends CountPreservingBoundFilter {
 
 	/**
 	 * @param to_match Regular expression to match
@@ -39,7 +39,7 @@ public class RegExpMatch extends CountPreservingFilter {
 	public RegExpMatch( String to_match)
 	throws RuleActionException
 	{
-		m_binding=new BindImpl(BOOLEAN_CLASS, null);
+		super(null);
 		try
 		{
 			m_pattern=Pattern.compile(to_match);
@@ -59,21 +59,6 @@ public class RegExpMatch extends CountPreservingFilter {
 		return m_pattern.matcher(inputObject.toString()).find();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.Bindable#appliesClass()
-	 */
-	public Class appliesClass() {
-		return m_binding.appliesClass();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.Bindable#lateBindApplies(java.lang.Class)
-	 */
-	public void lateBindApplies(Class new_applies) throws BindException {
-		m_binding.lateBindApplies(new_applies);
-	}
 	
 	private Pattern m_pattern;
-	private BindImpl m_binding;
-
 }
