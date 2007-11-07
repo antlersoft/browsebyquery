@@ -1,0 +1,5 @@
+bbqil 0.1.0
+
+First release that handles CLR--
+
+Reads CLR into database by parsing IL assembly language files

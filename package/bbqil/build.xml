@@ -1,0 +1,32 @@
+<!--
+Copyright 2005-2007 Michael A. MacDonald
+Please make changes to the bbq_ant.properties file
+
+Requires ant 1.6+
+-->
+<project name="bbq" default="all">
+	<property file="bbq_ant.properties"/>
+	<target name="all" depends="bbqstandalone"/>
+	<target name="bbqstandalone" depends="buildcommon">
+		<mkdir dir="dist"/>
+		<jar destfile="dist/bbqstandalone.jar" basedir="classes" manifest="com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
+		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/**">
+		</jar>
+	</target>
+	<target name="buildcommon">
+		<mkdir dir="classes"/>
+		<exec executable="${genparserpath}">
+			<arg file="com/antlersoft/ilanalyze/parseildasm/IldasmParser.pre"/>
+		</exec>
+		<exec executable="${genparserpath}">
+			<arg file="com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
+		</exec>
+		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
+			<src path="com/antlersoft/odb;com/antlersoft/ilanalyze;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/query"/>
+		</javac>
+	</target>
+	<target name="clean">
+		<delete dir="classes"/>
+		<delete dir="dist"/>
+	</target>
+</project>
