@@ -3,11 +3,15 @@
  */
 package com.antlersoft.ilanalyze.db;
 
+import java.util.Enumeration;
+
 import com.antlersoft.ilanalyze.*;
 
+import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
@@ -19,6 +23,7 @@ import com.antlersoft.odb.PersistentImpl;
 public class DBType implements Persistent {
 	
 	static final String TYPE_KEY_INDEX="TYPE_KEY_INDEX";
+	static final String TYPE_NAME_INDEX="TYPE_NAME_INDEX";
 	
 	/** String that uniquely specifies the type */
 	private String m_type_key;
@@ -63,9 +68,49 @@ public class DBType implements Persistent {
 		return result;
 	}
 	
+	public Enumeration getArguments( ILDB db)
+	{
+		return getTypesByIndex( db, DBArgument.ARG_TYPE_INDEX);
+	}
+	
+	public Enumeration getReturningMethods( ILDB db)
+	{
+		return getTypesByIndex( db, DBMethod.METHOD_TYPE_INDEX);
+	}
+	
+	public Enumeration getFields( ILDB db)
+	{
+		return getTypesByIndex( db, DBField.FIELD_TYPE_INDEX);
+	}
+	
+	public DBType getArrayReferencedType()
+	{
+		return (DBType)DBClass.OptionalRefGet(m_referenced);
+	}
+	
+	public boolean isArray()
+	{
+		return m_referenced!=null;
+	}
+	
+	public DBClass getReferencedClass()
+	{
+		return (DBClass)DBClass.OptionalRefGet(m_class);
+	}
+	
+	public boolean isClass()
+	{
+		return m_class!=null;
+	}
+	
 	public String toString()
 	{
 		return m_type_user_name;
+	}
+	
+	public static DBType getTypeByUserName( ILDB db, String name)
+	{
+		return (DBType)db.findObject(TYPE_NAME_INDEX, name);
 	}
 
 	/* (non-Javadoc)
@@ -75,6 +120,11 @@ public class DBType implements Persistent {
 		if ( _persistentImpl==null)
 			_persistentImpl=new PersistentImpl();
 		return _persistentImpl;
+	}
+	
+	private Enumeration getTypesByIndex( ILDB db, String indexName)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(indexName, new ObjectRefKey( this)));
 	}
 
 	static class TypeKeyGenerator implements KeyGenerator

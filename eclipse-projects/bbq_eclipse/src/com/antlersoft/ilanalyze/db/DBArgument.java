@@ -22,12 +22,14 @@ public class DBArgument implements Persistent, HasDBType {
 	private ObjectRef m_type;
 	private String m_name;
 	private int m_index;
+	private ObjectRef m_method;
 	
 	private transient PersistentImpl _persistentImpl;
 	
-	DBArgument( DBType type, String name, int index)
+	DBArgument( DBMethod method, DBType type, String name, int index)
 	{
-		m_type=new ObjectRef( m_type);
+		m_type=new ObjectRef( type);
+		m_method=new ObjectRef( method);
 		m_name=name;
 		m_index=index;
 		
@@ -56,6 +58,11 @@ public class DBArgument implements Persistent, HasDBType {
 	public DBType getDBType( ILDB db)
 	{
 		return getDBType();
+	}
+	
+	public DBMethod getMethod()
+	{
+		return (DBMethod)m_method.getReferenced();
 	}
 	
 	synchronized void setDBType( DBType t)

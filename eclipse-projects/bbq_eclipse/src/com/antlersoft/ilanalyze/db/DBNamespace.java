@@ -23,7 +23,7 @@ import com.antlersoft.util.IteratorEnumeration;
 public class DBNamespace implements Persistent {
 	
 	/** Primary key on namespace name (full dotted name) */
-	static final String NAMESPACE_NAME_INDEX="NAMESPACE_NAME_INDEX";
+	public static final String NAMESPACE_NAME_INDEX="NAMESPACE_NAME_INDEX";
 
 	private transient PersistentImpl _persistentImpl;
 	

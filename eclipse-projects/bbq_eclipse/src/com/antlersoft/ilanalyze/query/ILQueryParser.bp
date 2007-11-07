@@ -100,7 +100,7 @@ VALUE_EXPRESSION : Package "{
 	return new CountPreservingValueExpression( DBNamespace.class, String.class) {
 	    protected Object transformSingleObject(DataSource source, Object inputObject)
 	    {
-	    	return ((ILDB)source).findObject( DBNamespace.NAMESPACE_NAME_KEY, (String)inputObject);
+	    	return ((ILDB)source).findObject( DBNamespace.NAMESPACE_NAME_INDEX, (String)inputObject);
 	    }
 			
 		};
@@ -171,35 +171,35 @@ TRANSFORM : calls from "{ return new TransformImpl( DBCall.class, DBMethod.class
 TRANSFORM : Reference from "{ return new TransformImpl( DBFieldReference.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getReferences(); } }; }" .
 TRANSFORM : StringConstant Reference from "{ return new TransformImpl( DBStringReference.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getStringReferences(); } }; }" .
 TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
-TRANSFORM : calls to ""{ return new TransformImpl( DBCall.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getCallsTo(); } }; }" .
+TRANSFORM : calls to "{ return new TransformImpl( DBCall.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getCallsTo((ILDB)source); } }; }" .
 TRANSFORM : TransformSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).replaceWithStoredValue( (String)valueStack.get( valueStack.size()-1), 1); }" .
 TRANSFORM : fields with "{
 	return new TransformImpl( DBField.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBType)to_transform).getFields((AnalyzerDB)source);
+			return ((DBType)to_transform).getFields((ILDB)source);
 		}
 	};}" .
 TRANSFORM : methods with "{
 	return new TransformImpl( DBMethod.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBType)to_transform).getReturningMethods((AnalyzerDB)source);
+			return ((DBType)to_transform).getReturningMethods((ILDB)source);
 		}
 	};}" .
 TRANSFORM : arguments with "{
 	return new TransformImpl( DBArgument.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBType)to_transform).getArguments((AnalyzerDB)source);
+			return ((DBType)to_transform).getArguments((ILDB)source);
 		}
 	};}" .
 	
 TRANSFORM : packages in "{
-	return new TransformImpl( DBPackage.class, DBPackage.class) {
+	return new TransformImpl( DBNamespace.class, DBNamespace.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBPackage)to_transform).getSubPackages();
+			return ((DBNamespace)to_transform).getChildren();
 		}
 	};}" .
 	
@@ -209,16 +209,16 @@ TRANSFORM : classes in "{
 		throws BindException
 		{
 			if ( DBClass.class.isAssignableFrom( new_applies)
-				|| DBPackage.class.isAssignableFrom( new_applies))
+				|| DBNamespace.class.isAssignableFrom( new_applies))
 				super.lateBindApplies( new_applies);
 			else
-				throw new BindException( \"Can only bind DBClass or DBPackage\");
+				throw new BindException( \"Can only bind DBClass or DBNamespace\");
 		}
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
 			if ( to_transform instanceof DBClass)
-				return ((DBClass)to_transform).getInnerClasses();
-			return ((DBPackage)to_transform).getContainedClasses();
+				return ((DBClass)to_transform).getContainedClasses();
+			return ((DBNamespace)to_transform).getClasses();
 		}
 	};
 	}" .
@@ -226,9 +226,19 @@ TRANSFORM : classes in "{
 
 FILTER : write "{ return new WriteReference(); }" .
 
-FILTER : is array "{ return new IsArray(); }" .
+FILTER : is array "{
+	return new CountPreservingBoundFilter( DBType.class) {
+		protected boolean getCountPreservingFilterValue(DataSource source,
+				Object inputObject) {
+			return ((DBType)inputObject).isArray();
+		}}; }" .
 
-FILTER : is reference type "{ return new IsReferenceType(); }" .
+FILTER : is Class type "{
+	return new CountPreservingBoundFilter( DBType.class) {
+		protected boolean getCountPreservingFilterValue(DataSource source,
+				Object inputObject) {
+			return ((DBType)inputObject).isClass();
+		}}; }" .
 
 FILTER : Public "{
 	return new AccessFilter( DBDriver.IS_PUBLIC); }" .
@@ -251,7 +261,7 @@ VALUE_EXPRESSION : Types of "{
 	return new CountPreservingValueExpression( DBType.class, HasDBType.class) {
 		public Object transformSingleObject( DataSource source, Object toTransform)
 		{
-			return ((HasDBType)toTransform).getDBType();
+			return ((HasDBType)toTransform).getDBType((ILDB)source);
 		}
 	}; 
 	}" .
@@ -261,20 +271,65 @@ VALUE_EXPRESSION : VALUE_EXPRESSION VALUE_EXPRESSION
 (ValueExpression)valueStack.get( valueStack.size()-2)); }" .
 
 VALUE_EXPRESSION : StringConstant "{
-	return new StringGet();
-	}" .
+	return new CountPreservingValueExpression( DBString.class, String.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return DBString.get( (ILDB)source, (String)toTransform);
+		}
+	};
+}" .
 	
 VALUE_EXPRESSION : Types "{
-	return new TypeGet();
-	}" .
+	return new CountPreservingValueExpression( DBType.class, String.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return DBType.getTypeByUserName( (ILDB)source, (String)toTransform);
+		}
+	};
+}" .
 	
 VALUE_EXPRESSION : classes containing "{ return new ClassContaining(); }" .
 
-VALUE_EXPRESSION : classes with "{ return new ClassForType(); }" .
-VALUE_EXPRESSION : methods containing "{ return new MethodsContaining(); }" .
-VALUE_EXPRESSION : methods called by "{ return new MethodsOf(); }" .
-VALUE_EXPRESSION : fields referenced by "{ return new FieldsOf(); }" .
-VALUE_EXPRESSION : StringConstant referenced by "{ return new StringsOf(); }" .
+VALUE_EXPRESSION : classes with "{
+	return new CountPreservingValueExpression( DBClass.class, DBType.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return ((DBType)toTransform).getReferencedClass();
+		}
+ 	};
+ }" .
+VALUE_EXPRESSION : methods containing "{
+	return new CountPreservingValueExpression( DBMethod.class, DBReference.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return ((DBReference)toTransform).getMethod();
+		}
+ 	};
+ }" .
+VALUE_EXPRESSION : methods called by "{
+	return new CountPreservingValueExpression( DBMethod.class, DBCall.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return ((DBCall)toTransform).getCalled();
+		}
+	};
+ }" .
+VALUE_EXPRESSION : fields referenced by "{
+	return new CountPreservingValueExpression( DBField.class, DBFieldReference.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return ((DBFieldReference)toTransform).getDBField();
+		}
+	};
+ }" .
+VALUE_EXPRESSION : StringConstant referenced by "{
+	return new CountPreservingValueExpression( DBString.class, DBStringReference.class) {
+		public Object transformSingleObject( DataSource source, Object toTransform)
+		{
+			return ((DBStringReference)toTransform).getDBString();
+		}
+	};
+ }" .
 VALUE_EXPRESSION : type referenced by "{
 	return new CountPreservingValueExpression( DBType.class, DBType.class) {
 		public Object transformSingleObject( DataSource source, Object to_transform)
@@ -292,10 +347,10 @@ VALUE_EXPRESSION : methods of "{
 	};
 	}" .
 VALUE_EXPRESSION : packages of "{
-	return new CountPreservingValueExpression( DBPackage.class, DBClass.class) {
+	return new CountPreservingValueExpression( DBNamespace.class, DBClass.class) {
 		public Object transformSingleObject( DataSource source, Object to_transform)
 		{
-			return ((DBClass)to_transform).getPackage();
+			return ((DBClass)to_transform).getNamespace();
 		}
 	};		
 	}" .

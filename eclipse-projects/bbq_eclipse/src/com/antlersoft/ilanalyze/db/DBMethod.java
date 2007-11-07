@@ -164,7 +164,7 @@ public class DBMethod extends DBMember {
 					ReadArg arg=(ReadArg)arg_list.get(i);
 					if ( i>=m_method.m_arguments.size())
 					{
-						m_method.m_arguments.add( new ObjectRef( new DBArgument( getArgType( arg), arg.getName(), i)));
+						m_method.m_arguments.add( new ObjectRef( new DBArgument( m_method, getArgType( arg), arg.getName(), i)));
 						m_updated=true;
 					}
 					else

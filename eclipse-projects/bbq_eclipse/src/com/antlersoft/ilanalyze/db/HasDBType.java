@@ -4,6 +4,7 @@
 package com.antlersoft.ilanalyze.db;
 
 /**
+ * Interface implemented by objects that have a DBType
  * @author Michael A. MacDonald
  *
  */

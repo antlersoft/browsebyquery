@@ -25,9 +25,4 @@ public class DBCall extends DBReference {
 	{
 		return (DBMethod)m_target.getReferenced();
 	}
-
-	public DBString getDBString()
-	{
-		return (DBString)m_target.getReferenced();
-	}
 }

@@ -102,6 +102,16 @@ public class ILDB extends IndexObjectDB implements DataSource {
 		}
 		try
 		{
+			defineIndex( DBType.TYPE_NAME_INDEX,
+					DBType.class,
+					new StringKeyGenerator(),
+					false, true, null);
+		}
+		catch ( IndexExistsException iee)
+		{
+		}
+		try
+		{
 			defineIndex( DBField.FIELD_TYPE_INDEX,
 					DBField.class,
 					new DBMember.MemberTypeGenerator(),
