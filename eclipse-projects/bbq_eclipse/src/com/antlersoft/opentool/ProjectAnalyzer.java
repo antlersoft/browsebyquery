@@ -45,6 +45,8 @@ import com.borland.primetime.vfs.Url;
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 
+import com.antlersoft.analyzer.query.QueryParser;
+
 import com.antlersoft.classwriter.ClassWriter;
 
 import com.antlersoft.odb.ObjectDBException;
@@ -85,7 +87,7 @@ class ProjectAnalyzer
 odb.printStackTrace();
 			clearDB( node, canonicalPath);
         }
-        qp=new AnalyzerQuery();
+        qp=new AnalyzerQuery( new QueryParser());
         goodPath=canonicalPath;
         // Don't choke on failure to read environment
         try
