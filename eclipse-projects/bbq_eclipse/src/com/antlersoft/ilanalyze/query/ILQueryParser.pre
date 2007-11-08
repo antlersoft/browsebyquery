@@ -21,7 +21,7 @@ import com.antlersoft.query.environment.SavingName;
 
 public class ILQueryParser extends ILQueryParserBase
 {
-	ILQueryParser()
+	public ILQueryParser()
 	{
 		super( parseStates);
 	}

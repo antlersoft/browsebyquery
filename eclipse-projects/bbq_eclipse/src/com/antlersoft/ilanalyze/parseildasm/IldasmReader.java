@@ -12,12 +12,15 @@ import java.io.Reader;
 import java.text.MessageFormat;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.antlersoft.ilanalyze.DBDriver;
 import com.antlersoft.ilanalyze.LoggingDBDriver;
@@ -38,12 +41,16 @@ public class IldasmReader {
     private static Logger logger=Logger.getLogger( IldasmReader.class.getName());
 	private IldasmParser m_parser;
 	private DBDriver m_driver;
-	/** A format string for forming the disassembly command for an assembly from the commands path */
+	/** A format string for forming the disassembly command for an assembly from the assembly's path */
 	private String m_disassembly_command_format;
 	/** Number of lines seen */
 	private int m_line_count;
 	/** Text of current line (for error messages) */
 	private StringBuilder m_line;
+	/** Pattern directory must match to pull .dll's and .exe's */
+	private Pattern m_directory_match;
+	/** Oldest modification date to consider for file to add to database */
+	private Date m_oldest;
 	
 	/**
 	 * Map of symbol name to symbol; cache of expected symbols so we can identify if multiple symbols
@@ -56,6 +63,18 @@ public class IldasmReader {
 		m_parser=new IldasmParser();
 		m_line=new StringBuilder();
 		m_disassembly_command_format="monodis {0}";
+		if ( System.getProperty("os.name", "Finux").contains("Windows"))
+		{
+			m_disassembly_command_format="ildasm /text /nobar /linenumber {0}";
+			try
+			{
+				m_directory_match=Pattern.compile( "obj/Debug$");
+			}
+			catch ( PatternSyntaxException pse)
+			{
+				logger.warning(pse.getLocalizedMessage());
+			}
+		}
 	}
 	
 	/**
@@ -150,6 +169,16 @@ public class IldasmReader {
 		return m_parser.getReservedScope().getReservedStrings();
 	}
 	
+	/**
+	 * Set a date; won't add .exe or .dll files to the database older than that date
+	 * @param oldest Files older than this won't be added to the database (it assumes most recent version
+	 * is already there)
+	 */
+	public void setOldestFileDate( Date oldest)
+	{
+		m_oldest=oldest;
+	}
+	
 	public void sendFileToDriver( File file, DBDriver driver) throws IOException, RuleActionException
 	{
 		if ( file.isDirectory())
@@ -162,18 +191,39 @@ public class IldasmReader {
 		}
 		else
 		{
-			driver.startAnalyzedFile(file.getAbsolutePath());
 			String lower_file=file.getName().toLowerCase();
 			if ( lower_file.endsWith(".il"))
 			{
 				logger.fine( "Reading .il file "+file.getAbsolutePath());
+				driver.startAnalyzedFile(file.getAbsolutePath());
 				Read( driver, new FileReader(file));
+				driver.endAnalyzedFile();
 			}
 			else if ( lower_file.endsWith(".dll") || lower_file.endsWith(".exe"))
 			{
+				if ( m_directory_match!=null)
+				{
+					if ( ! m_directory_match.matcher( file.getParentFile().getAbsolutePath()).find())
+					{
+						if ( logger.isLoggable(Level.FINER))
+							logger.finer( "Rejecting "+file.getAbsolutePath()+" because directory doesn't match "+m_directory_match.pattern());
+						return;
+					}
+				}
+				if ( m_oldest!=null)
+				{
+					if ( file.lastModified()<m_oldest.getTime())
+					{
+						if ( logger.isLoggable(Level.FINER))
+							logger.finer( "Rejecting "+file.getAbsolutePath()+" because it is older than "+m_oldest.toString() );
+						return;						
+					}
+				}
 				logger.fine("Reading assembly file "+file.getAbsolutePath());
+				driver.startAnalyzedFile(file.getAbsolutePath());
 				Process process=Runtime.getRuntime().exec(MessageFormat.format(m_disassembly_command_format, new Object[] { file.getAbsolutePath() }));
 				Read( driver, new InputStreamReader(process.getInputStream()));
+				driver.endAnalyzedFile();
 				try
 				{
 					process.waitFor();
@@ -183,7 +233,6 @@ public class IldasmReader {
 					logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
 				}
 			}
-			driver.endAnalyzedFile();
 		}
 	}
 	

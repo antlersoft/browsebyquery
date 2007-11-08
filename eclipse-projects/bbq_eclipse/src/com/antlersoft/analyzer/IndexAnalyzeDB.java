@@ -149,8 +149,10 @@ public class IndexAnalyzeDB implements AnalyzerDB
         {
             File[] children=f.listFiles();
             for ( int i=0; i<children.length; ++i)
-                children[i].delete();
-            f.delete();
+            {
+            	if ( children[i].isFile() && children[i].getName().indexOf('.')== -1)
+            		children[i].delete();            	
+            }
         }
         openDB( dbName);
     }

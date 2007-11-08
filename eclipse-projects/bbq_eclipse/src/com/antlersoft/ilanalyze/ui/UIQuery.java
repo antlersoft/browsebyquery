@@ -1,5 +1,5 @@
 /*
- * <p>Copyright (c) 2000-2005  Michael A. MacDonald<p>
+ * <p>Copyright (c) 2000-2007  Michael A. MacDonald<p>
  * ----- - - -- - - --
  * <p>
  *     This package is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  * <p>
  * ----- - - -- - - --
  */
-package com.antlersoft.analyzer;
+package com.antlersoft.ilanalyze.ui;
 
 import java.io.File;
 import java.io.FileReader;
@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -34,7 +35,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.ilanalyze.db.*;
+
+import com.antlersoft.ilanalyze.parseildasm.IldasmReader;
+
+import com.antlersoft.ilanalyze.query.ILQueryParser;
 
 import com.antlersoft.odb.ObjectDBException;
 
@@ -49,8 +54,8 @@ import com.antlersoft.util.ExtensionFileFilter;
 public class UIQuery
 {
     JFileChooser chooser;
-    IndexAnalyzeDB analyzerDB;
-    String analyzerDBOpenString;
+    ILDB analyzerDB;
+    File analyzerDBOpenFile;
     AnalyzerQuery qp;
     JTextArea queryArea;
     JTextArea outputArea;
@@ -59,15 +64,14 @@ public class UIQuery
 
     UIQuery()
     {
-        analyzerDB=new IndexAnalyzeDB();
-        qp=new AnalyzerQuery( new QueryParser());
+        qp=new AnalyzerQuery( new ILQueryParser());
         chooser=new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled( true);
-        ExtensionFileFilter filter=new ExtensionFileFilter( ".class files, dirs and jars");
-        filter.addExtension( "class");
-        filter.addExtension( "zip");
-        filter.addExtension( "jar");
+        ExtensionFileFilter filter=new ExtensionFileFilter( "Directories and assembly (.exe, .dll, .il) files");
+        filter.addExtension( "exe");
+        filter.addExtension( "dll");
+        filter.addExtension("il");
         chooser.setFileFilter( filter);
     }
 
@@ -180,26 +184,28 @@ t.printStackTrace();
     {
         final UIQuery app = new UIQuery();
         boolean db_cleared=false;
+        String openString;
         if ( argv.length<=0)
-        	app.analyzerDBOpenString="test.bbq";
+        	openString="test.bbq";
 		else
-			app.analyzerDBOpenString=argv[0];
+			openString=argv[0];
+        app.analyzerDBOpenFile=new File( openString);
         try
         {
-            app.analyzerDB.openDB(app.analyzerDBOpenString);
+            app.analyzerDB=new ILDB(app.analyzerDBOpenFile);
         }
         catch ( ObjectDBException odb)
         {
         	db_cleared=true;
-            app.analyzerDB.clearDB( app.analyzerDBOpenString);
+            app.analyzerDB=ILDB.clearDB( app.analyzerDB, app.analyzerDBOpenFile);
         }
         catch ( RuntimeException rte)
         {
         	db_cleared=true;
-            app.analyzerDB.clearDB( app.analyzerDBOpenString);
+            app.analyzerDB=ILDB.clearDB( app.analyzerDB, app.analyzerDBOpenFile);
         }
 
-        JFrame appFrame=new JFrame( (argv.length>0 ? "Querying " : "Querying default DB ")+app.analyzerDBOpenString );
+        JFrame appFrame=new JFrame( (argv.length>0 ? "Querying " : "Querying default DB ")+openString );
         app.frameWindow=appFrame;
         if ( db_cleared)
         	JOptionPane.showMessageDialog( appFrame, "There was a problem opening the existing database, so it was cleared,\nand you must rebuild it by analyzing classes.", "Corrupt Database", JOptionPane.ERROR_MESSAGE);
@@ -207,7 +213,7 @@ t.printStackTrace();
         appFrame.getContentPane().add(contents, BorderLayout.CENTER);
         appFrame.setJMenuBar( app.createMenuBar());
         
-		final File environment_file=new File( new File( app.analyzerDBOpenString), "environment.xml");
+		final File environment_file=new File( app.analyzerDBOpenFile, "environment.xml");
 		try
 		{
 			if ( environment_file.canRead())
@@ -227,7 +233,8 @@ t.printStackTrace();
             public void windowClosing(WindowEvent e) {
                 try
                 {
-                    app.analyzerDB.closeDB();
+                    app.analyzerDB.close();
+                    app.analyzerDB=null;
                     FileWriter writer=new FileWriter( environment_file);
                     app.qp.writeEnvironment( writer);
                     writer.close();
@@ -308,7 +315,7 @@ t.printStackTrace();
                         "Are you sure you want to clear all the program data from the database?",
                         "Confirm Clear Database", JOptionPane.YES_NO_OPTION)==
                          JOptionPane.YES_OPTION)
-                        analyzerDB.clearDB( analyzerDBOpenString);
+                        analyzerDB=ILDB.clearDB( analyzerDB, analyzerDBOpenFile);
                 }
                 catch ( Exception e)
                 {
@@ -322,7 +329,7 @@ t.printStackTrace();
     {
         AnalyzeAction()
         {
-            super( "Analyze jar / directory / class files");
+            super( "Analyze directories or assembly files");
         }
 
         public void actionPerformed( ActionEvent event)
@@ -335,14 +342,20 @@ t.printStackTrace();
                     frameWindow.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR));
                     try
                     {
-                        // File[] selectedFiles=chooser.getSelectedFiles();
-                        // Multi-file selection is broken
-                        File[] selectedFiles=new File[] { chooser.getSelectedFile() };
+                    	ILDBDriver driver=new ILDBDriver(analyzerDB);
+                    	IldasmReader reader=new IldasmReader();
+                    	reader.setOldestFileDate((Date)analyzerDB.getRootObject("LAST_SCANNED"));
+                    	Date last_scanned=new Date();
+                    	
+                        File[] selectedFiles=chooser.getSelectedFiles();
 
                         for ( int i=0; i<selectedFiles.length; i++)
                         {
-                            DBClass.addFileToDB( selectedFiles[i], analyzerDB);
+                        	reader.sendFileToDriver(selectedFiles[i], driver);
                         }
+                        
+                        analyzerDB.makeRootObject("LAST_SCANNED", last_scanned);
+                        analyzerDB.commitAndRetain();
                     }
                     finally
                     {

@@ -21,6 +21,7 @@ import org.osgi.framework.BundleContext;
 
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 
+import com.antlersoft.analyzer.query.QueryParser;
 
 import com.antlersoft.bbq_eclipse.preferences.PreferenceConstants;
 
@@ -199,7 +200,7 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	{
 		if ( m_qp==null)
 		{
-			m_qp=new AnalyzerQuery();
+			m_qp=new AnalyzerQuery( new QueryParser());
 		}
 		return m_qp;
 	}

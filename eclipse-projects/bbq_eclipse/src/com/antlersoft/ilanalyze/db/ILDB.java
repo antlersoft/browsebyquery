@@ -11,6 +11,7 @@ import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.ObjectStreamCustomizer;
 import com.antlersoft.odb.diralloc.CustomizerFactory;
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
+import com.antlersoft.odb.diralloc.IndexStatistics;
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
 
 import com.antlersoft.query.DataSource;
@@ -182,6 +183,60 @@ public class ILDB extends IndexObjectDB implements DataSource {
 		}
 	}
 	
+	public static ILDB clearDB( ILDB db, File dbFile )
+	{
+		try
+		{
+			db.close();
+		}
+		catch ( Exception e)
+		{
+			
+		}
+        if ( dbFile.exists())
+        {
+            File[] children=dbFile.listFiles();
+            for ( int i=0; i<children.length; ++i)
+            {
+            	if ( children[i].isFile() && children[i].getName().indexOf('.')== -1)
+            		children[i].delete();            	
+            }
+        }
+        return new ILDB( dbFile);
+	}
+	
+    static void printStatistics( DirectoryAllocator store, String index_name)
+    throws Exception
+    {
+    	IndexStatistics stats=(IndexStatistics)store.getIndexStatistics( index_name);
+    	System.out.println( index_name+" Entries per page: "+stats.getEntriesPerPage());
+    	System.out.println( "Regular--"+stats.getRegular().toString());
+    	System.out.println( "Overflow--"+stats.getOverflow().toString());
+    }
+    /**
+     * Print the statistics for the indexes in this database
+     * @param args The first argument should be the database directory
+     */
+    public static void main( String[] args)
+    throws Exception
+    {
+    	DirectoryAllocator store=new DirectoryAllocator( new File( args[0]),
+                new CFactory());
+    	printStatistics( store, DBAssembly.ASSEMBLY_NAME_INDEX);
+    	printStatistics( store, DBModule.MODULE_NAME_INDEX);
+    	printStatistics( store, DBNamespace.NAMESPACE_NAME_INDEX);
+    	printStatistics( store, DBSourceFile.SOURCE_FILE_NAME_INDEX);
+    	printStatistics( store, DBClass.CLASS_BY_NAME_INDEX);
+    	printStatistics( store, DBClass.CLASS_KEY_INDEX);
+    	printStatistics( store, DBType.TYPE_KEY_INDEX);
+    	printStatistics( store, DBType.TYPE_NAME_INDEX);
+    	printStatistics( store, DBMethod.METHOD_TYPE_INDEX);
+    	printStatistics( store, DBArgument.ARG_TYPE_INDEX);
+    	printStatistics( store, DBField.FIELD_TYPE_INDEX);
+    	printStatistics( store, DBCall.CALL_TARGET);
+    	printStatistics( store, DBStringReference.SRTARGET);
+    	printStatistics( store, DBFieldReference.FRTARGET);
+    }
 	static class CFactory extends CustomizerFactory
 	{
 		public ObjectStreamCustomizer getCustomizer( Class toStore)

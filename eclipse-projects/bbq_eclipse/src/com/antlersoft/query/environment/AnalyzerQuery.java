@@ -12,7 +12,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.antlersoft.analyzer.query.QueryParser;
+import com.antlersoft.query.BasicBase;
 
 import com.antlersoft.util.xml.IElement;
 import com.antlersoft.util.xml.IHandlerStack;
@@ -98,9 +98,9 @@ public class AnalyzerQuery extends QueryLanguageEnvironment {
 		}
 	}
 
-	public AnalyzerQuery()
+	public AnalyzerQuery( BasicBase parser)
 	{
-		super( new QueryParser());
+		super( parser);
         importedPackages=new TreeSet();
 	}
 	

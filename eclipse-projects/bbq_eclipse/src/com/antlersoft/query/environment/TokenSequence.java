@@ -76,6 +76,11 @@ public class TokenSequence {
 		return m_result;
 	}
 	
+	void add( Object o)
+	{
+		m_contents.add( o);
+	}
+	
 	public List getContents()
 	{
 		return Collections.unmodifiableList(m_contents);

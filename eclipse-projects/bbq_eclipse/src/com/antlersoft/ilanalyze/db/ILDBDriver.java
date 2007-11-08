@@ -34,12 +34,15 @@ public class ILDBDriver implements DBDriver {
 	private ArrayList m_class_stack;
 	/** Class that manages updating the contents of a method */
 	private DBMethod.MethodUpdater m_method_updater;
+	/** How many classes processed since last commit */
+	private int m_class_count;
 	
 	public ILDBDriver( ILDB db)
 	{
 		m_db=db;
 		m_namespace_stack=new ArrayList();
 		m_class_stack=new ArrayList();
+		m_class_count=0;
 	}
 
 	/* (non-Javadoc)
@@ -93,6 +96,11 @@ public class ILDBDriver implements DBDriver {
 	 */
 	public void endClass() {
 		m_class_stack.remove( m_class_stack.size()-1);
+		if ( ++m_class_count>1000)
+		{
+			m_db.commitAndRetain();
+			m_class_count=0;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -220,6 +228,7 @@ public class ILDBDriver implements DBDriver {
 	 */
 	public void endAnalyzedFile() {
 		m_db.commitAndRetain();
+		m_class_count=0;
 	}
 
 	/* (non-Javadoc)

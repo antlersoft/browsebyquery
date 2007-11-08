@@ -87,7 +87,7 @@ class TokenSequenceElement extends DefaultHandler implements IElement {
 		else if ( qName.equals( TokenElement.ELEMENT_TAG))
 		{
 			Token next=new Token( null, null);
-			m_sequence.getContents().add( next);
+			m_sequence.add( next);
 			m_stack.startWithHandler( ElementFactory.getInstance().getElementForObject( next).
 					readFromXML(m_stack), uri, localName, qName, attributes);
 		}
@@ -95,7 +95,7 @@ class TokenSequenceElement extends DefaultHandler implements IElement {
 		{
 			TokenSequence.Replacement replacement=new TokenSequence.Replacement(new TokenSequence(),
 					new ArrayList(), 0);
-			m_sequence.getContents().add( replacement);
+			m_sequence.add( replacement);
 			m_stack.startWithHandler( ElementFactory.getInstance().getElementForObject( replacement).
 					readFromXML( m_stack), uri, localName, qName, attributes);
 		}

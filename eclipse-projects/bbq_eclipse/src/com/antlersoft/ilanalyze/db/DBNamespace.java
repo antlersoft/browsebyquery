@@ -40,6 +40,7 @@ public class DBNamespace implements Persistent {
 	
 	private DBNamespace( IndexObjectDB db, String name)
 	{
+		DBNamespace parent=null;
 		m_name=name;
 		if ( name.length()==0)
 		{
@@ -47,13 +48,14 @@ public class DBNamespace implements Persistent {
 		}
 		else
 		{
-			DBNamespace parent=get( db, namespacePart( name));
-			parent.addChild( this);
+			parent=get( db, namespacePart( name));
 			m_parent=new ObjectRef( parent);
 		}
 		m_children=new ObjectKeyHashSet();
 		m_classes=new ObjectKeyHashSet();
 		ObjectDB.makePersistent( this);
+		if ( parent!=null)
+			parent.addChild( this);
 	}
 	
 	public DBNamespace getParent()
@@ -70,7 +72,7 @@ public class DBNamespace implements Persistent {
 	/** Enumeration of classes contained within this namespace */
 	public Enumeration getClasses()
 	{
-		return new FromRefEnumeration( new IteratorEnumeration( m_children.iterator()));
+		return new FromRefEnumeration( new IteratorEnumeration( m_classes.iterator()));
 	}
 	
 	void addChild( DBNamespace child)
