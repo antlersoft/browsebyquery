@@ -68,7 +68,7 @@ public class IldasmReader {
 			m_disassembly_command_format="ildasm /text /nobar /linenumber {0}";
 			try
 			{
-				m_directory_match=Pattern.compile( "obj\\Debug$");
+				m_directory_match=Pattern.compile( "obj\\Debug\\z");
 			}
 			catch ( PatternSyntaxException pse)
 			{
