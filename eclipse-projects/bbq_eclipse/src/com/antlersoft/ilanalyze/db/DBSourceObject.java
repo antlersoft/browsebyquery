@@ -68,6 +68,25 @@ public class DBSourceObject implements Persistent {
 		}
 	}
 	
+	protected void addPositionString( StringBuilder sb)
+	{
+		DBSourceFile file=(DBSourceFile)OptionalRefGet( m_source_file);
+		if ( file!=null)
+		{
+			sb.append( " at line ");
+			sb.append(m_line);
+			sb.append( ' ');
+			sb.append( file.toString());
+		}
+	}
+	
+	public String getPositionString()
+	{
+		StringBuilder sb=new StringBuilder();
+		addPositionString( sb);
+		return sb.toString();
+	}
+	
 	static interface IRefSetter
 	{
 		void set( Persistent container, ObjectRef ref);

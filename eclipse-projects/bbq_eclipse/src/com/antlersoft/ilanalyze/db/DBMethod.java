@@ -123,6 +123,18 @@ public class DBMethod extends DBMember {
 		return m_visited;
 	}
 	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		sb.append( getDBClass().toString());
+		sb.append( "::");
+		sb.append( getName());
+		sb.append( m_signature_key);
+		sb.append(' ');
+		sb.append(getDBType().toString());
+		return sb.toString();
+	}
+	
 	void setVisited( boolean visited)
 	{
 		if ( visited!=m_visited)

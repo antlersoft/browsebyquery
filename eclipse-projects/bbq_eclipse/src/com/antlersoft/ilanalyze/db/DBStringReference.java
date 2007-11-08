@@ -25,4 +25,13 @@ public class DBStringReference extends DBReference {
 	{
 		return (DBString)m_target.getReferenced();
 	}
+	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		sb.append( "Reference to ");
+		sb.append( getDBString().toString());
+		addPositionString( sb);
+		return sb.toString();
+	}
 }

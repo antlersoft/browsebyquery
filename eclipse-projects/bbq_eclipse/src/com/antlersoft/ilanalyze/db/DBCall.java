@@ -25,4 +25,13 @@ public class DBCall extends DBReference {
 	{
 		return (DBMethod)m_target.getReferenced();
 	}
+	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		sb.append( "Call to ");
+		sb.append( getCalled().toString());
+		addPositionString( sb);
+		return sb.toString();
+	}
 }

@@ -35,6 +35,17 @@ public class DBFieldReference extends DBReference {
 		return (DBField)m_target.getReferenced();
 	}
 	
+	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		sb.append( isWrite() ? "Write" : "Read");
+		sb.append( " reference to ");
+		sb.append( getDBField().toString());
+		addPositionString( sb);
+		return sb.toString();
+	}
+
 	synchronized void setWrite( boolean isWrite)
 	{
 		if ( isWrite!=m_write)
