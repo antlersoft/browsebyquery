@@ -74,4 +74,4 @@ bbq -a bbq_ref2 bbq_ref3 bbq_ref4 bbq_ref5 bbq_ref6
 
 
 bbqil_ref -a com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query com/antlersoft/ilanalyze
-bbqil -d bbq package/bbqil &bbqil_ref
+bbqil -d bbqil package/bbqil &bbqil_ref
