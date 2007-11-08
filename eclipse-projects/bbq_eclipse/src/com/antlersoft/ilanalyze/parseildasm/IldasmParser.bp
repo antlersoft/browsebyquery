@@ -1404,6 +1404,7 @@ n_slashedName : n_name1 "m_TopString" .
 n_slashedName : n_slashedName t_slash n_name1 "m_StringConcat" .
 n_tlsSpec : .
 n_tlsSpec : t_tls .
+n_tlsSpec : t_cil .
 n_truefalse : t_true .
 n_truefalse : t_false .
 n_tryBlock : n_tryHead n_scopeBlock .
