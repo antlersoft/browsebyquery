@@ -9,7 +9,7 @@ Requires ant 1.6+
 	<target name="all" depends="bbqstandalone"/>
 	<target name="bbqstandalone" depends="buildcommon">
 		<mkdir dir="dist"/>
-		<jar destfile="dist/bbqstandalone.jar" basedir="classes" manifest="com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
+		<jar destfile="dist/bbqilstandalone.jar" basedir="classes" manifest="com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
 		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/**">
 		</jar>
 	</target>
