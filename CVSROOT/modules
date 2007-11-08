@@ -71,3 +71,7 @@ bbq_ref4 -d bbq package/bbq &bbq_ref
 bbq_ref5 -d bbq/META-INF eclipse-projects/bbq_eclipse/META-INF
 bbq_ref6 -d bbq/icons eclipse-projects/bbq_eclipse/icons
 bbq -a bbq_ref2 bbq_ref3 bbq_ref4 bbq_ref5 bbq_ref6
+
+
+bbqil_ref -a com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query com/antlersoft/ilanalyze
+bbqil -d bbq package/bbqil &bbqil_ref
