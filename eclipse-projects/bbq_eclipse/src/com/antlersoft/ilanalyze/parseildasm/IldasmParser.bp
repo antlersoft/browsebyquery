@@ -191,6 +191,7 @@ reserved t_packDirective ".pack"
 reserved t_paramDirective ".param"
 reserved t_permissionDirective ".permission"
 reserved t_permissionsetDirective ".permissionset"
+reserved t_permissionContentsDirective ".permissionContents"
 reserved t_propertyDirective ".property"
 reserved t_publickeyDirective ".publickey"
 reserved t_publickeytokenDirective ".publickeytoken"
@@ -1385,6 +1386,7 @@ n_secAction : t_noncasinheritance .
 n_secDecl : t_permissionDirective n_secAction n_typeSpec t_left_paren n_nameValPairs t_right_paren .
 n_secDecl : t_permissionDirective n_secAction n_typeSpec .
 n_secDecl : n_psetHead n_bytes t_right_paren .
+n_secDecl : t_permissionsetDirective n_secAction t_equals t_left_brace t_permissionContentsDirective t_right_brace .
 n_sehBlock : n_tryBlock n_sehClauses .
 n_sehClause : n_catchClause n_handlerBlock .
 n_sehClause : n_filterClause n_handlerBlock .
