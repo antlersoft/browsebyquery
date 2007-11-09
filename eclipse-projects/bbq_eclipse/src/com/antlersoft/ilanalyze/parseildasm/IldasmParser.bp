@@ -591,6 +591,7 @@ reserved t_tls "tls"
 reserved t_to "to"
 reserved t_true "true"
 reserved t_typedref "typedref"
+reserved t_uint "uint"
 reserved t_uint8 "uint8"
 reserved t_uint16 "uint16"
 reserved t_uint32 "uint32"
@@ -1298,6 +1299,10 @@ n_nativeType : t_int64 .
 n_nativeType : t_float32 .
 n_nativeType : t_float64 .
 n_nativeType : t_error .
+n_nativeType : t_uint8 .
+n_nativeType : t_uint16 .
+n_nativeType : t_uint32 .
+n_nativeType : t_uint64 .
 n_nativeType : t_unsigned t_int8 .
 n_nativeType : t_unsigned t_int16 .
 n_nativeType : t_unsigned t_int32 .
@@ -1322,6 +1327,7 @@ n_nativeType : t_safearray n_variantType .
 n_nativeType : t_safearray n_variantType t_comma n_compQstring .
 n_nativeType : t_int .
 n_nativeType : t_unsigned t_int .
+n_nativeType : t_uint .
 n_nativeType : t_nested t_struct .
 n_nativeType : t_byvalstr .
 n_nativeType : t_ansi t_bstr .
@@ -1454,7 +1460,8 @@ n_type : t_unsigned t_int16 "m_BuiltinType2Words" .
 n_type : t_unsigned t_int32 "m_BuiltinType2Words" .
 n_type : t_unsigned t_int64 "m_BuiltinType2Words" .
 n_type : t_native t_int "m_BuiltinType2Words" .
-n_type : t_native t_unsigned t_int "{ return new BuiltinType( valueStack.s_2()+\" \"+valueStack.s_1()+\" \"+valueStack.s_0()); }" .
+n_type : t_native t_uint "m_BuiltinType2Words" .
+n_type : t_native t_unsigned t_int "{ return new BuiltinType( \"native uint\"); }" .
 n_type : t_native t_float "m_BuiltinType2Words" .
 n_typeSpec : n_className "m_BasicType" .
 n_typeSpec : t_left_square n_name1 t_right_square "{ return new BasicType( valueStack.s_1()); }" .
