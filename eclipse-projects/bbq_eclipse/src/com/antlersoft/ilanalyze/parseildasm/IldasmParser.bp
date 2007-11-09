@@ -592,6 +592,9 @@ reserved t_to "to"
 reserved t_true "true"
 reserved t_typedref "typedref"
 reserved t_uint8 "uint8"
+reserved t_uint16 "uint16"
+reserved t_uint32 "uint32"
+reserved t_uint64 "uint64"
 reserved t_unaligned_ "unaligned."
 reserved t_unbox "unbox"
 reserved t_unbox_any "unbox.any"
@@ -1443,6 +1446,9 @@ n_type : t_int64 "m_BuiltinType" .
 n_type : t_float32 "m_BuiltinType" .
 n_type : t_float64 "m_BuiltinType" .
 n_type : t_uint8 "m_BuiltinType" .
+n_type : t_uint16 "m_BuiltinType" .
+n_type : t_uint32 "m_BuiltinType" .
+n_type : t_uint64 "m_BuiltinType" .
 n_type : t_unsigned t_int8 "m_BuiltinType2Words" .
 n_type : t_unsigned t_int16 "m_BuiltinType2Words" .
 n_type : t_unsigned t_int32 "m_BuiltinType2Words" .

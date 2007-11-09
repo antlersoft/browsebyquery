@@ -94,7 +94,12 @@ class IldasmParserBase extends Parser {
 		 * @see com.antlersoft.parser.RuleAction#ruleFire(com.antlersoft.parser.Parser, com.antlersoft.parser.ValueStack)
 		 */
 		public Object ruleFire(Parser parser, ValueStack valueStack) throws RuleActionException {
-			return new BuiltinType( valueStack.s_1()+" "+valueStack.s_0());
+			String result;
+			if ( valueStack.s_1().equals("unsigned"))
+				result="u"+valueStack.s_0();
+			else
+				result=valueStack.s_1()+" "+valueStack.s_0();
+			return new BuiltinType( result);
 		} };
 
 	/** Start a list with the top item on the stack */
