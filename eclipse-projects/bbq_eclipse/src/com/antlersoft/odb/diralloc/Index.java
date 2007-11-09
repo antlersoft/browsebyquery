@@ -704,6 +704,8 @@ class Index
     {
         if ( entry.unique)
             return fr.compareResult>=0;
+        if ( fr.index>=fr.page.size)
+        	return false;
         return key.compareTo( ((UniqueKey)fr.page.keyArray[fr.index]).base)==0;
     }
 
