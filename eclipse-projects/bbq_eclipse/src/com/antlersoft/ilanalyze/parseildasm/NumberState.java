@@ -45,15 +45,23 @@ class NumberState extends LexStateBase {
 		{
 			m_sb.append(c);
 		}
-		else if ( c=='.')
+		else if ( c=='.' || c=='E' || c=='e')
 		{
-			m_sb.append(c);
-			result=new FloatState( m_parent, m_reader, m_sb.toString());
-		}
-		else if ( c=='E' || c=='e')
-		{
-			m_sb.append(".0E");
-			result=new FloatState(m_parent, m_reader, m_sb.toString());
+			if ( m_reader.expectedReserved("FLOAT64")!=null)
+			{
+				if ( c=='.')
+				{
+					m_sb.append(c);
+				}
+				else
+					m_sb.append(".0E");
+				result=new FloatState( m_parent, m_reader, m_sb.toString());
+			}
+			else
+			{
+				processToken();
+				result=m_parent.nextCharacter(c);
+			}
 		}
 		else
 		{
