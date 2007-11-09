@@ -62,10 +62,10 @@ public class IldasmReader {
 	{
 		m_parser=new IldasmParser();
 		m_line=new StringBuilder();
-		m_disassembly_command_format="monodis {0}";
+		m_disassembly_command_format="monodis \"{0}\"";
 		if ( System.getProperty("os.name", "Finux").contains("Windows"))
 		{
-			m_disassembly_command_format="ildasm /text /nobar /linenumber {0}";
+			m_disassembly_command_format="ildasm /text /nobar /linenumber \"{0}\"";
 			try
 			{
 				m_directory_match=Pattern.compile( "obj\\\\Debug\\z");
