@@ -342,13 +342,22 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	
 	/**
 	 * Change the set of base classes (extends and implements) to the supplied set.
-	 * Base classes that no longer apply are removed; removed base classer are removed
+	 * Base classes that no longer apply are removed; removed base classes are removed
 	 * from the derived set of the parent classes.
 	 * @param base_classes
 	 */
 	void updateBaseClasses( ObjectKeyHashSet base_classes)
 	{
-		boolean changed=m_base.addAll(base_classes);
+		boolean changed=false;
+		for ( Iterator i=base_classes.iterator(); i.hasNext();)
+		{
+			ObjectRef ref=(ObjectRef)i.next();
+			if ( m_base.add( ref))
+			{
+				changed=true;
+				((DBClass)ref.getReferenced()).addDerived(this);
+			}
+		}
 		Collection c=m_base.retainMembers(base_classes);
 		if ( c!=null)
 		{
