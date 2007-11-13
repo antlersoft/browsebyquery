@@ -184,6 +184,7 @@ public class ILDBDriver implements DBDriver {
 		{
 			m_method_updater=new DBMethod.MethodUpdater( m_db, getCurrentClass( null).getMethod( name, DBType.get( m_db, signature.getReturnType()), getSignatureKey( signature)));
 			m_method_updater.updateArguments(signature);
+			m_method_updater.m_method.setProperties(properties);
 		}
 		catch ( ITypeInterpreter.TIException ti)
 		{
