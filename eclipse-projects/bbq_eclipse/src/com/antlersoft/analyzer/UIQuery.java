@@ -201,6 +201,9 @@ t.printStackTrace();
 
         JFrame appFrame=new JFrame( (argv.length>0 ? "Querying " : "Querying default DB ")+app.analyzerDBOpenString );
         app.frameWindow=appFrame;
+        java.net.URL url=app.getClass().getResource("/icons/weber-small.gif");
+        if ( url!=null)
+        	appFrame.setIconImage(appFrame.getToolkit().getImage(url));
         if ( db_cleared)
         	JOptionPane.showMessageDialog( appFrame, "There was a problem opening the existing database, so it was cleared,\nand you must rebuild it by analyzing classes.", "Corrupt Database", JOptionPane.ERROR_MESSAGE);
         Component contents = app.createComponents();
