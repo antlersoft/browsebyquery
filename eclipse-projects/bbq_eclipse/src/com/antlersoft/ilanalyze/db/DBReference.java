@@ -32,6 +32,13 @@ public class DBReference extends DBSourceObject {
 		m_target=new ObjectRef( target);
 	}
 	
+	public void addFromInfo( StringBuilder sb)
+	{
+		sb.append( " from ");
+		getMethod().addMethodInfo(sb);
+		addPositionString( sb);
+	}
+	
 	static class ReferenceTargetGenerator implements KeyGenerator
 	{
 		static ReferenceTargetGenerator G=new ReferenceTargetGenerator();

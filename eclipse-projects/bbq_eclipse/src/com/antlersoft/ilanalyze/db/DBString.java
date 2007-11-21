@@ -43,11 +43,16 @@ public class DBString implements Persistent {
 	
 	public static DBString get( IndexObjectDB db, String f)
 	{
-		DBString result=(DBString)db.findObject( STRING_INDEX,
-			f);
+		DBString result=find( db, f);
 		if ( result==null)
 			result=new DBString( f);
 		return result;
+	}
+	
+	public static DBString find( IndexObjectDB db, String f)
+	{
+		 return (DBString)db.findObject( STRING_INDEX,
+			f);
 	}
 	
 	/**

@@ -212,7 +212,7 @@ class Lexer {
 	        	}
 	        	break;
 	        case IN_PUNC :
-	        	if ( CharClass.isOperator(c))
+	        	if ( CharClass.isOperator(c) && c!='/')
 	        		lex_state=addPunctuationCharacter( currentString, c, tokens);
 	        	else
 	        	{

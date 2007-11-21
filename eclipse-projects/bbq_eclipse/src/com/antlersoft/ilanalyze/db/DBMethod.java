@@ -123,15 +123,28 @@ public class DBMethod extends DBMember {
 		return m_visited;
 	}
 	
-	public String toString()
+	public void addMethodInfo( StringBuilder sb)
 	{
-		StringBuilder sb=new StringBuilder();
 		sb.append( getDBClass().toString());
 		sb.append( "::");
 		sb.append( getName());
-		sb.append( m_signature_key);
+		sb.append('(');
+		for ( Enumeration e=getArguments();e.hasMoreElements();)
+		{
+			((DBArgument)e.nextElement()).addArgInfo(sb);
+			if ( e.hasMoreElements())
+				sb.append(',');
+		}
+		sb.append(')');
 		sb.append(' ');
-		sb.append(getDBType().toString());
+		sb.append(getDBType().toString());		
+	}
+	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		addMethodInfo( sb);
+		addPositionString(sb);
 		return sb.toString();
 	}
 	
@@ -142,6 +155,51 @@ public class DBMethod extends DBMember {
 			m_visited=visited;
 			ObjectDB.makeDirty(this);
 		}
+	}
+	
+	synchronized boolean updateArguments( ILDB db, Signature sig) throws ITypeInterpreter.TIException
+	{
+		boolean updated=false;
+		List arg_list=sig.getArguments();
+		int size=arg_list.size();
+		for ( int i=0; i<size; ++i)
+		{
+			ReadArg arg=(ReadArg)arg_list.get(i);
+			if ( i>=m_arguments.size())
+			{
+				m_arguments.add( new ObjectRef( new DBArgument( this, getArgType( db, arg), arg.getName(), i)));
+				updated=true;
+			}
+			else
+			{
+				if ( arg.getName()!=null)
+				{
+					DBArgument dbarg=(DBArgument)((ObjectRef)m_arguments.get(i)).getReferenced();
+					dbarg.setName( arg.getName());
+					dbarg.setDBType( getArgType(db, arg));
+				}
+			}
+		}
+		if ( m_arguments.size()>size)
+		{
+			while ( size<m_arguments.size())
+			{
+				db.deleteObject( ((ObjectRef)m_arguments.get(size)).getReferenced());
+				m_arguments.remove(size);
+			}
+			m_arguments.trimToSize();
+			updated=true;
+		}
+		
+		return updated;
+	}
+	
+	static DBType getArgType( ILDB db, ReadArg arg) throws ITypeInterpreter.TIException
+	{
+		ReadType type=arg.getType();
+		if ( type==null)
+			return null;
+		return DBType.get( db, type);
 	}
 	
 	static class MethodUpdater
@@ -167,39 +225,8 @@ public class DBMethod extends DBMember {
 		
 		void updateArguments( Signature sig) throws ITypeInterpreter.TIException
 		{
-			synchronized ( m_method)
-			{
-				List arg_list=sig.getArguments();
-				int size=arg_list.size();
-				for ( int i=0; i<size; ++i)
-				{
-					ReadArg arg=(ReadArg)arg_list.get(i);
-					if ( i>=m_method.m_arguments.size())
-					{
-						m_method.m_arguments.add( new ObjectRef( new DBArgument( m_method, getArgType( arg), arg.getName(), i)));
-						m_updated=true;
-					}
-					else
-					{
-						if ( arg.getName()!=null)
-						{
-							DBArgument dbarg=(DBArgument)((ObjectRef)m_method.m_arguments.get(i)).getReferenced();
-							dbarg.setName( arg.getName());
-							dbarg.setDBType( getArgType(arg));
-						}
-					}
-				}
-				if ( m_method.m_arguments.size()>size)
-				{
-					while ( size<m_method.m_arguments.size())
-					{
-						m_db.deleteObject( ((ObjectRef)m_method.m_arguments.get(size)).getReferenced());
-						m_method.m_arguments.remove(size);
-					}
-					m_method.m_arguments.trimToSize();
-					m_updated=true;
-				}
-			}
+			if ( m_method.updateArguments(m_db, sig))
+				m_updated=true;
 		}
 		
 		void addCall( DBMethod called, DBSourceFile file, int line)
@@ -252,14 +279,6 @@ public class DBMethod extends DBMember {
 			{
 				ObjectDB.makeDirty(m_method);
 			}
-		}
-		
-		private DBType getArgType( ReadArg arg) throws ITypeInterpreter.TIException
-		{
-			ReadType type=arg.getType();
-			if ( type==null)
-				return null;
-			return DBType.get( m_db, type);
 		}
 		
 		static class ReferenceUpdater

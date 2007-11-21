@@ -30,8 +30,8 @@ public class DBCall extends DBReference {
 	{
 		StringBuilder sb=new StringBuilder();
 		sb.append( "Call to ");
-		sb.append( getCalled().toString());
-		addPositionString( sb);
+		getCalled().addMethodInfo(sb);
+		addFromInfo(sb);
 		return sb.toString();
 	}
 }

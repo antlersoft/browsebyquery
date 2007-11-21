@@ -85,9 +85,8 @@ public class DBArgument implements Persistent, HasDBType {
 		return m_index;
 	}
 	
-	public String toString()
+	public void addArgInfo( StringBuilder sb)
 	{
-		StringBuilder sb=new StringBuilder();
 		DBType t=getDBType();
 		if ( t==null)
 			sb.append("...");
@@ -100,6 +99,18 @@ public class DBArgument implements Persistent, HasDBType {
 			}
 			sb.append( t.toString());
 		}
+	}
+	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		sb.append( getMethod().getDBClass().toString());
+		sb.append( "::");
+		sb.append( getName());
+		sb.append( " #");
+		sb.append( m_index);
+		sb.append( ":");
+		addArgInfo( sb);
 		return sb.toString();
 	}
 	

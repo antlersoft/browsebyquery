@@ -26,6 +26,7 @@ public class LiteralToken extends Token
     			sb.append( '\\');
     		sb.append( c);
     	}
+    	sb.append('"');
         return sb.toString();
     }
 }

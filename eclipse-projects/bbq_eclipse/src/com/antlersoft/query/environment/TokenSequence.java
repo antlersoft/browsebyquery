@@ -106,6 +106,20 @@ public class TokenSequence {
 		}
 	}
 	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		
+		for ( Iterator i=m_contents.iterator(); i.hasNext();)
+		{
+			sb.append( i.next().toString());
+			if ( i.hasNext())
+				sb.append(' ');
+		}
+		
+		return sb.toString();
+	}
+	
 	void collectTokens( ReservedScope scope, Collection tokens)
 	{
 		for ( Iterator it=m_contents.iterator(); it.hasNext();)

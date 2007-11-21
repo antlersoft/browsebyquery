@@ -6,6 +6,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
@@ -83,7 +84,7 @@ public class SavedView extends ViewPart {
 				seq=Bbq_eclipsePlugin.getDefault().getQueryParser().getStoredSequence(name);
 				if ( seq!=null)
 				{
-					StringBuilder sb=new StringBuilder();
+					result=seq.toString();
 				}
 				break;
 			}
@@ -113,6 +114,9 @@ public class SavedView extends ViewPart {
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setInput(getViewSite());
+		new TableColumn( viewer.getTable(), SWT.CENTER);
+		new TableColumn( viewer.getTable(), SWT.CENTER);
+		new TableColumn( viewer.getTable(), SWT.CENTER);
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();

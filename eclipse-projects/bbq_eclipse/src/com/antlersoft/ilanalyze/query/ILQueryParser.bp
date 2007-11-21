@@ -274,7 +274,7 @@ VALUE_EXPRESSION : StringConstant "{
 	return new CountPreservingValueExpression( DBString.class, String.class) {
 		public Object transformSingleObject( DataSource source, Object toTransform)
 		{
-			return DBString.get( (ILDB)source, (String)toTransform);
+			return DBString.find( (ILDB)source, (String)toTransform);
 		}
 	};
 }" .

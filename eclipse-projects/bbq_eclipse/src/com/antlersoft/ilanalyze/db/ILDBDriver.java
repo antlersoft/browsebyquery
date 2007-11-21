@@ -13,6 +13,7 @@ import com.antlersoft.ilanalyze.ReadType;
 import com.antlersoft.ilanalyze.Signature;
 import com.antlersoft.ilanalyze.ReadArg;
 
+import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
 
@@ -72,6 +73,9 @@ public class ILDBDriver implements DBDriver {
 		{
 			try
 			{
+				DBMethod called=getCurrentClass(containing_type).getMethod(method_name, DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig));
+				if ( called.updateArguments(m_db, sig))
+					ObjectDB.makeDirty( called);
 				m_method_updater.addCall(getCurrentClass(containing_type).getMethod(method_name, DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig)), m_current_source_file, m_current_line);
 			}
 			catch ( ITypeInterpreter.TIException ti)
