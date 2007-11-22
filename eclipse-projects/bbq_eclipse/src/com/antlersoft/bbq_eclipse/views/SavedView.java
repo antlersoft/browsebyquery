@@ -6,6 +6,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
@@ -111,12 +112,23 @@ public class SavedView extends ViewPart {
 	 */
 	public void createPartControl(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+		Table t=viewer.getTable();
+		TableLayout l=new TableLayout();
+		t.setLayout(l);
+		t.setHeaderVisible(true);
+		l.addColumnData( new ColumnWeightData( 20, 80, true));
+		l.addColumnData( new ColumnWeightData( 20, 80, true));
+		l.addColumnData( new ColumnWeightData( 20, 320, true));
+		TableColumn c=new TableColumn( t, SWT.LEFT);
+		c.setResizable(true);
+		c.setText( "Name");
+		c=new TableColumn( t, SWT.CENTER);
+		c.setText( "Type");
+		c=new TableColumn( t, SWT.RIGHT);
+		c.setText( "Value");
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setInput(getViewSite());
-		new TableColumn( viewer.getTable(), SWT.CENTER);
-		new TableColumn( viewer.getTable(), SWT.CENTER);
-		new TableColumn( viewer.getTable(), SWT.CENTER);
 		makeActions();
 		hookContextMenu();
 		hookDoubleClickAction();
