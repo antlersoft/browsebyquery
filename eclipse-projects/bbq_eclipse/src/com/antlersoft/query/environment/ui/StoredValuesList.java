@@ -19,28 +19,46 @@
  */
 package com.antlersoft.query.environment.ui;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import java.awt.Dimension;
 
-import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
 
-public class StoredValuesList extends JList implements PropertyChangeListener
+/**
+ * Swing component (originally a JList, now a JScrollPane containing a JTable)
+ * that lists the stored values in a query language environment
+ * @author Michael A. MacDonald
+ *
+ */
+public class StoredValuesList extends JScrollPane
 {
-	private QueryLanguageEnvironment m_qp;
-
 	public StoredValuesList( QueryLanguageEnvironment qp)
 	{
-		super();
-		m_qp=qp;
-		qp.addStoredValuesListener( this);
-		setVisibleRowCount(2);
-		setListData( qp.getStoredValues());
+		super(new StoredValuesTable( qp));
 	}
-
-	public void propertyChange( PropertyChangeEvent pce)
+	
+	static class StoredValuesTable extends JTable
 	{
-		setListData( m_qp.getStoredValues());
+		/* (non-Javadoc)
+		 * @see javax.swing.JTable#getPreferredScrollableViewportSize()
+		 */
+		public Dimension getPreferredScrollableViewportSize() {
+			Dimension d=super.getPreferredScrollableViewportSize();
+			d.width=450;
+			d.height=getModel().getRowCount()*20+20;
+			if ( d.height<100)
+				d.height=100;
+			return d;
+		}
+
+		StoredValuesTable( QueryLanguageEnvironment qp)
+		{
+			super( new StoredValuesTableModel( qp));
+			getColumnModel().getColumn(0).setPreferredWidth( 80);
+			getColumnModel().getColumn(1).setPreferredWidth( 80);
+			getColumnModel().getColumn(2).setPreferredWidth( 240);
+		}
 	}
 }

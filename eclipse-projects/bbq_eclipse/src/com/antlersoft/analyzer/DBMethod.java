@@ -124,7 +124,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
 		    		start_offset=current_offset+1;
 		    	}
 		    	if ( name.indexOf('<')==-1)
-		    		return_type=DBType.TypeStringMap.descriptorToUser(signature.subSequence(current_offset+1,array.length))+" ";
+		    		return_type=" "+DBType.TypeStringMap.descriptorToUser(signature.subSequence(current_offset+1,array.length));
 	         }
 	         catch ( ArrayIndexOutOfBoundsException bounds)
 	         {
@@ -136,7 +136,7 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
   			signature_builder.append( cce.getMessage());
   		}
   		signature_builder.append( ')');
-		return ((DBClass)dbclass.getReferenced()).name+":"+return_type+name+signature_builder.toString();
+		return ((DBClass)dbclass.getReferenced()).name+":"+name+signature_builder.toString()+return_type;
     }
 
     public int methodStatus()

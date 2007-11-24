@@ -124,7 +124,7 @@ public class SavedView extends ViewPart {
 		c.setText( "Name");
 		c=new TableColumn( t, SWT.CENTER);
 		c.setText( "Type");
-		c=new TableColumn( t, SWT.RIGHT);
+		c=new TableColumn( t, SWT.LEFT);
 		c.setText( "Value");
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
