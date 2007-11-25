@@ -2,7 +2,7 @@
 <!ENTITY p-bbq "BBQ">
 ]>
 <book>
-  <title>The Browse-By-Query Query Language, ver. 1 (Java)</title>
+  <title>The Browse-By-Query Query Language, ver. 1.2 (Java/C#-CIL)</title>
   <bookinfo>
     <author>
       <firstname>Michael</firstname>
@@ -18,13 +18,21 @@
   <preface>
     <title>A Note on the Language</title>
     <para>This document describes the &p-bbq; language
-for querying Java systems as it exists in early 2007.  The concepts
-embodied by this language are, I hope, more important
-than the details of the language itself
-and will outlast any particular implementation.
-Aspects of the language (particularly the order
-in which query elements are assembled) may
-be revised dramatically in the near future.</para>
+for querying Java and C#/CIL systems.  The two query languages are
+very similar; portions that are specific to one or the other platform
+are noted with (Java) or (C#/CIL).</para>
+	<para>The syntax of the query language is motivated by the desire
+	to have queries (set expressions) in the language resemble the noun phrases in English
+	that describe what the queries return.  Just as English adjectives and adjectival constructions
+	precede the nouns they modify, &p-bbq; queries are built by prepending filters and transforms
+	to simpler queries.
+	</para>
+	<para>The concepts of the underlying object query system are independent of this syntax,
+	however.  The concepts are also quite distinct from those in SQL, since you work directly with
+	&p-bbq;'s object model, rather than tabular abstractions based on it.
+	&p-bbq; attempts to provide an intuitive facility for developers to envision and realize different aspects
+	of their system's code base, backed by the features of a powerful and general object query system.
+	</para>
   </preface>
   <chapter>
     <title>Overview</title>
@@ -48,7 +56,7 @@ the more valuable &p-bbq; will be.
     To make this possible for you, &p-bbq; introduces a new language, a
 language specialized
 for finding things in your code.
-The assumption is that programmers are use to expressing complex ideas
+The assumption is that programmers are skilled at expressing complex ideas
 by composing expressions--why not let them use this skill to more
 effectively navigate their code base?
 Most database programmers wouldn't dream of working without the
@@ -620,7 +628,7 @@ The details of how the objects are returned
 for each set expression depend on
 the environment.
     </para>
-    <sect1>
+    <sect1 id="r-language-elements">
       <title>Language Elements</title>
 <para>A set expression consists of a sequence of tokens.
 White space or punctuation delimits tokens.
@@ -634,13 +642,32 @@ Reserved words will always start with a lower-case letter.
 The only permissable punctuation within a set expression
 are parentheses, which are used for grouping in set expressions,
 filters or transforms; commas, which are used with certain
-operators; and the <link linkend="r-value-operators">value operators</link>.  Punctuation tokens are recognized as tokens
+operators; the <link linkend="r-value-operators">value operators</link>,
+and the regular expression matching operator <userinput>~</userinput>.  Punctuation tokens are recognized as tokens
 in themselves and don't have to be set off with whitespace.</para>
 <para>
-There are two kinds of constants.  String constants are enclosed in double quotation marks;
-double quotation marks or backslashes within a string
-must be escaped by a backslash.  Numeric constants
-consist of 1 or more decimal digits and are interpreted as integers.
+There are two kinds of constants, integers and strings.
+Integer constants are a string of decimal digits and must
+specify a number between 0 and 2^32  -1 .
+There are two types of string constants:
+<itemizedlist>
+<listitem><simpara>Quoted strings constants are enclosed in double quotation marks (");
+double quotation marks or backslashes within the string
+must be escaped by a backslash.</simpara>
+</listitem>
+<listitem>
+<simpara>Slash-string constants are introduced with two forward slashes (//) and extend to the next
+forward slash.  Forward slashes within the string may be escaped with a preceding backslash (\), but when backslashes
+do not immediately precede forward slashes they are not treated specially.  This makes slash-strings
+convenient for regular expressions, where you might have to use a lot of backslashes, but slash-strings
+have no special meaning and may be used interchangably with quoted strings.
+</simpara>
+</listitem>
+</itemizedlist>
+Certain operators (<link linkend="r-tilde">~</link>, <link linkend="r-relational-operators">~=</link>, <link linkend="r-substitute">substitute()</link>)
+take regular expressions.  Regular expressions can be contained in either kind of string constant, and are Java regular expressions
+as defined in <ulink url="https://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">the documentation
+				for <userinput>java.util.regex.Pattern</userinput></ulink>.
 </para>
 <para>
 A sequence of one or more reserved words represents a
@@ -655,7 +682,7 @@ an expression or transform previously defined with the <link linkend="r-setcomma
 <para>
 A valid set expression consists of one of the set expressions defined
 in the language,
-a name,
+a name that had been defined as a set expression,
 a scalar value expression,
 a set expression with a transform prepended,
  two set expressions joined by one of the set operators,
@@ -663,7 +690,7 @@ or a set expression enclosed within parentheses.
 </para>
 <para>
 A transform is one of the transforms defined by the language,
-a name,
+a name that has been defined as a transform,
 a transform with another transform appended,
 two transforms joined by one of the set operators,
 a filter,
@@ -702,7 +729,7 @@ or a value expression enclosed within parentheses.
 	<member>count</member>
 	<member>date</member>
 	<member>deintersection</member>
-	<member>deprecated</member>
+	<member>deprecated  <emphasis>Java</emphasis></member>
 <member>derived</member>
 <member>execute</member>
 <member>exists</member>
@@ -710,19 +737,22 @@ or a value expression enclosed within parentheses.
 <member>finalToken</member>
 <member>first</member>
 <member>from</member>
-<member>import</member>
+<member>import <emphasis>Java</emphasis></member>
 <member>in</member>
 <member>is</member>
+<member>internal <emphasis>C#/CIL</emphasis></member>
 <member>intersection</member>
 <member>interface</member>
 <member>matching</member>
 <member>methodcast</member>
 <member>methods</member>
+<member>namespace <emphasis>C#/CIL</emphasis></member>
+<member>namespaces <emphasis>C#/CIL</emphasis></member>
 <member>not</member>
 <member>or</member>
 <member>of</member>
-<member>package</member>
-<member>packages</member>
+<member>package <emphasis>Java</emphasis></member>
+<member>packages <emphasis>Java</emphasis></member>
 <member>polymorphic</member>
 <member>previous</member>
 <member>protected</member>
@@ -737,6 +767,7 @@ or a value expression enclosed within parentheses.
 <member>static</member>
 <member>string</member>
 <member>strings</member>
+<member>substitute</member>
 <member>that</member>
 <member>to</member>
 <member>type</member>
@@ -745,6 +776,8 @@ or a value expression enclosed within parentheses.
 <member>uncorrelated</member>
 <member>union</member>
 <member>unique</member>
+<member>unset</member>
+<member>using <emphasis>C#/CIL</emphasis></member>
 <member>with</member>
 <member>without</member>
 <member>write</member>
@@ -921,8 +954,8 @@ this type.</para>
       </refentry>
       <refentry id="r-type-package">
 	<refnamediv>
-	  <refname>package</refname>
-	  <refpurpose>Represents a java package</refpurpose>
+	  <refname>package (Java)/namespace (C#/CIL)</refname>
+	  <refpurpose>Represents a java package or a namespace in C#/CIL</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Parent</title>
@@ -1030,7 +1063,6 @@ the interpreter's state.</para>
       <para>
       The other simple set expressions are listed in this section.
       </para>
-	</sect2>
       <refentry id="r-all-classes">
 	<refnamediv>
 	  <refname>all classes</refname>
@@ -1160,6 +1192,7 @@ string constant.</para>
 	    <para><link linkend="r-type-string-constant">string constant</link></para>
 	  </refsect1>
 	</refentry>
+	</sect2>
       <sect2 id="r-commands">
 	<title>Commands and Miscellaneous Set Expressions</title>
 	<para>The interpreter can remember set expressions you've run,
@@ -1168,7 +1201,6 @@ for your convenience or for faster querying.  These
 special set expression commands let you work with the
 interpreter's state.
 </para>
-	</sect2>
 	<refentry>
 	  <refnamediv>
 	    <refname>execute</refname>
@@ -1190,6 +1222,19 @@ set expression returns this set of objects.</para>
 the <link linkend="r-setcommand">set command</link>
 to save the result of a time-consuming query for use in
 later expressions.</para>
+		  <refsect2>
+		  	<title>Example</title>
+		  	<para>
+		  	This set command will save in the name DBClasses all classes with <literal>DB</literal> in their names.
+		  	</para>
+		  	<informalexample>
+		  		<programlisting>set DBClasses to ~ //DB[^.]*\z/ all classes</programlisting>
+		  	</informalexample>
+		  	<para>You can then reference the set in other expressions without traversing the whole list of classes:</para>
+		  	<informalexample>
+		  		<programlisting>DBClasses intersection recursive derived classes of class "Persistent"</programlisting>
+		  	</informalexample>
+		  </refsect2>
 </refsect1>
 	</refentry>
 	<refentry id="r-import">
@@ -1288,10 +1333,34 @@ is substituted.
 	  	</para>
 	  </refsect1>
 	</refentry>
-    </sect1>
+    	<refentry id="r-unset">
+	  <refnamediv>
+	    <refname>unset</refname>
+	    <refpurpose>Remove a name that has been defined</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <cmdsynopsis><command>unset</command><arg choice="plain"><replaceable>name</replaceable></arg></cmdsynopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+		<para>This command removes the meaning, set expression or transform, associated with a name by a prior
+		set command.
+	  	</para>
+	  </refsect1>
+	</refentry>
+	</sect2>
+	</sect1>
     <sect1 id="r-transforms">
     	<title>Transforms</title>
-    	<para>Transforms change a set into another set.</para>
+    	<para>Transforms change a set into another set.  You apply a transform
+    	to the result of a set expression or another transform
+    	by putting it in front.  <userinput><link linkend="r-methods-in">methods in</link></userinput>
+    	is a transform that changes a set of classes to the set of methods
+    	in those classes; applying it to the set expression
+    	<programlisting>class "ObjectDB"</programlisting>
+    	results in this set expression that returns the set of methods in that class:
+    	</para>
+    	<informalexample><programlisting>methods in class "ObjectDB"</programlisting></informalexample>
   		<para>Many transforms and value expressions represent the relationships between
 objects in the &p-bbq; database;
 use these to traverse the relationships
@@ -1302,7 +1371,24 @@ to get to your desired object type.</para>
 </imageobject>
 <textobject><phrase>(Diagram illustrating object relationships and transforms)</phrase></textobject>
 </mediaobject>
-		<refentry id="r-arguments-of">
+		<para>
+		Transforms can be combined with other transforms with <link linkend="r-set-operators">set operators</link>.
+		This example returns a set of the derived classes of <userinput>Persistent</userinput>
+		together with the class itself.
+		</para>
+  		<informalexample><programlisting>( derived classes of union same ) class "Persistent"</programlisting></informalexample>
+  		<para>
+  		Transforms can be used as arguments to some special operators
+  		(<link linkend="r-exists"><userinput>exists</userinput></link>, <link linkend="r-group-of"><userinput>group of</userinput></link>,
+  		<link linkend="r-recursive"><userinput>recursive</userinput></link>)
+  		to create new filters, value expressions or transforms.  The following example
+  		makes a <link linkend="r-filters">filter</link>
+  		from the <userinput>fields in</userinput> transform,
+  		to make a set expression that shows all the classes in package <userinput>com.antlersoft.odb</userinput>
+  		that don't contain any fields.
+  		</para>
+  		<informalexample><programlisting>not exists ( fields in ) classes in package "com.antlersoft.odb"</programlisting></informalexample>
+  		<refentry id="r-arguments-of">
 		  <refnamediv>
 		    <refname>arguments of</refname>
 		    <refpurpose>Returns the arguments of the methods in the set</refpurpose>
@@ -1926,6 +2012,16 @@ where the language normally calls for a transform.
 This transform replaces any set with the result
 of the <replaceable>set expression</replaceable> argument provided.
 		  	</para>
+		  	<refsect2>
+		  		<title>Example</title>
+		  		<para>In this (somewhat contrived) example,
+		  		the expression returns the methods in <userinput>ObjectDB</userinput>
+		  		only if the result of the previous set expression was not empty:
+		  		</para>
+		  		<informalexample>
+		  			<programlisting>exists ( uncorrelated ( previous ) ) methods in class "ObjectDB"</programlisting>
+		  		</informalexample>
+		  	</refsect2>
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
@@ -1974,6 +2070,27 @@ instances are discarded.
   		The available value expressions
   		are listed including the context in which they may be applied.
   		</para>
+  		<sect2>
+  			<title>Examples</title>
+	  		<para>
+	  		Here, a group-context value expression is used as a transform to change the
+	  		set of methods in a class to the count of the
+	  		number of methods in the class:
+	  		</para>
+	  		<informalexample>
+	  			<programlisting>count methods in class "ObjectDB"</programlisting>
+	  		</informalexample>
+	  		<para>
+	  		Here, the group-context value expression is converted into a count-preserving
+	  		value expression with the <link linkend="r-group-of">group of</link>
+	  		operator, and that is compared with a scalar expression (a numeric constant)
+	  		with a <link linkend="r-relational-operators">relational operator</link>
+	  		to make a filter that is applied to the set expression.
+	  		</para>
+	  		<informalexample>
+	  			<programlisting>( count of ( arguments of ) > 1 ) methods in class "ObjectDB"</programlisting>
+	  		</informalexample>
+	  	</sect2>
 		<refentry id="r-classes-containing">
 		  <refnamediv>
 			<refname>classes containing</refname>
@@ -2251,16 +2368,17 @@ Applied to an argument, returns the method that has that argument.
 		</refentry>
 		<refentry id="r-packages-of">
 		  <refnamediv>
-			<refname>packages of</refname>
+			<refname>packages of (Java)/namespaces of (C#/CIL)</refname>
 			<refpurpose>Returns the package that contains a class</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>packages of</synopsis>
+			<synopsis>namespaces of</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
 			<para>
-Applied to a class, returns the package that contains that class.
+Applied to a class, returns the package or namespace that contains that class.
 			</para>
 		  </refsect1>
 		  <refsect1>
@@ -2324,6 +2442,92 @@ Applied to string constant reference object, this expression returns the string 
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para><link linkend="r-type-string-constant">string constant</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-substitute">
+			<refnamediv>
+				<refname>substitute</refname>
+				<refpurpose>Change a string by regular expression substitution</refpurpose>
+			</refnamediv>
+			<refsynopsisdiv>
+				<synopsis>substitute(<replaceable>from</replaceable>,<replaceable>match pattern</replaceable>)</synopsis>
+				<synopsis>substitute(<replaceable>from</replaceable>,<replaceable>match pattern</replaceable>,<replaceable>result pattern</replaceable>)</synopsis>
+			</refsynopsisdiv>
+		    <refsect1>
+		    	<title>Description</title>
+		    	<para>This expression changes a string into another string with regular
+		    	expression matching.
+		    	<itemizedlist>
+		    		<listitem><simpara>In the first form,
+		    		the result is the portion of
+		    		the string value expression <replaceable>from</replaceable>
+		    		that matches <replaceable>match pattern</replaceable>.
+		    		</simpara></listitem>
+		    		<listitem><simpara>In the second form,
+		    		the result is the <replaceable>result pattern</replaceable>
+		    		applied to the result of matching <replaceable>from</replaceable>
+		    		with the <replaceable>match pattern</replaceable>.</simpara></listitem>
+		    	</itemizedlist>
+		    	</para>
+			  <refsect2>
+			  	<title>Example</title>
+			  	<para>
+			  	This expression returns the last component (following the period) of all the package names.
+			  	</para>
+			  	<informalexample>
+			  		<programlisting>substitute( to string, //.*\./, ///) all packages</programlisting>
+			  	</informalexample>
+			  </refsect2>
+		    </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string">string</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string">string</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-to-string">
+			<refnamediv>
+				<refname>to string</refname>
+				<refpurpose>Converts an object to its string representation</refpurpose>
+			</refnamediv>
+			<refsynopsisdiv>
+				<synopsis>to string</synopsis>
+			</refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to any object, <userinput>to string</userinput> returns its string representation as a string-typed value.
+			Usually &p-bbq; does this for you when necessary, but this operator allows you to explicitly convert
+			an object into a string value where a string-valued expression is required.
+			</para>
+			  <refsect2>
+			  	<title>Example</title>
+			  	<para>
+			  	This expression returns the last component (following the period) of all the package names.
+			  	</para>
+			  	<informalexample>
+			  		<programlisting>substitute( to string, //.*\./, ///) all packages</programlisting>
+			  	</informalexample>
+			  </refsect2>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string">string</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-type">
@@ -2433,6 +2637,44 @@ If the type does not represent a reference type, this will expression will retur
 to each member of the set individually;
 if the check succeeds, the member is included in the
 result set.</para>
+		<para>Like transforms, filters are applied to the front of a set expression.
+		For example, <link linkend="r-interface"><userinput>interface</userinput></link>
+		is a filter that applies to classes and passes only those classes that are interfaces.
+		So the set expression
+		</para>
+		<informalexample><programlisting>interface classes in package "org.eclipse.core.runtime"</programlisting></informalexample>
+		<para>
+		returns the interfaces that are in the <userinput>org.eclipse.core.runtime</userinput> package.
+		</para>
+		<refentry id="r-tilde">
+			<refnamediv>
+				<refname>~</refname>
+				<refpurpose>Regular-expression match on an object name</refpurpose>
+			</refnamediv>
+			<refsynopsisdiv>
+				<cmdsynopsis><command>~</command><arg><replaceable>regular-expression</replaceable></arg></cmdsynopsis>
+			</refsynopsisdiv>
+			<refsect1>
+				<title>Description</title>
+				<para>This filter returns only those objects in the set that match <replaceable>regular-expression</replaceable>.
+				The regular expression is a Java regular expression (even when you are using BBQ-IL), as described
+				in <ulink url="https://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/Pattern.html">the documentation
+				for <userinput>java.util.regex.Pattern</userinput></ulink>.</para>
+				<refsect2>
+					<title>Example</title>
+					<para>One of the most useful applications of regular expression matching is to do case-insensitive
+					searching.  The following expression finds references to all strings in the analyzed system that
+					contain "select", regardless of case.</para>
+					<informalexample>
+						<programlisting>references to ~ "(?i)select" all strings</programlisting>
+					</informalexample>
+				</refsect2>
+			</refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+		</refentry>
 		<refentry id="r-abstract">
 		  <refnamediv>
 			<refname>abstract</refname>
@@ -2472,6 +2714,14 @@ the compound filter <userinput>not interface abstract</userinput>.
 			<para>This filter tests whether a member of the set
 			is marked as being deprecated.
 			</para>
+			<refsect2>
+				<title>Example</title>
+				<para>This query returns the set of all calls to deprecated methods in classes in
+				<userinput>org.eclipse.core.runtime</userinput>:</para>
+				<informalexample>
+					<programlisting>calls to deprecated methods in classes in package "org.eclipse.core.runtime"</programlisting>
+				</informalexample>
+			</refsect2>
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
@@ -2576,27 +2826,31 @@ an interface.
 		  <refsect1>
 			<title>Description</title>
 			<para>The test passes if <replaceable>string</replaceable> matches some part of the
-object's name.
+object's name.  This filter does a simple string match; for regular expression matching, use the
+<link linkend="r-tilde">~ filter</link>.
 			</para>
+			<refsect2>
+				<title>Example</title>
+				<para>This expression returns classes with names containing "DB" in <userinput>com.antlersoft.analyzer</userinput>.</para>
+				<informalexample><programlisting>matching "DB" classes in package "com.antlersoft.analyzer"</programlisting></informalexample>
+			</refsect2>
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-class">class</link></para>
-		  	<para><link linkend="r-type-field">field</link></para>
-		  	<para><link linkend="r-type-method">method</link></para>
-		  	<para><link linkend="r-type-string-constant">string constant</link></para>
+		  	<para><link linkend="r-type-object">object</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-package-etc">
 		  <refnamediv>
-			<refname>package, private, protected, public</refname>
+			<refname>package (Java), private, protected, public, internal (C#/CIL)</refname>
 			<refpurpose>Checks the visibility of a class/method/field</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>package</synopsis>
+			<synopsis>package (Java)</synopsis>
 			<synopsis>private</synopsis>
 			<synopsis>protected</synopsis>
 			<synopsis>public</synopsis>
+			<synopsis>internal (C#/CIL)</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -2607,6 +2861,10 @@ or <userinput>protected</userinput> to test if the program
 object was declared with that visibility modifier,
 or use <userinput>package</userinput>
 to test if it was declared with the default visibility.
+			</para>
+			<para>
+			For BBQ-IL, package is not applicable; you can use <userinput>internal</userinput>
+			to test if something was declared with internal visibility.
 			</para>
 		  </refsect1>
 		  <refsect1>
@@ -2705,21 +2963,32 @@ if it updates the value of the field.
   				<varlistentry>
   					<term>union</term>
   					<listitem>
-  					<para>The <userinput>union</userinput> operator combines all the elements of two sets.</para>
+  					<para>The <userinput>union</userinput> operator combines all the elements of two sets.  The following
+  					transform will return all method calls or field references to members of a class:</para>
+  					<informalexample>
+  						<programlisting>set CallOrRefTransform to ( calls to methods in ) union ( references to fields in )</programlisting>
+  					</informalexample>
   					</listitem>
   				</varlistentry>
   				<varlistentry>
   					<term>intersection</term>
   					<listitem>
   					<para>The <userinput>intersection</userinput> operator creates a set containing only those elements that appear in both
-  					operand sets.</para>
+  					operand sets.  The following set expression will return calls to a class that come from methods in the class:</para>
+  					<informalexample>
+  						<programlisting>( calls to intersection calls from ) methods in class "ObjectDB"</programlisting>
+  					</informalexample>
   					</listitem>
   				</varlistentry>
   				<varlistentry>
   					<term>without</term>
   					<listitem>
   					<para>The <userinput>without</userinput> operator creates a set containing only those elements in the first operand
-  					set that do not also exist in the second operand set.  This operation is sometimes referred to as "difference".</para>
+  					set that do not also exist in the second operand set.  This operation is sometimes referred to as "difference".
+  					The following set expression will return calls to class that come from methods outside the class:</para>
+  					<informalexample>
+  						<programlisting>( calls to without calls from ) methods in class "ObjectDB"</programlisting>
+  					</informalexample>
   					</listitem>
   				</varlistentry>
   				<varlistentry>
@@ -2778,9 +3047,18 @@ if it updates the value of the field.
   				&p-bbq; supports relational operators that compare two value expressions; the result of
   				the comparison is a filter.  The <userinput>=</userinput> and <userinput>!=</userinput>
   				operators can compare any value expression type;
-  				the remaining relational operators <userinput>&lt; &lt;= >= ></userinput>
+  				the relational operators <userinput>&lt; &lt;= >= ></userinput>
   				can only compare values of type <link linkend="r-type-integer">integer</link>,
   				<link linkend="r-type-string">string</link>, or <link linkend="r-type-date">date</link>.
+  				</para>
+  				<para>
+  				There is an additional relational operator <userinput>~=</userinput> that produces a filter by
+  				matching a string value
+  				with a second string value interpreted as a Java regular expression.  The following set expression
+  				looks for strings that match "select", regardless of case:
+  				<informalexample>
+  					<programlisting>to string ~= //(?i)db/ all strings</programlisting>
+  				</informalexample>
   				</para>
   			</sect3>
   			<sect3>
@@ -2793,4 +3071,159 @@ if it updates the value of the field.
   		</sect2>
   	</sect1>
   </chapter>
+  <appendix>
+	<title>Grammar Summary</title>
+  	<para>
+  	The following is a summary of the grammar of the Java query language.
+  	</para>
+  	<programlisting>
+COMPLETE_QUERY : SET_EXPRESSION 
+	| DELIMITED_QUERY 
+	;
+SET_EXPRESSION : SET_EXPRESSION SET_OPERATOR SET_EXPRESSION 
+	| '(' SET_EXPRESSION ')' 
+	| VALUE_LIST 
+	| 'execute' SET_EXPRESSION 
+	| 'previous' 
+	| 'unset' nameSymbol 
+	| SAVING_NAME SET_EXPRESSION 
+	| SAVING_NAME TRANSFORM 
+	| VALUE_EXPRESSION SET_EXPRESSION 
+	| SET_EXPRESSION 'that' Identity FILTER 
+	| 'class' literalString 
+	| 'package' literalString 
+	| 'all' 'classes' 
+	| 'all' StringConstant 
+	| 'all' 'packages' 
+	| ImportExpression 
+	| TRANSFORM SET_EXPRESSION 
+	# or name of saved set expression
+	;
+DELIMITED_QUERY : SET_EXPRESSION ';' 
+	| DELIMITED_QUERY ';' 
+	| DELIMITED_QUERY SET_EXPRESSION 
+	;
+SET_OPERATOR : 'union' 
+	| 'intersection' 
+	| 'deintersection' 
+	| 'without' 
+	;
+VALUE_LIST : '(' ')' 
+	| 'list' 
+	| 'list' VALUE_EXPRESSION 
+	| VALUE_EXPRESSION 
+	| VALUE_LIST ',' VALUE_EXPRESSION 
+	;
+SAVING_NAME : 'set' nameSymbol 'to' 
+	;
+TRANSFORM : 'same' 
+	| FILTER 
+	| TRANSFORM SET_OPERATOR TRANSFORM 
+	| '(' TRANSFORM ')' 
+	| VALUE_EXPRESSION 
+	| 'recursive' '(' TRANSFORM ')' 
+	| 'recursive' '(' TRANSFORM ',' TRANSFORM ')' 
+	| 'uncorrelated' '(' SET_EXPRESSION ')' 
+	| 'unique' 
+	| VALUE_EXPRESSION TRANSFORM 
+	| TRANSFORM TRANSFORM 
+	| TRANSFORM 'that' Identity FILTER 
+	| 'arguments' 'of' 
+	| 'recursive' 'base' 'classes' 'of' 
+	| 'base' 'classes' 'of' 
+	| 'recursive' 'derived' 'classes' 'of' 
+	| 'derived' 'classes' 'of' 
+	| 'methods' 'in' 
+	| 'fields' 'in' 
+	| 'polymorphic' 
+	| 'calls' 'from' 
+	| Reference 'from' 
+	| StringConstant Reference 'from' 
+	| Reference 'to' 
+	| 'calls' 'to' 
+	| 'fields' 'with' 
+	| 'methods' 'with' 
+	| 'arguments' 'with' 
+	| 'packages' 'in' 
+	| 'classes' 'in' 
+	# or name of saved transform
+	;
+VALUE_EXPRESSION : literalString 
+	| number 
+	| 'to' 'string' 
+	| 'substitute' '(' VALUE_EXPRESSION ',' VALUE_EXPRESSION ')' 
+	| 'substitute' '(' VALUE_EXPRESSION ',' VALUE_EXPRESSION ',' VALUE_EXPRESSION ')' 
+	| GROUP_EXPRESSION 
+	| VALUE_EXPRESSION '&amp;' VALUE_EXPRESSION 
+	| FILTER 
+	| GROUP_EXPRESSION 'of' '(' TRANSFORM ')' 
+	| 'date' '(' literalString ')' 
+	| Types 'of' 
+	| VALUE_EXPRESSION VALUE_EXPRESSION 
+	| StringConstant 
+	| Types 
+	| 'classes' 'containing' 
+	| 'classes' 'with' 
+	| 'methods' 'containing' 
+	| 'methods' 'called' 'by' 
+	| 'fields' 'referenced' 'by' 
+	| StringConstant 'referenced' 'by' 
+	| 'type' 'referenced' 'by' 
+	| 'methods' 'of' 
+	| 'packages' 'of' 
+	;
+Identity : 'is' 
+	| 'are' 
+	;
+FILTER : 'not' FILTER 
+	| 'exists' '(' TRANSFORM ')' 
+	| '(' FILTER ')' 
+	| FILTER 'and' FILTER 
+	| FILTER 'or' FILTER 
+	| FILTER 'xor' FILTER 
+	| VALUE_EXPRESSION RELATIONAL_OPERATOR VALUE_EXPRESSION 
+	| VALUE_EXPRESSION '~=' VALUE_EXPRESSION 
+	| '~' literalString 
+	| 'matching' literalString 
+	| 'write' 
+	| 'is' 'array' 
+	| 'is' 'reference' 'type' 
+	| 'public' 
+	| 'private' 
+	| 'protected' 
+	| 'package' 
+	| 'abstract' 
+	| 'static' 
+	| 'interface' 
+	| 'deprecated' 
+	| 'uncalled' 
+	| UncalledPolymorphic 
+	;
+StringConstant : 'string' 
+	| 'strings' 
+	;
+ImportExpression : 'import' 
+	| ImportExpression 'set' 
+	| ImportExpression literalString 
+	;
+Reference : 'reference' 
+	| 'references' 
+	;
+GROUP_EXPRESSION : 'count' 
+	| 'first' 
+	;
+Types : 'type' 
+	| 'types' 
+	;
+RELATIONAL_OPERATOR : '&lt;' 
+	| '&lt;=' 
+	| '=' 
+	| '!=' 
+	| '>=' 
+	| '>' 
+	;
+UncalledPolymorphic : 'uncalled' 'polymorphic' 
+	;
+  	</programlisting>
+  </appendix>
 </book>
