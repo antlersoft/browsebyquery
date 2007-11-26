@@ -29,6 +29,7 @@ class PunctuationState extends LexWithSymbolTree {
 	 * of a directive.
 	 */
 	private boolean m_period_exception;
+	private boolean m_minus_exception;
 	private static SymbolFinderTree m_tree;
 
 	/**
@@ -58,6 +59,11 @@ class PunctuationState extends LexWithSymbolTree {
 		if ( s==IldasmParser.t_period && m_reader.expectedReserved(value)==null)
 		{
 			m_period_exception=true;
+			return;
+		}
+		if ( s==IldasmParser.t_minus && m_reader.expectedReserved(value)==null)
+		{
+			m_minus_exception=true;
 			return;
 		}
 		m_reader.processToken(s, value);
@@ -105,9 +111,12 @@ class PunctuationState extends LexWithSymbolTree {
 	 */
 	public LexState nextCharacter(char c) throws IOException, RuleActionException, LexException {
 		m_period_exception=false;
+		m_minus_exception=false;
 		LexState result=super.nextCharacter(c);
 		if ( m_period_exception)
 			result=new InitialPeriod( m_caller, m_reader).nextCharacter(c);
+		if ( m_minus_exception)
+			result=new InitialMinus( m_caller, m_reader).nextCharacter(c);
 		else if ( c=='{' && m_reader.expectedReserved(".permissionContents")!=null)
 		{
 			result=new PermissionContentState( m_caller, m_reader);
