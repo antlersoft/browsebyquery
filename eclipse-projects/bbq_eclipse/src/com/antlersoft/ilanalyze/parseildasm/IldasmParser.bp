@@ -1117,7 +1117,7 @@ n_filterHead : t_filter .
 n_finallyClause : t_finally .
 n_float64 : t_FLOAT64 .
 n_float64 : t_float32 t_left_paren n_int32 t_right_paren .
-n_float64 : n_float64 t_left_paren t_INT64 t_right_paren .
+n_float64 : t_float64 t_left_paren t_INT64 t_right_paren .
 # n_genArgs is represented by an ArrayList of ReadType objects on the stack
 n_genArgs : n_type "m_StartList" .
 n_genArgs : n_genArgs t_comma n_type "m_AddToList" .
