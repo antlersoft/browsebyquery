@@ -46,6 +46,7 @@ public class StoredValuesList extends JScrollPane implements PropertyChangeListe
 	public StoredValuesList( QueryLanguageEnvironment qp)
 	{
 		super(new StoredValuesTable( qp));
+		qp.addStoredValuesListener(this);
 	}
 	
 	static class StoredValuesTable extends JTable
