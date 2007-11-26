@@ -54,7 +54,6 @@ public class StoredValuesTableModel extends AbstractTableModel implements
 	StoredValuesTableModel( QueryLanguageEnvironment env)
 	{
 		environment=env;
-		env.addStoredValuesListener(this);
 	}
 
 	/* (non-Javadoc)

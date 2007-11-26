@@ -20,6 +20,8 @@
 package com.antlersoft.query.environment.ui;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -32,8 +34,15 @@ import com.antlersoft.query.environment.QueryLanguageEnvironment;
  * @author Michael A. MacDonald
  *
  */
-public class StoredValuesList extends JScrollPane
+public class StoredValuesList extends JScrollPane implements PropertyChangeListener
 {
+	/* (non-Javadoc)
+	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+	 */
+	public void propertyChange(PropertyChangeEvent evt) {
+		((StoredValuesTableModel)((JTable)getViewport().getComponent(0)).getModel()).propertyChange( evt);
+	}
+
 	public StoredValuesList( QueryLanguageEnvironment qp)
 	{
 		super(new StoredValuesTable( qp));
