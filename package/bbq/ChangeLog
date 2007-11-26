@@ -1,3 +1,15 @@
+--bbq0.5.9
+
+Regular expression matching
+
+Display saved values in a table; new saved value window in eclipse version
+
+Fix bug clearing saved expressions and imports clearing database
+
+Refactor for bbqil
+
+Update manual
+
 --bbq0.5.4
 
 static filter
