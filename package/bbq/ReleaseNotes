@@ -1,0 +1,33 @@
+bbq0.5.9
+
+Language changes:
+
+Regular expression matching has been added to the language.  There
+are three regular expression operators: ~, ~=, and substitute().
+See the language manual for details.
+
+Slash-quoted strings have been added to the language for convenience
+in composing regular expressions.
+
+User interface changes:
+
+In standalone and open tool, the window showing saved expressions now is
+a table listing the expression type and contents as well as the name of the
+expression.
+
+In the eclipse plug-in, there is a new view available showing the table
+of saved expressions.
+
+Display of method arguments and types has been made easier to read.
+
+Other changes:
+
+Fix bug where it cleared saved expressions and imports when clearing the database
+
+Lots of refactoring to support the (imminent) releases of bbqil, Browse-by-Query
+for CLR (.Net, mono).  This will pave the way for the 0.6.0 java release,
+which will feature much better performance on large databases.
+
+Update manual to describe the new functionality, and also to add more examples,
+particularly in the reference section.
+
