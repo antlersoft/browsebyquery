@@ -114,7 +114,6 @@ public class UIQuery extends QueryFrame
     }
 
     public static void main( String argv[])
-        throws Exception
     {
         final UIQuery app = new UIQuery();
         boolean db_cleared=false;

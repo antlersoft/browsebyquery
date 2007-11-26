@@ -30,7 +30,7 @@ public class DBArgument implements Persistent, HasDBType {
 	{
 		m_type=new ObjectRef( type);
 		m_method=new ObjectRef( method);
-		m_name=name;
+		m_name=( name==null ? "" : name);
 		m_index=index;
 		
 		ObjectDB.makePersistent(this);
@@ -43,10 +43,13 @@ public class DBArgument implements Persistent, HasDBType {
 	
 	void setName( String name)
 	{
-		if ( ! m_name.equals(name))
+		if ( name!=null && name.length()>0)
 		{
-			m_name=name;
-			ObjectDB.makeDirty(this);
+			if ( ! m_name.equals(name))
+			{
+				m_name=name;
+				ObjectDB.makeDirty(this);
+			}
 		}
 	}
 	
