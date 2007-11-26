@@ -116,7 +116,7 @@ class PunctuationState extends LexWithSymbolTree {
 		if ( m_period_exception)
 			result=new InitialPeriod( m_caller, m_reader).nextCharacter(c);
 		if ( m_minus_exception)
-			result=new InitialMinus( m_caller, m_reader).nextCharacter(c);
+			result=new InitialMinus( m_caller, m_reader);
 		else if ( c=='{' && m_reader.expectedReserved(".permissionContents")!=null)
 		{
 			result=new PermissionContentState( m_caller, m_reader);
