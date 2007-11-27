@@ -104,6 +104,27 @@ interface ITypeInterpreter {
 			 * @see com.antlersoft.ilanalyze.db.ITypeInterpreter#getClassKey(com.antlersoft.ilanalyze.ReadType)
 			 */
 			public String getClassKey(ReadType type) throws TIException {
+				String s=type.toString();
+				if ( s.startsWith("int"))
+				{
+					return "System.I"+s.substring(1);
+				}
+				if ( s.startsWith( "uint"))
+				{
+					return "System.UI"+s.substring(2);
+				}
+				if ( s.equals( "float32"))
+				{
+					return "System.Single";
+				}
+				if ( s.equals( "float64"))
+					return "System.Double";
+				if ( s.equals("char"))
+					return "System.Char";
+				if ( s.equals("bool"))
+					return "System.Boolean";
+				if ( s.startsWith("native"))
+					return "System.Int32";
 				throw new TIException( "Can't get class key from built-in type: "+type.toString());
 			}
 
@@ -154,7 +175,7 @@ interface ITypeInterpreter {
 			 * @see com.antlersoft.ilanalyze.db.ITypeInterpreter#getClassKey(com.antlersoft.ilanalyze.ReadType)
 			 */
 			public String getClassKey(ReadType type) throws TIException {
-				throw new TIException( "Not a class type:"+type.toString());
+				return "System.Array";
 			}
 
 			/* (non-Javadoc)
