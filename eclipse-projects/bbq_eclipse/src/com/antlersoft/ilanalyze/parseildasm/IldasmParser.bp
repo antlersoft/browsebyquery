@@ -92,6 +92,7 @@ symbol n_instr_r_head
 symbol n_instr_tok_head
 symbol n_int16s
 symbol n_int32
+symbol n_intspec
 symbol n_labels
 symbol n_languageDecl
 symbol n_localeHead
@@ -113,6 +114,9 @@ symbol n_nameSpaceHead
 symbol n_nameValPair
 symbol n_nameValPairs
 symbol n_nativeType
+symbol n_normalintspec
+symbol n_normalsignedintspec
+symbol n_normalunsignedintspec
 symbol n_ownerType
 symbol n_paramAttr
 symbol n_pinvAttr
@@ -134,6 +138,7 @@ symbol n_sehClauses
 symbol n_sigArg
 symbol n_sigArgs0
 symbol n_sigArgs1
+symbol n_signedintspec
 symbol n_slashedName
 symbol n_tlsSpec
 symbol n_truefalse
@@ -1008,17 +1013,13 @@ n_ddItem : t_char t_asterisk t_left_paren n_compQstring t_right_paren .
 n_ddItem : t_ampersand t_left_paren n_id t_right_paren .
 n_ddItem : n_bytearrayhead n_bytes t_right_paren .
 n_ddItem : t_float32 t_left_paren n_float64 t_right_paren n_ddItemCount .
-n_ddItem : n_float64 t_left_paren n_float64 t_right_paren n_ddItemCount .
+n_ddItem : t_float64 t_left_paren n_float64 t_right_paren n_ddItemCount .
 n_ddItem : t_int64 t_left_paren t_INT64 t_right_paren n_ddItemCount .
-n_ddItem : t_int32 t_left_paren n_int32 t_right_paren n_ddItemCount .
-n_ddItem : t_int16 t_left_paren n_int32 t_right_paren n_ddItemCount .
-n_ddItem : t_int8 t_left_paren n_int32 t_right_paren n_ddItemCount .
+n_ddItem : t_uint64 t_left_paren t_INT64 t_right_paren n_ddItemCount .
+n_ddItem : n_normalintspec t_left_paren n_int32 t_right_paren n_ddItemCount .
 n_ddItem : t_float32 n_ddItemCount .
 n_ddItem : t_float64 n_ddItemCount .
-n_ddItem : t_int64 n_ddItemCount .
-n_ddItem : t_int32 n_ddItemCount .
-n_ddItem : t_int16 n_ddItemCount .
-n_ddItem : t_int8 n_ddItemCount .
+n_ddItem : n_intspec n_ddItemCount .
 n_ddItemCount : .
 n_ddItemCount : t_left_square n_int32 t_right_square .
 n_ddItemList : n_ddItem t_comma n_ddItemList .
@@ -1095,11 +1096,8 @@ n_fieldInit : t_float32 t_left_paren n_float64 t_right_paren .
 n_fieldInit : t_float64 t_left_paren n_float64 t_right_paren .
 n_fieldInit : t_float32 t_left_paren t_INT64 t_right_paren .
 n_fieldInit : t_float64 t_left_paren t_INT64 t_right_paren .
-n_fieldInit : t_int64 t_left_paren t_INT64 t_right_paren .
-n_fieldInit : t_int32 t_left_paren t_INT64 t_right_paren .
-n_fieldInit : t_int16 t_left_paren t_INT64 t_right_paren .
+n_fieldInit : n_intspec t_left_paren t_INT64 t_right_paren .
 n_fieldInit : t_char t_left_paren t_INT64 t_right_paren .
-n_fieldInit : t_int8 t_left_paren t_INT64 t_right_paren .
 n_fieldInit : t_bool t_left_paren n_truefalse t_right_paren .
 n_fieldInit : n_compQstring .
 n_fieldInit : n_bytearrayhead n_bytes t_right_paren .
@@ -1196,6 +1194,9 @@ n_instr_tok_head : n_INSTR_TOK .
 n_int16s : .
 n_int16s : n_int16s n_int32 .
 n_int32 : t_INT64 "{ return new Integer( ((Long)valueStack.o_0()).intValue()); }" .
+n_intspec : n_normalintspec "m_TopString" .
+n_intspec : t_int64 "m_TopString" .
+n_intspec : t_uint64 "m_TopString" .
 n_labels : .
 n_labels : n_id t_comma n_labels .
 n_labels : n_int32 t_comma n_labels .
@@ -1292,21 +1293,11 @@ n_nativeType : t_currency .
 n_nativeType : t_syschar .
 n_nativeType : t_void .
 n_nativeType : t_bool .
-n_nativeType : t_int8 .
-n_nativeType : t_int16 .
-n_nativeType : t_int32 .
-n_nativeType : t_int64 .
 n_nativeType : t_float32 .
 n_nativeType : t_float64 .
 n_nativeType : t_error .
-n_nativeType : t_uint8 .
-n_nativeType : t_uint16 .
-n_nativeType : t_uint32 .
-n_nativeType : t_uint64 .
-n_nativeType : t_unsigned t_int8 .
-n_nativeType : t_unsigned t_int16 .
-n_nativeType : t_unsigned t_int32 .
-n_nativeType : t_unsigned t_int64 .
+n_nativeType : n_intspec .
+n_nativeType : t_unsigned n_signedintspec .
 n_nativeType : n_nativeType t_asterisk .
 n_nativeType : n_nativeType t_left_square t_right_square .
 n_nativeType : n_nativeType t_left_square n_int32 t_right_square .
@@ -1336,6 +1327,14 @@ n_nativeType : t_variant t_bool .
 n_nativeType : t_method .
 n_nativeType : t_as t_any .
 n_nativeType : t_lpstruct .
+n_normalintspec : n_normalsignedintspec "m_TopString" .
+n_normalintspec : n_normalunsignedintspec "m_TopString" .
+n_normalsignedintspec : t_int8 "m_TopString" .
+n_normalsignedintspec : t_int16 "m_TopString" .
+n_normalsignedintspec : t_int32 "m_TopString" .
+n_normalunsignedintspec : t_uint8 "m_TopString" .
+n_normalunsignedintspec : t_uint16 "m_TopString" .
+n_normalunsignedintspec : t_uint32 "m_TopString" .
 n_ownerType : n_typeSpec .
 n_ownerType : n_memberRef .
 n_sigArgs0 : t_left_paren t_right_paren "{ return new Signature(); }" .
@@ -1411,6 +1410,8 @@ n_sigArg : n_paramAttr n_type t_marshal t_left_paren n_nativeType t_right_paren 
 n_sigArgs0 : t_left_paren n_sigArgs1 t_right_paren "{ return valueStack.o_1(); }" .
 n_sigArgs1 : n_sigArg "{ Signature result=new Signature(); result.addArgument( (ReadArg)valueStack.o_0()); return result; }" .
 n_sigArgs1 : n_sigArgs1 t_comma n_sigArg "{ Signature result=((Signature)valueStack.o_2()); result.addArgument( (ReadArg)valueStack.o_0()); return result; }" .
+n_signedintspec : n_normalsignedintspec "m_TopString" .
+n_signedintspec : t_int64 "m_TopString" .
 n_slashedName : n_name1 "m_TopString" .
 n_slashedName : n_slashedName t_slash n_name1 "m_StringConcat" .
 n_tlsSpec : .
@@ -1445,20 +1446,10 @@ n_type : t_typedref "m_BuiltinType" .
 n_type : t_char "m_BuiltinType" .
 n_type : t_void "m_BuiltinType" .
 n_type : t_bool "m_BuiltinType" .
-n_type : t_int8 "m_BuiltinType" .
-n_type : t_int16 "m_BuiltinType" .
-n_type : t_int32 "m_BuiltinType" .
-n_type : t_int64 "m_BuiltinType" .
+n_type : n_intspec "m_BuiltinType" .
 n_type : t_float32 "m_BuiltinType" .
 n_type : t_float64 "m_BuiltinType" .
-n_type : t_uint8 "m_BuiltinType" .
-n_type : t_uint16 "m_BuiltinType" .
-n_type : t_uint32 "m_BuiltinType" .
-n_type : t_uint64 "m_BuiltinType" .
-n_type : t_unsigned t_int8 "m_BuiltinType2Words" .
-n_type : t_unsigned t_int16 "m_BuiltinType2Words" .
-n_type : t_unsigned t_int32 "m_BuiltinType2Words" .
-n_type : t_unsigned t_int64 "m_BuiltinType2Words" .
+n_type : t_unsigned n_signedintspec "m_BuiltinType2Words" .
 n_type : t_native t_int "m_BuiltinType2Words" .
 n_type : t_native t_uint "m_BuiltinType2Words" .
 n_type : t_native t_unsigned t_int "{ return new BuiltinType( \"native uint\"); }" .
@@ -1473,16 +1464,10 @@ n_variantType : t_variant .
 n_variantType : t_currency .
 n_variantType : t_void .
 n_variantType : t_bool .
-n_variantType : t_int8 .
-n_variantType : t_int16 .
-n_variantType : t_int32 .
-n_variantType : t_int64 .
+n_variantType : n_intspec .
 n_variantType : t_float32 .
 n_variantType : t_float64 .
-n_variantType : t_unsigned t_int8 .
-n_variantType : t_unsigned t_int16 .
-n_variantType : t_unsigned t_int32 .
-n_variantType : t_unsigned t_int64 .
+n_variantType : t_unsigned n_signedintspec .
 n_variantType : t_asterisk .
 n_variantType : n_variantType t_left_square t_right_square .
 n_variantType : n_variantType t_vector .
