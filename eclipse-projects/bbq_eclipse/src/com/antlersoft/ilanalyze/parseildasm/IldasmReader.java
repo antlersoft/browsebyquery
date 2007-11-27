@@ -11,10 +11,12 @@ import java.io.Reader;
 
 import java.text.MessageFormat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +64,7 @@ public class IldasmReader {
 	{
 		m_parser=new IldasmParser();
 		m_line=new StringBuilder();
-		m_disassembly_command_format="monodis \"{0}\"";
+		m_disassembly_command_format="monodis {0}";
 		if ( System.getProperty("os.name", "Finux").contains("Windows"))
 		{
 			m_disassembly_command_format="ildasm /text /nobar /linenumber \"{0}\"";
@@ -181,12 +183,17 @@ public class IldasmReader {
 	
 	public void sendFileToDriver( File file, DBDriver driver) throws IOException, RuleActionException
 	{
+		sendFileToDriver( file, driver, false);
+	}
+	
+	public void sendFileToDriver( File file, DBDriver driver, boolean filter) throws IOException, RuleActionException
+	{
 		if ( file.isDirectory())
 		{
 			File[] files=file.listFiles();
 			for ( int i=0; i<files.length; ++i)
 			{
-				sendFileToDriver( files[i], driver);
+				sendFileToDriver( files[i], driver, true);
 			}
 		}
 		else
@@ -201,27 +208,38 @@ public class IldasmReader {
 			}
 			else if ( lower_file.endsWith(".dll") || lower_file.endsWith(".exe"))
 			{
-				if ( m_directory_match!=null)
+				if ( filter)
 				{
-					if ( ! m_directory_match.matcher( file.getParentFile().getAbsolutePath()).find())
+					if ( m_directory_match!=null)
 					{
-						if ( logger.isLoggable(Level.FINER))
-							logger.finer( "Rejecting "+file.getAbsolutePath()+" because directory doesn't match "+m_directory_match.pattern());
-						return;
+						if ( ! m_directory_match.matcher( file.getParentFile().getAbsolutePath()).find())
+						{
+							if ( logger.isLoggable(Level.FINER))
+								logger.finer( "Rejecting "+file.getAbsolutePath()+" because directory doesn't match "+m_directory_match.pattern());
+							return;
+						}
 					}
-				}
-				if ( m_oldest!=null)
-				{
-					if ( file.lastModified()<m_oldest.getTime())
+					if ( m_oldest!=null)
 					{
-						if ( logger.isLoggable(Level.FINER))
-							logger.finer( "Rejecting "+file.getAbsolutePath()+" because it is older than "+m_oldest.toString() );
-						return;						
+						if ( file.lastModified()<m_oldest.getTime())
+						{
+							if ( logger.isLoggable(Level.FINER))
+								logger.finer( "Rejecting "+file.getAbsolutePath()+" because it is older than "+m_oldest.toString() );
+							return;						
+						}
 					}
 				}
 				logger.fine("Reading assembly file "+file.getAbsolutePath());
 				driver.startAnalyzedFile(file.getAbsolutePath());
-				Process process=Runtime.getRuntime().exec(MessageFormat.format(m_disassembly_command_format, new Object[] { file.getAbsolutePath() }));
+				// Tokenize the command format, substitute the file path as necessary
+				Object[] format_args=new Object[] { file.getAbsolutePath() };
+				ArrayList arg_list=new ArrayList();
+				for ( Enumeration e=new StringTokenizer( m_disassembly_command_format); e.hasMoreElements();)
+				{
+					arg_list.add( MessageFormat.format( (String)e.nextElement(), format_args));
+				}
+				String[] cmdargs=new String[arg_list.size()];
+				Process process=Runtime.getRuntime().exec((String[])arg_list.toArray(cmdargs));
 				Read( driver, new InputStreamReader(process.getInputStream()));
 				driver.endAnalyzedFile();
 				try
