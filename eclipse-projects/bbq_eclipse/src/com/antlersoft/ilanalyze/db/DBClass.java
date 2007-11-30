@@ -209,7 +209,7 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	 */
 	public Enumeration getContainedClasses()
 	{
-		if ( m_containing==null)
+		if ( m_contained==null)
 			return EmptyEnum.empty;
 		return new FromRefEnumeration( new IteratorEnumeration( m_contained.iterator()));
 	}
