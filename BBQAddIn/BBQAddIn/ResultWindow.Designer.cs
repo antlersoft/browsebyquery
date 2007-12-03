@@ -33,19 +33,24 @@ namespace com.antlersoft.BBQAddIn
             // 
             // resultList
             // 
+            this.resultList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.resultList.FormattingEnabled = true;
-            this.resultList.Location = new System.Drawing.Point(11, 9);
+            this.resultList.Location = new System.Drawing.Point(0, 0);
+            this.resultList.MinimumSize = new System.Drawing.Size(80, 30);
             this.resultList.Name = "resultList";
-            this.resultList.Size = new System.Drawing.Size(765, 147);
+            this.resultList.Size = new System.Drawing.Size(80, 30);
             this.resultList.TabIndex = 0;
             // 
             // ResultWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.Controls.Add(this.resultList);
+            this.MinimumSize = new System.Drawing.Size(80, 30);
             this.Name = "ResultWindow";
-            this.Size = new System.Drawing.Size(801, 180);
+            this.Size = new System.Drawing.Size(80, 30);
             this.ResumeLayout(false);
 
         }

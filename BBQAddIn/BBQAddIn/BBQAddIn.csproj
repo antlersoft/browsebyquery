@@ -45,6 +45,7 @@
     <Compile Include="Connect.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="BrowseByQuery.cs" />
     <Compile Include="QueryWindow.cs">
       <SubType>UserControl</SubType>
     </Compile>

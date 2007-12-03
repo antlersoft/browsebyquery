@@ -24,5 +24,10 @@ namespace com.antlersoft.BBQAddIn
         {
             InitializeComponent();
         }
+
+        public TextBox QueryText
+        {
+            get { return queryText; }
+        }
     }
 }

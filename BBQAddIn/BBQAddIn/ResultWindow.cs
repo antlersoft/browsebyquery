@@ -24,5 +24,10 @@ namespace com.antlersoft.BBQAddIn
         {
             InitializeComponent();
         }
+
+        public ListBox ResultListBox
+        {
+            get { return resultList; }
+        }
     }
 }
