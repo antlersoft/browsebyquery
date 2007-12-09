@@ -20,7 +20,7 @@ namespace com.antlersoft.BBQAddIn
             queryText = text;
         }
 
-        [XmlElement]
+        [XmlText]
         public String QueryText
         {
             get { return QueryText; }
