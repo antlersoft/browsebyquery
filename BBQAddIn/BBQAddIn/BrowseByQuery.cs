@@ -23,8 +23,8 @@ namespace com.antlersoft.BBQAddIn
         [XmlText]
         public String QueryText
         {
-            get { return QueryText; }
-            set { QueryText=value; }
+            get { return queryText; }
+            set { queryText=value; }
         }
 
         private String queryText=String.Empty;
@@ -35,6 +35,7 @@ namespace com.antlersoft.BBQAddIn
     {
         private int responseCount = 0;
 
+		[XmlAttribute]
         public int ResponseCount
         {
             get { return responseCount; }
@@ -51,7 +52,7 @@ namespace com.antlersoft.BBQAddIn
 
         private RequestException exception = null;
 
-        public RequestException Exception
+        public RequestException RequestException
         {
             get { return exception; }
             set { exception = value; }
@@ -64,12 +65,14 @@ namespace com.antlersoft.BBQAddIn
         public String Message
         {
             get { return message; }
+            set { message = value; }
         }
 
         [XmlElement]
         public String StackTrace
         {
             get { return stackTrace; }
+            set { stackTrace = value; }
         }
 
         private String message = String.Empty;
@@ -80,6 +83,7 @@ namespace com.antlersoft.BBQAddIn
     {
         private String objectType = String.Empty;
 
+		[XmlAttribute]
         public String ObjectType
         {
             get { return objectType; }
@@ -87,6 +91,7 @@ namespace com.antlersoft.BBQAddIn
         }
         private String description = String.Empty;
 
+		[XmlAttribute]
         public String Description
         {
             get { return description; }
@@ -94,6 +99,7 @@ namespace com.antlersoft.BBQAddIn
         }
         private String fileName = String.Empty;
 
+		[XmlAttribute]
         public String FileName
         {
             get { return fileName; }
@@ -101,6 +107,7 @@ namespace com.antlersoft.BBQAddIn
         }
         private int lineNumber = 0;
 
+		[XmlAttribute]
         public int LineNumber
         {
             get { return lineNumber; }
