@@ -129,15 +129,15 @@ namespace com.antlersoft.BBQAddIn
 
 			MemoryStream memory=new MemoryStream();
 			BinaryWriter writer=new BinaryWriter( memory, Encoding.UTF8);
-			writer.Write( requestString);
+			writer.Write( requestString.ToCharArray());
 			writer.Close();
 			byte[] requestBytes=memory.GetBuffer();
 			byte[] len_buf=new byte[4];
-			intToQuad( requestBytes.Length, len_buf, 0);
+			intToQuad( requestBytes.Length+4, len_buf, 0);
 			writeFully( len_buf, 0, 4);
 			intToQuad( requestString.Length, len_buf, 0);
 			writeFully( len_buf, 0, 4);
-			writeFully( requestBytes, 2, requestBytes.Length);
+			writeFully( requestBytes, 0, requestBytes.Length);
 
 			readFully( len_buf);
 			int byte_len=quadToInt( len_buf, 0);

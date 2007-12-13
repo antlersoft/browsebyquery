@@ -9,7 +9,7 @@ namespace com.antlersoft.BBQAddIn
 		public static void Main( String[] args)
 		{
 			Object o=new BrowseByQueryBySocket().PerformQuery(
-				new QueryRequest("nmethods in class \"System.Int32\""));
+				new QueryRequest("methods in class \"System.Int32\""));
 			StringWriter sw=new StringWriter();
 			new XmlSerializer(typeof(QueryResponse)).Serialize( sw, o);
 			Console.WriteLine( sw.ToString());
