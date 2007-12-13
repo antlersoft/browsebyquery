@@ -70,7 +70,7 @@ public class DBSourceObject implements Persistent {
 	
 	protected void addPositionString( StringBuilder sb)
 	{
-		DBSourceFile file=(DBSourceFile)OptionalRefGet( m_source_file);
+		DBSourceFile file=getSourceFile();
 		if ( file!=null)
 		{
 			sb.append( " at line ");
@@ -85,6 +85,16 @@ public class DBSourceObject implements Persistent {
 		StringBuilder sb=new StringBuilder();
 		addPositionString( sb);
 		return sb.toString();
+	}
+	
+	public DBSourceFile getSourceFile()
+	{
+		return (DBSourceFile)OptionalRefGet( m_source_file);
+	}
+	
+	public int getLineNumber()
+	{
+		return m_line;
 	}
 	
 	static interface IRefSetter

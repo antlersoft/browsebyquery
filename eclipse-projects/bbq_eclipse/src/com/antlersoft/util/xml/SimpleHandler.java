@@ -12,6 +12,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
 
 /**
+ * DefaultHandler specialized to populate XML elements that contain no elements, only attributes
+ * and text contents, represented by classes implementing ISimpleElement.
+ * Implementing IElement.readFromXML for such classes, then, consists of returning an
+ * instance of this.
  * @author Michael A. MacDonald
  *
  */

@@ -20,6 +20,7 @@
 package com.antlersoft.ilanalyze.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 import com.antlersoft.ilanalyze.db.*;
@@ -27,6 +28,8 @@ import com.antlersoft.ilanalyze.db.*;
 import com.antlersoft.ilanalyze.parseildasm.IldasmReader;
 
 import com.antlersoft.ilanalyze.query.ILQueryParser;
+
+import com.antlersoft.ilanalyze.xmlintf.BrowseByQueryXml;
 
 import com.antlersoft.odb.ObjectDBException;
 
@@ -139,5 +142,14 @@ public class UIQuery extends QueryFrame
         }
         
         app.showFrame((argv.length>0 ? "Querying " : "Querying default DB ")+openString, app.analyzerDBOpenFile, db_cleared, "/icons/weber-small.gif");
+        
+        try
+        {
+        	new Thread( new QuerySocketServer( new BrowseByQueryXml( app.getEnvironment(), app.analyzerDB), QuerySocketServer.DEFAULT_PORT), "QuerySocketServer").start();
+        }
+        catch ( IOException ioe)
+        {
+        	
+        }
     }
 }

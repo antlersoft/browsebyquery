@@ -7,6 +7,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 /**
+ * A class can implement ISimpleElement so it can use SimpleHandler to make implementing
+ * IElement easier.
  * @author Michael A. MacDonald
  *
  */

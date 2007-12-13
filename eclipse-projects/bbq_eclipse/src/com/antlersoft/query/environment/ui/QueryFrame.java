@@ -68,6 +68,11 @@ public abstract class QueryFrame
     	return null;
     }
     
+    public AnalyzerQuery getEnvironment()
+    {
+    	return qp;
+    }
+    
     /**
      * Get the DataSource used for this app
      * @return Object implementing DataSource

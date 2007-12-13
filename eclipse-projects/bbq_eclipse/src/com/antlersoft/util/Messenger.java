@@ -31,9 +31,9 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 import java.net.Socket;
 
@@ -129,6 +129,22 @@ public class Messenger
         }
     }
 
+    public String inputString()
+    throws IOException
+	{
+	    int l=getDataInput().readInt();
+	    char[] buf=new char[l];
+	    new InputStreamReader( (DataInputStream)getDataInput(), "UTF-8").read(buf, 0, l);
+	    return new String( buf);
+	}
+    
+    public void writeString( String to_write)
+    throws IOException
+    {
+    	getDataOutput().writeInt( to_write.length());
+    	new OutputStreamWriter( (DataOutputStream)getDataOutput(), "UTF-8").append(to_write).flush();
+    }
+    
     private final int DEFAULT_BUFFER_LENGTH=10240;
     private byte[] defaultBuffer;
     private Socket socket;

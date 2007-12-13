@@ -9,6 +9,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * An object that can be read from or written to XML with the SAX interface can implement this interface.
  * @author Michael A. MacDonald
  *
  */
