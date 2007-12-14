@@ -31,6 +31,8 @@ namespace com.antlersoft.BBQAddIn
             this.queryText = new System.Windows.Forms.TextBox();
             this.historyList = new System.Windows.Forms.ListBox();
             this.querySplit = new System.Windows.Forms.SplitContainer();
+            this.queryButton = new System.Windows.Forms.Button();
+            this.queryWorker = new System.ComponentModel.BackgroundWorker();
             this.querySplit.Panel1.SuspendLayout();
             this.querySplit.Panel2.SuspendLayout();
             this.querySplit.SuspendLayout();
@@ -55,6 +57,7 @@ namespace com.antlersoft.BBQAddIn
             this.historyList.Name = "historyList";
             this.historyList.Size = new System.Drawing.Size(567, 134);
             this.historyList.TabIndex = 1;
+            this.historyList.DoubleClick += new System.EventHandler(this.CopyFromHistory);
             // 
             // querySplit
             // 
@@ -65,6 +68,7 @@ namespace com.antlersoft.BBQAddIn
             // 
             // querySplit.Panel1
             // 
+            this.querySplit.Panel1.Controls.Add(this.queryButton);
             this.querySplit.Panel1.Controls.Add(this.queryText);
             // 
             // querySplit.Panel2
@@ -73,6 +77,23 @@ namespace com.antlersoft.BBQAddIn
             this.querySplit.Size = new System.Drawing.Size(567, 258);
             this.querySplit.SplitterDistance = 112;
             this.querySplit.TabIndex = 2;
+            // 
+            // queryButton
+            // 
+            this.queryButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.queryButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.queryButton.Location = new System.Drawing.Point(492, 0);
+            this.queryButton.Name = "queryButton";
+            this.queryButton.Size = new System.Drawing.Size(75, 112);
+            this.queryButton.TabIndex = 1;
+            this.queryButton.Text = "Query";
+            this.queryButton.UseVisualStyleBackColor = true;
+            this.queryButton.Click += new System.EventHandler(this.StartQuery);
+            // 
+            // queryWorker
+            // 
+            this.queryWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.RunQuery);
+            this.queryWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.PostQueryResults);
             // 
             // QueryWindow
             // 
@@ -95,5 +116,7 @@ namespace com.antlersoft.BBQAddIn
         private System.Windows.Forms.TextBox queryText;
         private System.Windows.Forms.ListBox historyList;
         private System.Windows.Forms.SplitContainer querySplit;
+        private System.Windows.Forms.Button queryButton;
+        private System.ComponentModel.BackgroundWorker queryWorker;
     }
 }

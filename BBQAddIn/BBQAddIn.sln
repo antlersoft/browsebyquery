@@ -7,16 +7,42 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBQAddIn", "BBQAddIn\BBQAdd
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
 		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Debug|Win32.ActiveCfg = Debug|Any CPU
 		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}.Release|Win32.ActiveCfg = Release|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

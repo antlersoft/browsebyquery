@@ -40,6 +40,7 @@ namespace com.antlersoft.BBQAddIn
             this.resultList.Name = "resultList";
             this.resultList.Size = new System.Drawing.Size(80, 30);
             this.resultList.TabIndex = 0;
+            this.resultList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.JumpToSelected);
             // 
             // ResultWindow
             // 

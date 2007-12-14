@@ -17,7 +17,7 @@ namespace com.antlersoft.BBQAddIn
         CONNECTED,
         CLOSING
     };
-    class BrowseByQueryBySocket : IBrowseByQuery, IDisposable
+    public class BrowseByQueryBySocket : IBrowseByQuery, IDisposable
     {
         const int DEFAULT_PORT = 20217;
         const string DEFAULT_HOST = "localhost";
