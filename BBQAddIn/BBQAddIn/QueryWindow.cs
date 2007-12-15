@@ -47,20 +47,11 @@ namespace com.antlersoft.BBQAddIn
             String text = QueryText.Text;
             queryWorker.RunWorkerAsync(new QueryRequest(text));
             queryButton.Enabled=false;
-            foreach (Object o in historyList.Items)
-            {
-                if (o.ToString() == text)
-                {
-                    historyList.Items.Remove(o);
-                    break;
-                }
-            }
-            historyList.Items.Insert(0, text);
         }
 
         private void RunQuery(object sender, DoWorkEventArgs e)
         {
-            e.Result = bbq.PerformQuery((QueryRequest)e.Argument);
+            e.Result = new KeyValuePair<QueryRequest,QueryResponse>( (QueryRequest)e.Argument, bbq.PerformQuery((QueryRequest)e.Argument));
         }
 
         private void PostQueryResults(object sender, RunWorkerCompletedEventArgs e)
@@ -72,7 +63,7 @@ namespace com.antlersoft.BBQAddIn
             }
             else
             {
-                QueryResponse response = (QueryResponse)e.Result;
+                QueryResponse response = ((KeyValuePair<QueryRequest,QueryResponse>)e.Result).Value;
                 if (response.RequestException != null)
                 {
                     MessageBox.Show(response.RequestException.Message, "Problem Running Query");
@@ -80,6 +71,16 @@ namespace com.antlersoft.BBQAddIn
                 else
                 {
                     ResultWindow.HandleResponses(response.Responses);
+                    String text = ((KeyValuePair<QueryRequest, QueryResponse>)e.Result).Key.QueryText;
+                    foreach (Object o in historyList.Items)
+                    {
+                        if (o.ToString() == text)
+                        {
+                            historyList.Items.Remove(o);
+                            break;
+                        }
+                    }
+                    historyList.Items.Insert(0, text);
                 }
             }
         }

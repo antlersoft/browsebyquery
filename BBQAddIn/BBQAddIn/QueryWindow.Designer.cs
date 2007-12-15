@@ -31,22 +31,24 @@ namespace com.antlersoft.BBQAddIn
             this.queryText = new System.Windows.Forms.TextBox();
             this.historyList = new System.Windows.Forms.ListBox();
             this.querySplit = new System.Windows.Forms.SplitContainer();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.queryButton = new System.Windows.Forms.Button();
             this.queryWorker = new System.ComponentModel.BackgroundWorker();
             this.querySplit.Panel1.SuspendLayout();
             this.querySplit.Panel2.SuspendLayout();
             this.querySplit.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // queryText
             // 
             this.queryText.AcceptsReturn = true;
             this.queryText.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.queryText.Location = new System.Drawing.Point(0, 0);
+            this.queryText.Location = new System.Drawing.Point(78, 3);
             this.queryText.Multiline = true;
             this.queryText.Name = "queryText";
             this.queryText.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.queryText.Size = new System.Drawing.Size(567, 112);
+            this.queryText.Size = new System.Drawing.Size(219, 106);
             this.queryText.TabIndex = 0;
             // 
             // historyList
@@ -55,7 +57,7 @@ namespace com.antlersoft.BBQAddIn
             this.historyList.FormattingEnabled = true;
             this.historyList.Location = new System.Drawing.Point(0, 0);
             this.historyList.Name = "historyList";
-            this.historyList.Size = new System.Drawing.Size(567, 134);
+            this.historyList.Size = new System.Drawing.Size(300, 134);
             this.historyList.TabIndex = 1;
             this.historyList.DoubleClick += new System.EventHandler(this.CopyFromHistory);
             // 
@@ -68,23 +70,36 @@ namespace com.antlersoft.BBQAddIn
             // 
             // querySplit.Panel1
             // 
-            this.querySplit.Panel1.Controls.Add(this.queryButton);
-            this.querySplit.Panel1.Controls.Add(this.queryText);
+            this.querySplit.Panel1.Controls.Add(this.tableLayoutPanel1);
             // 
             // querySplit.Panel2
             // 
             this.querySplit.Panel2.Controls.Add(this.historyList);
-            this.querySplit.Size = new System.Drawing.Size(567, 258);
+            this.querySplit.Size = new System.Drawing.Size(300, 258);
             this.querySplit.SplitterDistance = 112;
             this.querySplit.TabIndex = 2;
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 75F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.Controls.Add(this.queryText, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.queryButton, 0, 0);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 1;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(300, 112);
+            this.tableLayoutPanel1.TabIndex = 2;
             // 
             // queryButton
             // 
             this.queryButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.queryButton.Dock = System.Windows.Forms.DockStyle.Right;
-            this.queryButton.Location = new System.Drawing.Point(492, 0);
+            this.queryButton.Location = new System.Drawing.Point(3, 3);
             this.queryButton.Name = "queryButton";
-            this.queryButton.Size = new System.Drawing.Size(75, 112);
+            this.queryButton.Size = new System.Drawing.Size(69, 46);
             this.queryButton.TabIndex = 1;
             this.queryButton.Text = "Query";
             this.queryButton.UseVisualStyleBackColor = true;
@@ -102,11 +117,12 @@ namespace com.antlersoft.BBQAddIn
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.Controls.Add(this.querySplit);
             this.Name = "QueryWindow";
-            this.Size = new System.Drawing.Size(567, 258);
+            this.Size = new System.Drawing.Size(300, 258);
             this.querySplit.Panel1.ResumeLayout(false);
-            this.querySplit.Panel1.PerformLayout();
             this.querySplit.Panel2.ResumeLayout(false);
             this.querySplit.ResumeLayout(false);
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -118,5 +134,6 @@ namespace com.antlersoft.BBQAddIn
         private System.Windows.Forms.SplitContainer querySplit;
         private System.Windows.Forms.Button queryButton;
         private System.ComponentModel.BackgroundWorker queryWorker;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
     }
 }
