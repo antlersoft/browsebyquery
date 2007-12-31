@@ -28,12 +28,17 @@ namespace com.antlersoft.BBQAddIn
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.queryText = new System.Windows.Forms.TextBox();
             this.historyList = new System.Windows.Forms.ListBox();
+            this.historyMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.querySplit = new System.Windows.Forms.SplitContainer();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.queryButton = new System.Windows.Forms.Button();
             this.queryWorker = new System.ComponentModel.BackgroundWorker();
+            this.historyMenu.SuspendLayout();
             this.querySplit.Panel1.SuspendLayout();
             this.querySplit.Panel2.SuspendLayout();
             this.querySplit.SuspendLayout();
@@ -53,13 +58,37 @@ namespace com.antlersoft.BBQAddIn
             // 
             // historyList
             // 
+            this.historyList.ContextMenuStrip = this.historyMenu;
             this.historyList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.historyList.FormattingEnabled = true;
+            this.historyList.HorizontalScrollbar = true;
             this.historyList.Location = new System.Drawing.Point(0, 0);
             this.historyList.Name = "historyList";
             this.historyList.Size = new System.Drawing.Size(300, 134);
             this.historyList.TabIndex = 1;
             this.historyList.DoubleClick += new System.EventHandler(this.CopyFromHistory);
+            // 
+            // historyMenu
+            // 
+            this.historyMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.selectToolStripMenuItem,
+            this.deleteToolStripMenuItem});
+            this.historyMenu.Name = "historyMenu";
+            this.historyMenu.Size = new System.Drawing.Size(126, 48);
+            // 
+            // selectToolStripMenuItem
+            // 
+            this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
+            this.selectToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.selectToolStripMenuItem.Text = "Select";
+            this.selectToolStripMenuItem.Click += new System.EventHandler(this.CopyFromHistory);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.DeleteFromHistory);
             // 
             // querySplit
             // 
@@ -118,6 +147,7 @@ namespace com.antlersoft.BBQAddIn
             this.Controls.Add(this.querySplit);
             this.Name = "QueryWindow";
             this.Size = new System.Drawing.Size(300, 258);
+            this.historyMenu.ResumeLayout(false);
             this.querySplit.Panel1.ResumeLayout(false);
             this.querySplit.Panel2.ResumeLayout(false);
             this.querySplit.ResumeLayout(false);
@@ -135,5 +165,8 @@ namespace com.antlersoft.BBQAddIn
         private System.Windows.Forms.Button queryButton;
         private System.ComponentModel.BackgroundWorker queryWorker;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.ContextMenuStrip historyMenu;
+        private System.Windows.Forms.ToolStripMenuItem selectToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
     }
 }

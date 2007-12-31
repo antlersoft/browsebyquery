@@ -42,7 +42,7 @@ namespace com.antlersoft.BBQAddIn
             get { return resultList; }
         }
 
-        private void JumpToSelected(object sender, MouseEventArgs e)
+        private void JumpToSelected(object sender, EventArgs e)
         {
             int index = resultList.SelectedIndex;
             if (index >= 0 && index < currentResponses.Length)
@@ -63,7 +63,7 @@ namespace com.antlersoft.BBQAddIn
                                 //sel.GotoLine(obj.LineNumber, false);
                                 sel.MoveToLineAndOffset(obj.LineNumber, 1, false);
                                 sel.SelectLine();
-                                sel.TopPoint.TryToShow(vsPaneShowHow.vsPaneShowAsIs, 1);
+                                sel.TopPoint.TryToShow(vsPaneShowHow.vsPaneShowCentered, 1);
                             }
                         }
                     }

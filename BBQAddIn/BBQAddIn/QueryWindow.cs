@@ -96,5 +96,15 @@ namespace com.antlersoft.BBQAddIn
                 queryText.Text = text;
             }
         }
+
+        private void DeleteFromHistory(object sender, EventArgs e)
+        {
+            int index = historyList.SelectedIndex;
+            if (index >= 0)
+            {
+                String text = historyList.Items[index].ToString();
+                historyList.Items.RemoveAt(index);
+            }
+        }
     }
 }

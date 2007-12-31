@@ -57,7 +57,13 @@ namespace com.antlersoft.BBQAddIn
 		public void Close()
 		{
 			if ( socket!=null && state!=BBQSocketState.UNCONNECTED)
-                socket.Close();
+                try
+                {
+                    socket.Close();
+                }
+                catch (Exception e)
+                {
+                }
 			state=BBQSocketState.UNCONNECTED;
 		}
 
@@ -121,39 +127,47 @@ namespace com.antlersoft.BBQAddIn
 
         public QueryResponse PerformQuery(QueryRequest request)
         {
-			if ( state!=BBQSocketState.CONNECTED)
-				Connect();
-			StringWriter sw=new StringWriter();
-			queryRequestSerializer.Serialize( sw, request);
-			String requestString=sw.ToString();
+            try
+            {
+                if (state != BBQSocketState.CONNECTED)
+                    Connect();
+                StringWriter sw = new StringWriter();
+                queryRequestSerializer.Serialize(sw, request);
+                String requestString = sw.ToString();
 
-			MemoryStream memory=new MemoryStream();
-			BinaryWriter writer=new BinaryWriter( memory, Encoding.UTF8);
-			writer.Write( requestString.ToCharArray());
-			writer.Close();
-			byte[] requestBytes=memory.GetBuffer();
-			byte[] len_buf=new byte[4];
-			intToQuad( requestBytes.Length+4, len_buf, 0);
-			writeFully( len_buf, 0, 4);
-			intToQuad( requestString.Length, len_buf, 0);
-			writeFully( len_buf, 0, 4);
-			writeFully( requestBytes, 0, requestBytes.Length);
+                MemoryStream memory = new MemoryStream();
+                BinaryWriter writer = new BinaryWriter(memory, Encoding.UTF8);
+                writer.Write(requestString.ToCharArray());
+                writer.Close();
+                byte[] requestBytes = memory.GetBuffer();
+                byte[] len_buf = new byte[4];
+                intToQuad(requestBytes.Length + 4, len_buf, 0);
+                writeFully(len_buf, 0, 4);
+                intToQuad(requestString.Length, len_buf, 0);
+                writeFully(len_buf, 0, 4);
+                writeFully(requestBytes, 0, requestBytes.Length);
 
-			readFully( len_buf);
-			int byte_len=quadToInt( len_buf, 0);
-			byte[] response_bytes=new byte[byte_len];
-			readFully( response_bytes);
-			//int char_count=quadToInt( response_bytes, 0);
+                readFully(len_buf);
+                int byte_len = quadToInt(len_buf, 0);
+                byte[] response_bytes = new byte[byte_len];
+                readFully(response_bytes);
+                //int char_count=quadToInt( response_bytes, 0);
 
-			memory=new MemoryStream( response_bytes, 4, byte_len-4);
-			StreamReader reader=new StreamReader( memory, Encoding.UTF8);
-			//char[] chars=new char[char_count];
-			//reader.Read( chars, 0, char_count);
-			//Console.WriteLine( new String( chars));
+                memory = new MemoryStream(response_bytes, 4, byte_len - 4);
+                StreamReader reader = new StreamReader(memory, Encoding.UTF8);
+                //char[] chars=new char[char_count];
+                //reader.Read( chars, 0, char_count);
+                //Console.WriteLine( new String( chars));
 
-			//memory=new MemoryStream( response_bytes, 4, byte_len-4);
-			//reader=new StreamReader( memory, Encoding.UTF8);
-			return (QueryResponse)queryResponseSerializer.Deserialize( reader);
+                //memory=new MemoryStream( response_bytes, 4, byte_len-4);
+                //reader=new StreamReader( memory, Encoding.UTF8);
+                return (QueryResponse)queryResponseSerializer.Deserialize(reader);
+            }
+            catch (Exception e)
+            {
+                Close();
+                throw;
+            }
         }
 
         #endregion

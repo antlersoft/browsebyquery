@@ -13,6 +13,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "BBQAddInSetup", "BBQAddInSetup\BBQAddInSetup.vdproj", "{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +49,12 @@ Global
 		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Win32.ActiveCfg = Release|Any CPU
+		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Debug|Any CPU.ActiveCfg = Debug
+		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Debug|Mixed Platforms.ActiveCfg = Debug
+		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Debug|Win32.ActiveCfg = Debug
+		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Release|Any CPU.ActiveCfg = Release
+		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Release|Mixed Platforms.ActiveCfg = Release
+		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Release|Win32.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
