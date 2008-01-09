@@ -80,3 +80,5 @@ bbqil -a bbqil_ref2 bbqil_ref3
 
 bbqil_exp_ref -a com/antlersoft/ilanalyze
 bbqil_exp -d bbqil package/bbqil &bbqil_exp_ref
+
+BBQVSAddIn -d BBQVSAddIn package/BBQAddIn
