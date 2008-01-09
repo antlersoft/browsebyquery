@@ -3,6 +3,8 @@
  */
 package com.antlersoft.ilanalyze.parseildasm;
 
+import java.io.ByteArrayOutputStream;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -144,6 +146,42 @@ class IldasmParserBase extends Parser {
 	static RuleAction m_StartMarshalMethod=new MethodStarter( 9);
 		
 	/**
+	 * A custom attribute with no associated data
+	 */
+	static RuleAction m_CustomOnly=new RuleAction() {
+		public Object ruleFire( Parser parser, ValueStack valueStack)
+		{
+			CustomType ct=(CustomType)valueStack.o_0();
+			Driver(parser).addCustomAttribute( ct.containingType, ct.signature, null, null);
+			return null;
+		}
+	};
+	
+	/**
+	 * A custom attribute ending with = "string"
+	 */
+	static RuleAction m_CustomString=new RuleAction() {
+		public Object ruleFire( Parser parser, ValueStack valueStack)
+		{
+			CustomType ct=(CustomType)valueStack.o_2();
+			Driver(parser).addCustomAttribute( ct.containingType, ct.signature, null, valueStack.s_0());
+			return null;
+		}
+	};
+	
+	/**
+	 * A custom attribute ending with hex bytes
+	 */
+	static RuleAction m_CustomBytes=new RuleAction() {
+		public Object ruleFire( Parser parser, ValueStack valueStack)
+		{
+			CustomType ct=(CustomType)valueStack.o_2();
+			Driver(parser).addCustomAttribute( ct.containingType, ct.signature, ((ByteArrayOutputStream)valueStack.o_1()).toByteArray(), null);
+			return null;
+		}
+	};
+	
+	/**
 	 * Puts an int value on to the stack.
 	 * @author Michael A. MacDonald
 	 *
@@ -241,6 +279,22 @@ class IldasmParserBase extends Parser {
 			return null;
 		}
 
+	}
+	
+	/**
+	 * Holds signature of constructor and containing type associated with custom attribute declaration
+	 * @author Michael A. MacDonald
+	 *
+	 */
+	static class CustomType
+	{
+		CustomType( Signature sig, ReadType containing)
+		{
+			signature=sig;
+			containingType=containing;
+		}
+		Signature signature;
+		ReadType containingType;
 	}
 
 

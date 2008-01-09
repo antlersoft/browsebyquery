@@ -24,6 +24,7 @@ public class HexByteState extends LexStateBase {
 	public HexByteState(LexState parent, IldasmReader reader, char c) {
 		super(parent, reader);
 		m_buf=new char[2];
+		m_buf[0]=c;
 	}
 
 	/* (non-Javadoc)
@@ -35,7 +36,8 @@ public class HexByteState extends LexStateBase {
 		String value=new String(m_buf);
 		if ( ! CharClass.isHexDigit(c))
 			throw new LexException( "Bad hex byte: "+value);
-		m_reader.processToken( IldasmParser.t_HEXBYTE, value);
+		m_reader.processToken( IldasmParser.t_HEXBYTE, new Integer(Integer.parseInt( value, 16)));
+
 		return m_parent;
 	}
 

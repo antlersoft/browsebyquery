@@ -3,6 +3,8 @@
  */
 package com.antlersoft.ilanalyze.parseildasm;
 
+import java.io.ByteArrayOutputStream;
+
 import java.util.ArrayList;
 import java.util.List;
  

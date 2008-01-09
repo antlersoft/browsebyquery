@@ -126,6 +126,15 @@ public interface DBDriver {
 	public void addFieldReference( ReadType containing_type, ReadType field_type, String name, boolean is_write);
 	
 	/**
+	 * Add custom attribute data
+	 * @param containing_type Type that contains the called method; may be null, in which case it is current class
+	 * @param sig Signature of method (method name is assumed to be .ctor)
+	 * @data Byte data associated with a call (may be null if there is no byte data)
+	 * @string_data String associated with the custom declaration ( may be null if there is no string data)
+	 */
+	public void addCustomAttribute( ReadType containing_type, Signature sig, byte[] data, String string_data);
+	
+	/**
 	 * Start analyzing a particular file (.il, dll or exe)
 	 * @param file
 	 */

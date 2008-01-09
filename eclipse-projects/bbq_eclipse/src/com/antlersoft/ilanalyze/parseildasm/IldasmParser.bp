@@ -905,8 +905,9 @@ n_bound : n_int32 t_ellipsis .
 n_bounds1 : n_bound "{ return new Integer(1); }" .
 n_bounds1 : n_bounds1 t_comma n_bound "{ return new Integer( valueStack.i_2()+1); }" .
 n_bytearrayhead : t_bytearray t_left_paren .
-n_bytes : .
-n_bytes : n_hexbytes .
+# n_bytes, like n_hexbytes, is represented by a ByteArrayOutputStream
+n_bytes : "{ return new ByteArrayOutputStream(); }" .
+n_bytes : n_hexbytes "m_TopObject" .
 n_caValue : n_truefalse .
 n_caValue : n_int32 .
 n_caValue : n_int32 t_left_paren n_int32 t_right_paren .
@@ -994,16 +995,18 @@ n_comtypeDecl : n_customAttrDecl .
 n_comtypeDecls : .
 n_comtypeDecls : n_comtypeDecls n_comtypeDecl .
 n_comtypeHead : t_classDirective t_extern n_comtAttr n_name1 .
-n_customAttrDecl : t_customDirective n_customType .
-n_customAttrDecl : t_customDirective n_customType t_equals n_compQstring .
-n_customAttrDecl : n_customHead n_bytes t_right_paren .
-n_customAttrDecl : t_customDirective t_left_paren n_ownerType t_right_paren n_customType .
-n_customAttrDecl : t_customDirective t_left_paren n_ownerType t_right_paren n_customType t_equals n_compQstring .
-n_customAttrDecl : n_customHeadWithOwner n_bytes t_right_paren .
-n_customHead : t_customDirective n_customType t_equals t_left_paren .
-n_customHeadWithOwner : t_customDirective t_left_paren n_ownerType t_right_paren n_customType t_equals t_left_paren .
-n_customType : n_callConv n_type n_typeSpec t_member_op t_ctorDirective n_sigArgs0 .
-n_customType : n_callConv n_type t_ctorDirective n_sigArgs0 .
+n_customAttrDecl : t_customDirective n_customType "m_CustomOnly" .
+n_customAttrDecl : t_customDirective n_customType t_equals n_compQstring "m_CustomString".
+n_customAttrDecl : n_customHead n_bytes t_right_paren "m_CustomBytes" .
+n_customAttrDecl : t_customDirective t_left_paren n_ownerType t_right_paren n_customType "m_CustomOnly" .
+n_customAttrDecl : t_customDirective t_left_paren n_ownerType t_right_paren n_customType t_equals n_compQstring "m_CustomString" .
+n_customAttrDecl : n_customHeadWithOwner n_bytes t_right_paren "m_CustomBytes" .
+# n_customHead is CustomType
+n_customHead : t_customDirective n_customType t_equals t_left_paren "{ return valueStack.o_2(); }" .
+n_customHeadWithOwner : t_customDirective t_left_paren n_ownerType t_right_paren n_customType t_equals t_left_paren "{ return valueStack.o_2(); }" .
+# n_customType is on stack as CustomType instance
+n_customType : n_callConv n_type n_typeSpec t_member_op t_ctorDirective n_sigArgs0 "{ Signature s=(Signature)valueStack.o_0(); s.setReturnType( (ReadType)valueStack.o_n(4)); return new CustomType( s, (ReadType)valueStack.o_n(3)); }" .
+n_customType : n_callConv n_type t_ctorDirective n_sigArgs0 "{ Signature s=(Signature)valueStack.o_0(); s.setReturnType( (ReadType)valueStack.o_2()); return new CustomType( s, null); }" .
 n_dataDecl : n_ddHead n_ddBody .
 n_ddBody : t_left_brace n_ddItemList t_right_brace .
 n_ddBody : n_ddItem .
@@ -1144,8 +1147,9 @@ n_handlerBlock : n_scopeBlock .
 n_handlerBlock : t_handler n_id t_to n_id .
 n_handlerBlock : t_handler n_int32 t_to n_int32 .
 n_hashHead : t_hashDirective t_equals t_left_paren .
-n_hexbytes : t_HEXBYTE .
-n_hexbytes : n_hexbytes t_HEXBYTE .
+# n_hexbytes is represented by a ByteArrayOutputStream
+n_hexbytes : t_HEXBYTE "{ ByteArrayOutputStream s=new ByteArrayOutputStream(); s.write( valueStack.i_0()); return s; }" .
+n_hexbytes : n_hexbytes t_HEXBYTE "{ ((ByteArrayOutputStream)valueStack.o_1()).write( valueStack.i_0()); return valueStack.o_1(); }" .
 n_id : t_ID "m_TopString" .
 n_id : t_SQSTRING "m_TopString" .
 n_implAttr : .

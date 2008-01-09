@@ -3,10 +3,13 @@
  */
 package com.antlersoft.ilanalyze.db;
 
+import java.io.UnsupportedEncodingException;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.antlersoft.ilanalyze.BuiltinType;
 import com.antlersoft.ilanalyze.DBDriver;
 import com.antlersoft.ilanalyze.LoggingDBDriver;
 import com.antlersoft.ilanalyze.ReadType;
@@ -16,6 +19,8 @@ import com.antlersoft.ilanalyze.ReadArg;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
+
+import com.antlersoft.util.NetByte;
 
 /**
  * Adds data read from assembly files to the database
@@ -37,6 +42,8 @@ public class ILDBDriver implements DBDriver {
 	private DBMethod.MethodUpdater m_method_updater;
 	/** How many classes processed since last commit */
 	private int m_class_count;
+	
+	private final static String ATTRIBUTE_INITIALIZER=".attributeinitializer";
 	
 	public ILDBDriver( ILDB db)
 	{
@@ -76,7 +83,7 @@ public class ILDBDriver implements DBDriver {
 				DBMethod called=getCurrentClass(containing_type).getMethod(method_name, DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig));
 				if ( called.updateArguments(m_db, sig))
 					ObjectDB.makeDirty( called);
-				m_method_updater.addCall(getCurrentClass(containing_type).getMethod(method_name, DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig)), m_current_source_file, m_current_line);
+				m_method_updater.addCall(called, m_current_source_file, m_current_line);
 			}
 			catch ( ITypeInterpreter.TIException ti)
 			{
@@ -99,6 +106,11 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#endClass()
 	 */
 	public void endClass() {
+		ClassUpdater updater=(ClassUpdater)m_class_stack.get(m_class_stack.size()-1);
+		if ( updater.m_updater!=null)
+		{
+			updater.m_updater.methodDone();
+		}
 		m_class_stack.remove( m_class_stack.size()-1);
 		if ( ++m_class_count>1000)
 		{
@@ -136,7 +148,7 @@ public class ILDBDriver implements DBDriver {
 		m_current_line=line;
 		if ( m_class_stack.size()>0)
 		{
-			((DBClass)m_class_stack.get(m_class_stack.size()-1)).setFileAndLine(m_current_source_file, line);
+			((ClassUpdater)m_class_stack.get(m_class_stack.size()-1)).m_class.setFileAndLine(m_current_source_file, line);
 		}
 		if ( m_method_updater!=null)
 			m_method_updater.m_method.setFileAndLine(m_current_source_file, line);
@@ -175,7 +187,7 @@ public class ILDBDriver implements DBDriver {
 		read_class.updateBaseClasses(base);
 		read_class.setAssembly(m_current_assembly);
 		read_class.setModule(m_current_module);
-		m_class_stack.add( read_class);
+		m_class_stack.add( new ClassUpdater( read_class));
 	}
 
 	/* (non-Javadoc)
@@ -244,6 +256,52 @@ public class ILDBDriver implements DBDriver {
 		
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addCustomAttribute(com.antlersoft.ilanalyze.ReadType, com.antlersoft.ilanalyze.Signature, byte[])
+	 */
+	public void addCustomAttribute(ReadType containing_type, Signature sig, byte[] data, String string_data) {
+		if ( m_class_stack.size()>0)
+		{
+			try
+			{
+				DBType void_type=DBType.get( m_db, new BuiltinType("void"));
+				DBMethod.MethodUpdater attrUpdater=m_method_updater;
+				if ( attrUpdater==null)
+				{
+					ClassUpdater u=(ClassUpdater)m_class_stack.get( m_class_stack.size()-1);
+					if ( u.m_updater==null)
+					{
+						u.m_updater=new DBMethod.MethodUpdater( m_db, u.m_class.getMethod(ATTRIBUTE_INITIALIZER, void_type, getSignatureKey( new Signature())));
+					}
+					attrUpdater=u.m_updater;
+				}
+				DBMethod called=getCurrentClass(containing_type).getMethod(".ctor", DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig));
+				if ( called.updateArguments(m_db, sig))
+					ObjectDB.makeDirty( called);
+				attrUpdater.addCall( called, m_current_source_file, m_current_line);
+				if ( ( data!=null || string_data!=null) && sig.getArguments().size()==1 && ((ReadArg)sig.getArguments().get(0)).getType().toString().equals("System.String"))
+				{
+					String referenced;
+					if ( string_data!=null)
+						referenced=string_data;
+					else
+					{
+						referenced=new String(data,3,NetByte.mU(data[1])*256+NetByte.mU(data[2]), "UTF-8");
+					}
+					attrUpdater.addStringReference(DBString.get(m_db, referenced), m_current_source_file, m_current_line);
+				}
+			}
+			catch ( UnsupportedEncodingException use)
+			{
+				LoggingDBDriver.logger.info("UTF-8 not supported? "+use.getMessage());								
+			}
+			catch ( ITypeInterpreter.TIException ti)
+			{
+				LoggingDBDriver.logger.info(ti.getMessage());				
+			}
+		}
+	}
+
 	static private String NAMELESS_CLASS="`NAMELESS_CLASS`";
 	
 	/**
@@ -260,7 +318,7 @@ public class ILDBDriver implements DBDriver {
 		}
 		if ( m_class_stack.size()>0)
 		{
-			return (DBClass)m_class_stack.get( m_class_stack.size()-1);
+			return ((ClassUpdater)m_class_stack.get( m_class_stack.size()-1)).m_class;
 		}
 		String namespace="";
 		if ( m_namespace_stack.size()>0)
@@ -285,4 +343,30 @@ public class ILDBDriver implements DBDriver {
 		
 		return sb.toString();
 	}
+	
+	/**
+	 * Entry on class stack that holds DBClass and optionally the class's custom attribute initialization method updater
+	 * @author Michael A. MacDonald
+	 *
+	 */
+	static class ClassUpdater
+	{
+		DBClass m_class;
+		DBMethod.MethodUpdater m_updater;
+		
+		ClassUpdater( DBClass cl)
+		{
+			m_class=cl;
+		}
+	}
+	
+	/*
+	 * If value is 0-127, store it in the 7 least significant bits in a
+ single byte, and set the MSB to 0).
+ If value is 128-0x3fff, store it in the 14 least significant bits of a
+ 16-bit word, and set the two high bits to binary 10. This is what
+ you're seeing - the 8 comes from the high nibble being 1000.
+ Otherwise (if value is 0x4000-0x1fffffff) store in a 32-bit word with
+ the three high bits set to binary 110.
+	 */
 }
