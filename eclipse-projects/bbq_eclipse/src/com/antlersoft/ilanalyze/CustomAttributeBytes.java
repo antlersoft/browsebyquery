@@ -289,7 +289,7 @@ public class CustomAttributeBytes {
 		if ( ( l & 0xC0)==0x80)
 		{
 			offset++;
-			bytes[offset-2]=(byte)( l & 0x3FF);
+			bytes[offset-2]=(byte)( l & 0x3F);
 			return NetByte.pairToInt(bytes, offset-2);
 		}
 		if ( offset>bytes.length-3)
@@ -297,7 +297,7 @@ public class CustomAttributeBytes {
 		if ( ( l & 0xE0)==0xC0)
 		{
 			offset+=3;
-			bytes[offset-4]=(byte)( l & 0x1FF);
+			bytes[offset-4]=(byte)( l & 0x1F);
 			return NetByte.quadToInt(bytes, offset-4);
 		}
 		throw new InterpretationException( "Failed to interpret PackedLen");
