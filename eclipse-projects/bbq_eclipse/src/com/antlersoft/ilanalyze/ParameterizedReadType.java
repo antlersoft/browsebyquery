@@ -56,6 +56,13 @@ public class ParameterizedReadType implements ReadType {
 		return true;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#getTypeCode()
+	 */
+	public int getTypeCode() {
+		return -1;
+	}
+
 	public String getSimpleName()
 	{
 		return m_name;

@@ -40,7 +40,7 @@ import com.antlersoft.parser.lex.LexState;
  */
 public class IldasmReader {
 	
-    private static Logger logger=Logger.getLogger( IldasmReader.class.getName());
+    static Logger logger=Logger.getLogger( IldasmReader.class.getName());
 	private IldasmParser m_parser;
 	private DBDriver m_driver;
 	/** A format string for forming the disassembly command for an assembly from the assembly's path */

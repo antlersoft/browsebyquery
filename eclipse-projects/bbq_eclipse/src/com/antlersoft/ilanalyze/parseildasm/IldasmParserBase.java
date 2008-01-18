@@ -152,7 +152,7 @@ class IldasmParserBase extends Parser {
 		public Object ruleFire( Parser parser, ValueStack valueStack)
 		{
 			CustomType ct=(CustomType)valueStack.o_0();
-			Driver(parser).addCustomAttribute( ct.containingType, ct.signature, null, null);
+			Driver(parser).addCustomAttribute( new CustomAttributeSetting( ct.containingType, ct.signature));
 			return null;
 		}
 	};
@@ -164,7 +164,7 @@ class IldasmParserBase extends Parser {
 		public Object ruleFire( Parser parser, ValueStack valueStack)
 		{
 			CustomType ct=(CustomType)valueStack.o_2();
-			Driver(parser).addCustomAttribute( ct.containingType, ct.signature, null, valueStack.s_0());
+			Driver(parser).addCustomAttribute( new CustomAttributeSetting( ct.containingType, ct.signature, valueStack.s_0()));
 			return null;
 		}
 	};
@@ -176,7 +176,14 @@ class IldasmParserBase extends Parser {
 		public Object ruleFire( Parser parser, ValueStack valueStack)
 		{
 			CustomType ct=(CustomType)valueStack.o_2();
-			Driver(parser).addCustomAttribute( ct.containingType, ct.signature, ((ByteArrayOutputStream)valueStack.o_1()).toByteArray(), null);
+			try
+			{
+				Driver(parser).addCustomAttribute( CustomAttributeBytes.getSettings( ct.containingType, ct.signature, ((ByteArrayOutputStream)valueStack.o_1()).toByteArray()));
+			}
+			catch ( Exception e)
+			{
+				IldasmReader.logger.info( "Failed to read custom attribute bytes: "+e.getMessage());
+			}
 			return null;
 		}
 	};

@@ -3,6 +3,8 @@
  */
 package com.antlersoft.ilanalyze;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -15,6 +17,35 @@ public class CustomAttributeSetting {
 	private ReadType containing;
 	private Signature signature;
 	private List stringArguments;
+	private List namedArguments;
+	
+	/**
+	 * Create when there is a single string associated with the declaration
+	 * @param cont Containing type or null
+	 * @param sig Constructor signature (which should consist of a single string argument)
+	 * @param data Data string
+	 */
+	public CustomAttributeSetting( ReadType cont, Signature sig, String data)
+	{
+		containing=cont;
+		signature=sig;
+		stringArguments=new ArrayList(1);
+		stringArguments.add( data);
+		namedArguments=new ArrayList(0);
+	}
+	
+	/**
+	 * Create when there is no data, or byte data, associated with the declaration
+	 * @param cont Containing type or null
+	 * @param sig Constructor signature
+	 */
+	public CustomAttributeSetting( ReadType cont, Signature sig)
+	{
+		containing=cont;
+		signature=sig;
+		stringArguments=new ArrayList();
+		namedArguments=new ArrayList();
+	}
 	
 	/**
 	 * 
@@ -42,20 +73,105 @@ public class CustomAttributeSetting {
 	{
 		return stringArguments;
 	}
+	
+	/**
+	 * @return A collection of NamedArgument objects giving the properties/fields being set and the values set in them
+	 */
+	public List getNamedArguments()
+	{
+		return namedArguments;
+	}
+	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+		if ( containing!=null)
+			sb.append(containing.toString());
+		sb.append( "::.ctor(");
+		sb.append( signature.toString());
+		sb.append( ")");
+		for ( Iterator i=stringArguments.iterator(); i.hasNext();)
+		{
+			sb.append( (String)i.next());
+			if ( i.hasNext())
+				sb.append( ',');
+		}
+		for ( Iterator i=namedArguments.iterator(); i.hasNext();)
+		{
+			sb.append("\r\n");
+			((NamedArgument)i.next()).addNamedArgument(sb);
+		}
+		return sb.toString();
+	}
 
+	/**
+	 * A named argument appearing in the custom class declaration
+	 * @author Michael A. MacDonald
+	 *
+	 */
 	public static class NamedArgument
 	{
 		private String name;
 		private boolean isProp;
 		private List stringArguments;
+		private ReadType type;
+		
+		NamedArgument( String n, boolean is_prop, ReadType t)
+		{
+			name=n;
+			isProp=is_prop;
+			stringArguments=new ArrayList();
+			type=t;
+		}
 		
 		/**
-		 * All string arguments for the constructor (including all the members of string arrays)
-		 * @return
+		 * 
+		 * @return The type of the property or field set by the named argument
+		 */
+		public ReadType getType()
+		{
+			return type;
+		}
+		
+		/**
+		 * 
+		 * @return All string arguments for the constructor (including all the members of string arrays)
 		 */
 		public List getStringArguments()
 		{
 			return stringArguments;
+		}
+		
+		/**
+		 * 
+		 * @return true if the named argument sets the value of a property; false if it is setting the value of a field
+		 */
+		public boolean isProperty()
+		{
+			return isProp;
+		}
+		
+		/**
+		 * 
+		 * @return The name of the argumet, corresponding to the name of the property or field in the attribute being set
+		 */
+		public String getName()
+		{
+			return name;
+		}
+		
+		void addNamedArgument( StringBuilder sb)
+		{
+			sb.append( name);
+			sb.append( '(');
+			sb.append( isProperty() ? "property" : "field");
+			sb.append(")=");
+			for ( Iterator i=stringArguments.iterator(); i.hasNext();)
+			{
+				sb.append( (String)i.next());
+				if ( i.hasNext())
+					sb.append( ',');
+			}
 		}
 	}
 }

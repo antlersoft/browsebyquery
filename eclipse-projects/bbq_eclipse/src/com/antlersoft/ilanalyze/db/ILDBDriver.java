@@ -3,13 +3,12 @@
  */
 package com.antlersoft.ilanalyze.db;
 
-import java.io.UnsupportedEncodingException;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import com.antlersoft.ilanalyze.BuiltinType;
+import com.antlersoft.ilanalyze.CustomAttributeSetting;
 import com.antlersoft.ilanalyze.DBDriver;
 import com.antlersoft.ilanalyze.LoggingDBDriver;
 import com.antlersoft.ilanalyze.ReadType;
@@ -19,8 +18,6 @@ import com.antlersoft.ilanalyze.ReadArg;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
-
-import com.antlersoft.util.NetByte;
 
 /**
  * Adds data read from assembly files to the database
@@ -259,12 +256,13 @@ public class ILDBDriver implements DBDriver {
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#addCustomAttribute(com.antlersoft.ilanalyze.ReadType, com.antlersoft.ilanalyze.Signature, byte[])
 	 */
-	public void addCustomAttribute(ReadType containing_type, Signature sig, byte[] data, String string_data) {
+	public void addCustomAttribute(CustomAttributeSetting custom) {
 		if ( m_class_stack.size()>0)
 		{
 			try
 			{
-				DBType void_type=DBType.get( m_db, new BuiltinType("void"));
+				ReadType void_read_type=new BuiltinType("void");
+				DBType void_type=DBType.get( m_db, void_read_type);
 				DBMethod.MethodUpdater attrUpdater=m_method_updater;
 				if ( attrUpdater==null)
 				{
@@ -275,25 +273,36 @@ public class ILDBDriver implements DBDriver {
 					}
 					attrUpdater=u.m_updater;
 				}
-				DBMethod called=getCurrentClass(containing_type).getMethod(".ctor", DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig));
-				if ( called.updateArguments(m_db, sig))
+				DBMethod called=getCurrentClass(custom.getContainingType()).getMethod(".ctor", DBType.get(m_db, custom.getSignature().getReturnType()), getSignatureKey( custom.getSignature()));
+				if ( called.updateArguments(m_db, custom.getSignature()))
 					ObjectDB.makeDirty( called);
 				attrUpdater.addCall( called, m_current_source_file, m_current_line);
-				if ( ( data!=null || string_data!=null) && sig.getArguments().size()==1 && ((ReadArg)sig.getArguments().get(0)).getType().toString().equals("System.String"))
+				for ( Iterator i=custom.getStringArguments().iterator(); i.hasNext();)
 				{
-					String referenced;
-					if ( string_data!=null)
-						referenced=string_data;
+					attrUpdater.addStringReference( DBString.get( m_db, (String)i.next()), m_current_source_file, m_current_line);
+				}
+				for ( Iterator i=custom.getNamedArguments().iterator(); i.hasNext();)
+				{
+					CustomAttributeSetting.NamedArgument named=(CustomAttributeSetting.NamedArgument)i.next();
+					if ( named.isProperty())
+					{
+						Signature s=new Signature();
+						s.addArgument( new ReadArg(named.getType()));
+						s.setReturnType( void_read_type);
+						DBMethod propertySetter=getCurrentClass(custom.getContainingType()).getMethod("set_"+named.getName(), void_type, getSignatureKey( s));
+						if ( propertySetter.updateArguments(m_db, s))
+							ObjectDB.makeDirty( propertySetter);
+						attrUpdater.addCall(propertySetter, m_current_source_file, m_current_line);
+					}
 					else
 					{
-						referenced=new String(data,3,NetByte.mU(data[1])*256+NetByte.mU(data[2]), "UTF-8");
+						attrUpdater.addFieldReference( getCurrentClass(custom.getContainingType()).getField(named.getName(), DBType.get( m_db, named.getType())), true, m_current_source_file, m_current_line);
 					}
-					attrUpdater.addStringReference(DBString.get(m_db, referenced), m_current_source_file, m_current_line);
+					for ( Iterator si=named.getStringArguments().iterator(); si.hasNext();)
+					{
+						attrUpdater.addStringReference( DBString.get(m_db, (String)si.next()), m_current_source_file, m_current_line);
+					}
 				}
-			}
-			catch ( UnsupportedEncodingException use)
-			{
-				LoggingDBDriver.logger.info("UTF-8 not supported? "+use.getMessage());								
 			}
 			catch ( ITypeInterpreter.TIException ti)
 			{
@@ -359,14 +368,4 @@ public class ILDBDriver implements DBDriver {
 			m_class=cl;
 		}
 	}
-	
-	/*
-	 * If value is 0-127, store it in the 7 least significant bits in a
- single byte, and set the MSB to 0).
- If value is 128-0x3fff, store it in the 14 least significant bits of a
- 16-bit word, and set the two high bits to binary 10. This is what
- you're seeing - the 8 comes from the high nibble being 1000.
- Otherwise (if value is 0x4000-0x1fffffff) store in a 32-bit word with
- the three high bits set to binary 110.
-	 */
 }

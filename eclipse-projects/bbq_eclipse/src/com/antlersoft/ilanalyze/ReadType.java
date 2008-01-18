@@ -30,4 +30,11 @@ public interface ReadType {
 	 * @return true if the type represents a class type
 	 */
 	public boolean isClassType();
+	
+	/**
+	 * Byte code format represents many types as a single integer.
+	 * This returns a 1 or 2 byte integer for the type; high byte is a modifier (byte before) the basic byte.
+	 * @return int code representing this type
+	 */
+	public int getTypeCode();
 }

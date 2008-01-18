@@ -218,10 +218,10 @@ public class LoggingDBDriver implements DBDriver {
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#addCustomAttribute(com.antlersoft.ilanalyze.ReadType, com.antlersoft.ilanalyze.Signature, byte[])
 	 */
-	public void addCustomAttribute(ReadType containing_type, Signature sig, byte[] data, String string_data) {
-		logger.fine( (containing_type==null ? "" : containing_type.toString()+"::")+".ctor"+(sig.toString()+(string_data==null ? "" : string_data)));
+	public void addCustomAttribute(CustomAttributeSetting custom) {
+		logger.fine( custom.toString());
 		if ( m_nested!=null)
-			m_nested.addCustomAttribute(containing_type, sig, data, string_data);
+			m_nested.addCustomAttribute( custom);
 	}
 
 	static private void formatGenericParams( StringBuilder sb, List genericParams)

@@ -51,6 +51,15 @@ public class ReadArray implements ReadType {
 		return m_underlying;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#getTypeCode()
+	 */
+	public int getTypeCode() {
+		if ( m_dimensions==1)
+			return CustomAttributeBytes.ELEMENT_TYPE_SZARRAY;
+		return CustomAttributeBytes.ELEMENT_TYPE_ARRAY;
+	}
+
 	public String toString()
 	{
 		StringBuilder sb=new StringBuilder( m_underlying.toString());

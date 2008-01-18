@@ -66,6 +66,13 @@ public class GenericArgRef implements ReadType {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#getTypeCode()
+	 */
+	public int getTypeCode() {
+		return -1;
+	}
+
 	/**
 	 * 
 	 * @return 0-based index in parameter list, or -1 if parameter is reference by name

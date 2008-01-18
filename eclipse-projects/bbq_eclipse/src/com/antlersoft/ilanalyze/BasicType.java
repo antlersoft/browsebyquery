@@ -11,7 +11,7 @@ import java.util.Collection;
  *
  */
 public class BasicType implements ReadType {
-	String m_name;
+	protected String m_name;
 	
 	public BasicType( String name)
 	{
@@ -42,6 +42,15 @@ public class BasicType implements ReadType {
 	 */
 	public boolean isClassType() {
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.ReadType#getTypeCode()
+	 */
+	public int getTypeCode() {
+		if ( m_name.equals("System.String"))
+			return CustomAttributeBytes.ELEMENT_TYPE_STRING;
+		return -1;
 	}
 
 }
