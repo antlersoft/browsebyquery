@@ -290,6 +290,10 @@ public class CustomAttributeBytes {
 		{
 			offset++;
 			bytes[offset-2]=(byte)( l & 0x3F);
+			if ( NetByte.pairToInt( bytes, offset-2)<0)
+			{
+				LoggingDBDriver.logger.info( "l="+l+", l & 0x3f="+(int)(byte)(l & 0x3F)+",offset-2="+(int)bytes[offset-2]+",offset-1="+(int)bytes[offset-1]);
+			}
 			return NetByte.pairToInt(bytes, offset-2);
 		}
 		if ( offset>bytes.length-3)
