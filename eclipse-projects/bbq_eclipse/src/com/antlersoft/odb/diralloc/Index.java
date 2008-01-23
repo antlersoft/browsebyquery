@@ -292,6 +292,7 @@ class Index
     	int overflowOffset=com.antlersoft.util.NetByte.quadToInt( overflowOffsetBuffer, 0);
     	IndexPage page=(IndexPage)streams.readImmovableObject( offset);
     	IndexStatistics.Counts counts=( overflowOffset==0 ? stats.m_regular : stats.m_overflow);
+    	
     	counts.m_pages++;
     	counts.m_totalKeys+=page.size;
     	counts.m_totalSize+=streams.writeObject( page).length;
@@ -303,7 +304,63 @@ class Index
     		}
     	}
     }
-
+    
+    void validate( boolean checkReferences)
+    throws ObjectStoreException
+    {
+    	try
+    	{
+    		indexModificationLock.enterProtected();
+    		validateIndexPage( checkReferences, entry.startPageOffset, null);
+    	}
+    	catch ( ClassNotFoundException cnfe)
+    	{
+    		throw new ObjectStoreException( "validate ", cnfe);
+    	}
+    	catch ( DiskAllocatorException dae)
+    	{
+    		throw new ObjectStoreException( "validate allocator error ", dae);
+    	}
+    	catch ( IOException ioe)
+    	{
+    		throw new ObjectStoreException( "validate io error", ioe);
+    	}
+    	finally
+    	{
+    		indexModificationLock.leaveProtected();
+    	}
+    }
+    
+    private void validateIndexPage( boolean checkReferences, int offset, Comparable parentKey)
+    throws ObjectStoreException, ClassNotFoundException, DiskAllocatorException, IOException
+    {
+    	IndexPage page=(IndexPage)streams.readImmovableObject(offset);
+    	Comparable previous=null;
+    	if ( parentKey!=null)
+    	{
+    		if ( parentKey.compareTo( page.keyArray[0])!=0)
+    			throw new ObjectStoreException( "Key in parent page doesn't match first key in child");
+    	}
+    	for ( int i=0; i<page.size; ++i)
+    	{
+    		Comparable next=page.keyArray[i];
+    		if ( previous!=null)
+    		{
+    			if ( previous.compareTo(next)>=0)
+    				throw new ObjectStoreException( "Keys in wrong order in index page");
+    		}
+    		previous=next;
+    		if ( page.reuseArray==null)
+    		{
+    			validateIndexPage( checkReferences, page.nextOffsetArray[i], previous);
+    		}
+    		else if ( checkReferences)
+    		{
+    			manager.retrieve( new DAKey( page.nextOffsetArray[i], page.reuseArray[i]));
+    		}
+    	}
+    }
+    
     /**
      * These private methods live in a happy world where all indexes are
      * unique, no index pages are ever flushed, and no other thread is
@@ -647,8 +704,8 @@ class Index
         System.arraycopy( rightPage.keyArray, 0,
             leftPage.keyArray, leftPage.size, rightPage.size);
         if ( leftPage.reuseArray!=null)
-            System.arraycopy( rightPage.nextOffsetArray, 0,
-                leftPage.nextOffsetArray, leftPage.size, rightPage.size);
+            System.arraycopy( rightPage.reuseArray, 0,
+                leftPage.reuseArray, leftPage.size, rightPage.size);
         else
             manager.fixIndexPageParent( leftPage.thisPage,
                 rightPage.nextOffsetArray, 0, rightPage.size);

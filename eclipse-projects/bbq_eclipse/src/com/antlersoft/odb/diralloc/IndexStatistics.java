@@ -29,6 +29,19 @@ public class IndexStatistics {
 		m_overflow=new Counts();
 	}
 	
+	public String toString()
+	{
+		StringBuilder sb=new StringBuilder();
+     	sb.append( " Entries per page: ");
+		sb.append( getEntriesPerPage());
+		sb.append( "\r\nRegular--");
+    	sb.append( getRegular().toString());
+    	sb.append( "\r\nOverflow--");
+    	sb.append(getOverflow().toString());
+    	
+    	return sb.toString();
+	}
+	
 	public int getEntriesPerPage() { return m_entriesPerPage; }
 	public final Counts getRegular() { return m_regular; }
 	public final Counts getOverflow() { return m_overflow; }

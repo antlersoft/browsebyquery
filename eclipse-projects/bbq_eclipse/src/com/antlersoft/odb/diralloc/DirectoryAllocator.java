@@ -210,6 +210,23 @@ ioe.printStackTrace();
             keyGen, descending, unique, 
             entriesPerPage, this, baseDirectory);
     }
+    
+    public void logAllStatistics() throws ObjectStoreException
+    {
+    	try
+    	{
+    		classList.classChangeLock.enterProtected();
+    		for ( Iterator i=classList.indexMap.values().iterator(); i.hasNext();)
+    		{
+    			Index index=(Index)i.next();
+    			logger.info( index.entry.indexName+index.getStatistics().toString());
+    		}
+    	}
+    	finally
+    	{
+    		classList.classChangeLock.leaveProtected();
+    	}
+    }
 
     public Object getIndexStatistics( String indexName) throws ObjectStoreException
     {
@@ -226,6 +243,42 @@ ioe.printStackTrace();
         {
             classList.classChangeLock.leaveProtected();
         }
+    }
+    
+    /**
+     * Walks one (or each) index, insuring it is correct with keys in the write order, and optionally that all objects
+     * are accessible.
+     * @param indexName Name of index to validate, or null to validate all indices
+     * @param checkReferences If true, checks all objects referenced by the index
+     * @throws ObjectStoreException Throws if any problem with the index, with message describing the problem
+     */
+    public void validateIndex( String indexName, boolean checkReferences)
+    throws ObjectStoreException
+    {
+    	try
+    	{
+    		classList.classChangeLock.enterProtected();
+    		if ( indexName==null)
+    		{
+        		for ( Iterator i=classList.indexMap.values().iterator(); i.hasNext();)
+        		{
+        			((Index)i.next()).validate(checkReferences);
+        		}
+    		}
+    		else
+    		{
+    			Index named=(Index)classList.indexMap.get(indexName);
+                if ( named==null)
+                    throw new ObjectStoreException( "validateIndex: Index "+indexName+
+                    " undefined");
+                named.validate(checkReferences);
+    		}
+    	}
+    	finally
+    	{
+    		classList.classChangeLock.leaveProtected();
+    	}
+    	
     }
 
     public void removeIndex(String indexName) throws ObjectStoreException
