@@ -109,7 +109,7 @@ public class DBArgument implements Persistent, HasDBType {
 		StringBuilder sb=new StringBuilder();
 		sb.append( getMethod().getDBClass().toString());
 		sb.append( "::");
-		sb.append( getName());
+		sb.append( getMethod().getName());
 		sb.append( " #");
 		sb.append( m_index);
 		sb.append( ":");
