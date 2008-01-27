@@ -31,23 +31,26 @@ import java.util.NoSuchElementException;
 class IndexIterator implements com.antlersoft.odb.IndexIterator
 {
     private Index baseIndex;
-    IndexPage currentPage;
-    int currentOffset;
+    Index.FindResult findResult;
     boolean exactMatch;
 
-    IndexIterator( Index b, IndexPage p, int o, boolean m)
+    IndexIterator( Index b, Index.FindResult fr, boolean m)
     {
         baseIndex=b;
-        currentPage=p;
-        currentOffset=o;
+        findResult=fr;
         exactMatch=m;
     }
 
     public boolean hasNext()
     {
-        return currentOffset<currentPage.size;
+        return findResult.offset<findResult.page.size;
     }
 
+    /**
+     * Returns true if and only if the object that would be returned by
+     * a call to next() exactly matches the key that was supplied for
+     * the index lookup to get this iterator.
+     */
     public boolean isExactMatch()
     {
         return exactMatch;
@@ -60,40 +63,14 @@ class IndexIterator implements com.antlersoft.odb.IndexIterator
         baseIndex.indexModificationLock.enterProtected();
         try
         {
-            if ( currentOffset>=currentPage.size)
+            if ( findResult.offset>=findResult.page.size)
                 throw new NoSuchElementException();
-            DAKey result=new DAKey( currentPage.nextOffsetArray[currentOffset],
-                currentPage.reuseArray[currentOffset]);
-            currentOffset++;
-            if ( currentOffset>=currentPage.size)
+            DAKey result=new DAKey( findResult.page.nextOffsetArray[findResult.offset],
+                findResult.page.reuseArray[findResult.offset]);
+            findResult.offset++;
+            if ( findResult.offset>=findResult.page.size)
             {
-                IndexPage nextPage=currentPage;
-                while ( nextPage.thisPage.parent!=null)
-                {
-                    IndexPage parent=baseIndex.manager.getIndexPageByKey(
-                        nextPage.thisPage.parent);
-                    int keyOffset=baseIndex.binarySearch( parent.keyArray, 0,
-                        parent.size-1, currentPage.keyArray[0]);
-                    if ( keyOffset<0)
-                        keyOffset= -keyOffset-1;
-                    else
-                        keyOffset++;
-                    if ( keyOffset>=parent.size)
-                    {
-                        nextPage=parent;
-                    }
-                    else
-                    {
-                        nextPage=baseIndex.getChildPage( parent, keyOffset);
-                        while ( nextPage.reuseArray==null)
-                        {
-                            nextPage=baseIndex.getChildPage( nextPage, 0);
-                        }
-                        currentPage=nextPage;
-                        currentOffset=0;
-                        break;
-                    }
-                }
+            	baseIndex.moveToFirstKeyOfNextPage(findResult);
             }
             return result;
         }

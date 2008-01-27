@@ -59,7 +59,7 @@ import com.antlersoft.util.Semaphore;
  * If a class type has any indices defined, an additional
  * DiskAllocator is defined that stores the index information
  * for that class.  The name of this file is the class file name
- * with an i appended.  So if the class stored in file i has one or more
+ * with an i appended.  So if the class stored in file 5 has one or more
  * indices, that information is stored in 5i.
  *
  * The point of an object database is to handle more data than

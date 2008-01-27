@@ -23,9 +23,9 @@ class NonUniqueIndexIterator extends IndexIterator
 {
 	Comparable origKey;
 
-	NonUniqueIndexIterator( Index b, IndexPage p, int o, boolean m, Comparable k)
+	NonUniqueIndexIterator( Index b, Index.FindResult fr, boolean m, Comparable k)
 	{
-		super( b, p, o, m);
+		super( b, fr, m);
 		origKey=k;
 	}
 
@@ -37,7 +37,7 @@ class NonUniqueIndexIterator extends IndexIterator
 
 		if ( oldMatch && hasNext())
 		{
-			exactMatch=origKey.compareTo( ((UniqueKey)currentPage.keyArray[currentOffset]).base)==0;
+			exactMatch=origKey.compareTo( ((UniqueKey)findResult.page.keyArray[findResult.offset]).base)==0;
 		}
 		return result;
 	}

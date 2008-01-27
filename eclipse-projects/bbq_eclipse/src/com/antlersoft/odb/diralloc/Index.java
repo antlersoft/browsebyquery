@@ -27,6 +27,7 @@
 package com.antlersoft.odb.diralloc;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.KeyGenerator;
@@ -73,8 +74,8 @@ class Index
             FindResult fr=findKey( key);
             if ( ! keyMatches( fr, origKey))
                 return null;
-            return new DAKey( fr.page.nextOffsetArray[fr.index],
-                fr.page.reuseArray[fr.index]);
+            return new DAKey( fr.page.nextOffsetArray[fr.offset],
+                fr.page.reuseArray[fr.offset]);
         }
         finally
         {
@@ -96,9 +97,9 @@ class Index
                     UniqueKey.largestDAKey :
                     UniqueKey.smallestDAKey);
             FindResult fr=findKey( key);
-            return entry.unique ? new IndexIterator( this, fr.page, fr.index,
+            return entry.unique ? new IndexIterator( this, fr,
                 keyMatches( fr, origKey))
-				: new NonUniqueIndexIterator( this, fr.page, fr.index,
+				: new NonUniqueIndexIterator( this, fr,
 				keyMatches( fr, origKey), origKey);
         }
         finally
@@ -356,7 +357,15 @@ class Index
     		}
     		else if ( checkReferences)
     		{
-    			manager.retrieve( new DAKey( page.nextOffsetArray[i], page.reuseArray[i]));
+    			DAKey objKey=new DAKey( page.nextOffsetArray[i], page.reuseArray[i]);
+    			Serializable obj=manager.retrieve( objKey);
+    			Comparable compareKey=entry.generator.generateKey( obj);
+    			if ( ! entry.unique)
+    			{
+    				compareKey=new UniqueKey(compareKey,objKey);
+    				if ( compareKey.compareTo( previous)!=0)
+    					throw new ObjectStoreException( "Keys fail to compare");
+    			}
     		}
     	}
     }
@@ -370,21 +379,21 @@ class Index
         throws ObjectStoreException
     {
         FindResult fr=findKey( key);
-        if ( fr.compareResult>=0)
+        if ( fr.keyMatched)
             throw new ObjectStoreException( "Duplicate value for index: "
                 +entry.indexName);
-        if ( fr.index==0)
+        if ( fr.offset==0)
             fixParentKey( fr.page, fr.page.keyArray[0], key);
-        System.arraycopy( fr.page.nextOffsetArray, fr.index,
-            fr.page.nextOffsetArray, fr.index+1, fr.page.size-fr.index);
-        System.arraycopy( fr.page.reuseArray, fr.index,
-            fr.page.reuseArray, fr.index+1, fr.page.size-fr.index);
-        System.arraycopy( fr.page.keyArray, fr.index,
-            fr.page.keyArray, fr.index+1, fr.page.size-fr.index);
+        System.arraycopy( fr.page.nextOffsetArray, fr.offset,
+            fr.page.nextOffsetArray, fr.offset+1, fr.page.size-fr.offset);
+        System.arraycopy( fr.page.reuseArray, fr.offset,
+            fr.page.reuseArray, fr.offset+1, fr.page.size-fr.offset);
+        System.arraycopy( fr.page.keyArray, fr.offset,
+            fr.page.keyArray, fr.offset+1, fr.page.size-fr.offset);
         fr.page.size++;
-        fr.page.nextOffsetArray[fr.index]=objectRef.index;
-        fr.page.reuseArray[fr.index]=objectRef.reuseCount;
-        fr.page.keyArray[fr.index]=key;
+        fr.page.nextOffsetArray[fr.offset]=objectRef.index;
+        fr.page.reuseArray[fr.offset]=objectRef.reuseCount;
+        fr.page.keyArray[fr.offset]=key;
         fr.page.modified=true;
         if ( fr.page.size>=entry.pageCount)
         {
@@ -509,10 +518,10 @@ class Index
         throws ObjectStoreException
     {
         FindResult fr=findKey( key);
-        if ( fr.compareResult<0)
+        if ( ! fr.keyMatched)
             throw new ObjectStoreException( "Missing value for index: "
                 +entry.indexName);
-        if ( fr.index==0 && fr.page.thisPage.parent!=null)
+        if ( fr.offset==0 && fr.page.thisPage.parent!=null)
         {
             if ( fr.page.size==1)
             {
@@ -528,14 +537,14 @@ class Index
                     fr.page.keyArray[1]);
             }
         }
-        if ( fr.index+1<fr.page.size)
+        if ( fr.offset+1<fr.page.size)
         {
-            System.arraycopy( fr.page.nextOffsetArray, fr.index+1,
-                fr.page.nextOffsetArray, fr.index, fr.page.size-fr.index-1);
-            System.arraycopy( fr.page.reuseArray, fr.index+1,
-                fr.page.reuseArray, fr.index, fr.page.size-fr.index-1);
-            System.arraycopy( fr.page.keyArray, fr.index+1,
-                fr.page.keyArray, fr.index, fr.page.size-fr.index-1);
+            System.arraycopy( fr.page.nextOffsetArray, fr.offset+1,
+                fr.page.nextOffsetArray, fr.offset, fr.page.size-fr.offset-1);
+            System.arraycopy( fr.page.reuseArray, fr.offset+1,
+                fr.page.reuseArray, fr.offset, fr.page.size-fr.offset-1);
+            System.arraycopy( fr.page.keyArray, fr.offset+1,
+                fr.page.keyArray, fr.offset, fr.page.size-fr.offset-1);
         }
         fr.page.size--;
         fr.page.keyArray[fr.page.size]=null; // Don't keep unneeded key around
@@ -733,6 +742,7 @@ class Index
     }
 
     private FindResult findKey( Comparable key)
+    throws ObjectStoreException
     {
         IndexPage currentPage=manager.getIndexPageByKey( getTopKey());
         int difference;
@@ -760,10 +770,45 @@ class Index
     private boolean keyMatches( FindResult fr, Comparable key)
     {
         if ( entry.unique)
-            return fr.compareResult>=0;
-        if ( fr.index>=fr.page.size)
+            return fr.keyMatched;
+        if ( fr.offset>=fr.page.size)
         	return false;
-        return key.compareTo( ((UniqueKey)fr.page.keyArray[fr.index]).base)==0;
+        return key.compareTo( ((UniqueKey)fr.page.keyArray[fr.offset]).base)==0;
+    }
+    
+    void moveToFirstKeyOfNextPage( FindResult fr)
+    throws ObjectStoreException
+    {
+        IndexPage nextPage=fr.page;
+        Comparable toFindInParent=fr.page.keyArray[0];
+        while ( nextPage.thisPage.parent!=null)
+        {
+            IndexPage parent=manager.getIndexPageByKey(
+                nextPage.thisPage.parent);
+            int keyOffset=binarySearch( parent.keyArray, 0,
+                parent.size-1, toFindInParent);
+            if ( keyOffset<0)
+                throw new ObjectStoreException( "moveToFirstKeyOfNextPage: parent page does not match child page initial key");
+            else
+                keyOffset++;
+            if ( keyOffset>=parent.size)
+            {
+                nextPage=parent;
+                toFindInParent=parent.keyArray[0];
+            }
+            else
+            {
+                nextPage=getChildPage( parent, keyOffset);
+                while ( nextPage.reuseArray==null)
+                {
+                    nextPage=getChildPage( nextPage, 0);
+                }
+                fr.page=nextPage;
+                fr.offset=0;
+                fr.keyMatched=false;
+                break;
+            }
+        }
     }
 
     static class FindResult
@@ -772,14 +817,18 @@ class Index
         {
             page=p;
             if ( d<0)
-                index= -d-1;
+                offset= -d-1;
             else
-                index=d;
-            compareResult=d;
+                offset=d;
+            keyMatched=(d>=0);
+            if ( offset>=page.size)
+            {
+            	page.thisPage.index.moveToFirstKeyOfNextPage( this);
+            }
         }
 
         IndexPage page;
-        int index;
-        int compareResult;
+        int offset;
+        boolean keyMatched;
     }
 }
