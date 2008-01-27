@@ -34,6 +34,12 @@ import java.io.OutputStream;
 
 import java.net.URL;
 
+/**
+ * Standard interface for application services that abstracts the differences
+ * between web start and stand-alone apps (and applets, if the need arises)
+ * @author Michael A. MacDonald
+ *
+ */
 public interface AppContext
 {
     /**

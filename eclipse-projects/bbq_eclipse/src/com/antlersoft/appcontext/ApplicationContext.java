@@ -36,6 +36,11 @@ import java.util.Properties;
 
 import com.antlersoft.util.URLFrame;
 
+/**
+ * AppContext implementation for a stand-alone application
+ * @author Michael A. MacDonald
+ *
+ */
 public class ApplicationContext implements AppContext
 {
 	private Properties m_properties;
@@ -86,7 +91,7 @@ public class ApplicationContext implements AppContext
 	{
 		URLFrame frame=new URLFrame( url);
 		frame.setSize( 400, 300);
-		frame.show();
+		frame.setVisible(true);
 	}
 
 	public Toolkit getToolkit()
