@@ -214,7 +214,7 @@ public class ILDB extends IndexObjectDB implements DataSource {
     {
     	DirectoryAllocator store=new DirectoryAllocator( new File( args[0]),
                 new CFactory());
-    	store.validateIndex("CALL_TARGET", true);
+    	store.validateIndex(null, true);
      }
     /**
      * Print the statistics for the indexes in this database
