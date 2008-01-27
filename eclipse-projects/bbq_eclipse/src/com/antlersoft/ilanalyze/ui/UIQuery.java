@@ -23,6 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuBar;
+
 import com.antlersoft.ilanalyze.db.*;
 
 import com.antlersoft.ilanalyze.parseildasm.IldasmReader;
@@ -109,6 +112,13 @@ public class UIQuery extends QueryFrame
        
        analyzerDB.makeRootObject("LAST_SCANNED", last_scanned);
        analyzerDB.commitAndRetain();
+	}
+	
+	protected JMenuBar createMenuBar()
+	{
+		JMenuBar result=super.createMenuBar();
+		
+		return result;
 	}
 
 	UIQuery()

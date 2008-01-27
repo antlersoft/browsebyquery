@@ -113,9 +113,13 @@ public abstract class QueryFrame
     {
     }
 
-    protected QueryFrame( BasicBase parser)
+    /**
+     * Create the base frame for a bbq ui with the provided parser environment
+     * @param query_environment Query parser environment
+     */
+    protected QueryFrame( AnalyzerQuery query_environment)
     {
-        qp=new AnalyzerQuery( parser);
+        qp=query_environment;
         ExtensionFileFilter filter=getExtensionFileFilter();
         if ( filter!=null)
         {
@@ -124,6 +128,15 @@ public abstract class QueryFrame
 	        chooser.setMultiSelectionEnabled( true);
 	        chooser.setFileFilter( filter);
         }
+    }
+    
+    /**
+     * Convenience constructor for creating a frame from the query parser, with the standard AnalyzerQuery environment
+     * @param parser Query parser
+     */
+    protected QueryFrame( BasicBase parser)
+    {
+    	this(new AnalyzerQuery(parser));
     }
 
     protected Component createComponents()
@@ -192,7 +205,7 @@ public abstract class QueryFrame
         return mainPane;
     }
 
-    JMenuBar createMenuBar()
+    protected JMenuBar createMenuBar()
     {
         JMenuBar menuBar=new JMenuBar();
 
