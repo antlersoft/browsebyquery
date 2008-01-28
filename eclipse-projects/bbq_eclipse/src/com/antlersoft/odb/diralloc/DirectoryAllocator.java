@@ -482,17 +482,39 @@ ioe.printStackTrace();
         {
             synchronized ( entryList)
             {
-                sync();
+            	ObjectStoreException storedException=null;
+            	try
+            	{
+            		sync();
+            	}
+            	catch ( ObjectStoreException ose)
+            	{
+            		storedException=ose;
+            	}
                 try
                 {
                     classList.close();
+                }
+                catch ( IOException ioe)
+                {
+                	if ( storedException==null)
+                		storedException=new ObjectStoreException( "IO error closing classlist", ioe);
+                	else
+                		storedException=new ObjectStoreException( "Exception closing classlist after sync exception: "+ioe.getMessage(), storedException);
+                }
+                try
+                {
                     overheadStreams.close();
                 }
                 catch ( IOException ioe)
                 {
-                    throw new ObjectStoreException( "IO Error closing",
-                        ioe);
+                	if ( storedException==null)
+                		storedException=new ObjectStoreException( "IO error closing overhead streams", ioe);
+                	else
+                		storedException=new ObjectStoreException( "Exception closing overhead streams after class list exception: "+ioe.getMessage(), storedException);
                 }
+                if ( storedException!=null)
+                	throw storedException;
             }
         }
     }

@@ -447,8 +447,18 @@ public class DiskAllocator
 	public synchronized void close()
 		throws IOException
 	{
-		sync();
+		IOException syncException=null;
+		try
+		{
+			sync();
+		}
+		catch ( IOException ioe)
+		{
+			syncException=ioe;
+		}
 		randomFile.close();
+		if ( syncException!=null)
+			throw syncException;
 	}
 
     /**
