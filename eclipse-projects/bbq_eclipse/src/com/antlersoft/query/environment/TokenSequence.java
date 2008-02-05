@@ -172,6 +172,15 @@ public class TokenSequence {
 		{
 			return m_replacer;
 		}
+		
+		public String toString()
+		{
+			StringBuilder sb=new StringBuilder();
+			sb.append( "( ");
+			sb.append( m_replacer.toString());
+			sb.append( " )");
+			return sb.toString();
+		}
 
 		/* (non-Javadoc)
 		 * @see com.antlersoft.util.xml.IElement#readFromXML(com.antlersoft.util.xml.IHandlerStack)
