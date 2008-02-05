@@ -169,16 +169,16 @@ public class DirectoryAllocator implements IndexObjectStore
         }
         catch ( ClassNotFoundException cnfe)
         {
-            throw new ObjectStoreException( "Should never happen", cnfe);
+            emergencyCleanup( new ObjectStoreException( "Should never happen", cnfe));
         }
         catch ( IOException ioe)
         {
 ioe.printStackTrace();
-            throw new ObjectStoreException( "Failed to initialize", ioe);
+            emergencyCleanup( new ObjectStoreException( "Failed to initialize", ioe));
         }
         catch ( DiskAllocatorException dae)
         {
-            throw new ObjectStoreException( "Allocator failure", dae);
+            emergencyCleanup( new ObjectStoreException( "Allocator failure", dae));
         }
         // Initialize index page cache
         indexPageMap=new HashMap( INDEX_PAGE_CACHE_SIZE+1);
@@ -514,7 +514,7 @@ ioe.printStackTrace();
                 		storedException=new ObjectStoreException( "Exception closing overhead streams after class list exception: "+ioe.getMessage(), storedException);
                 }
                 if ( storedException!=null)
-                	throw storedException;
+                	emergencyCleanup( storedException);
             }
         }
     }
@@ -695,6 +695,45 @@ ioe.printStackTrace();
             throw new ObjectStoreException(
                 "DiskAllocator error paging index", dae);
         }
+    }
+    
+    private void emergencyCleanup( ObjectStoreException underlying)
+    throws ObjectStoreException
+    {
+    	if ( classList!=null && classList.classEntries!=null)
+    	{
+	    	for ( Iterator i=classList.classEntries.iterator(); i.hasNext();)
+	    	{
+		    	try
+		    	{
+		    		ClassEntry entry=(ClassEntry)i.next();
+		    		if ( entry.objectStreams!=null)
+		    		{
+		    			entry.objectStreams.close();
+		    		}
+		    		if ( entry.indexStreams!=null)
+		    		{
+		    			entry.indexStreams.close();
+		    		}
+		    	}
+		    	catch ( Exception e)
+		    	{
+		    		underlying=new ObjectStoreException( "Error closing object streams: "+e.getMessage(), underlying);
+		    	}
+	    	}
+    	}
+    	if ( overhead!=null)
+    	{
+	    	try
+	    	{
+	    		overhead.close();
+	    	}
+	    	catch ( Exception e)
+	    	{
+	    		underlying=new ObjectStoreException( "Error closing object streams: "+e.getMessage(), underlying);
+	    	}   		
+    	}
+    	throw underlying;
     }
 
     private IndexPage getIndexPageByKeyInternal( IndexPageKey key)

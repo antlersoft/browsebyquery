@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import com.antlersoft.odb.IndexExistsException;
 import com.antlersoft.odb.IndexObjectDB;
+import com.antlersoft.odb.ObjectStoreException;
 import com.antlersoft.odb.ObjectStreamCustomizer;
 import com.antlersoft.odb.diralloc.CustomizerFactory;
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
@@ -199,7 +200,10 @@ public class ILDB extends IndexObjectDB implements DataSource {
             for ( int i=0; i<children.length; ++i)
             {
             	if ( children[i].isFile() && children[i].getName().indexOf('.')== -1)
-            		children[i].delete();            	
+            	{
+            		if ( ! children[i].delete())
+            			throw new ObjectStoreException( "Cleaning up failed to delete: "+children[i].getAbsolutePath());
+            	}
             }
         }
         return new ILDB( dbFile);
