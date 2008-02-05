@@ -9,6 +9,7 @@ import java.io.StringWriter;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,28 +45,52 @@ class QuerySocketServer implements Runnable {
 	 */
 	static final int DEFAULT_PORT=20217;
 	
+	private static final int STOPPED=0;
+	private static final int RUNNING=1;
+	private static final int CANCELLING=2;
+	
 	private ServerSocket listener;
 	private IBrowseByQuery bbq;
+	private int state;
 	
 	static Logger logger=Logger.getLogger("com.antlersoft.ilanalyze.ui.QuerySocketServer");
 	
 	QuerySocketServer( IBrowseByQuery xmlIntf, int port) throws IOException
 	{
 		listener=new ServerSocket( port);
+		listener.setSoTimeout(1000);
 		bbq=xmlIntf;
+		state=STOPPED;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
 	 */
 	public void run() {
+		synchronized ( this)
+		{
+			if ( state!=STOPPED)
+				return;
+			state=RUNNING;
+		}
 		try
 		{
 			logger.info( "Started listening for query socket clients");
 			while ( true)
 			{
-				Socket s=listener.accept();
-				new Thread( new QuerySocketClient( s, bbq), "QuerySocketClient-"+s.getLocalPort()).start();
+				try
+				{
+					Socket s=listener.accept();
+					new Thread( new QuerySocketClient( s, bbq), "QuerySocketClient-"+s.getLocalPort()).start();
+				}
+				catch ( SocketTimeoutException ste)
+				{
+					synchronized(this)
+					{
+						if ( state!=RUNNING)
+							break;
+					}
+				}
 			}
 		}
 		catch ( IOException ioe)
@@ -74,8 +99,37 @@ class QuerySocketServer implements Runnable {
 		}
 		finally
 		{
+			synchronized ( this)
+			{
+				state=STOPPED;
+				notify();
+			}
 			logger.info( "Finished listening");			
 		}
+	}
+	
+	public synchronized void cancel()
+	{
+		if ( state==RUNNING)
+		{
+			state=CANCELLING;
+			while ( state==CANCELLING)
+			{
+				try
+				{
+					wait();
+				}
+				catch ( InterruptedException iwe)
+				{
+					
+				}
+			}
+		}
+	}
+	
+	public synchronized boolean isRunning()
+	{
+		return state==RUNNING;
 	}
 	
 	static class QuerySocketClient implements Runnable

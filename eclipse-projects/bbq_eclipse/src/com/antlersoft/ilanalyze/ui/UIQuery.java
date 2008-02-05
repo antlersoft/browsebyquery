@@ -19,11 +19,14 @@
  */
 package com.antlersoft.ilanalyze.ui;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 
 import com.antlersoft.ilanalyze.db.*;
@@ -46,6 +49,8 @@ public class UIQuery extends QueryFrame
 {
     private ILDB analyzerDB;
     private File analyzerDBOpenFile;
+    JCheckBoxMenuItem listeningCheckBox;
+    QuerySocketServer server;
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.query.environment.ui.QueryFrame#clearDB()
@@ -114,9 +119,17 @@ public class UIQuery extends QueryFrame
        analyzerDB.commitAndRetain();
 	}
 	
+	/**
+	 * Add server menu to the menubar
+	 */
 	protected JMenuBar createMenuBar()
 	{
 		JMenuBar result=super.createMenuBar();
+		
+		JMenu server_menu=new JMenu("Server");
+		listeningCheckBox=new JCheckBoxMenuItem( new ListeningAction());
+		server_menu.add( listeningCheckBox);
+		result.add(server_menu);
 		
 		return result;
 	}
@@ -125,6 +138,53 @@ public class UIQuery extends QueryFrame
     {
     	super( new ILQueryParser());
     }
+	
+	private synchronized void setListeningThread( boolean status)
+	{
+		if ( server==null && status)
+		{
+	        try
+	        {
+	        	server=new QuerySocketServer( new BrowseByQueryXml( getEnvironment(), analyzerDB), QuerySocketServer.DEFAULT_PORT);
+	        }
+	        catch ( IOException ioe)
+	        {
+	        	
+	        }
+		}
+		if ( server!=null)
+		{
+			if ( status)
+			{
+				if ( ! server.isRunning())
+				{
+					new Thread( server).start();
+				}
+			}
+			else
+				server.cancel();
+		}
+		if ( listeningCheckBox!=null)
+		{
+			listeningCheckBox.setSelected( status);
+		}
+		analyzerDB.makeRootObject( "RUN_SERVER", new Boolean(status));
+	}
+	
+	class ListeningAction extends AbstractAction
+	{
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+			setListeningThread( listeningCheckBox.isSelected());
+		}
+
+		ListeningAction()
+		{
+			super("Serve Visual Studio plugin requests");
+		}
+	}
 
     public static void main( String argv[])
     {
@@ -153,13 +213,7 @@ public class UIQuery extends QueryFrame
         
         app.showFrame((argv.length>0 ? "Querying " : "Querying default DB ")+openString, app.analyzerDBOpenFile, db_cleared, "/icons/weber-small.gif");
         
-        try
-        {
-        	new Thread( new QuerySocketServer( new BrowseByQueryXml( app.getEnvironment(), app.analyzerDB), QuerySocketServer.DEFAULT_PORT), "QuerySocketServer").start();
-        }
-        catch ( IOException ioe)
-        {
-        	
-        }
+        Boolean b=(Boolean)app.analyzerDB.getRootObject( "RUN_SERVER");
+        app.setListeningThread( b==null ? false : b.booleanValue());
     }
 }
