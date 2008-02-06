@@ -734,7 +734,7 @@ ioe.printStackTrace();
 	    	}
 	    	catch ( Exception e)
 	    	{
-	    		underlying=new ObjectStoreException( "Error closing object streams: "+e.getMessage(), underlying);
+	    		underlying=new ObjectStoreException( "Error closing overhead streams: "+e.getMessage(), underlying);
 	    	}   		
     	}
     	throw underlying;
