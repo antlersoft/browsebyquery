@@ -1,33 +1,14 @@
-bbq0.5.9
+bbq0.5.10
 
-Language changes:
+This is a bug-fix release, which fixes some long-standing bugs in the datastore.
 
-Regular expression matching has been added to the language.  There
-are three regular expression operators: ~, ~=, and substitute().
-See the language manual for details.
+The only visible effect of these bugs in BBQ for Java was that some queries by type
+(fields with type... or methods with type... ) would return incomplete results.
 
-Slash-quoted strings have been added to the language for convenience
-in composing regular expressions.
+Because previous versions of the datastore may have created corrupt indices, the
+datastore version number has been incremented.  This will mean that your existing
+BBQ databases will be cleared.  You will need to re-analyze to populate them (except
+for the Eclipse version, which will do this automatically).
 
-User interface changes:
-
-In standalone and open tool, the window showing saved expressions now is
-a table listing the expression type and contents as well as the name of the
-expression.
-
-In the eclipse plug-in, there is a new view available showing the table
-of saved expressions.
-
-Display of method arguments and types has been made easier to read.
-
-Other changes:
-
-Fix bug where it cleared saved expressions and imports when clearing the database
-
-Lots of refactoring to support the (imminent) releases of bbqil, Browse-by-Query
-for CLR (.Net, mono).  This will pave the way for the 0.6.0 java release,
-which will feature much better performance on large databases.
-
-Update manual to describe the new functionality, and also to add more examples,
-particularly in the reference section.
-
+Also, the display of stored expressions that contain other stored expressions
+in the stored expression list window has been fixed.

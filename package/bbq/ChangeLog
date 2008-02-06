@@ -1,3 +1,16 @@
+--bbq0.5.10
+
+Fix bug maintaining indices
+
+Fix bug traversing non-unique indices (affects queries on types)
+
+Fix bug displaying save expressions that reference saved expressions
+
+Make recovering from a corrupt database more robust (particularly in Windows
+environment)
+
+Update database version
+
 --bbq0.5.9
 
 Regular expression matching
