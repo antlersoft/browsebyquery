@@ -167,6 +167,10 @@ public class DirectoryAllocator implements IndexObjectStore
                 }
             }
         }
+        catch ( ObjectStoreException ose)
+        {
+        	emergencyCleanup( ose);
+        }
         catch ( ClassNotFoundException cnfe)
         {
             emergencyCleanup( new ObjectStoreException( "Should never happen", cnfe));
