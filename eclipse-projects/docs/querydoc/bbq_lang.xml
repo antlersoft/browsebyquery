@@ -32,6 +32,7 @@ are noted with (Java) or (C#/CIL).</para>
 	&p-bbq;'s object model, rather than tabular abstractions based on it.
 	&p-bbq; attempts to provide an intuitive facility for developers to envision and realize different aspects
 	of their system's code base, backed by the features of a powerful and general object query system.
+	One can imagine providing this facility with a completely different language syntax.
 	</para>
   </preface>
   <chapter>
@@ -1042,12 +1043,14 @@ this type.</para>
     </sect1>
     <sect1 id="r-setexpressions">
       <title>Set Expressions</title>
-      <para>&p-bbq; supplies simple set expressions that provide
+      <para>&p-bbq; supplies <link linkend="r-simplesetexpressions">simple set expressions</link> that provide
 the starting point for your queries, as well as some
-<firstterm>commands</firstterm>
+<link linkend="r-commands"><firstterm>commands</firstterm></link>
 which are set expressions that let you access
 the interpreter's state.</para>
-    <sect2 id="r-simplesetexpressions">
+	<para>A &p-bbq; query is always a set expression.</para>
+	</sect1>
+    <sect1 id="r-simplesetexpressions">
       <title>Simple Set Expressions</title>
       <para>
       Simple set expressions define the set of objects that provides the initial scope of the query.
@@ -1153,22 +1156,23 @@ name until a valid class is found.</para>
 	</refentry>
 	<refentry id="r-package">
 	  <refnamediv>
-	    <refname>package "name"</refname>
-	    <refpurpose>Select a single package by name</refpurpose>
+	    <refname>package (Java)/namespace (C#/CIL)</refname>
+	    <refpurpose>Select a single package/namespace by name</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
 	    <synopsis>package <replaceable>name</replaceable></synopsis>
+	    <synopsis>namespace <replaceable>name</replaceable></synopsis>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
-	    <para>Use this expression to get a single java package; useful
+	    <para>Use this expression to get a single package or namespace; useful
 when you are searching within one package.
-<replaceable>name</replaceable> is a quoted string with the name of the class
-as you would type it in a Java program.</para>
+<replaceable>name</replaceable> is a quoted string with the name of the package or namespace as you would type it
+in the program.</para>
 	  </refsect1>
 	  <refsect1>
 	    <title>Type</title>
-	    <para><link linkend="r-type-package">package</link></para>
+	    <para><link linkend="r-type-package">package <emphasis>Java</emphasis>, namespace <emphasis>C#/CIL</emphasis></link></para>
 	  </refsect1>
 	</refentry>
 	<refentry id="r-strings">
@@ -1192,8 +1196,8 @@ string constant.</para>
 	    <para><link linkend="r-type-string-constant">string constant</link></para>
 	  </refsect1>
 	</refentry>
-	</sect2>
-      <sect2 id="r-commands">
+	</sect1>
+      <sect1 id="r-commands">
 	<title>Commands and Miscellaneous Set Expressions</title>
 	<para>The interpreter can remember set expressions you've run,
 or the results of the set expressions, for you to use later
@@ -1239,11 +1243,12 @@ later expressions.</para>
 	</refentry>
 	<refentry id="r-import">
 	  <refnamediv>
-	    <refname>import</refname>
-	    <refpurpose>Set a list of packages to search for classes</refpurpose>
+	    <refname>import (Java)/using (C#/CIL)</refname>
+	    <refpurpose>Set a list of packages or namespaces to search for classes</refpurpose>
 	  </refnamediv>
 	  <refsynopsisdiv>
 	    <cmdsynopsis><command>import</command><arg choice="opt">set</arg><arg choice="opt" rep="repeat"><replaceable>string</replaceable></arg></cmdsynopsis>
+	    <cmdsynopsis><command>using</command><arg choice="opt">set</arg><arg choice="opt" rep="repeat"><replaceable>string</replaceable></arg></cmdsynopsis>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
@@ -1348,7 +1353,6 @@ is substituted.
 	  	</para>
 	  </refsect1>
 	</refentry>
-	</sect2>
 	</sect1>
     <sect1 id="r-transforms">
     	<title>Transforms</title>
@@ -1693,11 +1697,12 @@ where bar is called, you might use:
 		</refentry>
 		<refentry id="r-packages-in">
 		  <refnamediv>
-		    <refname>packages in</refname>
-		    <refpurpose>Returns the packages nested in the packages in the set</refpurpose>
+		    <refname>packages in (Java)/namespaces in (C#-CIL)</refname>
+		    <refpurpose>Returns the packages or namespaces nested in the packages or namespaces in the set</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
 		    <synopsis>packages in</synopsis>
+		    <synopsis>namespaces in</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 		    <title>Description</title>
@@ -1710,11 +1715,11 @@ where bar is called, you might use:
 		  </refsect1>
 		  <refsect1>
 		    <title>Applies to Type</title>
-		    <para><link linkend="r-type-package">package</link></para>
+		    <para><link linkend="r-type-package">package/namespace</link></para>
 		  </refsect1>
 		  <refsect1>
 		    <title>Results in Type</title>
-		    <para><link linkend="r-type-package">package</link></para>
+		    <para><link linkend="r-type-package">package/namespace</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-polymorphic">
@@ -2347,10 +2352,10 @@ Applied to an argument, returns the method that has that argument.
 		<refentry id="r-number-value">
 		  <refnamediv>
 			<refname>number</refname>
-			<refpurpose>a nymber</refpurpose>
+			<refpurpose>a numeric constant</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>number</synopsis>
+			<synopsis><replaceable>digits</replaceable></synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -2401,6 +2406,7 @@ Applied to a class, returns the package or namespace that contains that class.
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>"some string"</synopsis>
+			<synopsis>//some string/</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -3041,8 +3047,8 @@ if it updates the value of the field.
   			There are two kinds of operators that work only with value expressions: relational operators and
   			value operators.
   			</para>
-  			<sect3>
-  				<title id="r-relational-operators">Relational Operators</title>
+  			<sect3 id="r-relational-operators">
+  				<title>Relational Operators</title>
   				<para>
   				&p-bbq; supports relational operators that compare two value expressions; the result of
   				the comparison is a filter.  The <userinput>=</userinput> and <userinput>!=</userinput>
@@ -3061,8 +3067,8 @@ if it updates the value of the field.
   				</informalexample>
   				</para>
   			</sect3>
-  			<sect3>
-  				<title id="r-value-expression-operators">Value Expression Operators</title>
+  			<sect3 id="r-value-expression-operators">
+  				<title >Value Expression Operators</title>
   			<para>Value operators combine two value expressions into a single value expression.</para>
   			<para>&p-bbq; currently defines only one value operator, <userinput>&amp;</userinput>.
   			This operator concatenates two <link linkend="r-type-string">string</link>-type expressions.
