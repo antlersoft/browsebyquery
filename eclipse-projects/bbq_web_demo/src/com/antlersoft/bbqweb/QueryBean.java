@@ -10,8 +10,9 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 
-import com.antlersoft.analyzer.query.AnalyzerQuery;
+import com.antlersoft.query.environment.AnalyzerQuery;
 import com.antlersoft.analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.query.QueryParser;
 
 import com.antlersoft.util.CharClass;
 
@@ -40,7 +41,7 @@ public class QueryBean {
 	
 	public QueryBean()
 	{
-		m_query=new AnalyzerQuery();
+		m_query=new AnalyzerQuery( new QueryParser());
 		m_history=new ArrayList();
 	}
 	
