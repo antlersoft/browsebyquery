@@ -12,7 +12,14 @@
 </tool>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1175030737" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.214402516" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
-<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.4588829" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.4588829" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+<option id="gnu.cpp.link.option.libs.195152832" superClass="gnu.cpp.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="parser"/>
+</option>
+<option id="gnu.cpp.link.option.paths.1862541512" superClass="gnu.cpp.link.option.paths" valueType="stringList">
+<listOptionValue builtIn="false" value="/home/mike/src/cppquery/com/antlersoft/parser"/>
+</option>
+</tool>
 <tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.409169388" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug"/>
 <macros/>
 </toolChain>
