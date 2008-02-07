@@ -60,6 +60,11 @@
 This demo lets you query a large Browse-by-Query database, which was built from all the Eclipse 3.1 base and Java development jars as well as the Browse-by-Query code,
 totaling more than 200,000 methods in about 24,000 classes.
 </p>
+<p>
+If you were using an IDE-integrated version of Browse-by-Query, you could click
+on one of the results
+to open that file and position in your editor.
+</p>
 <h3>Links</h3>
 <p>
 <a href="http://browsebyquery.sourceforge.net">Project Home</a>
