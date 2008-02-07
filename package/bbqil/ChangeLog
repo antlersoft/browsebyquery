@@ -1,2 +1,12 @@
+bbq1l 0.1.4 --
+
+Based off bbq0.5.9
+
+First public release-- initial functionality set
+
+Uses ildasm or monodis to read assembly files
+
+Standalone user interface
+
 bbqil 0.1.0 --
 Based off bbq0.5.5

@@ -1,5 +1,20 @@
-bbqil 0.1.0
+bbqil0.1.4
 
-First release that handles CLR--
+First public release of Browse-by-Query for Common Language 
+Runtime and mono code.
 
-Reads CLR into database by parsing IL assembly language files
+Works like BBQ for java-- except instead of giving it class
+files or jars, you give it assemblies.
+
+BBQ C#/CIL does not read assemblies directly; instead it
+calls a disassembler and parses the IL assembly language
+output.  For Windows platforms, BBQ calls the ildasm
+assembler that is part of the .NET SDK.  For other
+platforms, BBQ calls monodis.  Either disassembler must be
+present in your path when you run the jar for the BBQ
+C#/CIL to analyze assemble files correctly.
+
+When working on a Windows platform, if you tell it to
+analyze a directory, it will assume the directory is the
+top level of a Visual Studio solution and look for debug
+assemblies in object dirs.
