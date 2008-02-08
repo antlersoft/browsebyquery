@@ -1,4 +1,29 @@
-bbq1l 0.1.4 --
+bbqil 0.1.5 --
+
+Based off of bbq0.5.10
+
+Support for serving requests from Visual Studio 2005 add-in, including UI
+to start and stop the server
+
+Support for getting method calls and string references from custom attributes,
+including attribute named parameters
+
+Code for validating indices
+
+Fix bug showing wrong method name displaying arguments
+
+Fix bug maintaining indices
+
+Fix bug traversing non-unique indices (affects queries on types)
+
+Fix bug displaying save expressions that reference saved expressions
+
+Make recovering from a corrupt database more robust (particularly in Windows
+environment)
+
+Update database version
+
+bbqil 0.1.4 --
 
 Based off bbq0.5.9
 

@@ -1,3 +1,47 @@
+bbqil0.1.5
+
+This version contains support for the BBQ Visual Studio
+2005 add-in.
+
+The add-in provides only the user interface and (basic) Visual
+Studio integration.  The assembly analysis, datastore and
+query processing are provided by the Java standalone version
+(bbqilstandalone_0.1.5.jar) acting as a server to the add-in
+client.  To use the add-in, you must create and populate
+a database with the Java standalone version and enable the
+server within it.  The server listens on TCP port 20217 for
+query requests from the add-in, processes them and returns
+the results.
+
+When you want to refresh the database (after doing builds in
+Visual Studio, for example), you must also do this from the
+standalone version.
+
+We expect the Add-In to become more configurable and better
+integrated with Visual Studio in the future, so the need to
+run the standalone version alongside it will diminish.
+
+In addition the add-in support, this version contains a
+number of fixes and improvements that are also available for
+standalone users:
+
+Custom attribute settings in analyzed assemblies are recognized,
+and the datastore will create the appropriate method call and
+string and field references for them.
+
+Bugs in the datastore that affected the completeness of searches
+have been fixed.  These were longstanding issues but were not
+really visible in the Java version because it uses different
+data access paths.
+
+If the database is corrupted in any way, BBQ will recover
+more cleanly.  This will be particularly apparent in Windows
+environments, where corrupt BBQ datastores sometimes had to
+be removed manually.
+
+Stored values that reference other stored values are now
+displayed better.
+
 bbqil0.1.4
 
 First public release of Browse-by-Query for Common Language 
