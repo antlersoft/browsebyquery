@@ -1,0 +1,11 @@
+bbqvs0.1.3
+Add release notes and change log
+
+bbqvs0.1.2
+Fix bug positioning after opening files
+
+bbqvs0.1.1
+First working version
+
+bbqvs0.1.0
+Initial pre-release
