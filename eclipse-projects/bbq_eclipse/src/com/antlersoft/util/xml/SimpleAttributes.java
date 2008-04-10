@@ -103,7 +103,7 @@ public class SimpleAttributes {
 		{
 			try
 			{
-				return Integer.valueOf( val);
+				return Double.valueOf( val);
 			}
 			catch ( NumberFormatException nfe)
 			{
@@ -138,6 +138,21 @@ public class SimpleAttributes {
 	public long longValue( Object qName)
 	{
 		return longValue( qName, defaultInt);
+	}
+	
+	public boolean booleanValue( Object qName, boolean def)
+	{
+		String val=attr.getValue( qName.toString());
+		if ( val!=null)
+		{
+			return Boolean.valueOf( val);
+		}
+		return def;
+	}
+	
+	public boolean booleanValue( Object qName)
+	{
+		return booleanValue( qName, false);
 	}
 	
 }

@@ -75,6 +75,9 @@ public class SimpleHandler extends DefaultHandler {
 
     // Static utility methods
     
+    /**
+     * Write an element with a qname and a value but no attributes
+     */
 	public static void writeElement( ContentHandler handler, String name, String value)
 		throws SAXException
 	{
