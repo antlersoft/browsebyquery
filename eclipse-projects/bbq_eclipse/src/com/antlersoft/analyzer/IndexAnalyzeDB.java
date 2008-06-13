@@ -262,53 +262,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
 		return c.newInstance( new Object[] { key, this });		
 	}
 
-    static class TypeKey implements Comparable, Serializable
-    {
-        private String type;
-        private String key;
-
-        TypeKey( String t, String k)
-        {
-            type=t;
-            key=k;
-        }
-
-        public int compareTo( Object toCompare)
-        {
-            TypeKey compareKey=(TypeKey)toCompare;
-            int result=type.compareTo( compareKey.type);
-            if ( result==0)
-                result=key.compareTo( compareKey.key);
-            return result;
-        }
-    }
-
-    static class Lookup implements Persistent
-    {
-        /**
-		 * 
-		 */
-		private static final long serialVersionUID = 5675201888813610421L;
-		private transient PersistentImpl _impl;
-        private TypeKey key;
-        ObjectRef object;
-
-        Lookup( String t, String k, Persistent p)
-        {
-            key=new TypeKey( t, k);
-            object=new ObjectRef( p);
-            _impl=new PersistentImpl();
-            IndexObjectDB.makePersistent( this);
-        }
-
-        public PersistentImpl _getPersistentImpl()
-        {
-            if ( _impl==null)
-                _impl=new PersistentImpl( this);
-            return _impl;
-        }
-    }
-
     static class CFactory extends CustomizerFactory
     {
         public ObjectStreamCustomizer getCustomizer( Class toStore)
@@ -322,23 +275,11 @@ public class IndexAnalyzeDB implements AnalyzerDB
             nameList.add( "com.antlersoft.analyzer.DBFieldReference");
             nameList.add( "com.antlersoft.analyzer.DBCall");
             nameList.add( "com.antlersoft.analyzer.DBStringReference");
-            if ( toStore==Lookup.class)
-            {
-                nameList.add( "com.antlersoft.analyzer.IndexAnalyzeDB$TypeKey");
-            }
             nameList.add( toStore.getName());
             return new SchemaCustomizer( nameList);
         }
     }
 
-    static class TypeKeyGenerator implements KeyGenerator, Serializable
-    {
-        public Comparable generateKey( Object keyed)
-        {
-            return ((Lookup)keyed).key;
-        }
-    }
-    
     static void printStatistics( DirectoryAllocator store, String index_name)
     throws Exception
     {

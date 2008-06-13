@@ -48,10 +48,6 @@ import com.antlersoft.query.EmptyEnum;
  */
 public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7885836463810814465L;
 
 	/**
 	 * @author Michael A. MacDonald

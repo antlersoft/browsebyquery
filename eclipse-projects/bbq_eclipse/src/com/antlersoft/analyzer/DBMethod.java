@@ -38,7 +38,7 @@ import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 import com.antlersoft.odb.FromRefEnumeration;
 
-public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
+public class DBMethod extends DBMember
 {
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
@@ -47,8 +47,6 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     private static Logger logger=Logger.getLogger( "com.antlersoft.analyzer.DBType");
     static final String RETURN_TYPE_INDEX="MethodType";
     
-    ObjectRef dbclass;
-    ObjectRef returnType;
     String name;
     String signature;
     Vector calls;
@@ -56,37 +54,20 @@ public class DBMethod implements Persistent, Cloneable, SourceObject, AccessFlag
     Vector fieldReferences;
     Vector stringReferences;
     Vector arguments;
-    int accessFlags;
-
     private boolean resolved;
-    private int lineNumber;
-    private boolean deprecated;
 
     static public Vector emptyVector=new Vector();
 
-    private transient PersistentImpl _persistentImpl;
-
-    public DBMethod( String key, AnalyzerDB db)
+    public DBMethod( DBClass containing, String name, String signature)
 		throws Exception
     {
-		StringTokenizer st=new StringTokenizer( key, "\t");
-		dbclass=new ObjectRef( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", (String)st.nextElement()));
-		name=(String)st.nextElement();
-		signature=(String)st.nextElement();
+		this.dbclass=new ObjectRef( containing);
+		this.name=name;
+		this.signature=signature;
 		resolved=false;
-		deprecated=false;
-		lineNumber=0;
-		_persistentImpl=new PersistentImpl();
 		createArguments( db);
 		ObjectDB.makePersistent( this);
     ((DBClass)dbclass.getReferenced()).addMethod( this);
-    }
-
-    public PersistentImpl _getPersistentImpl()
-    {
-		if ( _persistentImpl==null)
-				_persistentImpl=new PersistentImpl();
-		return _persistentImpl;
     }
 
     public String toString()

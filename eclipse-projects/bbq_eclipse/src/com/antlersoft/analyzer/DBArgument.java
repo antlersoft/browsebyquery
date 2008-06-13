@@ -8,11 +8,7 @@ import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
 /**
- * Information about a method parameter.  This is only collected if the
- * captureOptional value for the AnalyzerDB has the OPTIONAL_TYPE_INFO flag set.
- * 
- * Not addressable independently by a lookup object, but a distinct object independently
- * addressable in the database; there is a non-unique index on the type field.
+ * Information about a method parameter.  There is a non-unique index on the type field.
  * 
  * Once created, method, type and ordinal are invariant.  The name might change.
  * @author Michael MacDonald

@@ -25,12 +25,10 @@ public class DBFieldReference extends DBReference
 {
     DBFieldReference( DBMethod s, DBField t, int l, boolean write)
     {
-		super( s, l);
-		target=new ObjectRef( t);
+		super( s, t, l);
 		writeReference=write;
     }
 
-    ObjectRef target;
     boolean writeReference;
 
     public boolean isWrite() { return writeReference; }
@@ -57,8 +55,7 @@ public class DBFieldReference extends DBReference
 			DBFieldReference f=(DBFieldReference)toCompare;
 
 			return f.getSource().equals( getSource()) && f.lineNumber==lineNumber &&
-				( ( writeReference && f.writeReference) || 
-				! ( writeReference || f.writeReference))
+				f.writeReference==writeReference &&
 				&& f.getTarget().equals( getTarget());
 		}
 		return false;

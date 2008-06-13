@@ -26,17 +26,12 @@
  */
 package com.antlersoft.analyzer;
 
-import com.antlersoft.odb.ObjectRef;
-
 public class DBStringReference extends DBReference
 {
-    private ObjectRef target;
-
     DBStringReference( DBMethod method, DBStringConstant constant, int l)
     {
-        super( method, l);
-        target=new ObjectRef( constant);
-    }
+        super( method, constant, l);
+     }
 
     public DBStringConstant getTarget()
     {

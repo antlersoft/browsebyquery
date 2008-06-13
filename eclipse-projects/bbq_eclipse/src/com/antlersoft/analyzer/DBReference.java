@@ -19,22 +19,31 @@
  */
 package com.antlersoft.analyzer;
 
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
+import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.PersistentImpl;
 
 public abstract class DBReference implements java.io.Serializable, Cloneable,
-    SourceObject
+    SourceObject, Persistent
 {
-    DBReference( DBMethod s, int l)
-    {
-	source=new ObjectRef( s);
-	lineNumber=l;
-    }
-
+    private transient PersistentImpl _impl;
     private ObjectRef source;
+    protected ObjectRef target;
+    protected int lineNumber;
+    
+    DBReference( DBMethod s, Persistent t, int l)
+    {
+		source=new ObjectRef( s);
+		target=new ObjectRef(t);
+		lineNumber=l;
+		_impl=new PersistentImpl();
+    }
 
     public DBMethod getSource()
     {
-	return (DBMethod)source.getReferenced();
+		return (DBMethod)source.getReferenced();
     }
 
     public DBClass getDBClass()
@@ -46,6 +55,24 @@ public abstract class DBReference implements java.io.Serializable, Cloneable,
     {
         return lineNumber;
     }
+    
+    public PersistentImpl _getPersistentImpl()
+    {
+		if ( _impl==null)
+			_impl=new PersistentImpl();
+		return _impl;    	
+    }
 
-    protected int lineNumber;
+ 	static class ReferenceTargetGenerator implements KeyGenerator
+	{
+		static ReferenceTargetGenerator G=new ReferenceTargetGenerator();
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
+		 */
+		public Comparable generateKey(Object o1) {
+			return new ObjectRefKey( ((DBReference)o1).target);
+		}
+		
+	}
 }

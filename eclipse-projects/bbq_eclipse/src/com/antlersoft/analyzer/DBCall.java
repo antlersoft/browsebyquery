@@ -25,12 +25,8 @@ public class DBCall extends DBReference
 {
     DBCall( DBMethod s, DBMethod t, int l)
     {
-        super( s, l);	
-        target=new ObjectRef( t);
-        
+        super( s, t, l);	
     }
-
-    ObjectRef target;
 
 	public DBMethod getTarget()
 	{
