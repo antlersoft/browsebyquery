@@ -56,7 +56,7 @@ public class DBFieldReference extends DBReference
 
 			return f.getSource().equals( getSource()) && f.lineNumber==lineNumber &&
 				f.writeReference==writeReference &&
-				&& f.getTarget().equals( getTarget());
+				f.getTarget().equals( getTarget());
 		}
 		return false;
 	}

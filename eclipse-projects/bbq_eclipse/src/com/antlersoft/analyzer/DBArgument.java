@@ -41,7 +41,7 @@ public class DBArgument implements Persistent, SourceObject, HasDBType {
 		return (DBMethod)_dbmethod.getReferenced();
 	}
 	
-	public DBType getDBType( AnalyzerDB db)
+	public DBType getDBType( IndexAnalyzeDB db)
 	{
 		return (DBType)_dbtype.getReferenced();
 	}

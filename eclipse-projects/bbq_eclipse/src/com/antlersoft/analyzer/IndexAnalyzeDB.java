@@ -29,11 +29,8 @@ package com.antlersoft.analyzer;
 import java.io.Serializable;
 import java.io.File;
 
-import java.lang.reflect.Constructor;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Properties;
 
 import java.util.logging.Level;
@@ -43,11 +40,7 @@ import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexIterator;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.IndexExistsException;
-import com.antlersoft.odb.KeyGenerator;
-import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectStreamCustomizer;
-import com.antlersoft.odb.Persistent;
-import com.antlersoft.odb.PersistentImpl;
 
 import com.antlersoft.odb.diralloc.CustomizerFactory;
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
@@ -56,29 +49,22 @@ import com.antlersoft.odb.diralloc.NoSuchClassException;
 
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
 
+import com.antlersoft.query.DataSource;
 import com.antlersoft.query.EmptyEnum;
 
 import com.antlersoft.util.IteratorEnumeration;
 
-public class IndexAnalyzeDB implements AnalyzerDB
+public class IndexAnalyzeDB implements DataSource
 {
     private IndexObjectDB _session;
     private int createCount;
-    private HashMap _constructorMap;
-    private int _captureOptional;
     private static Logger _logger=Logger.getLogger( IndexAnalyzeDB.class.getName());
-    private static final String LOOKUP_INDEX="Lookup";
-    private static String OPTIONAL_FLAGS_KEY="optional_flags";
-    private static Class[] _argumentList=new Class[] { String.class, AnalyzerDB.class };
-    
-    private static Properties LOOKUP_INDEX_PROPS;
+ 
     private static Properties TYPEKEY_INDEX_PROPS;
     private static Properties CLASSNAME_INDEX_PROPS;
     
     static
     {
-    	LOOKUP_INDEX_PROPS=new Properties();
-    	LOOKUP_INDEX_PROPS.put( DirectoryAllocator.ENTRIES_PER_PAGE, "80");
     	TYPEKEY_INDEX_PROPS=new Properties();
     	TYPEKEY_INDEX_PROPS.put( DirectoryAllocator.ENTRIES_PER_PAGE, "220");
     	CLASSNAME_INDEX_PROPS=new Properties();
@@ -88,7 +74,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
 	public IndexAnalyzeDB()
 	{
 		_session=null;
-		_constructorMap=new HashMap();
         createCount=0;
 	}
 
@@ -99,15 +84,8 @@ public class IndexAnalyzeDB implements AnalyzerDB
         createCount=0;
         _session=new IndexObjectDB( new DirectoryAllocator( new File( dbName),
             new CFactory()));
-        Integer optional_flags=(Integer)_session.getRootObject( OPTIONAL_FLAGS_KEY);
-        if ( optional_flags!=null)
-        	_captureOptional=optional_flags.intValue();
-        else
-        	_captureOptional=AnalyzerDB.OPTIONAL_TYPE_INFO;
         try
         {
-            _session.defineIndex( LOOKUP_INDEX, Lookup.class,
-                new TypeKeyGenerator(), false, true, LOOKUP_INDEX_PROPS);
             _session.defineIndex( DBClass.CLASS_NAME_INDEX, DBClass.class,
             	new DBClass.NameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
             _session.defineIndex( DBField.FIELD_TYPE_INDEX, DBField.class,
@@ -164,32 +142,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
     		_session.commitAndRetain();
     }
 
-    public Object getWithKey(String type, String key) throws Exception
-    {
-        Object result=findWithKey( type, key);
-        if ( result==null)
-        {
-			result=newInstance( type, key);
-            Lookup keyReference=new Lookup( type, key, (Persistent)result);
-			createCount++;
-			if ( createCount==1000)
-			{
-				_session.commitAndRetain();
-				createCount=0;
-			}
-        }
-        return result;
-    }
-
-    public Object findWithKey(String type, String key) throws Exception
-    {
-        Lookup l=(Lookup)_session.findObject( LOOKUP_INDEX,
-            new TypeKey( type, key));
-        if ( l==null)
-            return null;
-        return l.object.getReferenced();
-    }
-    
     public Object findWithIndex( String index_name, Comparable key) throws Exception
     {
     	return _session.findObject( index_name, key);
@@ -209,31 +161,11 @@ public class IndexAnalyzeDB implements AnalyzerDB
         return result;
     }
     
-    public boolean captureOptional( int optional_flag)
-    {
-    	return ( optional_flag & _captureOptional)!=0;
-    }
-    
-    public void setCaptureOptional( int flags)
-    {
-    	if ( _session!=null)
-    	{
-    		_captureOptional=flags;
-    		_session.makeRootObject( OPTIONAL_FLAGS_KEY, new Integer( _captureOptional));
-    	}
-    }
-
     public synchronized void makeCurrent()
     {
         _session.makeCurrent();
     }
 
-	public static void printTypeKey( Comparable x)
-	{
-	    TypeKey y=(TypeKey)x;
-	    System.out.println( y.type+"|"+y.key);
-	}
-	
 	public Enumeration retrieveByIndex( String index_name, Comparable key)
 	{
 		Enumeration result=EmptyEnum.empty;
@@ -250,18 +182,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
 		return result;
 	}
 	
-	private Object newInstance( String type, String key)
-	throws Exception
-	{
-		Constructor c=(Constructor)_constructorMap.get( type);
-		if ( c==null)
-		{
-			c=Class.forName( type).getConstructor( _argumentList);
-			_constructorMap.put( type, c);
-		}
-		return c.newInstance( new Object[] { key, this });		
-	}
-
     static class CFactory extends CustomizerFactory
     {
         public ObjectStreamCustomizer getCustomizer( Class toStore)
@@ -297,7 +217,6 @@ public class IndexAnalyzeDB implements AnalyzerDB
     {
     	DirectoryAllocator store=new DirectoryAllocator( new File( args[0]),
                 new CFactory());
-    	printStatistics( store, LOOKUP_INDEX);
     	printStatistics( store, DBType.TYPE_CLASS_INDEX);
     	printStatistics( store, DBMethod.RETURN_TYPE_INDEX);
     	printStatistics( store, DBField.FIELD_TYPE_INDEX);
