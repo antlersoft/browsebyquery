@@ -75,6 +75,7 @@ symbol n_genArgs
 symbol n_genArgClause
 symbol n_genArity
 symbol n_genClause
+symbol n_genConstraintItem
 symbol n_genConstraints
 symbol n_genPar
 symbol n_genParAttrib
@@ -1129,8 +1130,10 @@ n_genArity : t_left_angle t_left_square n_int32 t_right_square t_right_angle .
 n_genClause : "{ return new ArrayList(); }" .
 n_genClause : t_left_angle n_genPars t_right_angle "{ return valueStack.o_1(); }" .
 # Gen constraints is always represents by a list of ReadType objects
-n_genConstraints : n_type "m_StartList" .
-n_genConstraints : n_genConstraints t_comma n_type "m_AddToList" .
+n_genConstraintItem : t_DOTTEDNAME "m_BasicType" .
+n_genConstraintItem : n_type "m_TopObject" .
+n_genConstraints : n_genConstraintItem "m_StartList" .
+n_genConstraints : n_genConstraints t_comma n_genConstraintItem "m_AddToList" .
 n_genPar : n_genParAttribs n_id "{ return new GenericTypeParameter( valueStack.s_0(), new ArrayList(), valueStack.i_1()); }" .
 n_genPar : n_genParAttribs t_left_paren n_genConstraints t_right_paren n_id "{ return new GenericTypeParameter( valueStack.s_0(), (List)valueStack.o_2(), valueStack.i_n(4)); }" .
 # n_genPars is represented by a List of GenericTypeParameter objects
