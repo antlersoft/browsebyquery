@@ -56,7 +56,7 @@ public class ObjectKeyHashMap implements Serializable {
 		return m_backing_map.containsValue(value);
 	}
 	
-	/** Returns the object assoicated with the given key */
+	/** Returns the object associated with the given key */
 	public Object get( ObjectRef ref)
 	{
 		return m_backing_map.get(keyFromRef(ref));

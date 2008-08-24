@@ -4,13 +4,15 @@
 package com.antlersoft.analyzer;
 
 import java.util.Enumeration;
-import java.util.Vector;
 
 import com.antlersoft.odb.FromRefEnumeration;
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
+
+import com.antlersoft.util.IteratorEnumeration;
 
 /**
  * A package in the database.
@@ -19,6 +21,9 @@ import com.antlersoft.odb.PersistentImpl;
  *
  */
 public class DBPackage implements Persistent, Cloneable {
+
+	/** Primary key on package name (full dotted name) */
+	public static final String PACKAGE_NAME_INDEX="PACKAGE_NAME_INDEX";
 
 	private transient PersistentImpl _persistentImpl;
 	
@@ -30,32 +35,43 @@ public class DBPackage implements Persistent, Cloneable {
 	/**
 	 * Contains ObjectRef's of contained classes
 	 */
-	private Vector _classes;
+	private ObjectKeyHashSet _classes;
 	/**
 	 * Contains ObjectRef's of contained packages
 	 */
-	private Vector _subpackages;
+	private ObjectKeyHashSet _subpackages;
 	
 	/**
 	 * Link to package containing this package, if any
 	 */ 
 	private ObjectRef _containingPackage;
 	
-	public DBPackage( String key, AnalyzerDB db)
+	private DBPackage( String key, IndexAnalyzeDB db)
 	throws Exception
 	{
 		_name=key;
-		_classes=new Vector();
-		_subpackages=new Vector();
+		_classes=new ObjectKeyHashSet();
+		_subpackages=new ObjectKeyHashSet();
 		_persistentImpl=new PersistentImpl();
 		ObjectDB.makePersistent( this);
 		if ( _name.length()>0)
 		{
-			DBPackage containing=(DBPackage)db.getWithKey( "com.antlersoft.analyzer.DBPackage", superPackage( key));
+			DBPackage containing=get( superPackage( key ), db);
 			_containingPackage=new ObjectRef( containing);
 			containing.setSubPackage( this);
 			ObjectDB.makeDirty( this);
 		}
+	}
+	
+	public static DBPackage get( String package_name, IndexAnalyzeDB db) throws Exception
+	{
+		DBPackage result=(DBPackage)db.findWithIndex(PACKAGE_NAME_INDEX, package_name);
+		if ( result==null)
+		{
+			result=new DBPackage( package_name, db);
+		}
+		return result;
+		
 	}
 	
 	public DBPackage getContainingPackage()
@@ -77,7 +93,7 @@ public class DBPackage implements Persistent, Cloneable {
 	
 	public Enumeration getSubPackages()
 	{
-		return new FromRefEnumeration( _subpackages.elements());
+		return new FromRefEnumeration( new IteratorEnumeration( _subpackages.iterator()));
 	}
 	
 	public synchronized void setContainedClass( DBClass new_class)
@@ -92,7 +108,7 @@ public class DBPackage implements Persistent, Cloneable {
 	
 	public Enumeration getContainedClasses()
 	{
-		return new FromRefEnumeration( _classes.elements());
+		return new FromRefEnumeration( new IteratorEnumeration( _classes.iterator()));
 	}
 	
 	public String toString()

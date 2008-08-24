@@ -83,7 +83,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     
 	private transient PersistentImpl _persistentImpl;
 
-    public DBClass( String key, AnalyzerDB db)
+    public DBClass( String key, IndexAnalyzeDB db)
     throws Exception
     {
 		internalName=key;
@@ -101,8 +101,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		ObjectDB.makePersistent( this);
 		if ( internalName.charAt(0)!='[')
 		{
-			DBPackage my_package=(DBPackage)db.getWithKey( "com.antlersoft.analyzer.DBPackage",
-					TypeParse.packageFromInternalClassName( internalName));
+			DBPackage my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db);
 			my_package.setContainedClass( this);
 			myPackage=new ObjectRef( my_package);
 			String containing_name=containingClassName( internalName);
@@ -160,7 +159,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
         return lineNumber;
     }
     
-    public DBType getDBType( AnalyzerDB db)
+    public DBType getDBType( IndexAnalyzeDB db)
     {
 		return DBType.getFromClass( db, this); 
     }
