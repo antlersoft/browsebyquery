@@ -44,10 +44,10 @@ public class ClassWriter
     int accessFlags;
     int thisClassIndex;
     int superClassIndex;
-	ArrayList constantPool;
-	ArrayList interfaces;
-    ArrayList fields;
-    ArrayList methods;
+	ArrayList<CPInfo> constantPool;
+	ArrayList<Integer> interfaces;
+    ArrayList<FieldInfo> fields;
+    ArrayList<MethodInfo> methods;
 	AttributeList attributes;
 
     public static final short CONSTANT_Utf8=1;
@@ -144,11 +144,11 @@ public class ClassWriter
     	classStream.writeShort( minorVersion);
   		classStream.writeShort( majorVersion);
      	classStream.writeShort( constantPool.size());
-  		Iterator i=constantPool.iterator();
+  		Iterator<CPInfo> i=constantPool.iterator();
     	i.next();	// Skip initial, not really there entry
 		for ( ; i.hasNext();)
 		{
-  			CPInfo poolEntry=(CPInfo)i.next();
+  			CPInfo poolEntry=i.next();
   			poolEntry.write( classStream);
      		// Constant pool array must have null entry after long or double
 		    if ( poolEntry.tag==CONSTANT_Double ||
@@ -159,19 +159,19 @@ public class ClassWriter
 		classStream.writeShort( thisClassIndex);
 		classStream.writeShort( superClassIndex);
   		classStream.writeShort( interfaces.size());
-		for ( i=interfaces.iterator(); i.hasNext();)
+		for ( Iterator<Integer> j=interfaces.iterator(); j.hasNext();)
 		{
-		    classStream.writeShort( ((Integer)i.next()).intValue());
+		    classStream.writeShort( j.next());
 		}
   		classStream.writeShort( fields.size());
-		for ( i=fields.iterator(); i.hasNext();)
+		for ( Iterator<FieldInfo> j=fields.iterator(); j.hasNext();)
 		{
-		    ((FieldInfo)i.next()).write( classStream);
+		    j.next().write( classStream);
 		}
   		classStream.writeShort( methods.size());
-		for ( i=methods.iterator(); i.hasNext();)
+		for ( Iterator<MethodInfo> j=methods.iterator(); j.hasNext();)
 		{
-		    ((FieldInfo)i.next()).write( classStream);
+		    j.next().write( classStream);
 		}
   		attributes.write( classStream);
     }
@@ -181,17 +181,17 @@ public class ClassWriter
         return accessFlags;
     }
 
-    public Collection getMethods()
+    public Collection<MethodInfo> getMethods()
     {
         return Collections.unmodifiableCollection( methods);
     }
 
-    public Collection getFields()
+    public Collection<FieldInfo> getFields()
     {
         return Collections.unmodifiableCollection( fields);
     }
 
-    public void removeFromFields( Collection toRemove)
+    public void removeFromFields( Collection<FieldInfo> toRemove)
     {
         fields.removeAll( toRemove);
     }
@@ -201,7 +201,7 @@ public class ClassWriter
         superClassIndex=getClassIndex( newBaseClass);
     }
 
-    public Collection getInterfaces()
+    public Collection<Integer> getInterfaces()
     {
         return Collections.unmodifiableCollection( interfaces);
     }
@@ -249,10 +249,10 @@ public class ClassWriter
 
     private void clearClass()
     {
-    	constantPool=new ArrayList();
-     	interfaces=new ArrayList();
-      	fields=new ArrayList();
-        methods=new ArrayList();
+    	constantPool=new ArrayList<CPInfo>();
+     	interfaces=new ArrayList<Integer>();
+      	fields=new ArrayList<FieldInfo>();
+        methods=new ArrayList<MethodInfo>();
         attributes=new AttributeList( this);
     }
 
@@ -344,7 +344,7 @@ public class ClassWriter
     public final int findStringIndex( String toFind)
     {
     	int index=0;
-     	for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+     	for ( Iterator<CPInfo> i=constantPool.iterator(); i.hasNext(); index++)
         {
         	Object constant=i.next();
          	if ( constant!=null && constant instanceof CPUtf8)
@@ -379,7 +379,7 @@ public class ClassWriter
         else
         {
             int index=0;
-         	for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+         	for ( Iterator<CPInfo> i=constantPool.iterator(); i.hasNext(); index++)
             {
             	Object constant=i.next();
              	if ( constant!=null && constant instanceof CPClass)
@@ -405,7 +405,7 @@ public class ClassWriter
         else
         {
             int index=0;
-         	for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+         	for ( Iterator<CPInfo> i=constantPool.iterator(); i.hasNext(); index++)
             {
             	Object constant=i.next();
              	if ( constant!=null && constant instanceof CPString)
@@ -445,7 +445,7 @@ public class ClassWriter
         int nameIndex=getStringIndex( name);
         int descriptorIndex=getStringIndex( descriptor);
         int index=0;
-        for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+        for ( Iterator<CPInfo> i=constantPool.iterator(); i.hasNext(); index++)
         {
             Object constant=i.next();
             if ( constant instanceof CPNameAndType)
@@ -464,7 +464,7 @@ public class ClassWriter
         int classIndex=getClassIndex( className);
         int nameAndTypeIndex=getNameAndTypeIndex( name, descriptor);
         int index=0;
-        for ( Iterator i=constantPool.iterator(); i.hasNext(); index++)
+        for ( Iterator<CPInfo> i=constantPool.iterator(); i.hasNext(); index++)
         {
             Object constant=i.next();
             if ( constant instanceof CPTypeRef)

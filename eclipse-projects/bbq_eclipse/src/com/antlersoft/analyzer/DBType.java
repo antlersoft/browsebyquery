@@ -25,10 +25,10 @@ public class DBType implements Persistent, Cloneable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 2116580043409773373L;
+	public static final String TYPE_KEY_INDEX = "TYPE_KEY_INDEX";
 	public static final String TYPE_CLASS_INDEX="TypeClass";
-	private ObjectRef _class;
-	private ObjectRef _arrayReferencedType;
+	private ObjectRef<DBClass> _class;
+	private ObjectRef<DBType> _arrayReferencedType;
 	private String _builtInType;
 	private String _typeString;
 	
@@ -44,24 +44,34 @@ public class DBType implements Persistent, Cloneable {
 		return _persistentImpl;
 	}
 
-	public DBType( String typeString, AnalyzerDB db)
+	private DBType( String typeString, IndexAnalyzeDB db)
 	throws Exception
 	{
 		_typeString=typeString;
 		String t=TypeParse.parseFieldType( typeString);
 		if ( t==TypeParse.ARG_ARRAYREF)
 		{
-			_arrayReferencedType=new ObjectRef( db.getWithKey( "com.antlersoft.analyzer.DBType", typeString.substring( 1)));
+			_arrayReferencedType=new ObjectRef<DBType>( getWithTypeKey( typeString.substring( 1), db));
 		}
 		else if ( t==TypeParse.ARG_OBJREF)
 		{
-			_class=new ObjectRef(
-					db.getWithKey( "com.antlersoft.analyzer.DBClass",
-									typeString.substring( 1, typeString.length()-1)));
+			_class=new ObjectRef<DBClass>(
+					DBClass.getByInternalName(typeString.substring( 1, typeString.length()-1), db));
 		}
 		_builtInType=t;
 		_persistentImpl=new PersistentImpl();
 		ObjectDB.makePersistent( this);
+	}
+	
+	public static DBType getWithTypeKey( String typeKey, IndexAnalyzeDB db)
+	throws Exception
+	{
+		DBType result=(DBType)db.findWithIndex( TYPE_KEY_INDEX, typeKey);
+		if ( result==null)
+		{
+			result=new DBType( typeKey, db);
+		}
+		return result;
 	}
 	
 	public boolean isArrayRef()
@@ -81,18 +91,18 @@ public class DBType implements Persistent, Cloneable {
 	
 	public DBClass getReferencedClass()
 	{
-		return isClassRef() ? (DBClass)_class.getReferenced() : null;
+		return isClassRef() ? _class.getReferenced() : null;
 	}
 	
 	public DBType getArrayReferencedType()
 	{
-		return isArrayRef() ? (DBType)_class.getReferenced() : null;
+		return isArrayRef() ? _arrayReferencedType.getReferenced() : null;
 	}
 	
-	public DBType getArrayType( AnalyzerDB db)
+	public DBType getArrayType( IndexAnalyzeDB db)
 	throws Exception
 	{
-		return (DBType)db.getWithKey( "com.antlersoft.analyzer.DBType", "["+_typeString);
+		return getWithTypeKey( "["+_typeString, db);
 	}
 	
 	/**
@@ -119,57 +129,32 @@ public class DBType implements Persistent, Cloneable {
 	 * @param cl -- class to find within a database
 	 * @return The DBType representing the class type, or null if no such type is referenced
 	 */
-	public static DBType getFromClass( AnalyzerDB db, DBClass cl)
+	public static DBType getFromClass( IndexAnalyzeDB db, DBClass cl)
 	{
-		DBType result=null;
-		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+		try
 		{
-			Enumeration e=((IndexAnalyzeDB)db).retrieveByIndex( DBType.TYPE_CLASS_INDEX,
-					new ObjectRefKey( cl));
-			if ( e.hasMoreElements())
-				result=(DBType)e.nextElement(); 
+			return (DBType)db.findWithIndex(DBType.TYPE_CLASS_INDEX, new ObjectRefKey(cl));
 		}
-		
-		return result;
+		catch ( Exception e)
+		{
+			
+		}
+		return null;
 	}
 	
-	public Enumeration getReturningMethods( AnalyzerDB db)
+	public Enumeration getReturningMethods( IndexAnalyzeDB db)
 	{
-		Enumeration result;
-		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
-		{
-			result=((IndexAnalyzeDB)db).retrieveByIndex( DBMethod.RETURN_TYPE_INDEX, new ObjectRefKey( this));
-		}
-		else
-			result=EmptyEnum.empty;
-		
-		return result;
+		return db.retrieveByIndex( DBMethod.RETURN_TYPE_INDEX, new ObjectRefKey( this));
 	}
 	
-	public Enumeration getFields( AnalyzerDB db)
+	public Enumeration getFields( IndexAnalyzeDB db)
 	{
-		Enumeration result;
-		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
-		{
-			result=((IndexAnalyzeDB)db).retrieveByIndex( DBField.FIELD_TYPE_INDEX, new ObjectRefKey( this));
-		}
-		else
-			result=EmptyEnum.empty;
-		
-		return result;
+		return db.retrieveByIndex( DBField.FIELD_TYPE_INDEX, new ObjectRefKey( this));
 	}
 	
-	public Enumeration getArguments( AnalyzerDB db)
+	public Enumeration getArguments( IndexAnalyzeDB db)
 	{
-		Enumeration result;
-		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
-		{
-			result=((IndexAnalyzeDB)db).retrieveByIndex( DBArgument.ARGUMENT_TYPE_INDEX, new ObjectRefKey( this));
-		}
-		else
-			result=EmptyEnum.empty;
-		
-		return result;
+		return db.retrieveByIndex( DBArgument.ARGUMENT_TYPE_INDEX, new ObjectRefKey( this));
 	}
 	
 	public String toString()

@@ -20,16 +20,14 @@ import java.util.Set;
  * @author Michael A. MacDonald
  *
  */
-public class ObjectKeyHashSet extends AbstractSet implements Set, Serializable {
-	private ObjectKeyHashMap m_map;
+public class ObjectKeyHashSet<E> extends AbstractSet<ObjectRef<E>> implements Set<ObjectRef<E>>, Serializable {
+	private ObjectKeyHashMap<E,ObjectRef<E>> m_map;
 
-    static final long serialVersionUID = 4308976621096444042L;
-    
     /**
 	 * Create an empty set
 	 */
 	public ObjectKeyHashSet() {
-		m_map=new ObjectKeyHashMap();
+		m_map=new ObjectKeyHashMap<E,ObjectRef<E>>();
 	}
 
 
@@ -37,14 +35,14 @@ public class ObjectKeyHashSet extends AbstractSet implements Set, Serializable {
 	public ObjectKeyHashSet( Collection c)
 	{
 		//TODO: Optimize the creation of the underlying map
-		m_map=new ObjectKeyHashMap();
+		m_map=new ObjectKeyHashMap<E,ObjectRef<E>>();
 		addAll( c);
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.util.AbstractCollection#iterator()
 	 */
-	public Iterator iterator() {
+	public Iterator<ObjectRef<E>> iterator() {
 		return m_map.values().iterator();
 	}
 
@@ -58,8 +56,8 @@ public class ObjectKeyHashSet extends AbstractSet implements Set, Serializable {
 	/* (non-Javadoc)
 	 * @see java.util.AbstractCollection#add(java.lang.Object)
 	 */
-	public boolean add(Object arg0) {
-		return m_map.put((ObjectRef)arg0, arg0)==null;
+	public boolean add(ObjectRef<E> arg0) {
+		return m_map.put(arg0, arg0)==null;
 	}
 
 	/* (non-Javadoc)
@@ -72,15 +70,15 @@ public class ObjectKeyHashSet extends AbstractSet implements Set, Serializable {
 	/* (non-Javadoc)
 	 * @see java.util.AbstractCollection#contains(java.lang.Object)
 	 */
-	public boolean contains(Object o) {
-		return m_map.containsKey((ObjectRef)o);
+	public boolean contains(ObjectRef<E> o) {
+		return m_map.containsKey(o);
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.AbstractCollection#remove(java.lang.Object)
 	 */
-	public boolean remove(Object o) {
-		return m_map.remove((ObjectRef)o)!=null || o==null;
+	public boolean remove(ObjectRef<E> o) {
+		return m_map.remove(o)!=null || o==null;
 	}
 
 	/**
@@ -89,15 +87,15 @@ public class ObjectKeyHashSet extends AbstractSet implements Set, Serializable {
 	 * @return Collection of any items that were removed from this set (ObjectRef's), or null if this
 	 * set was unchanged.
 	 */
-	public Collection retainMembers(ObjectKeyHashSet to_retain) {
-		ArrayList removed=null;
-		for ( Iterator i = iterator(); i.hasNext();)
+	public Collection<ObjectRef<E>> retainMembers(ObjectKeyHashSet<E> to_retain) {
+		ArrayList<ObjectRef<E>> removed=null;
+		for ( Iterator<ObjectRef<E>> i = iterator(); i.hasNext();)
 		{
-			Object o=i.next();
+			ObjectRef<E> o=i.next();
 			if ( ! to_retain.contains( o))
 			{
 				if ( removed==null)
-					removed=new ArrayList();
+					removed=new ArrayList<ObjectRef<E>>();
 				removed.add(o);
 				i.remove();
 			}

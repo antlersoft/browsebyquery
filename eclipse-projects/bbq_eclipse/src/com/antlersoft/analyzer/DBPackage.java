@@ -5,14 +5,12 @@ package com.antlersoft.analyzer;
 
 import java.util.Enumeration;
 
-import com.antlersoft.odb.FromRefEnumeration;
+import com.antlersoft.odb.FromRefIteratorEnumeration;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
-
-import com.antlersoft.util.IteratorEnumeration;
 
 /**
  * A package in the database.
@@ -35,29 +33,29 @@ public class DBPackage implements Persistent, Cloneable {
 	/**
 	 * Contains ObjectRef's of contained classes
 	 */
-	private ObjectKeyHashSet _classes;
+	private ObjectKeyHashSet<DBClass> _classes;
 	/**
 	 * Contains ObjectRef's of contained packages
 	 */
-	private ObjectKeyHashSet _subpackages;
+	private ObjectKeyHashSet<DBPackage> _subpackages;
 	
 	/**
 	 * Link to package containing this package, if any
 	 */ 
-	private ObjectRef _containingPackage;
+	private ObjectRef<DBPackage> _containingPackage;
 	
 	private DBPackage( String key, IndexAnalyzeDB db)
 	throws Exception
 	{
 		_name=key;
-		_classes=new ObjectKeyHashSet();
-		_subpackages=new ObjectKeyHashSet();
+		_classes=new ObjectKeyHashSet<DBClass>();
+		_subpackages=new ObjectKeyHashSet<DBPackage>();
 		_persistentImpl=new PersistentImpl();
 		ObjectDB.makePersistent( this);
 		if ( _name.length()>0)
 		{
 			DBPackage containing=get( superPackage( key ), db);
-			_containingPackage=new ObjectRef( containing);
+			_containingPackage=new ObjectRef<DBPackage>( containing);
 			containing.setSubPackage( this);
 			ObjectDB.makeDirty( this);
 		}
@@ -83,7 +81,7 @@ public class DBPackage implements Persistent, Cloneable {
 	
 	public synchronized void setSubPackage( DBPackage new_sub)
 	{
-		ObjectRef new_sub_ref=new ObjectRef( new_sub);
+		ObjectRef<DBPackage> new_sub_ref=new ObjectRef<DBPackage>( new_sub);
 		if ( ! _subpackages.contains( new_sub_ref))
 		{
 			_subpackages.add( new_sub_ref);
@@ -91,14 +89,14 @@ public class DBPackage implements Persistent, Cloneable {
 		}
 	}
 	
-	public Enumeration getSubPackages()
+	public Enumeration<DBPackage> getSubPackages()
 	{
-		return new FromRefEnumeration( new IteratorEnumeration( _subpackages.iterator()));
+		return new FromRefIteratorEnumeration<DBPackage>( _subpackages.iterator());
 	}
 	
 	public synchronized void setContainedClass( DBClass new_class)
 	{
-		ObjectRef new_class_ref=new ObjectRef( new_class);
+		ObjectRef<DBClass> new_class_ref=new ObjectRef<DBClass>( new_class);
 		if ( ! _classes.contains( new_class_ref))
 		{
 			_classes.add( new_class_ref);
@@ -106,9 +104,9 @@ public class DBPackage implements Persistent, Cloneable {
 		}
 	}
 	
-	public Enumeration getContainedClasses()
+	public Enumeration<DBClass> getContainedClasses()
 	{
-		return new FromRefEnumeration( new IteratorEnumeration( _classes.iterator()));
+		return new FromRefIteratorEnumeration<DBClass>( _classes.iterator());
 	}
 	
 	public String toString()

@@ -19,28 +19,32 @@
  */
 package com.antlersoft.analyzer;
 
-import java.util.Hashtable;
-import java.util.Vector;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.TreeMap;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
 import com.antlersoft.classwriter.*;
 
-import com.antlersoft.odb.FromRefEnumeration;
+import com.antlersoft.odb.FromRefIteratorEnumeration;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
 import com.antlersoft.query.EmptyEnum;
+
+import com.antlersoft.util.IteratorEnumeration;
 
 /**
  * @author Michael A. MacDonald
@@ -65,34 +69,36 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 	}
 
 	String name;
-    Vector superClasses;
-    private Hashtable methods;
-    private Hashtable fields;
-    Vector derivedClasses;
+    ObjectKeyHashSet<DBClass> superClasses;
+    private TreeMap<String,ObjectRef<DBMethod>> methods;
+    private TreeMap<String,ObjectRef<DBField>> fields;
+    ObjectKeyHashSet<DBClass> derivedClasses;
     private boolean resolved;
     private String internalName;
     private String sourceFile;
     int accessFlags;
     boolean deprecated;
     int lineNumber;
-    ObjectRef containingClass;
-    Vector containedClasses;
-    ObjectRef myPackage;
+    ObjectRef<DBClass> containingClass;
+    ObjectKeyHashSet<DBClass> containedClasses;
+    ObjectRef<DBPackage> myPackage;
     
-    public static String CLASS_NAME_INDEX="CLASS_NAME_INDEX";
+    public final static String CLASS_NAME_INDEX="CLASS_NAME_INDEX";
+    
+    public final static String CLASS_INTERNAL_NAME_INDEX="CLASS_INTERNAL_NAME_INDEX";
     
 	private transient PersistentImpl _persistentImpl;
 
-    public DBClass( String key, IndexAnalyzeDB db)
+    private DBClass( String key, IndexAnalyzeDB db)
     throws Exception
     {
 		internalName=key;
-		superClasses=new Vector();
-		derivedClasses=new Vector();
+		superClasses=new ObjectKeyHashSet<DBClass>();
+		derivedClasses=new ObjectKeyHashSet<DBClass>();
 		containedClasses=null;
 		containingClass=null;
-		methods=new Hashtable();
-		fields=new Hashtable();
+		methods=new TreeMap<String,ObjectRef<DBMethod>>();
+		fields=new TreeMap<String,ObjectRef<DBField>>();
 		resolved=false;
 		deprecated=false;
 		_persistentImpl=new PersistentImpl();
@@ -103,16 +109,28 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		{
 			DBPackage my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db);
 			my_package.setContainedClass( this);
-			myPackage=new ObjectRef( my_package);
+			myPackage=new ObjectRef<DBPackage>( my_package);
 			String containing_name=containingClassName( internalName);
 			if ( containing_name!=null)
 			{
-				DBClass containing=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", containing_name);
-				containingClass=new ObjectRef( containing);
+				DBClass containing=getByInternalName( containing_name, db);
+				containingClass=new ObjectRef<DBClass>( containing);
 				containing.setContainedClass( this);
 				ObjectDB.makeDirty( this);
 			}
 		}
+    }
+    
+    public static DBClass getByInternalName( String internal, IndexAnalyzeDB db) throws Exception
+    {
+    	DBClass result=(DBClass)db.findWithIndex(CLASS_INTERNAL_NAME_INDEX, internal);
+    	
+    	if ( result==null)
+    	{
+    		result=new DBClass(internal, db);
+    	}
+    	
+    	return result;
     }
 
 	public PersistentImpl _getPersistentImpl()
@@ -137,14 +155,14 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
        return accessFlags;
     }
 
-   public Enumeration getMethods()
+    public Enumeration<DBMethod> getMethods()
     {
-		return new FromRefEnumeration( methods.elements());
+		return new FromRefIteratorEnumeration<DBMethod>( methods.values().iterator());
     }
 
-    public Enumeration getFields()
+    public Enumeration<DBField> getFields()
     {
-		return new FromRefEnumeration( fields.elements());
+		return new FromRefIteratorEnumeration<DBField>( fields.values().iterator());
     }
 
     public DBClass getDBClass()
@@ -164,22 +182,22 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		return DBType.getFromClass( db, this); 
     }
 
-    void addMethod( DBMethod toAdd)
+    private void addMethod( DBMethod toAdd)
     {
         String key=toAdd.getName()+toAdd.getSignature();
         if ( methods.get( key)==null)
         {
-            methods.put( key, new ObjectRef( toAdd));
+            methods.put( key, new ObjectRef<DBMethod>( toAdd));
             ObjectDB.makeDirty( this);
         }
     }
 
-    void addField( DBField toAdd)
+    private void addField( DBField toAdd)
     {
         String key=toAdd.getName();
         if ( fields.get( key)==null)
         {
-            fields.put( key, new ObjectRef( toAdd));
+            fields.put( key, new ObjectRef<DBField>( toAdd));
             ObjectDB.makeDirty( this);
         }
     }
@@ -216,14 +234,14 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		ObjectDB.makeDirty( this);
     }
 
-    public Enumeration getSuperClasses()
+    public Enumeration<DBClass> getSuperClasses()
     {
-		return new FromRefEnumeration( superClasses.elements());
+		return new FromRefIteratorEnumeration<DBClass>( superClasses.iterator());
     }
 
-    public Enumeration getDerivedClasses()
+    public Enumeration<DBClass> getDerivedClasses()
     {
-		return new FromRefEnumeration( derivedClasses.elements());
+		return new FromRefIteratorEnumeration<DBClass>( superClasses.iterator());
     }
     
     public boolean isInnerClass()
@@ -235,16 +253,16 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     {
     	DBClass result=null;
     	if ( containingClass!=null)
-    		result=(DBClass)containingClass.getReferenced();
+    		result=containingClass.getReferenced();
     	
     	return result;
     }
     
-    public Enumeration getInnerClasses()
+    public Enumeration<DBClass> getInnerClasses()
     {
-    	Enumeration result=EmptyEnum.empty;
+    	Enumeration<DBClass> result=EmptyEnum.empty;
     	if ( containedClasses!=null)
-    		result=new FromRefEnumeration( containedClasses.elements());
+    		result=new FromRefIteratorEnumeration<DBClass>( containedClasses.iterator());
     	
     	return result;
     }
@@ -253,41 +271,45 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     {
     	if ( myPackage==null)
     		return null;
-    	return (DBPackage)myPackage.getReferenced();
+    	return myPackage.getReferenced();
+    }
+    
+    synchronized DBField getField( IndexAnalyzeDB db, String name, String signature )
+    {
+    	
     }
     
     private synchronized void setContainedClass( DBClass toAdd)
     {
     	if ( containedClasses==null)
     	{
-    		containedClasses=new Vector();
+    		containedClasses=new ObjectKeyHashSet<DBClass>();
     	}
     	if ( ! containedClasses.contains( toAdd))
     	{
-    		containedClasses.add( new ObjectRef( toAdd));
+    		containedClasses.add( new ObjectRef<DBClass>( toAdd));
     		ObjectDB.makeDirty( this);
     	}
     }
 
     private void addSuperClass( DBClass toAdd)
     {
-		superClasses.addElement( new ObjectRef( toAdd));
-		toAdd.derivedClasses.addElement( new ObjectRef( this));
+		superClasses.add( new ObjectRef<DBClass>( toAdd));
+		toAdd.derivedClasses.add( new ObjectRef<DBClass>( this));
 		ObjectDB.makeDirty( this);
 		ObjectDB.makeDirty( toAdd);
     }
 
     private void clearSuperClasses()
     {
-		superClasses.removeAllElements();
+		superClasses.clear();
 		ObjectDB.makeDirty( this);
     }
 
-    public static void addClassToDB( ClassWriter ac, AnalyzerDB db)
+    public static void addClassToDB( ClassWriter ac, IndexAnalyzeDB db)
 		throws Exception
     {
-		DBClass dbc=(DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass",
-		    ac.getInternalClassName( ac.getCurrentClassIndex()));
+		DBClass dbc=getByInternalName( ac.getInternalClassName(ac.getCurrentClassIndex()), db);
 		dbc.clearMethods();
 		dbc.clearSuperClasses();
 		dbc.clearFields();
@@ -299,14 +321,13 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{
-		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getInternalClassName( superClassIndex)));
+		    dbc.addSuperClass( getByInternalName( ac.getInternalClassName(superClassIndex), db));
 		}
-		Iterator i;
-		for ( i=ac.getInterfaces().iterator(); i.hasNext();)
+		for ( Iterator<Integer> i=ac.getInterfaces().iterator(); i.hasNext();)
 		{
-		    dbc.addSuperClass( (DBClass)db.getWithKey( "com.antlersoft.analyzer.DBClass", ac.getInternalClassName(((Integer)i.next()).intValue())));
+		    dbc.addSuperClass( getByInternalName( ac.getInternalClassName(i.next()), db));
 		}
-		for ( i=ac.getFields().iterator(); i.hasNext();)
+		for ( Iterator<FieldInfo> i=ac.getFields().iterator(); i.hasNext();)
 		{
             FieldInfo fi=(FieldInfo)i.next();
             DBField new_field=(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
@@ -316,7 +337,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
             new_field.setTypeFromDescriptor( db, fi.getType());
             dbc.addField( new_field);
 		}
-		for ( i=ac.getMethods().iterator(); i.hasNext();)
+		for ( Iterator<MethodInfo> i=ac.getMethods().iterator(); i.hasNext();)
 		{
 		    MethodInfo mi=(MethodInfo)i.next();
 		    DBMethod method=(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
@@ -329,7 +350,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		}
     }
 
-    public static void addFileToDB( File file, AnalyzerDB db)
+    public static void addFileToDB( File file, IndexAnalyzeDB db)
 		throws Exception
     {
     	ClassWriter cl=new ClassWriter();
@@ -355,9 +376,9 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		    ZipFile zip=new ZipFile( file);
 
 		    // If it is a Zip file, process each member in turn
-		    for ( Enumeration e=zip.entries(); e.hasMoreElements(); )
+		    for ( Enumeration<? extends ZipEntry> e=zip.entries(); e.hasMoreElements(); )
 		    {
-				ZipEntry entry=(ZipEntry)e.nextElement();
+				ZipEntry entry=e.nextElement();
 				String entryName=entry.getName();
 				int length=entryName.length();
 				if ( length>6 && entryName.substring( length-6).equals( ".class"))

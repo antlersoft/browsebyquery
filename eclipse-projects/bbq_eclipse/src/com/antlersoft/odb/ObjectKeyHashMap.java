@@ -22,20 +22,18 @@ import java.util.HashMap;
  * @author Michael A. MacDonald
  *
  */
-public class ObjectKeyHashMap implements Serializable {
+public class ObjectKeyHashMap<K,V> implements Serializable {
 	
-    static final long serialVersionUID = 313125555235968932L;
-    
     /**
 	 * Map of ObjectKey's to Object; ObjectKey's implementation must have
 	 * appropriate hash function.
 	 */
-	private HashMap m_backing_map;
+	private HashMap<ObjectKey,V> m_backing_map;
 	
 	/** Create an empty map */
 	public ObjectKeyHashMap()
 	{
-		m_backing_map=new HashMap();
+		m_backing_map=new HashMap<ObjectKey,V>();
 	}
 	
 	/** Remove all entries from the map */
@@ -45,19 +43,19 @@ public class ObjectKeyHashMap implements Serializable {
 	}
 	
 	/** Returns true if this map contains a mapping for the specified key. */
-	public boolean containsKey( ObjectRef ref)
+	public boolean containsKey( ObjectRef<K> ref)
 	{
 		return m_backing_map.containsKey( keyFromRef(ref));
 	}
 	
 	/** Returns true if this map contains a mapping for the specified value. */
-	public boolean containsValue( Object value)
+	public boolean containsValue( V value)
 	{
 		return m_backing_map.containsValue(value);
 	}
 	
 	/** Returns the object associated with the given key */
-	public Object get( ObjectRef ref)
+	public Object get( ObjectRef<K> ref)
 	{
 		return m_backing_map.get(keyFromRef(ref));
 	}
@@ -75,7 +73,7 @@ public class ObjectKeyHashMap implements Serializable {
 	 * @param value
 	 * @return Old value associated with key, or null if there is non
 	 */
-	public Object put( ObjectRef ref, Object value)
+	public Object put( ObjectRef<K> ref, V value)
 	{
 		return m_backing_map.put( keyFromRef(ref), value);
 	}
@@ -86,7 +84,7 @@ public class ObjectKeyHashMap implements Serializable {
 	 * @return Value that was associated with the key before it was remove, or null if the key was not in the map
 	 * (or was associated with null)
 	 */
-	public Object remove( ObjectRef ref)
+	public Object remove( ObjectRef<K> ref)
 	{
 		return m_backing_map.remove( keyFromRef(ref));
 	}
@@ -104,12 +102,12 @@ public class ObjectKeyHashMap implements Serializable {
 	 * 
 	 * @return Collection of all the values in the map
 	 */
-	public Collection values()
+	public Collection<V> values()
 	{
 		return m_backing_map.values();
 	}
 	
-	private static ObjectKey keyFromRef( ObjectRef ref)
+	private ObjectKey keyFromRef( ObjectRef<K> ref)
 	{
 		return ref.impl==null ? null : ref.impl.objectKey;
 	}

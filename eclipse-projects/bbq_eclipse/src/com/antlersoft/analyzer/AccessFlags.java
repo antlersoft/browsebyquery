@@ -1,5 +1,3 @@
-package com.antlersoft.analyzer;
-
 /**
  * <p>Title: BBQ Tool</p>
  * <p>Description: BBQ Integration with JBuilder</p>
@@ -25,6 +23,14 @@ package com.antlersoft.analyzer;
  * @version 1.0
  */
 
+package com.antlersoft.analyzer;
+
+/**
+ * int which is bit map of access flags for object;
+ * deprecated flag
+ * @author Michael MacDonald
+ *
+ */
 public interface AccessFlags {
     public int getAccessFlags();
     public boolean isDeprecated();

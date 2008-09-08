@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class ObjectRef implements Serializable
+public class ObjectRef<E> implements Serializable
 {
     transient PersistentImpl impl;
 
@@ -33,21 +33,21 @@ public class ObjectRef implements Serializable
         impl=null;
     }
 
-	public ObjectRef( Object toReference)
+	public ObjectRef( E toReference)
 	{
 		this();
 		setReferenced( toReference);
 	}
 
-    public Object getReferenced()
+    public E getReferenced()
     {
         PersistentImpl currentImpl=impl;
 		if ( currentImpl==null)
 			return null;
-        return currentImpl.getCanonical( this);
+        return (E)currentImpl.getCanonical( this);
     }
 
-    public synchronized void setReferenced( Object newValue)
+    public synchronized void setReferenced( E newValue)
     {
         if ( newValue!=null)
 			impl=((Persistent)newValue)._getPersistentImpl();

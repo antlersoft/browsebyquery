@@ -3,9 +3,9 @@
  */
 package com.antlersoft.analyzer;
 
-import java.util.Vector;
-
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
@@ -16,20 +16,27 @@ import com.antlersoft.odb.PersistentImpl;
  */
 public abstract class DBMember implements Persistent, Cloneable, SourceObject,
 		HasDBType, AccessFlags {
+	
+	String MEMBER_TYPE_KEY="MEMBER_TYPE_KEY";
 
 	/** Containing class */
-    ObjectRef dbclass;
+    private ObjectRef<DBClass> dbclass;
     /** Type of this member */
-    ObjectRef type;
+    private ObjectRef<DBType> dbtype;
     String name;
-    String signature;
     int accessFlags;
 
-    private int lineNumber;
     private boolean deprecated;
 
     private transient PersistentImpl _persistentImpl;
 
+    DBMember( String name, DBClass containingClass, DBType type)
+    {
+    	this.name=name;
+    	this.dbclass=new ObjectRef<DBClass>( containingClass);
+    	this.dbtype = new ObjectRef<DBType>( type);
+    }
+    
     /* (non-Javadoc)
 	 * @see com.antlersoft.odb.Persistent#_getPersistentImpl()
 	 */
@@ -43,21 +50,14 @@ public abstract class DBMember implements Persistent, Cloneable, SourceObject,
 	 * The class that contains this member.
 	 */
 	public DBClass getDBClass() {
-		return (DBClass)dbclass.getReferenced();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.antlersoft.analyzer.SourceObject#getLineNumber()
-	 */
-	public int getLineNumber() {
-		return lineNumber;
+		return dbclass.getReferenced();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.analyzer.HasDBType#getDBType(com.antlersoft.analyzer.AnalyzerDB)
 	 */
-	public DBType getDBType(AnalyzerDB db) {
-		return (DBType)type.getReferenced();
+	public DBType getDBType(IndexAnalyzeDB db) {
+		return dbtype.getReferenced();
 	}
 
 	/* (non-Javadoc)
@@ -73,5 +73,17 @@ public abstract class DBMember implements Persistent, Cloneable, SourceObject,
 	public boolean isDeprecated() {
 		return deprecated;
 	}
+    void setDeprecated( boolean dep)
+    {
+    	deprecated=dep;
+    }
+	static class MemberTypeKeyGenerator implements KeyGenerator
+	{
 
+		public Comparable generateKey( Object obj)
+		{
+			DBMember field=(DBMember)obj;
+			return new ObjectRefKey( field.dbtype);
+		}
+	}
 }

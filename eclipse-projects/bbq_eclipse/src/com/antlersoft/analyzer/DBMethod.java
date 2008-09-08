@@ -128,17 +128,6 @@ public class DBMethod extends DBMember
 		    return resolved ? REAL : VIRTUAL;
     }
 
-    public static String makeKey( String className, String methodName, String descriptor)
-    {
-		StringBuilder sb=new StringBuilder();
-		sb.append( className);
-		sb.append( "\t");
-		sb.append( methodName);
-		sb.append( "\t");
-		sb.append( descriptor);
-		return sb.toString();
-    }
-
     public String getName()
     {
 		return name;
