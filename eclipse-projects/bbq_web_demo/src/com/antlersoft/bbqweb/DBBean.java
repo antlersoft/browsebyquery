@@ -46,8 +46,9 @@ public class DBBean {
 				if ( m_context!=null)
 				{
 					m_context.log( "Failed to open database:", e);
-					m_logger.log( Level.WARNING, "Failed to open database:", e);
+					m_logger.log( Level.SEVERE, "Failed to open database:", e);
 				}
+				throw new RuntimeException(e);
 			}
 		}
 		return m_db;

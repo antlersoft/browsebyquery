@@ -8,6 +8,9 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import javax.servlet.ServletContext;
 
 import com.antlersoft.query.environment.AnalyzerQuery;
@@ -221,8 +224,14 @@ public class QueryBean {
 					{
 						m_context.log( "Error evaluating "+m_text+":\n", e);
 					}
+					
+					StringWriter sw=new StringWriter();
+					PrintWriter pw=new PrintWriter(sw);
 					sb.append( "Error parsing/evaluating query:<br>");
 					escapeAppend( sb, e.getMessage());
+					e.printStackTrace(pw);
+					pw.close();
+					escapeAppend( sb, sw.toString());
 				}
 				sb.append("</div>\n");
 			}
