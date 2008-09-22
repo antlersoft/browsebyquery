@@ -212,14 +212,19 @@ public class IndexAnalyzeDB implements DataSource
         public ObjectStreamCustomizer getCustomizer( Class toStore)
         {
             ArrayList<String> nameList=new ArrayList<String>();
-            nameList.add( "java.lang.Comparable");
-            nameList.add( "[Ljava.lang.Comparable;");
-            nameList.add( "[I");
-            nameList.add( "com.antlersoft.odb.diralloc.DAKey");
+			nameList.add( "java.lang.Comparable");
+			nameList.add( "[Ljava.lang.Comparable;");
+			nameList.add( "[I");
+			nameList.add( "java.util.Collection");
+			nameList.add( "java.util.Map$Entry");
+			nameList.add( "java.util.TreeMap");
+			nameList.add( "com.antlersoft.odb.diralloc.DAKey");
+			nameList.add( "com.antlersoft.odb.diralloc.UniqueKey");
+			nameList.add( "com.antlersoft.odb.ObjectKeyHashMap");
+			nameList.add( "com.antlersoft.odb.ObjectKeyHashSet");
+			nameList.add( "com.antlersoft.odb.ObjectRef");
+			nameList.add( "com.antlersoft.analyzer.DBMember");
             nameList.add( "com.antlersoft.analyzer.DBReference");
-            nameList.add( "com.antlersoft.analyzer.DBFieldReference");
-            nameList.add( "com.antlersoft.analyzer.DBCall");
-            nameList.add( "com.antlersoft.analyzer.DBStringReference");
             nameList.add( toStore.getName());
             return new SchemaCustomizer( nameList);
         }
