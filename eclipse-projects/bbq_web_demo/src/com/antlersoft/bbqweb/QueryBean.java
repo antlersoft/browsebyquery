@@ -14,6 +14,8 @@ import java.io.StringWriter;
 import javax.servlet.ServletContext;
 
 import com.antlersoft.query.environment.AnalyzerQuery;
+import com.antlersoft.query.environment.ParseException;
+
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 import com.antlersoft.analyzer.query.QueryParser;
 
@@ -218,16 +220,25 @@ public class QueryBean {
 					}
 					m_history.add( 0, m_text);
 				}
+				catch ( ParseException pe)
+				{
+					if ( m_context!=null)
+					{
+						m_context.log( "Error evaluating "+m_text+":\n", pe);
+					}
+					sb.append( "Error parsing/evaluating query:<br>");
+					escapeAppend( sb, pe.getMessage());
+				}
 				catch ( Exception e)
 				{
 					if ( m_context!=null)
 					{
 						m_context.log( "Error evaluating "+m_text+":\n", e);
 					}
-					
 					StringWriter sw=new StringWriter();
 					PrintWriter pw=new PrintWriter(sw);
 					sb.append( "Error parsing/evaluating query:<br>");
+					sb.append("<br>");
 					escapeAppend( sb, e.getMessage());
 					e.printStackTrace(pw);
 					pw.close();
