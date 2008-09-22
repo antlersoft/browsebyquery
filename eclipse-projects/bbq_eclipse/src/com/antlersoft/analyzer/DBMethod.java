@@ -19,6 +19,7 @@
  */
 package com.antlersoft.analyzer;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.HashMap;
@@ -36,38 +37,34 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
-import com.antlersoft.odb.FromRefEnumeration;
+import com.antlersoft.odb.FromRefIteratorEnumeration;
+
+import com.antlersoft.query.EmptyEnum;
 
 public class DBMethod extends DBMember
 {
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
     public static final int REAL=3;
-    private static final long serialVersionUID = 7199971582900640229L;
     private static Logger logger=Logger.getLogger( "com.antlersoft.analyzer.DBType");
     static final String RETURN_TYPE_INDEX="MethodType";
     
-    String name;
     String signature;
-    Vector calls;
-    Vector calledBy;
-    Vector fieldReferences;
-    Vector stringReferences;
-    Vector arguments;
+    private int lineNumber;
+    ArrayList<ObjectRef<DBCall>> calls;
+    ArrayList<ObjectRef<DBFieldReference>> fieldReferences;
+    ArrayList<ObjectRef<DBStringReference>> stringReferences;
+    ArrayList<ObjectRef<DBArgument>> arguments;
     private boolean resolved;
 
-    static public Vector emptyVector=new Vector();
-
-    public DBMethod( DBClass containing, String name, String signature)
-		throws Exception
+    DBMethod( IndexAnalyzeDB db, DBClass containing, String name, String signature)
+    throws Exception
     {
-		this.dbclass=new ObjectRef( containing);
-		this.name=name;
+    	super(name,containing,getReturnTypeFromSignature( db, signature));
 		this.signature=signature;
 		resolved=false;
 		createArguments( db);
 		ObjectDB.makePersistent( this);
-    ((DBClass)dbclass.getReferenced()).addMethod( this);
     }
 
     public String toString()
@@ -117,12 +114,12 @@ public class DBMethod extends DBMember
   			signature_builder.append( cce.getMessage());
   		}
   		signature_builder.append( ')');
-		return ((DBClass)dbclass.getReferenced()).name+":"+name+signature_builder.toString()+return_type;
+		return getDBClass().name+":"+name+signature_builder.toString()+return_type;
     }
 
     public int methodStatus()
     {
-		if ( ! ((DBClass)dbclass.getReferenced()).isResolved())
+		if ( ! getDBClass().isResolved())
 		    return UNRESOLVED;
 		else
 		    return resolved ? REAL : VIRTUAL;
@@ -138,186 +135,163 @@ public class DBMethod extends DBMember
 		return signature;
     }
 
-    public DBClass getDBClass()
-    {
-		return (DBClass)dbclass.getReferenced();
-    }
-    
-    public DBType getDBType( AnalyzerDB db)
-    {
-    	DBType result=null;
-    	if ( returnType!=null)
-    		result=(DBType)returnType.getReferenced();
-    	
-    	return result;
-    }
-
     public int getLineNumber()
     {
         return lineNumber;
     }
 
-    public Enumeration getCalls()
+    public Enumeration<DBCall> getCalls()
     {
 		if ( calls!=null)
-		    return calls.elements();
-		return emptyVector.elements();
+		    return new FromRefIteratorEnumeration<DBCall>( calls.iterator());
+		return EmptyEnum.empty;
     }
     
-    public Enumeration getArguments()
+    public Enumeration<DBArgument> getArguments()
     {
     	if ( arguments!=null)
-    		return new FromRefEnumeration( arguments.elements());
-    	return emptyVector.elements();
+    		return new FromRefIteratorEnumeration<DBArgument>( arguments.iterator());
+    	return EmptyEnum.empty;
     }
 
-    public Enumeration getReferences()
+    public Enumeration<DBFieldReference> getReferences()
     {
 		if ( fieldReferences!=null)
 		{
-		    return fieldReferences.elements();
+		    return new FromRefIteratorEnumeration<DBFieldReference>( fieldReferences.iterator());
 		}
-		return emptyVector.elements();
+		return EmptyEnum.empty;
     }
 
-    public Enumeration getStringReferences()
+    public Enumeration<DBStringReference> getStringReferences()
     {
 		if ( stringReferences!=null)
 		{
-		    return stringReferences.elements();
+		    return new FromRefIteratorEnumeration<DBStringReference>( stringReferences.iterator());
 		}
-		return emptyVector.elements();
+		return EmptyEnum.empty;
     }
 
-    public Enumeration getCalledBy()
+    public Enumeration<DBCall> getCalledBy( IndexAnalyzeDB db)
     {
-		if ( calledBy!=null)
-		    return calledBy.elements();
-		return emptyVector.elements();
-    }
-
-    public void addCalledBy( DBMethod caller, Vector callsFromCaller)
-    {
-		ObjectDB.makeDirty( this);
-		if ( calledBy==null)
-		{
-		    if ( ! callsFromCaller.isEmpty())
-            calledBy=callsFromCaller;
-		}
-		else
-		    /* Remove calls from same method and append calls to list */
-		{
-		    int i;
-		    for ( i=0; i<calledBy.size(); i++)
-		    {
-				if ( ((DBCall)calledBy.elementAt( i)).getSource()==caller)
-				{
-				    calledBy.removeElementAt( i);
-				    i--;
-				}
-		    }
-		    for ( i=0; i<callsFromCaller.size(); i++)
-		    {
-				calledBy.addElement( callsFromCaller.elementAt( i));
-		    }
-		}
-    }
-
-    public int getAccessFlags()
-    {
-        return accessFlags;
-    }
-    
-    public boolean isDeprecated()
-    {
-    	return deprecated;
+    	return (Enumeration<DBCall>)db.retrieveByIndex( DBCall.CALL_TARGET, new ObjectRefKey(this));
     }
     
     private boolean isSpecialOrStatic()
     {
     	return (accessFlags & ClassWriter.ACC_STATIC)!=0 || name.startsWith("<");
     }
+    
+    static class ReferenceUpdater<E extends DBReference>
+    {
+    	ArrayList<ObjectRef<E>> beforeList;
+    	ArrayList<ObjectRef<E>> afterList;
+    	boolean updated;
+    	
+    	ReferenceUpdater( ArrayList<ObjectRef<E>> original)
+    	{
+    		if ( original!=null)
+    			beforeList=(ArrayList<ObjectRef<E>>)original.clone();
+    		else
+    			beforeList=new ArrayList<ObjectRef<E>>();
+    		afterList=new ArrayList<ObjectRef<E>>(beforeList.size());
+    		updated=false;
+    	}
+    	
+    	boolean existsReference( Persistent t, int lineNumber)
+    	{
+    		boolean result=false;
+    		for ( Iterator<ObjectRef<E>> i=beforeList.iterator(); i.hasNext();)
+    		{
+    			ObjectRef<E> targetRef=i.next();
+    			E dbref=targetRef.getReferenced();
+    			if ( t.equals(dbref.target))
+    			{
+    				i.remove();
+    				afterList.add( targetRef);
+    				dbref.setLineNumber(lineNumber);
+    				result=true;
+    				break;
+    			}
+    		}
+    		return result;
+    	}
+    	
+    	void addReference( E toAdd)
+    	{
+    		afterList.add( new ObjectRef<E>( toAdd));
+    		updated=true;
+    	}
+    	
+    	boolean cleanup( IndexAnalyzeDB db)
+    	{
+    		for ( ObjectRef<E> ref : beforeList)
+    		{
+    			Object o=ref.getReferenced();
+    			ref.setReferenced( null);
+    			db.deleteObject( o);
+    			updated=true;
+    		}
+    		return updated;
+    	}
+    }
+    
+    static class FieldReferenceUpdater extends ReferenceUpdater<DBFieldReference>
+    {
+    	FieldReferenceUpdater(ArrayList<ObjectRef<DBFieldReference>> orig)
+    	{
+    		super(orig);
+    	}
+    	boolean existsReference( DBField t, int lineNumber, boolean write)
+    	{
+    		boolean result=false;
+    		for ( Iterator<ObjectRef<DBFieldReference>> i=beforeList.iterator(); i.hasNext();)
+    		{
+    			ObjectRef<DBFieldReference> targetRef=i.next();
+    			DBFieldReference dbref=targetRef.getReferenced();
+    			if ( t.equals(dbref.target) && write==dbref.writeReference)
+    			{
+    				i.remove();
+    				afterList.add( targetRef);
+    				dbref.setLineNumber(lineNumber);
+    				result=true;
+    				break;
+    			}
+    		}
+    		return result;
+    	}	
+    }
 
     public void setFromClassWriter( final ClassWriter ac, MethodInfo mi,
-		final AnalyzerDB db)
+		final IndexAnalyzeDB db)
 		throws CodeCheckException
     {
     	ObjectDB.makeDirty( this);
         accessFlags=mi.getFlags();
-        deprecated=mi.isDeprecated();
+        setDeprecated( mi.isDeprecated());
 		CodeAttribute codeAttribute=mi.getCodeAttribute();
 		if ( codeAttribute==null)
 		{
 			return;
 		}
-		if ( db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+		createArguments( db);
+		LocalVariableTableAttribute locals=codeAttribute.getLocalVariableTable();
+		if ( locals!=null)
 		{
-			createArguments( db);
-			LocalVariableTableAttribute locals=codeAttribute.getLocalVariableTable();
-			if ( locals!=null)
+			int variableOffset=isSpecialOrStatic() ? 0 : 1;
+			for ( Iterator i=arguments.iterator(); i.hasNext();)
 			{
-				int variableOffset=isSpecialOrStatic() ? 0 : 1;
-				for ( Iterator i=arguments.iterator(); i.hasNext();)
+				DBArgument arg=(DBArgument)((ObjectRef)i.next()).getReferenced();
+				String entry=locals.getLocalVariable( ac, 1, arg.getOrdinal()+variableOffset);
+				if ( entry!=null)
 				{
-					DBArgument arg=(DBArgument)((ObjectRef)i.next()).getReferenced();
-					String entry=locals.getLocalVariable( ac, 1, arg.getOrdinal()+variableOffset);
-					if ( entry!=null)
-					{
-						arg.setName( entry.substring( 0, entry.indexOf( '(')));
-					}
+					arg.setName( entry.substring( 0, entry.indexOf( '(')));
 				}
 			}
 		}
-		HashMap calledTable=new HashMap();
-		HashMap referencedTable=new HashMap();
-		HashMap stringReferenceTable=new HashMap();
-		if ( calls==null)
-			calls=new Vector();
-		else
-		{
-			for ( Iterator it=calls.iterator(); it.hasNext();)
-			{
-				DBMethod target=((DBCall)it.next()).getTarget();
-				Vector called=(Vector)calledTable.get( target);
-				if ( called!=null)
-					calledTable.put( target, new Vector());
-			}
-			calls.removeAllElements();
-		}
-		if ( fieldReferences==null)
-			fieldReferences=new Vector();
-		else
-		{
-			for ( Iterator it=fieldReferences.iterator(); it.hasNext();)
-			{
-				DBField target=((DBFieldReference)it.next()).getTarget();
-				Vector called=(Vector)referencedTable.get( target);
-				if ( called!=null)
-					referencedTable.put( target, new Vector());
-			}
-			fieldReferences.removeAllElements();
-		}
-		if ( stringReferences==null)
-			stringReferences=new Vector();
-		else
-		{
-			for ( Iterator it=stringReferences.iterator(); it.hasNext();)
-			{
-				DBStringConstant target=((DBStringReference)it.next()).getTarget();
-				Vector called=(Vector)stringReferenceTable.get( target);
-				if ( called!=null)
-					stringReferenceTable.put( target, new Vector());
-			}
-			stringReferences.removeAllElements();
-		}
-		lineNumber=codeAttribute.getLineNumber( 0);
-		// Class linenumber = minimum linenumber of any method in the class
-		if ( lineNumber>0)
-		{
-			DBClass c=getDBClass();
-			if ( c.lineNumber== -1 || c.lineNumber>lineNumber)
-				c.lineNumber=lineNumber;
-		}
+		ReferenceUpdater<DBCall> callUpdater = new ReferenceUpdater<DBCall>(calls);
+		FieldReferenceUpdater fieldRefUpdater=new FieldReferenceUpdater(fieldReferences);
+		ReferenceUpdater<DBStringReference> stringRefUpdater=new ReferenceUpdater<DBStringReference>(stringReferences);
 		for ( Iterator i=codeAttribute.getInstructions().iterator();
 			i.hasNext();)
 		{
@@ -328,46 +302,45 @@ public class DBMethod extends DBMember
 				try
 				{
 					ClassWriter.CPTypeRef methodRef=instruction.getSymbolicReference( ac);
-					DBCall call=new DBCall(
-							DBMethod.this,
-							(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
-							DBMethod.makeKey(
-							ac.getInternalClassName( methodRef.getClassIndex()),
-							methodRef.getSymbolName(),
-							methodRef.getSymbolType()
-							)), codeAttribute.getLineNumber( instruction.getInstructionStart()));
-					calls.addElement( call);
+					DBMethod target=DBClass.getByInternalName(ac.getInternalClassName(methodRef.getClassIndex()), db).
+						getOrCreateMethod( db, methodRef.getSymbolName(), methodRef.getSymbolType());
+					int lineNumber=codeAttribute.getLineNumber( instruction.getInstructionStart());
+					if ( ! callUpdater.existsReference( target, lineNumber))
+					{
+						DBCall call=new DBCall( DBMethod.this, target, lineNumber);
+						callUpdater.addReference( call);
+					}
 					if ( opcode.getMnemonic().equals("invokestatic"))
 					{
-						DBMethod method=call.getTarget();
-						if ( ( method.accessFlags & ClassWriter.ACC_STATIC)==0)
+						if ( ( target.accessFlags & ClassWriter.ACC_STATIC)==0)
 						{
-							method.accessFlags|=ClassWriter.ACC_STATIC;
-							ObjectDB.makeDirty(method);
+							target.accessFlags|=ClassWriter.ACC_STATIC;
+							ObjectDB.makeDirty(target);
 						}
 					}
 				}
 				catch ( Exception e)
 				{
-					e.printStackTrace();
+					logger.log( Level.WARNING,"Problem processing method call opcode",e);
 				}
 			}
 			else if ( opcode instanceof GetOpCode)
 			{
 				try
 				{
-					ClassWriter.CPTypeRef methodRef=instruction.getSymbolicReference( ac);
-					fieldReferences.addElement( new DBFieldReference(
-						DBMethod.this,
-						(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-						DBField.makeKey(
-						ac.getInternalClassName( methodRef.getClassIndex()),
-						methodRef.getSymbolName()
-						)), codeAttribute.getLineNumber( instruction.getInstructionStart()), opcode.getMnemonic().substring( 0, 3).equals( "put")));
+					ClassWriter.CPTypeRef fieldRef=instruction.getSymbolicReference( ac);
+					DBField target=DBClass.getByInternalName(ac.getInternalClassName(fieldRef.getClassIndex()), db).getField(db, fieldRef.getSymbolName(), fieldRef.getSymbolType());
+					int lineNumber=codeAttribute.getLineNumber( instruction.getInstructionStart());
+					boolean write=opcode.getMnemonic().startsWith("put");
+					if ( ! fieldRefUpdater.existsReference(target,lineNumber,write))
+					{
+						DBFieldReference ref=new DBFieldReference(this,target,lineNumber,write);
+						fieldRefUpdater.addReference(ref);
+					}
 				}
 				catch ( Exception e)
 				{
-					e.printStackTrace();
+					logger.log( Level.WARNING,"Problem processing field reference opcode",e);
 				}
 			}
 			else if ( opcode.getMnemonic().equals( "ldc") || opcode.getMnemonic().equals( "ldc_w"))
@@ -382,82 +355,41 @@ public class DBMethod extends DBMember
 					{
 						try
 						{
-							stringReferences.add( new DBStringReference(
-								DBMethod.this, (DBStringConstant)db.getWithKey(
-							"com.antlersoft.analyzer.DBStringConstant",
-								constant),
-								codeAttribute.getLineNumber( instruction.getInstructionStart())));
+							int lineNumber=codeAttribute.getLineNumber( instruction.getInstructionStart());
+							DBStringConstant target=DBStringConstant.get(db,constant);
+							if ( ! stringRefUpdater.existsReference(target, lineNumber))
+							{
+								stringRefUpdater.addReference( new DBStringReference(DBMethod.this, target, lineNumber));
+							}
 						}
 						catch ( Exception e)
 						{
-							e.printStackTrace();
+							logger.log( Level.WARNING,"Problem processing string reference opcode",e);
 						}
 					}
 				}
 			}
 		}
-		Enumeration e;
-		Iterator it;
-		for ( e=calls.elements(); e.hasMoreElements(); )
+		if ( callUpdater.cleanup(db))
 		{
-			DBCall call=(DBCall)e.nextElement();
-			Vector calledByMethod=(Vector)calledTable.get( call.getTarget());
-			if ( calledByMethod==null)
-			{
-					calledByMethod=new Vector();
-					calledTable.put( call.getTarget(), calledByMethod);
-			}
-			calledByMethod.addElement( call);
+			calls=callUpdater.afterList;
+			ObjectDB.makeDirty(this);
 		}
-		for ( it=calledTable.keySet().iterator(); it.hasNext(); )
+		if ( fieldRefUpdater.cleanup(db))
 		{
-			DBMethod called=(DBMethod)it.next();
-			called.addCalledBy( this, (Vector)calledTable.get( called));
+			fieldReferences=fieldRefUpdater.afterList;
+			ObjectDB.makeDirty(this);
 		}
-		calledTable.clear();
-		for ( e=fieldReferences.elements(); e.hasMoreElements(); )
+		if ( stringRefUpdater.cleanup(db))
 		{
-			DBFieldReference reference=(DBFieldReference)e.nextElement();
-			Vector calledByMethod=(Vector)referencedTable.get(
-		reference.getTarget());
-			if ( calledByMethod==null)
-			{
-					calledByMethod=new Vector();
-					referencedTable.put( reference.getTarget(), calledByMethod);
-			}
-			calledByMethod.addElement( reference);
+			stringReferences=stringRefUpdater.afterList;
+			ObjectDB.makeDirty(this);
 		}
-		for ( it=referencedTable.keySet().iterator(); it.hasNext(); )
-		{
-			DBField called=(DBField)it.next();
-			called.addReferencedBy( this, (Vector)referencedTable.
-			get( called));
-		}
-		referencedTable.clear();
-		for ( e=stringReferences.elements(); e.hasMoreElements(); )
-		{
-			DBStringReference reference=(DBStringReference)e.nextElement();
-			Vector calledByMethod=(Vector)stringReferenceTable.get(
-			reference.getTarget());
-			if ( calledByMethod==null)
-			{
-				calledByMethod=new Vector();
-				stringReferenceTable.put( reference.getTarget(), calledByMethod);
-			}
-			calledByMethod.addElement( reference);
-		}
-		for ( it=stringReferenceTable.keySet().iterator(); it.hasNext(); )
-		{
-			DBStringConstant called=(DBStringConstant)it.next();
-			called.addReferencedBy( this, (Vector)stringReferenceTable.
-			get( called));
-		}
-		stringReferenceTable.clear();
     }
     
-    private void createArguments( AnalyzerDB db)
+    private void createArguments( IndexAnalyzeDB db)
     {
-    	if ( arguments==null && db.captureOptional( AnalyzerDB.OPTIONAL_TYPE_INFO))
+    	if ( arguments==null)
     	{
     		try
     		{
@@ -465,7 +397,7 @@ public class DBMethod extends DBMember
 	      		int argument_count=0;
 	      		int start_offset=1;
 	      		int current_offset=1;
-	      		arguments=new Vector();
+	      		arguments=new ArrayList<ObjectRef<DBArgument>>();
 	        	try
 	         	{
 	    	    	if ( array.length<3 || array[0]!='(')
@@ -484,17 +416,15 @@ public class DBMethod extends DBMember
 	    	    		default :
 	    	    			break;
 	    	    		}
-	    	    		arguments.add( new ObjectRef( new DBArgument( this, argument_count++,
-	    	    				(DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
-	    	    						signature.substring( start_offset, current_offset+1)))));
+	    	    		arguments.add( new ObjectRef<DBArgument>( new DBArgument( this, argument_count++,
+	    	    				DBType.getWithTypeKey(
+	    	    						signature.substring( start_offset, current_offset+1), db))));
 	    	    		start_offset=current_offset+1;
 	    	    	}
-	    	    	returnType=new ObjectRef( (DBType)db.getWithKey( "com.antlersoft.analyzer.DBType",
-	    	    			signature.substring( ++current_offset)));
 	             }
 	             catch ( ArrayIndexOutOfBoundsException bounds)
 	             {
-	                 throw new CodeCheckException( "MethodType truncated");
+	                 throw new CodeCheckException( "Create arguments: MethodType truncated: "+signature);
 	             }
     		}
     		catch( Exception e)
@@ -503,18 +433,13 @@ public class DBMethod extends DBMember
     		}
     	}
     }
-	
-	static class ReturnTypeKeyGenerator implements KeyGenerator
-	{
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 7557620978003601485L;
-
-		public Comparable generateKey( Object obj)
-		{
-			DBMethod method=(DBMethod)obj;
-			return new ObjectRefKey( method.returnType);
-		}
-	}
+    
+    static DBType getReturnTypeFromSignature( IndexAnalyzeDB db, String sig)
+    throws Exception
+    {
+    	int parenIndex=sig.lastIndexOf( ')');
+    	if ( parenIndex<0 || parenIndex>sig.length()-2)
+    		throw new CodeCheckException( "Method type truncated: "+sig);
+    	return DBType.getWithTypeKey( sig.substring(parenIndex+1), db);
+    }
 }

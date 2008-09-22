@@ -28,8 +28,8 @@ package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 
-import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.DBStringConstant;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import com.antlersoft.query.DataSource;
 import com.antlersoft.query.SetExpression;
@@ -45,7 +45,7 @@ class StringsGet extends SetExpression
     {
     	try
     	{
-    		return ((AnalyzerDB)source).getAll( DBStringConstant.class.getName());
+    		return ((IndexAnalyzeDB)source).getAll( DBStringConstant.class.getName());
     	}
     	catch ( Exception e)
     	{

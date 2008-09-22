@@ -40,6 +40,7 @@ import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexIterator;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.IndexExistsException;
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectStreamCustomizer;
 
 import com.antlersoft.odb.diralloc.CustomizerFactory;
@@ -84,23 +85,42 @@ public class IndexAnalyzeDB implements DataSource
         createCount=0;
         _session=new IndexObjectDB( new DirectoryAllocator( new File( dbName),
             new CFactory()));
-        try
-        {
-            _session.defineIndex( DBClass.CLASS_NAME_INDEX, DBClass.class,
-            	new DBClass.NameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
-            _session.defineIndex( DBField.FIELD_TYPE_INDEX, DBField.class,
-            		new DBField.FieldTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
-            _session.defineIndex( DBMethod.RETURN_TYPE_INDEX, DBMethod.class,
-            		new DBMethod.ReturnTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
-            _session.defineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
-            		new DBArgument.ArgumentTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
-            _session.defineIndex( DBType.TYPE_CLASS_INDEX, DBType.class,
-            		new DBType.TypeClassKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
-        }
-        catch ( IndexExistsException iee)
-        {
-            // Don't care if index already exists
-        }
+        _session.redefineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
+        		new DBArgument.ArgumentTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBCall.CALL_TARGET, DBCall.class,
+        		new DBReference.ReferenceTargetGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBClass.CLASS_INTERNAL_NAME_INDEX, DBClass.class,
+        		new DBClass.InternalNameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+        _session.redefineIndex( DBClass.CLASS_NAME_INDEX, DBClass.class,
+        	new DBClass.NameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+        _session.redefineIndex( DBField.FIELD_TYPE_INDEX, DBField.class,
+        		new DBMember.MemberTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBFieldReference.FRTARGET, DBFieldReference.class,
+        		new DBReference.ReferenceTargetGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBMethod.RETURN_TYPE_INDEX, DBMethod.class,
+        		new DBMember.MemberTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBPackage.PACKAGE_NAME_INDEX, DBPackage.class,
+        		new DBPackage.PackageNameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+        _session.redefineIndex( DBStringConstant.STRING_INDEX, DBStringConstant.class,
+        		new DBStringConstant.StringKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+        _session.redefineIndex( DBStringReference.SRTARGET, DBStringReference.class,
+        		new DBReference.ReferenceTargetGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBType.TYPE_CLASS_INDEX, DBType.class,
+        		new DBType.TypeClassKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBType.TYPE_KEY_INDEX, DBType.class,
+        		new DBType.TypeKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+    }
+    
+    /**
+     * Call when you've added a class; commits when a certain number of classes have been
+     * added
+     * @throws Exception
+     */
+    void incrementCreateCount()
+    throws Exception
+    {
+    	if ( (++createCount % 1000) == 0)
+    		commit();
     }
 
     public void closeDB() throws Exception
@@ -142,7 +162,7 @@ public class IndexAnalyzeDB implements DataSource
     		_session.commitAndRetain();
     }
 
-    public Object findWithIndex( String index_name, Comparable key) throws Exception
+    public Object findWithIndex( String index_name, Comparable key)
     {
     	return _session.findObject( index_name, key);
     }
@@ -165,6 +185,11 @@ public class IndexAnalyzeDB implements DataSource
     {
         _session.makeCurrent();
     }
+    
+    public void deleteObject( Object o)
+    {
+    	_session.deleteObject(o);
+    }
 
 	public Enumeration retrieveByIndex( String index_name, Comparable key)
 	{
@@ -186,7 +211,7 @@ public class IndexAnalyzeDB implements DataSource
     {
         public ObjectStreamCustomizer getCustomizer( Class toStore)
         {
-            ArrayList nameList=new ArrayList();
+            ArrayList<String> nameList=new ArrayList<String>();
             nameList.add( "java.lang.Comparable");
             nameList.add( "[Ljava.lang.Comparable;");
             nameList.add( "[I");

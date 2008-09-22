@@ -19,10 +19,10 @@
  */
 package com.antlersoft.analyzer;
 
-import com.antlersoft.odb.ObjectRef;
-
 public class DBFieldReference extends DBReference
 {
+	static final String FRTARGET="FRTARGET";
+	
     DBFieldReference( DBMethod s, DBField t, int l, boolean write)
     {
 		super( s, t, l);

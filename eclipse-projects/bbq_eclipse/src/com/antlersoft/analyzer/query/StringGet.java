@@ -26,8 +26,8 @@
  */
 package com.antlersoft.analyzer.query;
 
-import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.DBStringConstant;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import com.antlersoft.query.CountPreservingValueExpression;
 import com.antlersoft.query.DataSource;
@@ -41,13 +41,6 @@ class StringGet extends CountPreservingValueExpression
 
     protected Object transformSingleObject(DataSource source, Object inputObject)
     {
-    	try
-    	{
-    		return ((AnalyzerDB)source).findWithKey( DBStringConstant.class.getName(), (String)inputObject);
-    	}
-    	catch ( Exception e)
-    	{
-    		throw new RuntimeException( e);
-    	}
+  		return ((IndexAnalyzeDB)source).findWithIndex( DBStringConstant.STRING_INDEX, (String)inputObject);
     }
 }

@@ -41,12 +41,12 @@ public class TypeGet extends CountPreservingValueExpression {
 				{
 					found=DBType.getFromClass( db, referenced);
 					if ( array_references.length()>0)
-						found=(DBType)db.findWithKey( "com.antlersoft.analyzer.DBType",
+						found=(DBType)db.findWithIndex( DBType.TYPE_KEY_INDEX,
 								array_references+found.getTypeString());
 				}
 			}
 			else
-				found=(DBType)db.findWithKey( "com.antlersoft.analyzer.DBType", array_references+base_type);
+				found=(DBType)db.findWithIndex( DBType.TYPE_KEY_INDEX, array_references+base_type);
 		}
 		catch ( Exception e)
 		{

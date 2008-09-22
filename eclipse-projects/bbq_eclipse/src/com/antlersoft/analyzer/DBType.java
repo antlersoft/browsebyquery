@@ -270,7 +270,7 @@ public class DBType implements Persistent, Cloneable {
 	static class TypeClassKeyGenerator implements KeyGenerator
 	{
 		/**
-		 * 
+		 * Return an index key based on the class, or null if this is not a reference type
 		 */
 		private static final long serialVersionUID = 173926813542534195L;
 
@@ -278,6 +278,20 @@ public class DBType implements Persistent, Cloneable {
 		{
 			DBType t=(DBType)obj;
 			return new ObjectRefKey( t._class);
+		}
+	}
+	
+	/**
+	 * Return an index key based on the internal type string
+	 * @author Michael A. MacDonald
+	 *
+	 */
+	static class TypeKeyGenerator implements KeyGenerator
+	{
+		public Comparable generateKey( Object obj)
+		{
+			DBType t=(DBType)obj;
+			return t._typeString;
 		}
 	}
 }

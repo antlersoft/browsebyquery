@@ -26,6 +26,7 @@ import com.antlersoft.analyzer.DBField;
 import com.antlersoft.analyzer.DBReference;
 import com.antlersoft.analyzer.DBStringConstant;
 import com.antlersoft.analyzer.DBStringReference;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import com.antlersoft.query.BindException;
 import com.antlersoft.query.DataSource;
@@ -47,10 +48,10 @@ class ReferencesTo extends Transform
         }
         if ( appliesClass()==DBStringConstant.class)
         {
-            return ((DBStringConstant)base).getReferencedBy();
+            return ((DBStringConstant)base).getReferencedBy((IndexAnalyzeDB)source);
         }
         else
-		    return ((DBField)base).getReferencedBy();
+		    return ((DBField)base).getReferencesTo((IndexAnalyzeDB)source);
 	}
 
 	public void startEvaluation( DataSource source) {}

@@ -19,32 +19,22 @@
  */
 package com.antlersoft.analyzer;
 
-import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.Enumeration;
 
-import com.antlersoft.odb.KeyGenerator;
-import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRefKey;
-import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
 public class DBField extends DBMember
 {
-    ObjectRef<DBClass> dbclass;
-    ObjectRef<DBType> dbtype;
-    String name;
-    int accessFlags;
-    private boolean deprecated;
-
+	static final String FIELD_TYPE_INDEX = "FIELD_TYPE_INDEX";
+	
     private transient PersistentImpl _persistentImpl;
 
     DBField( DBClass cl, String name, DBType ty)
     {
     	super( name, cl, ty);
 		_persistentImpl=new PersistentImpl();
-		dbtype=new ObjectRef<DBType>();
 		ObjectDB.makePersistent( this);
     }
 
@@ -57,20 +47,15 @@ public class DBField extends DBMember
 
     public String toString()
     {
-    	return ((DBClass)dbclass.getReferenced()).name+":"+name+" "+getDBType(null).toString();
+    	return getDBClass().name+":"+name+" "+getDBType(null).toString();
     }
 
     public int fieldStatus()
     {
-		if ( ! ((DBClass)dbclass.getReferenced()).isResolved())
+		if ( ! getDBClass().isResolved())
 		    return DBMethod.UNRESOLVED;
 		else
 		    return DBMethod.REAL;
-    }
-
-    public String getName()
-    {
-    	return name;
     }
 
     public int getLineNumber()
@@ -78,7 +63,13 @@ public class DBField extends DBMember
         return getDBClass().getLineNumber();
     }
 
-    public Enumeration<DBFieldReference> getReferencedBy()
-    {
-    }
+	/**
+	 * Return an enumeration over references to this field
+	 * @param db IndexAnalyzeDB for this analyzed system
+	 * @return an enumeration over calls to this field
+	 */
+	public Enumeration getReferencesTo( IndexAnalyzeDB db)
+	{
+		return db.retrieveByIndex(DBFieldReference.FRTARGET, new ObjectRefKey(this));
+	}	
 }

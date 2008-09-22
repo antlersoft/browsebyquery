@@ -28,6 +28,8 @@ package com.antlersoft.analyzer;
 
 public class DBStringReference extends DBReference
 {
+	final static String SRTARGET="SRTARGET";
+	
     DBStringReference( DBMethod method, DBStringConstant constant, int l)
     {
         super( method, constant, l);

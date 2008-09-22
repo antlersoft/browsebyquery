@@ -3,9 +3,9 @@
  */
 package com.antlersoft.analyzer.query;
 
-import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.DBType;
 import com.antlersoft.analyzer.HasDBType;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import com.antlersoft.query.CountPreservingValueExpression;
 import com.antlersoft.query.DataSource;
@@ -23,7 +23,7 @@ public class TypeOf extends CountPreservingValueExpression {
 	}
 	
 	public Object transformSingleObject(DataSource source, Object toTransform) {
-		return ((HasDBType)toTransform).getDBType( (AnalyzerDB)source);
+		return ((HasDBType)toTransform).getDBType( (IndexAnalyzeDB)source);
 	}
 	
 }

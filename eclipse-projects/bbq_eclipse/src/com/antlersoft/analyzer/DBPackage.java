@@ -6,6 +6,7 @@ package com.antlersoft.analyzer;
 import java.util.Enumeration;
 
 import com.antlersoft.odb.FromRefIteratorEnumeration;
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
@@ -132,5 +133,16 @@ public class DBPackage implements Persistent, Cloneable {
 		if ( last_period<=0)
 			return new String();
 		return packageName.substring( 0, last_period);
+	}
+	
+	static class PackageNameKeyGenerator implements KeyGenerator
+	{
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
+		 */
+		public Comparable generateKey(Object o1) {
+			return ((DBPackage)o1)._name;
+		}
 	}
 }

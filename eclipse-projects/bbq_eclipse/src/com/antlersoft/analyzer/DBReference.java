@@ -20,6 +20,7 @@
 package com.antlersoft.analyzer;
 
 import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
@@ -29,13 +30,13 @@ public abstract class DBReference implements java.io.Serializable, Cloneable,
     SourceObject, Persistent
 {
     private transient PersistentImpl _impl;
-    private ObjectRef source;
+    private ObjectRef<DBMethod> source;
     protected ObjectRef target;
     protected int lineNumber;
     
     DBReference( DBMethod s, Persistent t, int l)
     {
-		source=new ObjectRef( s);
+		source=new ObjectRef<DBMethod>( s);
 		target=new ObjectRef(t);
 		lineNumber=l;
 		_impl=new PersistentImpl();
@@ -43,7 +44,7 @@ public abstract class DBReference implements java.io.Serializable, Cloneable,
 
     public DBMethod getSource()
     {
-		return (DBMethod)source.getReferenced();
+		return source.getReferenced();
     }
 
     public DBClass getDBClass()
@@ -54,6 +55,15 @@ public abstract class DBReference implements java.io.Serializable, Cloneable,
     public int getLineNumber()
     {
         return lineNumber;
+    }
+    
+    public void setLineNumber( int ln)
+    {
+    	if ( lineNumber!=ln)
+    	{
+    		ObjectDB.makeDirty(this);
+    		lineNumber=ln;
+    	}
     }
     
     public PersistentImpl _getPersistentImpl()

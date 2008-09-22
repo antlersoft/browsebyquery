@@ -30,6 +30,7 @@ import java.util.Enumeration;
 
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexObjectDB;
+import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
@@ -37,6 +38,8 @@ import com.antlersoft.odb.PersistentImpl;
 
 public class DBStringConstant implements Persistent, Cloneable
 {
+	public final static String STRING_INDEX="STRING_INDEX";
+	
     String constant;
 
     private transient PersistentImpl _persistentImpl;
@@ -47,14 +50,31 @@ public class DBStringConstant implements Persistent, Cloneable
         _persistentImpl=new PersistentImpl();
         ObjectDB.makePersistent( this);
     }
+    
+    /**
+     * Find a string constant for a certain string in the database; if it does not exist,
+     * create it.
+     * @param db Analyzer database
+     * @param tofind Value of string constant to fine
+     * @return DBStringConstant object found in or added to the database
+     */
+    public static DBStringConstant get( IndexAnalyzeDB db, String tofind)
+    throws Exception
+    {
+    	DBStringConstant c=(DBStringConstant)db.findWithIndex(STRING_INDEX, tofind);
+    	if ( c==null)
+    		c=new DBStringConstant( tofind);
+    	
+    	return c;
+    }
 
     /**
      * 
      * @return Enumeration over DBStringReference objects referencing this constant
      */
-    public Enumeration getReferencedBy( IndexObjectDB db)
+    public Enumeration getReferencedBy( IndexAnalyzeDB db)
     {
-    	return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBStringReference.SRTARGET, new ObjectRefKey(this)));
+    	return db.retrieveByIndex(DBStringReference.SRTARGET, new ObjectRefKey(this));
     }
 
     public String toString()
@@ -68,4 +88,15 @@ public class DBStringConstant implements Persistent, Cloneable
                 _persistentImpl=new PersistentImpl();
     	return _persistentImpl;
     }
+
+	static class StringKeyGenerator implements KeyGenerator
+	{
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
+		 */
+		public Comparable generateKey(Object o1) {
+			return ((DBStringConstant)o1).constant;
+		}
+	}
 }

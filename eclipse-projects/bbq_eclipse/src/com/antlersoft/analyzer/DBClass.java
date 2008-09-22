@@ -21,6 +21,7 @@ package com.antlersoft.analyzer;
 
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -44,8 +45,6 @@ import com.antlersoft.odb.PersistentImpl;
 
 import com.antlersoft.query.EmptyEnum;
 
-import com.antlersoft.util.IteratorEnumeration;
-
 /**
  * @author Michael A. MacDonald
  *
@@ -54,8 +53,8 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 {
 
 	/**
+	 * Key on class's user-visible name
 	 * @author Michael A. MacDonald
-	 *
 	 */
 	static class NameKeyGenerator implements KeyGenerator {
 
@@ -68,6 +67,20 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 
 	}
 
+	/**
+	 * Key on class's internal name
+	 * @author Michael A. MacDonald
+	 */
+	static class InternalNameKeyGenerator implements KeyGenerator {
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
+		 */
+		public Comparable generateKey(Object o1) {
+			return ((DBClass)o1).internalName;
+		}
+
+	}
 	String name;
     ObjectKeyHashSet<DBClass> superClasses;
     private TreeMap<String,ObjectRef<DBMethod>> methods;
@@ -128,6 +141,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     	if ( result==null)
     	{
     		result=new DBClass(internal, db);
+    		db.incrementCreateCount();
     	}
     	
     	return result;
@@ -275,8 +289,63 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     }
     
     synchronized DBField getField( IndexAnalyzeDB db, String name, String signature )
+    throws Exception
     {
+    	DBType t=DBType.getWithTypeKey(signature, db);
     	
+    	ObjectRef<DBField> f=fields.get(name);
+    	
+    	DBField result;
+    	
+    	if ( f==null)
+    	{
+    		result=new DBField( this, name, t);
+    		addField( result);
+    	}
+    	else
+    	{
+    		result=f.getReferenced();
+    		result.setDBType(t);
+    	}
+    	
+    	return result;
+    }
+    
+    /**
+     * Returns a DBMethod in this class with the given name and signature if it exists;
+     * otherwise returns null.
+     * @param name
+     * @param signature
+     * @return
+     */
+    public DBMethod getMethod( String name, String signature)
+    {
+    	ObjectRef<DBMethod> m=methods.get(name + signature);
+    	if ( m!=null)
+    		return m.getReferenced();
+    	return null;
+    }
+    
+    /**
+     * Returns a DBMethod in this class with the given name and signature.
+     * If no such method exists, one is created.
+     * @param db database of the analyzed system
+     * @param name Method name
+     * @param signature Internal method signature
+     * @return Existing or newly created method
+     * @throws Exception
+     */
+    synchronized DBMethod getOrCreateMethod( IndexAnalyzeDB db, String name, String signature)
+    throws Exception
+    {
+    	DBMethod result=getMethod( name, signature);
+    	if ( result==null)
+    	{
+    		result=new DBMethod(db,this,name,signature);
+    		addMethod( result);
+    	}
+    	
+    	return result;
     }
     
     private synchronized void setContainedClass( DBClass toAdd)
@@ -330,22 +399,15 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		for ( Iterator<FieldInfo> i=ac.getFields().iterator(); i.hasNext();)
 		{
             FieldInfo fi=(FieldInfo)i.next();
-            DBField new_field=(DBField)db.getWithKey( "com.antlersoft.analyzer.DBField",
-				DBField.makeKey( dbc.internalName, fi.getName()));
+            DBField new_field=dbc.getField( db, fi.getName(), fi.getType());
+            
             new_field.accessFlags=fi.getFlags();
             new_field.setDeprecated( fi.isDeprecated());
-            new_field.setTypeFromDescriptor( db, fi.getType());
-            dbc.addField( new_field);
 		}
 		for ( Iterator<MethodInfo> i=ac.getMethods().iterator(); i.hasNext();)
 		{
 		    MethodInfo mi=(MethodInfo)i.next();
-		    DBMethod method=(DBMethod)db.getWithKey( "com.antlersoft.analyzer.DBMethod",
-				DBMethod.makeKey( dbc.internalName,
-				mi.getName(),
-				mi.getType()
-				));
-			dbc.addMethod( method);
+		    DBMethod method=dbc.getOrCreateMethod(db, mi.getName(), mi.getType());
 		    method.setFromClassWriter( ac, mi, db);
 		}
     }
@@ -383,9 +445,10 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 				int length=entryName.length();
 				if ( length>6 && entryName.substring( length-6).equals( ".class"))
 				{
+			    	InputStream is=zip.getInputStream( entry);
 				    try
 				    {
-						cl.readClass( zip.getInputStream( entry));
+						cl.readClass( is);
 						addClassToDB( cl, db);
 				    }
 				    // If it is not a class file, don't fret it
@@ -399,6 +462,10 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 				    {
 						System.out.println( bie.getMessage());
 						System.out.println( "In "+file.getCanonicalPath()+"/"+entryName);
+				    }
+				    finally
+				    {
+				    	is.close();
 				    }
 				}
 		    }
@@ -414,15 +481,20 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		int fileLength=fileName.length();
 		if ( fileLength>6 && fileName.substring( fileLength-6).equals( ".class"))
 		{
+	    	InputStream is=new BufferedInputStream( new FileInputStream( file));
 		    try
 		    {
-				cl.readClass( new BufferedInputStream( new FileInputStream( file)));
+				cl.readClass( is);
 				addClassToDB( cl, db);
 		    }
 		    catch ( CodeCheckException bie)
 		    {
 				System.out.println( bie.getMessage());
 				System.out.println( "In "+file.getCanonicalPath());
+		    }
+		    finally
+		    {
+		    	is.close();
 		    }
 		}
     }

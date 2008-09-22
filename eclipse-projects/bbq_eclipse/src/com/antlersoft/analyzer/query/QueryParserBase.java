@@ -54,18 +54,17 @@ class QueryParserBase extends BasicBase
     	
     	public Enumeration evaluate( DataSource source)
     	{
-    		Vector tmp=new Vector(1);
     		try
     		{
-	    		Object pack=((IndexAnalyzeDB)source).findWithKey( "com.antlersoft.analyzer.DBPackage", _packageName);
+	    		Object pack=((IndexAnalyzeDB)source).findWithIndex(DBPackage.PACKAGE_NAME_INDEX, _packageName);
 	    		if ( pack!=null)
-	    			tmp.add( pack);
+	    			return new SingleEnum( pack);
     		}
     		catch (Exception e)
     		{
     		
     		}
-    		return tmp.elements();
+    		return EmptyEnum.empty;
     	}
     }
     
@@ -120,7 +119,7 @@ class QueryParserBase extends BasicBase
         {
         	try
         	{
-        		return ((AnalyzerDB)db).getAll( "com.antlersoft.analyzer.DBClass");
+        		return ((IndexAnalyzeDB)db).getAll( "com.antlersoft.analyzer.DBClass");
         	}
         	catch ( Exception e)
         	{
@@ -140,7 +139,7 @@ class QueryParserBase extends BasicBase
         {
         	try
         	{
-        		return ((AnalyzerDB)db).getAll( "com.antlersoft.analyzer.DBPackage");
+        		return ((IndexAnalyzeDB)db).getAll( "com.antlersoft.analyzer.DBPackage");
         	}
         	catch ( Exception e)
         	{
@@ -321,7 +320,7 @@ class QueryParserBase extends BasicBase
 
     static class Polymorphic extends TransformImpl
     {
-        private AnalyzerDB db;
+        private IndexAnalyzeDB db;
 
         Polymorphic() {
             super( DBMethod.class, DBMethod.class);
@@ -329,15 +328,15 @@ class QueryParserBase extends BasicBase
 
         public void startEvaluation( DataSource adb)
         {
-            db=(AnalyzerDB)adb;
+            db=(IndexAnalyzeDB)adb;
         }
         
         static class RealMethodFilter extends FilterEnumeration
         {
         	private DBMethod soughtMethod;
-        	private AnalyzerDB db;
+        	private IndexAnalyzeDB db;
         	
-        	RealMethodFilter( Enumeration base, AnalyzerDB source, DBMethod sought)
+        	RealMethodFilter( Enumeration base, IndexAnalyzeDB source, DBMethod sought)
         	{
         		super( base);
         		db=source;
@@ -348,11 +347,7 @@ class QueryParserBase extends BasicBase
                 DBClass filterc=(DBClass)base;
                 try
                 {
-                    DBMethod m=(DBMethod) db.findWithKey( "com.antlersoft.analyzer.DBMethod",
-                        DBMethod.makeKey( filterc.getInternalName(),
-                        soughtMethod.getName(),
-                        soughtMethod.getSignature()));
-                    return m;
+                	return filterc.getMethod( soughtMethod.getName(), soughtMethod.getSignature());
                 }
                 catch ( Exception e)
                 {
@@ -395,7 +390,14 @@ class QueryParserBase extends BasicBase
 
         protected boolean getCountPreservingFilterValue( DataSource source, Object toCheck)
         {
-            return ! ((DBMethod)toCheck).getCalledBy().hasMoreElements();
+        	try
+        	{
+        		return ! ((DBMethod)toCheck).getCalledBy((IndexAnalyzeDB)source).hasMoreElements();
+        	}
+        	catch ( Exception e)
+        	{
+        		return false;
+        	}
         }
     }
 
@@ -411,7 +413,7 @@ class QueryParserBase extends BasicBase
 	                e.hasMoreElements() && result;)
 	            {
 	                if ( ((DBMethod)e.nextElement()).
-	                    getCalledBy().hasMoreElements())
+	                    getCalledBy((IndexAnalyzeDB)source).hasMoreElements())
 	                    result=false;
 	            }
                 return result;

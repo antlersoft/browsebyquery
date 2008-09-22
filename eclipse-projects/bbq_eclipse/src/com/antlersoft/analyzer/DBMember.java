@@ -4,6 +4,7 @@
 package com.antlersoft.analyzer;
 
 import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
@@ -17,8 +18,6 @@ import com.antlersoft.odb.PersistentImpl;
 public abstract class DBMember implements Persistent, Cloneable, SourceObject,
 		HasDBType, AccessFlags {
 	
-	String MEMBER_TYPE_KEY="MEMBER_TYPE_KEY";
-
 	/** Containing class */
     private ObjectRef<DBClass> dbclass;
     /** Type of this member */
@@ -53,10 +52,21 @@ public abstract class DBMember implements Persistent, Cloneable, SourceObject,
 		return dbclass.getReferenced();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.antlersoft.analyzer.HasDBType#getDBType(com.antlersoft.analyzer.AnalyzerDB)
-	 */
-	public DBType getDBType(IndexAnalyzeDB db) {
+    public String getName()
+    {
+    	return name;
+    }
+ 
+    /**
+     * Returns the type associated with this member; the type of the field or the
+     * return type of the method.
+     * 
+     * For this and derived classes, the db param is not used and may be passed as null.
+     * 
+     * @param db Not used; may be null
+     * @return Type of field or return type of method
+     */
+ 	public DBType getDBType(IndexAnalyzeDB db) {
 		return dbtype.getReferenced();
 	}
 
@@ -76,6 +86,15 @@ public abstract class DBMember implements Persistent, Cloneable, SourceObject,
     void setDeprecated( boolean dep)
     {
     	deprecated=dep;
+    }
+    
+    void setDBType( DBType new_type)
+    {
+    	if ( ! new_type.equals( getDBType( null)))
+    	{
+    		dbtype.setReferenced(new_type);
+    		ObjectDB.makeDirty(this);
+    	}
     }
 	static class MemberTypeKeyGenerator implements KeyGenerator
 	{

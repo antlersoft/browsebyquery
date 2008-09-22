@@ -22,6 +22,7 @@ package com.antlersoft.analyzer.query;
 import java.util.Enumeration;
 import com.antlersoft.analyzer.DBMethod;
 import com.antlersoft.analyzer.DBCall;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import com.antlersoft.query.DataSource;
 import com.antlersoft.query.TransformImpl;
@@ -35,7 +36,7 @@ class CallsTo extends TransformImpl
 
 	public Enumeration transformObject( DataSource source, Object method)
 	{
-		return ((DBMethod)method).getCalledBy();
+		return ((DBMethod)method).getCalledBy((IndexAnalyzeDB)source);
 	}
 }
 

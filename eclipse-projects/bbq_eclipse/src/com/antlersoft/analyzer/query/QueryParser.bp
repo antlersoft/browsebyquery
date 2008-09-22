@@ -166,21 +166,21 @@ TRANSFORM : fields with "{
 	return new TransformImpl( DBField.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBType)to_transform).getFields((AnalyzerDB)source);
+			return ((DBType)to_transform).getFields((IndexAnalyzeDB)source);
 		}
 	};}" .
 TRANSFORM : methods with "{
 	return new TransformImpl( DBMethod.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBType)to_transform).getReturningMethods((AnalyzerDB)source);
+			return ((DBType)to_transform).getReturningMethods((IndexAnalyzeDB)source);
 		}
 	};}" .
 TRANSFORM : arguments with "{
 	return new TransformImpl( DBArgument.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBType)to_transform).getArguments((AnalyzerDB)source);
+			return ((DBType)to_transform).getArguments((IndexAnalyzeDB)source);
 		}
 	};}" .
 	
