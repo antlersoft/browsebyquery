@@ -27,7 +27,9 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
@@ -195,6 +197,21 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     {
 		return DBType.getFromClass( db, this); 
     }
+    
+    static class ClearUnfound<E>
+    {
+    	void clearUnfound( TreeMap<String,ObjectRef<E>> tree, HashSet<E> set)
+    	{
+    		for ( Iterator<Map.Entry<String,ObjectRef<E>>> i=tree.entrySet().iterator(); i.hasNext();)
+    		{
+    			Map.Entry<String,ObjectRef<E>> entry=i.next();
+    			if ( ! set.contains(entry.getValue().getReferenced()))
+    			{
+    				i.remove();
+    			}
+    		}
+    	}
+    }
 
     private void addMethod( DBMethod toAdd)
     {
@@ -234,18 +251,6 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     public boolean isDeprecated()
     {
     	return deprecated;
-    }
-
-    private void clearMethods()
-    {
-		methods.clear();
-		ObjectDB.makeDirty( this);
-    }
-
-    private void clearFields()
-    {
-		fields.clear();
-		ObjectDB.makeDirty( this);
     }
 
     public Enumeration<DBClass> getSuperClasses()
@@ -379,14 +384,14 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		throws Exception
     {
 		DBClass dbc=getByInternalName( ac.getInternalClassName(ac.getCurrentClassIndex()), db);
-		dbc.clearMethods();
 		dbc.clearSuperClasses();
-		dbc.clearFields();
 		dbc.resolved=true;
         dbc.accessFlags=ac.getFlags();
         dbc.deprecated=ac.isDeprecated();
         dbc.sourceFile=ac.getSourceFile();
         dbc.lineNumber= -1;
+        HashSet<DBField> foundFields=new HashSet<DBField>();
+        HashSet<DBMethod> foundMethods=new HashSet<DBMethod>();
 		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{
@@ -400,7 +405,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		{
             FieldInfo fi=(FieldInfo)i.next();
             DBField new_field=dbc.getField( db, fi.getName(), fi.getType());
-            
+            foundFields.add( new_field);
             new_field.accessFlags=fi.getFlags();
             new_field.setDeprecated( fi.isDeprecated());
 		}
@@ -408,8 +413,11 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		{
 		    MethodInfo mi=(MethodInfo)i.next();
 		    DBMethod method=dbc.getOrCreateMethod(db, mi.getName(), mi.getType());
+		    foundMethods.add( method);
 		    method.setFromClassWriter( ac, mi, db);
 		}
+		new ClearUnfound<DBField>().clearUnfound( dbc.fields, foundFields);
+		new ClearUnfound<DBMethod>().clearUnfound( dbc.methods, foundMethods);
     }
 
     public static void addFileToDB( File file, IndexAnalyzeDB db)

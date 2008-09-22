@@ -225,14 +225,6 @@ public class IndexAnalyzeDB implements DataSource
         }
     }
 
-    static void printStatistics( DirectoryAllocator store, String index_name)
-    throws Exception
-    {
-    	IndexStatistics stats=(IndexStatistics)store.getIndexStatistics( index_name);
-    	System.out.println( index_name+" Entries per page: "+stats.getEntriesPerPage());
-    	System.out.println( "Regular--"+stats.getRegular().toString());
-    	System.out.println( "Overflow--"+stats.getOverflow().toString());
-    }
     /**
      * Print the statistics for the indexes in this database
      * @param args The first argument should be the database directory
@@ -242,10 +234,6 @@ public class IndexAnalyzeDB implements DataSource
     {
     	DirectoryAllocator store=new DirectoryAllocator( new File( args[0]),
                 new CFactory());
-    	printStatistics( store, DBType.TYPE_CLASS_INDEX);
-    	printStatistics( store, DBMethod.RETURN_TYPE_INDEX);
-    	printStatistics( store, DBField.FIELD_TYPE_INDEX);
-    	printStatistics( store, DBArgument.ARGUMENT_TYPE_INDEX);
-    	printStatistics( store, DBClass.CLASS_NAME_INDEX);
+    	store.logAllStatistics();
     }
 }

@@ -32,7 +32,7 @@ public class ObjectKeyHashSet<E> extends AbstractSet<ObjectRef<E>> implements Se
 
 
 	/** Create a set containing a Collection */
-	public ObjectKeyHashSet( Collection c)
+	public ObjectKeyHashSet( Collection<? extends ObjectRef<E>> c)
 	{
 		//TODO: Optimize the creation of the underlying map
 		m_map=new ObjectKeyHashMap<E,ObjectRef<E>>();

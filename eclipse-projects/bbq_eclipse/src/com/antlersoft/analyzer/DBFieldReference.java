@@ -19,6 +19,8 @@
  */
 package com.antlersoft.analyzer;
 
+import com.antlersoft.odb.ObjectDB;
+
 public class DBFieldReference extends DBReference
 {
 	static final String FRTARGET="FRTARGET";
@@ -27,6 +29,7 @@ public class DBFieldReference extends DBReference
     {
 		super( s, t, l);
 		writeReference=write;
+		ObjectDB.makePersistent(this);
     }
 
     boolean writeReference;

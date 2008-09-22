@@ -26,6 +26,8 @@
  */
 package com.antlersoft.analyzer;
 
+import com.antlersoft.odb.ObjectDB;
+
 public class DBStringReference extends DBReference
 {
 	final static String SRTARGET="SRTARGET";
@@ -33,6 +35,7 @@ public class DBStringReference extends DBReference
     DBStringReference( DBMethod method, DBStringConstant constant, int l)
     {
         super( method, constant, l);
+        ObjectDB.makePersistent( this);
      }
 
     public DBStringConstant getTarget()

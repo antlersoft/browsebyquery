@@ -46,7 +46,7 @@ public class DBMethod extends DBMember
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
     public static final int REAL=3;
-    private static Logger logger=Logger.getLogger( "com.antlersoft.analyzer.DBType");
+    private static Logger logger=Logger.getLogger( "com.antlersoft.analyzer.DBMethod");
     static final String RETURN_TYPE_INDEX="MethodType";
     
     String signature;
@@ -205,7 +205,7 @@ public class DBMethod extends DBMember
     		{
     			ObjectRef<E> targetRef=i.next();
     			E dbref=targetRef.getReferenced();
-    			if ( t.equals(dbref.target))
+    			if ( t.equals(dbref.target.getReferenced()))
     			{
     				i.remove();
     				afterList.add( targetRef);
@@ -249,7 +249,7 @@ public class DBMethod extends DBMember
     		{
     			ObjectRef<DBFieldReference> targetRef=i.next();
     			DBFieldReference dbref=targetRef.getReferenced();
-    			if ( t.equals(dbref.target) && write==dbref.writeReference)
+    			if ( t.equals(dbref.target.getReferenced()) && write==dbref.writeReference)
     			{
     				i.remove();
     				afterList.add( targetRef);

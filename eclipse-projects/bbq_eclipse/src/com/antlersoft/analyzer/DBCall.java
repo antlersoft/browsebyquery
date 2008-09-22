@@ -19,7 +19,7 @@
  */
 package com.antlersoft.analyzer;
 
-import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectDB;
 
 public class DBCall extends DBReference
 {
@@ -27,7 +27,8 @@ public class DBCall extends DBReference
 	
     DBCall( DBMethod s, DBMethod t, int l)
     {
-        super( s, t, l);	
+        super( s, t, l);
+        ObjectDB.makePersistent( this);
     }
 
 	public DBMethod getTarget()
