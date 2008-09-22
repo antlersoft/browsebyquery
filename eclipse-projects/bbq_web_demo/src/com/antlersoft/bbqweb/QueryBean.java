@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 
 import com.antlersoft.query.environment.AnalyzerQuery;
-import com.antlersoft.analyzer.AnalyzerDB;
+import com.antlersoft.analyzer.IndexAnalyzeDB;
 import com.antlersoft.analyzer.query.QueryParser;
 
 import com.antlersoft.util.CharClass;
@@ -27,7 +27,7 @@ public class QueryBean {
 	
 	private String m_result;
 	
-	private AnalyzerDB m_db;
+	private IndexAnalyzeDB m_db;
 	
 	private ArrayList m_history;
 	
@@ -70,12 +70,12 @@ public class QueryBean {
 		return escapeString(m_text);
 	}
 	
-	public AnalyzerDB getDB()
+	public IndexAnalyzeDB getDB()
 	{
 		return m_db;
 	}
 	
-	public void setDB(AnalyzerDB db)
+	public void setDB(IndexAnalyzeDB db)
 	{
 		m_logger.finer( "Setting db");
 		if ( db==null)

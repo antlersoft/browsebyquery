@@ -3,7 +3,6 @@
  */
 package com.antlersoft.bbqweb;
 
-import com.antlersoft.analyzer.AnalyzerDB;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import java.util.logging.Level;
@@ -30,7 +29,7 @@ public class DBBean {
 		m_context=context;
 	}
 	
-	public synchronized AnalyzerDB getDB()
+	public synchronized IndexAnalyzeDB getDB()
 	{
 		if ( m_db==null)
 		{
