@@ -206,6 +206,8 @@ public class DBType implements Persistent, Cloneable {
 		
 		public static String descriptorToUser( CharSequence descriptor)
 		{
+			if ( descriptor==null || descriptor.length()==0)
+				return "";
 			int array_count=0;
 			for ( ; descriptor.charAt(array_count)=='['; ++array_count);
 			String base_type;
