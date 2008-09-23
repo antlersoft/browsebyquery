@@ -1,14 +1,6 @@
-bbq0.5.10
+bbq0.6.0
 
-This is a bug-fix release, which fixes some long-standing bugs in the datastore.
+This is a release with few visible changes; the data store has been rearranged to improve
+performance and reduce memory usage.  See the change log.
 
-The only visible effect of these bugs in BBQ for Java was that some queries by type
-(fields with type... or methods with type... ) would return incomplete results.
 
-Because previous versions of the datastore may have created corrupt indices, the
-datastore version number has been incremented.  This will mean that your existing
-BBQ databases will be cleared.  You will need to re-analyze to populate them (except
-for the Eclipse version, which will do this automatically).
-
-Also, the display of stored expressions that contain other stored expressions
-in the stored expression list window has been fixed.

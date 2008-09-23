@@ -1,3 +1,11 @@
+--bbq0.6.0
+
+Switch Java version to 1.5+; start switching to using generics for type safety
+
+Change database layout to use indexes more and collections less; should be faster and more reliable
+
+Fix rare crash bug
+
 --bbq0.5.10
 
 Fix bug maintaining indices
