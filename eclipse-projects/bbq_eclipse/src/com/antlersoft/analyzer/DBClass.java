@@ -260,7 +260,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 
     public Enumeration<DBClass> getDerivedClasses()
     {
-		return new FromRefIteratorEnumeration<DBClass>( superClasses.iterator());
+		return new FromRefIteratorEnumeration<DBClass>( derivedClasses.iterator());
     }
     
     public boolean isInnerClass()
