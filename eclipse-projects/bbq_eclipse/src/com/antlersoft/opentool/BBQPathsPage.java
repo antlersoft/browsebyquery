@@ -48,8 +48,6 @@ import com.borland.primetime.vfs.Url;
 import com.borland.jbuilder.JBuilderHelp;
 import com.borland.jbuilder.node.JBProject;
 
-import com.antlersoft.analyzer.ObjectAnalyzeDB;
-
 class BBQPathsPage extends PropertyPage
 {
     private JLabel pathDisplay;
