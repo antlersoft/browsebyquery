@@ -292,6 +292,14 @@ public class DBMethod extends DBMember
 		ReferenceUpdater<DBCall> callUpdater = new ReferenceUpdater<DBCall>(calls);
 		FieldReferenceUpdater fieldRefUpdater=new FieldReferenceUpdater(fieldReferences);
 		ReferenceUpdater<DBStringReference> stringRefUpdater=new ReferenceUpdater<DBStringReference>(stringReferences);
+		lineNumber=codeAttribute.getLineNumber( 0);
+		// Class linenumber = minimum linenumber of any method in the class
+		if ( lineNumber>0)
+		{
+			DBClass c=getDBClass();
+			if ( c.lineNumber== -1 || c.lineNumber>lineNumber)
+				c.lineNumber=lineNumber;
+		}
 		for ( Iterator i=codeAttribute.getInstructions().iterator();
 			i.hasNext();)
 		{
