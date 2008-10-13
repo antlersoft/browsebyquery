@@ -110,6 +110,7 @@ symbol n_methodHead
 symbol n_methodHeadPart1
 symbol n_methodName
 symbol n_moduleHead
+symbol n_moduleModifier
 symbol n_name1
 symbol n_nameSpaceHead
 symbol n_nameValPair
@@ -973,8 +974,7 @@ n_classDecl : n_languageDecl .
 n_classDecls : .
 n_classDecls : n_classDecls n_classDecl .
 n_classHead : t_classDirective n_classAttr n_name1 n_genClause n_extendsClause n_implClause "{ Driver(parser).startClass( valueStack.s_n(3), (List)valueStack.o_2(), valueStack.i_n(4), (ReadType)valueStack.o_1(), (List)valueStack.o_0()); return \"\"; }" .
-n_className : t_left_square n_name1 t_right_square n_slashedName "m_TopString" .
-n_className : t_left_square t_moduleDirective n_name1 t_right_square n_slashedName "m_TopString" .
+n_className : n_moduleModifier n_slashedName "m_TopString" .
 n_className : n_slashedName "m_TopString" .
 n_classNames : n_typeSpec "m_StartList" .
 n_classNames : n_classNames t_comma n_typeSpec "m_AddToList" .
@@ -1131,6 +1131,7 @@ n_genClause : "{ return new ArrayList(); }" .
 n_genClause : t_left_angle n_genPars t_right_angle "{ return valueStack.o_1(); }" .
 # Gen constraints is always represents by a list of ReadType objects
 n_genConstraintItem : t_DOTTEDNAME "m_BasicType" .
+n_genConstraintItem : n_moduleModifier t_DOTTEDNAME "m_BasicType" .
 n_genConstraintItem : n_type "m_TopObject" .
 n_genConstraints : n_genConstraintItem "m_StartList" .
 n_genConstraints : n_genConstraints t_comma n_genConstraintItem "m_AddToList" .
@@ -1282,6 +1283,8 @@ n_methodName : t_cctorDirective "m_TopString" .
 n_moduleHead : t_moduleDirective .
 n_moduleHead : t_moduleDirective n_name1 "{ Driver(parser).startModule( valueStack.s_0()); return valueStack.s_0(); }" .
 n_moduleHead : t_moduleDirective t_extern n_name1 .
+n_moduleModifier : t_left_square n_name1 t_right_square .
+n_moduleModifier : t_left_square t_moduleDirective n_name1 t_right_square .
 n_name1 : n_id "m_TopString" .
 n_name1 : t_DOTTEDNAME "m_TopString" .
 n_name1 : n_name1 t_period n_name1 "m_StringConcat" .
