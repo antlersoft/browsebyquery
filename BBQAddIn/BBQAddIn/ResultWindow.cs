@@ -8,6 +8,7 @@ using System.Windows.Forms;
 
 using EnvDTE;
 using EnvDTE80;
+using EnvDTE90;
 
 namespace com.antlersoft.BBQAddIn
 {
