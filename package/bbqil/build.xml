@@ -22,7 +22,7 @@ Requires ant 1.6+
 			<arg file="com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
 		</exec>
 		<exec executable="${genparserpath}">
-			<arg file="com/antlersoft/ilanalyze/query/ResourceLister.pre"/>
+			<arg file="com/antlersoft/ilanalyze/parseildasm/ResourceLister.pre"/>
 		</exec>
 		<delete dir="com/antlersoft/odb/transp"/>
 		<delete dir="com/antlersoft/odb/postproc"/>
