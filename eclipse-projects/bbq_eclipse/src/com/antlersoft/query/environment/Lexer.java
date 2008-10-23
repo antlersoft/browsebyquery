@@ -3,9 +3,13 @@
  */
 package com.antlersoft.query.environment;
 
-import java.util.Vector;
+import java.io.IOException;
+import java.util.ArrayList;
 
+import com.antlersoft.parser.lex.LexException;
+import com.antlersoft.parser.lex.LexState;
 import com.antlersoft.parser.Parser;
+import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.Symbol;
 import com.antlersoft.parser.Token;
 
@@ -14,12 +18,15 @@ import com.antlersoft.query.BasicBase;
 import com.antlersoft.util.CharClass;
 
 /**
- * Breaks a query string into tokens
+ * Breaks a query string into tokens according to a simple default scheme.
+ * Strings are parsed as BasicBase.literalString tokens; names that aren't reserved
+ * words in the parser are parsed as BasicBase.nameSymbol tokens.
+ * Retrofitted to support the LexState interface, for a more general set of use cases.
  * 
  * @author Michael A. MacDonald
- *
+ * @see com.antlersoft.query.BasicBase
  */
-class Lexer {
+public class Lexer implements LexState {
 
 	private static final int INITIAL=0;
 	private static final int IN_QUOTE=1;
@@ -32,10 +39,16 @@ class Lexer {
 	private static final int IN_SLASH_ESCAPE=8;
 	
 	private Parser m_parser;
+	private ArrayList<Token> tokens;
+	private int lex_state;
+	private StringBuilder currentString;
 	
-	Lexer( Parser parser)
+	public Lexer( Parser parser)
 	{
 		m_parser=parser;
+		tokens=new ArrayList<Token>();
+		lex_state=INITIAL;
+		currentString=new StringBuilder();
 	}
 	
 	/**
@@ -44,12 +57,9 @@ class Lexer {
 	 * If the current string has a character, checks if that character plus c
 	 * makes a reserved word; if it does, submit both as a reserved word.
 	 * Otherwise, submit the first character as a reserved word.
-	 * @param currentString StringBuffer holding 0 or 1 unmatched punctuation characters
 	 * @param c Next punctuation character to add
-	 * @param tokens Token list
-	 * @return Parser state when finished
 	 */
-	int addPunctuationCharacter( StringBuilder currentString, char c, Vector tokens)
+	private void addPunctuationCharacter( char c)
 	{
 		int result=IN_PUNC;
 		if ( currentString.length()==0)
@@ -63,27 +73,25 @@ class Lexer {
 			String both=currentString.toString();
 			if ( m_parser.getReservedScope().findReserved( both)!=null)
 			{
-				addCurrentString( currentString, tokens);
+				addCurrentString();
 				result=INITIAL;
 			}
 			else
 			{
 				currentString.setLength(0);
 				currentString.append( first);
-				addCurrentString( currentString, tokens);
+				addCurrentString();
 				currentString.append( c);
 			}
 		}
 		
-		return result;
+		lex_state=result;
 	}
 	
 	/**
 	 * Add the token represented by the content of the current buffer to the list of tokens
-	 * @param currentString Current buffer of received characters
-	 * @param tokens List of tokens
 	 */
-	private void addCurrentString( StringBuilder currentString, Vector tokens)
+	private void addCurrentString()
 	{
 	    if ( currentString.length()>0)
 	    {
@@ -92,11 +100,11 @@ class Lexer {
 	        Symbol rw=m_parser.getReservedScope().findReserved( cs);
 	        if ( rw==null)
 	        {
-	            tokens.addElement( new Token( BasicBase.nameSymbol, cs));
+	            tokens.add( new Token( BasicBase.nameSymbol, cs));
 	        }
 	        else
 	        {
-	            tokens.addElement( new Token( rw, cs));
+	            tokens.add( new Token( rw, cs));
 	        }
 	    }  	
 	}
@@ -104,153 +112,181 @@ class Lexer {
 	Token[] tokenize( String toTokenize)
 	{
 	    char[] chars=toTokenize.toCharArray();
-	    Vector tokens=new Vector();
-	    StringBuilder currentString=new StringBuilder();
+	    tokens.clear();
+	    currentString.setLength(0);
 	    int i=0;
-	    int lex_state=INITIAL;
-	    for ( ; i<chars.length; i++)
+	    lex_state=INITIAL;
+	    LexState ls=this;
+	    try
 	    {
-	        char c=chars[i];
-	        switch ( lex_state)
-	        {
-	        case INITIAL :
-	        	if ( CharClass.isDigit( c))
-	        	{
-	        		currentString.append(c);
-	        		lex_state=IN_NUMBER;
-	        	}
-	        	else if ( c=='/')
-	        	{
-	        		lex_state=IN_FIRST_SLASH;
-	        	}
-	        	else if ( CharClass.isOperator( c))
-	        	{
-	        		lex_state=addPunctuationCharacter( currentString, c, tokens);
-	        	}
-	        	else if ( c=='"')
-	        	{
-	        		lex_state=IN_QUOTE;
-	        	}
-	        	else if ( ! CharClass.isWhiteSpace( c))
-	        	{
-	        		currentString.append( c);
-	        		lex_state=IN_WORD;
-	        	}
-	        	break;
-	        case IN_QUOTE :
-	        	if ( c=='\\')
-	        	{
-	        		lex_state=IN_QUOTE_ESCAPE;
-	        	}
-	        	else if ( c=='"')
-	        	{
-	        		tokens.addElement( new LiteralToken( currentString.toString()));
-	        		currentString.setLength(0);
-	        		lex_state=INITIAL;
-	        	}
-	        	else
-	        		currentString.append( c);
-	        	break;
-	        case IN_QUOTE_ESCAPE :
-	        	currentString.append( c);
-	        	lex_state=IN_QUOTE;
-	        	break;	        	
-	        case IN_NUMBER :
-	        	if ( CharClass.isDigit( c))
-	        	{
-	        		currentString.append( c);
-	        	}
-	        	else
-	        	{
-	        		tokens.addElement( new Token( BasicBase.number, currentString.toString()));
-	        		currentString.setLength(0);
-	        		--i;
-	        		lex_state=INITIAL;
-	        	}
-	        	break;
-	        case IN_FIRST_SLASH :
-	        	if ( c=='/')
-	        		lex_state=IN_SLASH_QUOTE;
-	        	else
-	        	{
-	        		lex_state=addPunctuationCharacter( currentString, '/', tokens);
-	        		--i;
-	        	}
-	        	break;
-	        case IN_SLASH_QUOTE :
-	        	if ( c=='\\')
-	        	{
-	        		lex_state=IN_SLASH_ESCAPE;
-	        	}
-	        	else if ( c=='/')
-	        	{
-	        		tokens.addElement( new LiteralToken( currentString.toString()));
-	        		currentString.setLength(0);
-	        		lex_state=INITIAL;
-	        	}
-	        	else
-	        		currentString.append( c);
-	        	break;
-	        case IN_SLASH_ESCAPE :
-	        	if ( c!='/')
-	        	{
-	        		currentString.append('\\');
-	        	}
-	        	currentString.append( c);
-	        	lex_state=IN_SLASH_QUOTE;
-	        	break;
-	        case IN_WORD :
-	        	if ( CharClass.isIdentifierPart(c))
-	        	{
-	        		currentString.append( c);
-	        	}
-	        	else
-	        	{
-	        		addCurrentString( currentString, tokens);
-	        		--i;
-	        		lex_state=INITIAL;
-	        	}
-	        	break;
-	        case IN_PUNC :
-	        	if ( CharClass.isOperator(c) && c!='/')
-	        		lex_state=addPunctuationCharacter( currentString, c, tokens);
-	        	else
-	        	{
-	        		addCurrentString( currentString, tokens);
-	        		--i;
-	        		lex_state=INITIAL;	        		
-	        	}
-	        	break;
-	        }
+		    for ( ; i<chars.length; i++)
+		    {
+		        ls=ls.nextCharacter(chars[i]);
+		    }
+		    ls.endOfFile();
 	    }
+	    catch ( IOException ioe)
+	    {
+	    }
+	    catch ( RuleActionException rae)
+	    {
+	    }
+	    catch ( LexException le)
+	    {
+	    }
+	
+	    Token[] retval=new Token[tokens.size()];
+	    tokens.toArray( retval);
+	    return retval;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.parser.lex.LexState#endOfFile()
+	 */
+	public LexState endOfFile() throws IOException, RuleActionException, LexException {
 	    switch ( lex_state)
 	    {
 	    case IN_QUOTE :
 	    case IN_QUOTE_ESCAPE :
 	    case IN_SLASH_QUOTE :
-    		tokens.addElement( new LiteralToken( currentString.toString()));
+    		tokens.add( new LiteralToken( currentString.toString()));
     		break;
 	    case IN_SLASH_ESCAPE :
 	    	currentString.append('\\');
-	    	tokens.addElement( new LiteralToken( currentString.toString()));
+	    	tokens.add( new LiteralToken( currentString.toString()));
 	    	break;
 	    case IN_FIRST_SLASH:
-	    	addPunctuationCharacter( currentString, '\\', tokens);
+	    	addPunctuationCharacter( '\\');
 	    	break;
 	    case IN_NUMBER :
-	    	tokens.addElement( new Token( BasicBase.number, currentString.toString()));
+	    	tokens.add( new Token( BasicBase.number, currentString.toString()));
 	    	break;
 	    case IN_WORD :
 	    case IN_PUNC :
-	    	addCurrentString( currentString, tokens);
+	    	addCurrentString();
 	    	break;
 	    // INITIAL state, do nothing
 	    }
-	    tokens.addElement( new Token( Parser._end_, ""));
-	
-	    Token[] retval=new Token[tokens.size()];
-	    tokens.copyInto( retval);
-	    return retval;
+	    tokens.add( new Token( Parser._end_, ""));
+	    return this;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.parser.lex.LexState#nextCharacter(char)
+	 */
+	public LexState nextCharacter(char c) throws IOException, RuleActionException, LexException {
+        switch ( lex_state)
+        {
+        case INITIAL :
+        	if ( CharClass.isDigit( c))
+        	{
+        		currentString.append(c);
+        		lex_state=IN_NUMBER;
+        	}
+        	else if ( c=='/')
+        	{
+        		lex_state=IN_FIRST_SLASH;
+        	}
+        	else if ( CharClass.isOperator( c))
+        	{
+        		addPunctuationCharacter(  c);
+        	}
+        	else if ( c=='"')
+        	{
+        		lex_state=IN_QUOTE;
+        	}
+        	else if ( ! CharClass.isWhiteSpace( c))
+        	{
+        		currentString.append( c);
+        		lex_state=IN_WORD;
+        	}
+        	break;
+        case IN_QUOTE :
+        	if ( c=='\\')
+        	{
+        		lex_state=IN_QUOTE_ESCAPE;
+        	}
+        	else if ( c=='"')
+        	{
+        		tokens.add( new LiteralToken( currentString.toString()));
+        		currentString.setLength(0);
+        		lex_state=INITIAL;
+        	}
+        	else
+        		currentString.append( c);
+        	break;
+        case IN_QUOTE_ESCAPE :
+        	currentString.append( c);
+        	lex_state=IN_QUOTE;
+        	break;	        	
+        case IN_NUMBER :
+        	if ( CharClass.isDigit( c))
+        	{
+        		currentString.append( c);
+        	}
+        	else
+        	{
+        		tokens.add( new Token( BasicBase.number, currentString.toString()));
+        		currentString.setLength(0);
+        		lex_state=INITIAL;
+        		return nextCharacter(c);
+        	}
+        	break;
+        case IN_FIRST_SLASH :
+        	if ( c=='/')
+        		lex_state=IN_SLASH_QUOTE;
+        	else
+        	{
+        		addPunctuationCharacter( '/');
+        		return nextCharacter(c);
+         	}
+        	break;
+        case IN_SLASH_QUOTE :
+        	if ( c=='\\')
+        	{
+        		lex_state=IN_SLASH_ESCAPE;
+        	}
+        	else if ( c=='/')
+        	{
+        		tokens.add( new LiteralToken( currentString.toString()));
+        		currentString.setLength(0);
+        		lex_state=INITIAL;
+        	}
+        	else
+        		currentString.append( c);
+        	break;
+        case IN_SLASH_ESCAPE :
+        	if ( c!='/')
+        	{
+        		currentString.append('\\');
+        	}
+        	currentString.append( c);
+        	lex_state=IN_SLASH_QUOTE;
+        	break;
+        case IN_WORD :
+        	if ( CharClass.isIdentifierPart(c))
+        	{
+        		currentString.append( c);
+        	}
+        	else
+        	{
+        		addCurrentString();
+         		lex_state=INITIAL;
+         		return nextCharacter(c);
+        	}
+        	break;
+        case IN_PUNC :
+        	if ( CharClass.isOperator(c) && c!='/')
+        		addPunctuationCharacter( c);
+        	else
+        	{
+        		addCurrentString( );
+         		lex_state=INITIAL;
+         		return nextCharacter(c);
+        	}
+        	break;
+        }
+        return this;
 	}
 
 }

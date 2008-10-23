@@ -182,6 +182,14 @@ public class ILDB extends IndexObjectDB implements DataSource {
 		catch ( IndexExistsException iee)
 		{
 		}
+		redefineIndex( DBStringResource.STRING_RESOURCE_VALUE_INDEX,
+				DBStringResource.class,
+				new DBStringResource.ValueKeyGenerator(),
+				false, false, null);
+		redefineIndex( DBStringResource.STRING_RESOURCE_NAME_INDEX,
+				DBStringResource.class,
+				new DBStringResource.NameKeyGenerator(),
+				false, false, null);
 	}
 	
 	public static ILDB clearDB( ILDB db, File dbFile )

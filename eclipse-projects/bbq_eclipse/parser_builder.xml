@@ -1,5 +1,5 @@
 <project name="parser_builder" default="all">
-	<target name="all" depends="QueryParser,Basic,PreprocessParser,ConstExprParser,Reflect,IldasmParser,ILQueryParser"/>
+	<target name="all" depends="QueryParser,Basic,PreprocessParser,ConstExprParser,Reflect,IldasmParser,ILQueryParser,ResourceParser"/>
 	<target name="QueryParser">
 		<exec executable="genparser.sh">
 			<arg file="src/com/antlersoft/analyzer/query/QueryParser.pre"/>
@@ -33,6 +33,11 @@
 	<target name="ILQueryParser">
 		<exec executable="genparser.sh">
 			<arg file="src/com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
+		</exec>
+	</target>
+	<target name="ResourceParser">
+		<exec executable="genparser.sh">
+			<arg file="src/com/antlersoft/ilanalyze/parseildasm/ResourceParser.pre"/>
 		</exec>
 	</target>	
 </project>

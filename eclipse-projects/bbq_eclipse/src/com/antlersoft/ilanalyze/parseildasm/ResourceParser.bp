@@ -1,0 +1,23 @@
+reserved assembly
+reserved bundle
+reserved left_brace "{"
+reserved right_brace "}"
+reserved equals "="
+
+symbol complete_assembly
+symbol assembly_start
+symbol start_bundle
+symbol complete_bundle
+symbol bundle_list
+symbol resource_list
+
+complete_assembly : assembly_start left_brace bundle_list right_brace .
+assembly_start : assembly literalString "{ Driver(parser).startAssembly( valueStack.s_0()); return null; }" .
+bundle_list : .
+bundle_list : bundle_list complete_bundle .
+complete_bundle : start_bundle left_brace resource_list right_brace "{ Driver(parser).endBundle(); return null; }" .
+resource_list : .
+resource_list : resource_list literalString equals literalString "{ Driver(parser).addResource( valueStack.s_2(), valueStack.s_0()); return null; }" .
+start_bundle : bundle literalString "{ Driver(parser).startBundle( valueStack.s_0()); return null; }" .
+
+

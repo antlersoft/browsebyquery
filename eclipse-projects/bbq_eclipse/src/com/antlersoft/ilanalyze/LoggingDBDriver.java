@@ -224,6 +224,33 @@ public class LoggingDBDriver implements DBDriver {
 			m_nested.addCustomAttribute( custom);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addResource(java.lang.String, java.lang.String)
+	 */
+	public void addResource(String name, String value) {
+		logger.fine( "add resource "+name+" = "+value);
+		if ( m_nested!=null)
+			m_nested.addResource(name, value);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#endBundle()
+	 */
+	public void endBundle() {
+		logger.fine( "End bundle");
+		if ( m_nested!=null)
+			m_nested.endBundle();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#startBundle(java.lang.String)
+	 */
+	public void startBundle(String name) {
+		logger.fine( "Start bundle "+name);
+		if ( m_nested!=null)
+			m_nested.startBundle(name);
+	}
+
 	static private void formatGenericParams( StringBuilder sb, List genericParams)
 	{
 		if ( genericParams!=null && genericParams.size()>0)

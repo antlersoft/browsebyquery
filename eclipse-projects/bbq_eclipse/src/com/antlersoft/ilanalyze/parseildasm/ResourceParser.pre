@@ -1,0 +1,19 @@
+/**
+ * Copyright (c) 2008 Michael A. MacDonald
+ */
+package com.antlersoft.ilanalyze.parseildasm;
+
+import com.antlersoft.ilanalyze.DBDriver;
+
+import com.antlersoft.parser.*;
+
+class ResourceParser extends ResourceParserBase
+{
+	ResourceParser()
+	{
+		super( parseStates);
+	}
+
+	private static final ReservedScope reservedScope=new ReservedScope();
+	public ReservedScope getReservedScope() { return reservedScope; }
+// Output goes here

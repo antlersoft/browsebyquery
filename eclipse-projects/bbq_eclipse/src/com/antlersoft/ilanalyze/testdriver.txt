@@ -4,4 +4,6 @@
 #anyclass|com.antlersoft.ilanalyze.parseildasm.IldasmReader|main|/tmp/sample2.il|/mnt/external2/scratch/il.pj
 #anyclass|com.antlersoft.ilanalyze.db.ILDB|main|/mnt/external2/scratch/il.pj
 #anyclass|com.antlersoft.ilanalyze.db.ILDB|validate|/mnt/external2/scratch/il.pj
-anyclass|com.antlersoft.ilanalyze.ui.UIQuery|main|/mnt/external2/scratch/il.pj
+#anyclass|com.antlersoft.ilanalyze.ui.UIQuery|main|/mnt/external2/scratch/il.pj
+anyclass|com.antlersoft.ilanalyze.parseildasm.IldasmReader|main|/home/mike/tmp/entlib.il|/mnt/external2/scratch/il.pj
+

@@ -48,6 +48,6 @@ public class DBAssembly implements Persistent {
 	
 	public String toString()
 	{
-		return m_assembly_name;
+		return "assembly "+m_assembly_name;
 	}
 }

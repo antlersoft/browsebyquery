@@ -65,6 +65,26 @@ public class DBString implements Persistent {
 		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBStringReference.SRTARGET, new ObjectRefKey(this)));
 	}
 	
+	/**
+	 * Return an enumeration over DBStringResource whose value is this string
+	 * @param db ILDB for this analyzed system
+	 * @return an enumeration over string resources with this string as the value
+	 */
+	public Enumeration getResourcesContaining( ILDB db)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBStringResource.STRING_RESOURCE_VALUE_INDEX, new ObjectRefKey(this)));
+	}
+	
+	/**
+	 * Return an enumeration over DBStringResource whose namee is this string
+	 * @param db ILDB for this analyzed system
+	 * @return an enumeration over string resources with this string as the name
+	 */
+	public Enumeration getResourcesNamedBy( ILDB db)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBStringResource.STRING_RESOURCE_NAME_INDEX, new ObjectRefKey(this)));		
+	}
+	
 	public String toString()
 	{
 		return m_string_name;

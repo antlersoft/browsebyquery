@@ -142,4 +142,23 @@ public interface DBDriver {
 	 *
 	 */
 	public void endAnalyzedFile();
+	
+	/**
+	 * Start reading the resources within a bundle
+	 * @param name name of bundle
+	 */
+	public void startBundle( String name);
+	
+	/**
+	 * Add a resource to the current bundle
+	 * @param name Resource name
+	 * @param value Resource value
+	 */
+	public void addResource( String name, String value);
+
+	/**
+	 * End the current resource bundle
+	 *
+	 */
+	public void endBundle();
 }

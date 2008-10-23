@@ -55,7 +55,7 @@ public class ObjectKeyHashMap<K,V> implements Serializable {
 	}
 	
 	/** Returns the object associated with the given key */
-	public Object get( ObjectRef<K> ref)
+	public V get( ObjectRef<K> ref)
 	{
 		return m_backing_map.get(keyFromRef(ref));
 	}
@@ -107,6 +107,11 @@ public class ObjectKeyHashMap<K,V> implements Serializable {
 		return m_backing_map.values();
 	}
 	
+	/**
+	 * Return the ObjectKey associated with an ObjectRef
+	 * @param ref
+	 * @return the ObjectKey associated with an ObjectRef
+	 */	
 	private ObjectKey keyFromRef( ObjectRef<K> ref)
 	{
 		return ref.impl==null ? null : ref.impl.objectKey;

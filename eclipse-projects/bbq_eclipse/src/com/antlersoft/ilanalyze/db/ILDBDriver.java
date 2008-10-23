@@ -40,6 +40,9 @@ public class ILDBDriver implements DBDriver {
 	/** How many classes processed since last commit */
 	private int m_class_count;
 	
+	/** Updates the current bundle */
+	private DBBundle.BundleUpdater m_bundle_updater;
+	
 	private final static String ATTRIBUTE_INITIALIZER=".attributeinitializer";
 	
 	public ILDBDriver( ILDB db)
@@ -311,6 +314,32 @@ public class ILDBDriver implements DBDriver {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addResource(java.lang.String, java.lang.String)
+	 */
+	public void addResource(String name, String value) {
+		m_bundle_updater.addNameValuePair(m_db, name, value);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#endBundle()
+	 */
+	public void endBundle() {
+		m_bundle_updater.finishBundle( m_db);
+		m_bundle_updater=null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#startBundle(java.lang.String)
+	 */
+	public void startBundle(String name) {
+		m_bundle_updater=new DBBundle.BundleUpdater( DBBundle.get(m_db, m_current_assembly, name));
+	}
+
+	/**
+	 * Arbitrary string (but guaranteed not to match any valid class) representing
+	 * the class that holds methods not defined in any class.
+	 */
 	static private String NAMELESS_CLASS="`NAMELESS_CLASS`";
 	
 	/**

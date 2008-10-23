@@ -14,6 +14,7 @@ reserved are
 reserved arguments
 reserved array
 reserved base
+reserved bundles
 reserved by
 reserved called
 reserved calls
@@ -30,6 +31,7 @@ reserved Internal "internal"
 reserved is
 reserved Interface "interface" 4 right
 reserved methods
+reserved names
 reserved Package "namespace" 4 right
 reserved packages "namespaces"
 reserved polymorphic
@@ -39,6 +41,7 @@ reserved Public "public" 4 right
 reserved references
 reserved reference
 reserved referenced
+reserved resources
 reserved rightParen ")"
 reserved set
 reserved SetExpressionSymbol "((#1"
@@ -203,6 +206,24 @@ TRANSFORM : packages in "{
 		}
 	};}" .
 	
+TRANSFORM : resources containing "{
+	return new TransformImpl( DBStringResource.class, DBString.class ) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBString)to_transform).getResourcesContaining((ILDB)source);
+		}
+	};
+}" .
+
+TRANSFORM : resources with names "{
+	return new TransformImpl( DBStringResource.class, DBString.class ) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBString)to_transform).getResourcesNamedBy((ILDB)source);
+		}
+	};
+}" .
+	
 TRANSFORM : classes in "{
 	return new TransformImpl( DBClass.class, null) {
 		public void lateBindApplies( Class new_applies)
@@ -343,6 +364,22 @@ VALUE_EXPRESSION : methods of "{
 		public Object transformSingleObject( DataSource source, Object to_transform)
 		{
 			return ((DBArgument)to_transform).getMethod();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : names of "{
+	return new CountPreservingValueExpression( DBString.class, DBStringResource.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBStringResource)to_transform).getName();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : bundles containing "{
+	return new CountPreservingValueExpression( DBString.class, DBStringResource.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBStringResource)to_transform).getBundle();
 		}
 	};
 	}" .
