@@ -32,6 +32,8 @@ import com.antlersoft.parser.Symbol;
 import com.antlersoft.parser.lex.LexException;
 import com.antlersoft.parser.lex.LexState;
 
+import com.antlersoft.query.environment.Lexer;
+
 /**
  * Manages reading an IL assembly-language file and putting the information in the BBQ database
  * (via the DBDriver interface)
@@ -42,6 +44,7 @@ public class IldasmReader {
 	
     static Logger logger=Logger.getLogger( IldasmReader.class.getName());
 	private IldasmParser m_parser;
+	private ResourceParser m_resource_parser;
 	private DBDriver m_driver;
 	/** A format string for forming the disassembly command for an assembly from the assembly's path */
 	private String m_disassembly_command_format;
@@ -63,6 +66,7 @@ public class IldasmReader {
 	public IldasmReader()
 	{
 		m_parser=new IldasmParser();
+		m_resource_parser=new ResourceParser();
 		m_line=new StringBuilder();
 		m_disassembly_command_format="monodis {0}";
 		if ( System.getProperty("os.name", "Finux").contains("Windows"))
@@ -80,20 +84,16 @@ public class IldasmReader {
 	}
 	
 	/**
-	 * Read a sequence of characters that represents an ildasm file, and add the contents to
-	 * the database
+	 * Reads characters from a Reader and sends them to a lexer represented by an initial state,
+	 * keeping track of line number and position.
 	 * @param reader
+	 * @param state
 	 * @throws IOException
-	 * @throws LexException
 	 * @throws RuleActionException
 	 */
-	public void Read( DBDriver driver, Reader reader) throws IOException, RuleActionException
+	private void readToLexer( Reader reader, LexState state)
+	 throws IOException, RuleActionException
 	{
-		LexState state=new InitialState( this);
-		m_driver=driver;
-		m_parser.reset();
-		m_parser.setDriver(m_driver);
-		m_expected=null;
 		m_line_count=1;
 		m_line.setLength(0);
 		try
@@ -114,12 +114,43 @@ public class IldasmReader {
 			state.endOfFile();
 			logger.fine( "lines read: "+m_line_count);
 		}
-		catch ( Exception e)
+		catch ( LexException le)
+		{
+			RuleActionException rae=new RuleActionException( "error: "+le.getMessage()+" at line: "+m_line_count+"\n"+m_line.toString());
+			rae.setStackTrace(le.getStackTrace());
+			throw rae;			
+		}
+		catch ( RuleActionException e)
 		{
 			RuleActionException rae=new RuleActionException( "error: "+e.getMessage()+" at line: "+m_line_count+"\n"+m_line.toString());
 			rae.setStackTrace(e.getStackTrace());
 			throw rae;
-		}
+		}		
+	}
+	
+	/**
+	 * Read a sequence of characters that represents an ildasm file, and add the contents to
+	 * the database
+	 * @param driver
+	 * @param reader
+	 * @throws IOException
+	 * @throws RuleActionException
+	 */
+	public void Read( DBDriver driver, Reader reader) throws IOException, RuleActionException
+	{
+		LexState state=new InitialState( this);
+		m_driver=driver;
+		m_parser.reset();
+		m_parser.setDriver(m_driver);
+		m_expected=null;
+		readToLexer(reader, state);
+	}
+	
+	private void readResources( DBDriver driver, Reader reader) throws IOException, RuleActionException
+	{
+		m_resource_parser.setDriver(driver);
+		m_resource_parser.reset();
+		readToLexer( reader, new Lexer( m_resource_parser));
 	}
 	
 	/**
@@ -233,15 +264,9 @@ public class IldasmReader {
 				driver.startAnalyzedFile(file.getAbsolutePath());
 				// Tokenize the command format, substitute the file path as necessary
 				Object[] format_args=new Object[] { file.getAbsolutePath() };
-				ArrayList arg_list=new ArrayList();
-				for ( Enumeration e=new StringTokenizer( m_disassembly_command_format); e.hasMoreElements();)
-				{
-					arg_list.add( MessageFormat.format( (String)e.nextElement(), format_args));
-				}
-				String[] cmdargs=new String[arg_list.size()];
-				Process process=Runtime.getRuntime().exec((String[])arg_list.toArray(cmdargs));
-				Read( driver, new InputStreamReader(process.getInputStream()));
-				driver.endAnalyzedFile();
+				Process process=Runtime.getRuntime().exec(formatCommandArgs(m_disassembly_command_format, format_args));
+				InputStreamReader reader=new InputStreamReader(process.getInputStream());
+				Read( driver, reader);
 				try
 				{
 					process.waitFor();
@@ -250,8 +275,33 @@ public class IldasmReader {
 				{
 					logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
 				}
+				reader.close();
+				process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args));
+				reader=new InputStreamReader(process.getInputStream());
+				readResources( driver, reader);
+				try
+				{
+					process.waitFor();
+				}
+				catch ( InterruptedException ie)
+				{
+					logger.warning( "Interrupted waiting for resource reader process: " + ie.getMessage());
+				}
+				reader.close();
+				driver.endAnalyzedFile();
 			}
 		}
+	}
+	
+	private static String[] formatCommandArgs( String commandFormat, Object[] format_args)
+	{
+		ArrayList<String> arg_list=new ArrayList<String>();
+		for ( Enumeration e=new StringTokenizer( commandFormat); e.hasMoreElements();)
+		{
+			arg_list.add( MessageFormat.format( (String)e.nextElement(), format_args));
+		}
+		String[] cmdargs=new String[arg_list.size()];
+		return arg_list.toArray(cmdargs);
 	}
 	
 	public static void main( String[] args) throws Exception
