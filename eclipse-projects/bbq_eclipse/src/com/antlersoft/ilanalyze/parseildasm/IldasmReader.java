@@ -63,8 +63,6 @@ public class IldasmReader {
 	 */
 	private HashMap m_expected;
 	
-	private boolean verbose;
-	
 	public IldasmReader()
 	{
 		m_parser=new IldasmParser();
@@ -105,7 +103,6 @@ public class IldasmReader {
 				if ( i>256)
 					continue;
 				char c=(char)i;
-				if ( verbose) System.out.append(c);
 				m_line.append(c);
 				state=state.nextCharacter(c);
 				if ( c=='\n')
@@ -152,12 +149,10 @@ public class IldasmReader {
 	private void readResources( DBDriver driver, Reader reader) throws IOException, RuleActionException
 	{
 		System.out.println( "Reading resouces");
-		verbose=true;
 		m_resource_parser.setDriver(driver);
 		m_resource_parser.reset();
 		Lexer lexer=new Lexer( m_resource_parser);
 		readToLexer( reader, lexer);
-		verbose=false;
 	}
 	
 	/**

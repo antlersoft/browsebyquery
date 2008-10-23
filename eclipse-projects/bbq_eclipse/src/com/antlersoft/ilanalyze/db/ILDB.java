@@ -182,6 +182,10 @@ public class ILDB extends IndexObjectDB implements DataSource {
 		catch ( IndexExistsException iee)
 		{
 		}
+		redefineIndex( DBBundle.BUNDLE_KEY_INDEX,
+				DBBundle.class,
+				new DBBundle.BundleKeyGenerator(),
+				false, true, null);
 		redefineIndex( DBStringResource.STRING_RESOURCE_VALUE_INDEX,
 				DBStringResource.class,
 				new DBStringResource.ValueKeyGenerator(),
