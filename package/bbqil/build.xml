@@ -21,6 +21,9 @@ Requires ant 1.6+
 		<exec executable="${genparserpath}">
 			<arg file="com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
 		</exec>
+		<exec executable="${genparserpath}">
+			<arg file="com/antlersoft/ilanalyze/query/ResourceLister.pre"/>
+		</exec>
 		<delete dir="com/antlersoft/odb/transp"/>
 		<delete dir="com/antlersoft/odb/postproc"/>
 		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
