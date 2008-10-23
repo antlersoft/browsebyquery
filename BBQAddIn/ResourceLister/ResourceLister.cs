@@ -52,6 +52,28 @@ namespace ResourceLister
                         Console.WriteLine("}");
                     }
                 }
+                else
+                {
+                    Stream strm = assembly.GetManifestResourceStream(r);
+                    StreamReader sr = new StreamReader(strm);
+                    String contents = sr.ReadToEnd();
+                    String basename = r;
+                    int lastIndex = r.LastIndexOf('.');
+                    if (lastIndex != -1)
+                    {
+                        String withoutExt = r.Substring(0, lastIndex);
+                        lastIndex = withoutExt.LastIndexOf('.');
+                        if (lastIndex != -1)
+                        {
+                            basename = r.Substring(lastIndex + 1);
+                        }
+                    }
+                    sr.Close();
+                    Console.WriteLine("bundle " + escapeString(r));
+                    Console.WriteLine("{");
+                    Console.WriteLine("{0} = {1}", escapeString(basename), escapeString(contents));
+                    Console.WriteLine("}");
+                }
             }
             Console.WriteLine("}");
         }
