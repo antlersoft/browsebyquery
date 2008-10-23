@@ -45,6 +45,7 @@ public class DBBundle implements Persistent {
 	{
 		_assembly=new ObjectRef<DBAssembly>(assembly);
 		_name=name;
+		_resources=new ObjectKeyHashMap<DBString,ObjectRef<DBStringResource>>();
 		ObjectDB.makePersistent( this);
 	}
 	

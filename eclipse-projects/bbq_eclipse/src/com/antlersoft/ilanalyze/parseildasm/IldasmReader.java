@@ -148,7 +148,6 @@ public class IldasmReader {
 	
 	private void readResources( DBDriver driver, Reader reader) throws IOException, RuleActionException
 	{
-		System.out.println( "Reading resouces");
 		m_resource_parser.setDriver(driver);
 		m_resource_parser.reset();
 		Lexer lexer=new Lexer( m_resource_parser);
