@@ -150,7 +150,8 @@ public class IldasmReader {
 	{
 		m_resource_parser.setDriver(driver);
 		m_resource_parser.reset();
-		readToLexer( reader, new Lexer( m_resource_parser));
+		Lexer lexer=new Lexer( m_resource_parser);
+		readToLexer( reader, lexer);
 	}
 	
 	/**

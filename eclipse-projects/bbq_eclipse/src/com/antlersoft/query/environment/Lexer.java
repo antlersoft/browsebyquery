@@ -39,16 +39,34 @@ public class Lexer implements LexState {
 	private static final int IN_SLASH_ESCAPE=8;
 	
 	private Parser m_parser;
-	private ArrayList<Token> tokens;
 	private int lex_state;
 	private StringBuilder currentString;
+	private TokenAdder adder;
 	
 	public Lexer( Parser parser)
 	{
 		m_parser=parser;
-		tokens=new ArrayList<Token>();
 		lex_state=INITIAL;
 		currentString=new StringBuilder();
+		adder = new TokenAdder() {
+			public void addToken( Token t) throws RuleActionException
+			{
+				if ( m_parser.parse(t.symbol, t.value))
+				{
+					String message=m_parser.getRuleMessage();
+					if ( message==null)
+					{
+						message="Lexer parsing error parsing "+t.symbol.toString()+": '"+t.value.toString()+"'";
+					}
+					throw new RuleActionException(message);
+				}
+			}
+		};
+	}
+	
+	interface TokenAdder
+	{
+		void addToken( Token t) throws RuleActionException;
 	}
 	
 	/**
@@ -59,7 +77,7 @@ public class Lexer implements LexState {
 	 * Otherwise, submit the first character as a reserved word.
 	 * @param c Next punctuation character to add
 	 */
-	private void addPunctuationCharacter( char c)
+	private void addPunctuationCharacter( char c) throws RuleActionException
 	{
 		int result=IN_PUNC;
 		if ( currentString.length()==0)
@@ -91,7 +109,7 @@ public class Lexer implements LexState {
 	/**
 	 * Add the token represented by the content of the current buffer to the list of tokens
 	 */
-	private void addCurrentString()
+	private void addCurrentString() throws RuleActionException
 	{
 	    if ( currentString.length()>0)
 	    {
@@ -100,11 +118,11 @@ public class Lexer implements LexState {
 	        Symbol rw=m_parser.getReservedScope().findReserved( cs);
 	        if ( rw==null)
 	        {
-	            tokens.add( new Token( BasicBase.nameSymbol, cs));
+	            adder.addToken( new Token( BasicBase.nameSymbol, cs));
 	        }
 	        else
 	        {
-	            tokens.add( new Token( rw, cs));
+	            adder.addToken( new Token( rw, cs));
 	        }
 	    }  	
 	}
@@ -112,11 +130,18 @@ public class Lexer implements LexState {
 	Token[] tokenize( String toTokenize)
 	{
 	    char[] chars=toTokenize.toCharArray();
-	    tokens.clear();
+	    final ArrayList<Token> tokens=new ArrayList<Token>();
 	    currentString.setLength(0);
 	    int i=0;
 	    lex_state=INITIAL;
 	    LexState ls=this;
+	    TokenAdder old_adder=adder;
+	    adder=new TokenAdder() {
+	    	public void addToken( Token t)
+	    	{
+	    		tokens.add(t);
+	    	}
+	    };
 	    try
 	    {
 		    for ( ; i<chars.length; i++)
@@ -134,6 +159,10 @@ public class Lexer implements LexState {
 	    catch ( LexException le)
 	    {
 	    }
+	    finally
+	    {
+	    	adder=old_adder;
+	    }
 	
 	    Token[] retval=new Token[tokens.size()];
 	    tokens.toArray( retval);
@@ -149,17 +178,17 @@ public class Lexer implements LexState {
 	    case IN_QUOTE :
 	    case IN_QUOTE_ESCAPE :
 	    case IN_SLASH_QUOTE :
-    		tokens.add( new LiteralToken( currentString.toString()));
+    		adder.addToken( new LiteralToken( currentString.toString()));
     		break;
 	    case IN_SLASH_ESCAPE :
 	    	currentString.append('\\');
-	    	tokens.add( new LiteralToken( currentString.toString()));
+	    	adder.addToken( new LiteralToken( currentString.toString()));
 	    	break;
 	    case IN_FIRST_SLASH:
 	    	addPunctuationCharacter( '\\');
 	    	break;
 	    case IN_NUMBER :
-	    	tokens.add( new Token( BasicBase.number, currentString.toString()));
+	    	adder.addToken( new Token( BasicBase.number, currentString.toString()));
 	    	break;
 	    case IN_WORD :
 	    case IN_PUNC :
@@ -167,7 +196,7 @@ public class Lexer implements LexState {
 	    	break;
 	    // INITIAL state, do nothing
 	    }
-	    tokens.add( new Token( Parser._end_, ""));
+	    adder.addToken( new Token( Parser._end_, ""));
 	    return this;
 	}
 
@@ -208,7 +237,7 @@ public class Lexer implements LexState {
         	}
         	else if ( c=='"')
         	{
-        		tokens.add( new LiteralToken( currentString.toString()));
+        		adder.addToken( new LiteralToken( currentString.toString()));
         		currentString.setLength(0);
         		lex_state=INITIAL;
         	}
@@ -226,7 +255,7 @@ public class Lexer implements LexState {
         	}
         	else
         	{
-        		tokens.add( new Token( BasicBase.number, currentString.toString()));
+        		adder.addToken( new Token( BasicBase.number, currentString.toString()));
         		currentString.setLength(0);
         		lex_state=INITIAL;
         		return nextCharacter(c);
@@ -248,7 +277,7 @@ public class Lexer implements LexState {
         	}
         	else if ( c=='/')
         	{
-        		tokens.add( new LiteralToken( currentString.toString()));
+        		adder.addToken( new LiteralToken( currentString.toString()));
         		currentString.setLength(0);
         		lex_state=INITIAL;
         	}
