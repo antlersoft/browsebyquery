@@ -1,4 +1,4 @@
-bbq0.6.0
+bbq0.6.1
 
 This is a release with few visible changes; the data store has been rearranged to improve
 performance and reduce memory usage.  See the change log.
