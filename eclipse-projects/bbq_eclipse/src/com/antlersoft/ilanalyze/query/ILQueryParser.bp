@@ -18,6 +18,7 @@ reserved bundles
 reserved by
 reserved called
 reserved calls
+reserved catches
 reserved Class "class"
 reserved classes
 reserved containing
@@ -175,6 +176,8 @@ TRANSFORM : Reference from "{ return new TransformImpl( DBFieldReference.class, 
 TRANSFORM : StringConstant Reference from "{ return new TransformImpl( DBStringReference.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getStringReferences(); } }; }" .
 TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
 TRANSFORM : calls to "{ return new TransformImpl( DBCall.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getCallsTo((ILDB)source); } }; }" .
+TRANSFORM : catches of "{ return new TransformImpl( DBCatch.class, DBClass.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBClass)to_transform).getCatchesOf((ILDB)source); } }; }" .
+TRANSFORM : catches in "{ return new TransformImpl( DBCatch.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getCatches(); } }; }" .
 TRANSFORM : TransformSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).replaceWithStoredValue( (String)valueStack.get( valueStack.size()-1), 1); }" .
 TRANSFORM : fields with "{
 	return new TransformImpl( DBField.class, DBType.class) {

@@ -103,6 +103,23 @@ public class ILDBDriver implements DBDriver {
 	}
 
 	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addCatch(com.antlersoft.ilanalyze.ReadType)
+	 */
+	public void addCatch(ReadType caught) {
+		if ( m_method_updater!=null)
+		{
+			try
+			{
+				m_method_updater.addCatch( getCurrentClass(caught), m_current_source_file, m_current_line);
+			}
+			catch ( ITypeInterpreter.TIException tie)
+			{
+				LoggingDBDriver.logger.info(tie.getMessage());
+			}
+		}
+	}
+
+	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#endClass()
 	 */
 	public void endClass() {

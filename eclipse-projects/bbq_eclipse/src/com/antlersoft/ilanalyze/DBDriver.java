@@ -161,4 +161,10 @@ public interface DBDriver {
 	 *
 	 */
 	public void endBundle();
+	
+	/**
+	 * Add a catch of a particular exception class
+	 * @param caught Class caught by the exception
+	 */
+	public void addCatch( ReadType caught);
 }

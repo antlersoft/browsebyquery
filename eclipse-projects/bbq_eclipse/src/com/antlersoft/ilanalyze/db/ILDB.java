@@ -194,6 +194,9 @@ public class ILDB extends IndexObjectDB implements DataSource {
 				DBStringResource.class,
 				new DBStringResource.NameKeyGenerator(),
 				false, false, null);
+		redefineIndex( DBCatch.CATCH_TARGET, DBCatch.class,
+				DBReference.ReferenceTargetGenerator.G,
+				false,false,null);
 	}
 	
 	public static ILDB clearDB( ILDB db, File dbFile )

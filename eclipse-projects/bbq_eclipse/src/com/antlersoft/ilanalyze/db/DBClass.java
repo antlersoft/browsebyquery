@@ -10,12 +10,14 @@ import java.util.TreeMap;
 
 import com.antlersoft.ilanalyze.DBDriver;
 
+import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.FromRefEnumeration;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 
 import com.antlersoft.util.IteratorEnumeration;
@@ -313,6 +315,16 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	public Enumeration getDerivedClasses()
 	{
 		return m_derived==null ? (Enumeration)EmptyEnum.empty : (Enumeration)new FromRefEnumeration( new IteratorEnumeration( m_derived.iterator()));
+	}
+	
+	/**
+	 * catches that reference this class (explicitly)
+	 * @param db
+	 * @return Enumeration of DBCatch object that reference this DBClass
+	 */
+	public Enumeration getCatchesOf( ILDB db)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBCatch.CATCH_TARGET, new ObjectRefKey(this)));		
 	}
 	
 	/**

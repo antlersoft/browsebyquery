@@ -13,23 +13,23 @@ import com.antlersoft.odb.Persistent;
  * @author Michael A. MacDonald
  *
  */
-public class DBReference extends DBSourceObject {
+public class DBReference<T extends Persistent> extends DBSourceObject {
 	
 	/** DBMethod that contains this reference */
-	ObjectRef m_source;
-	ObjectRef m_target;
+	ObjectRef<DBMethod> m_source;
+	ObjectRef<T> m_target;
 	
 	public DBMethod getMethod()
 	{
-		return (DBMethod)m_source.getReferenced();
+		return m_source.getReferenced();
 	}
 
 	/**
 	 * 
 	 */
-	public DBReference( DBMethod source, Persistent target) {
-		m_source=new ObjectRef( source);
-		m_target=new ObjectRef( target);
+	public DBReference( DBMethod source, T target) {
+		m_source=new ObjectRef<DBMethod>( source);
+		m_target=new ObjectRef<T>( target);
 	}
 	
 	public void addFromInfo( StringBuilder sb)

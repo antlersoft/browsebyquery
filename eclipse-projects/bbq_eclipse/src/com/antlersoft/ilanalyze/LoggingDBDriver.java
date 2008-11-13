@@ -251,6 +251,15 @@ public class LoggingDBDriver implements DBDriver {
 			m_nested.startBundle(name);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addCatch(com.antlersoft.ilanalyze.ReadType)
+	 */
+	public void addCatch(ReadType caught) {
+		logger.fine( "Catch "+caught.toString());
+		if ( m_nested!=null)
+			m_nested.addCatch( caught);
+	}
+
 	static private void formatGenericParams( StringBuilder sb, List genericParams)
 	{
 		if ( genericParams!=null && genericParams.size()>0)

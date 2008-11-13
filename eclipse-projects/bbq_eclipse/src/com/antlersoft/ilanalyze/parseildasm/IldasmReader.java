@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,13 +56,13 @@ public class IldasmReader {
 	/** Pattern directory must match to pull .dll's and .exe's */
 	private Pattern m_directory_match;
 	/** Oldest modification date to consider for file to add to database */
-	private Date m_oldest;
+	private TreeMap<String,Date> m_oldest;
 	
 	/**
 	 * Map of symbol name to symbol; cache of expected symbols so we can identify if multiple symbols
 	 * are expected efficiently.
 	 */
-	private HashMap m_expected;
+	private HashMap<String,Symbol> m_expected;
 	
 	public IldasmReader()
 	{
@@ -184,7 +185,7 @@ public class IldasmReader {
 	{
 		if ( m_expected==null)
 		{
-			m_expected=new HashMap();
+			m_expected=new HashMap<String,Symbol>();
 			for ( Enumeration e=m_parser.getExpectedSymbols(); e.hasMoreElements();)
 			{
 				Symbol s=(Symbol)e.nextElement();
@@ -204,11 +205,12 @@ public class IldasmReader {
 	}
 	
 	/**
-	 * Set a date; won't add .exe or .dll files to the database older than that date
-	 * @param oldest Files older than this won't be added to the database (it assumes most recent version
-	 * is already there)
+	 * Set a map of canonical paths to dates;
+	 * won't add .exe or .dll files to the database older than the date in the map
+	 * for the canonical path for the file.
+	 * @param oldest 
 	 */
-	public void setOldestFileDate( Date oldest)
+	public void setOldestFileDate( TreeMap<String,Date> oldest)
 	{
 		m_oldest=oldest;
 	}
@@ -251,14 +253,16 @@ public class IldasmReader {
 							return;
 						}
 					}
-					if ( m_oldest!=null)
+					if ( m_oldest!=null )
 					{
-						if ( file.lastModified()<m_oldest.getTime())
+						Date d=m_oldest.get( file.getCanonicalPath());
+						if ( d!=null && file.lastModified()<=d.getTime())
 						{
 							if ( logger.isLoggable(Level.FINER))
 								logger.finer( "Rejecting "+file.getAbsolutePath()+" because it is older than "+m_oldest.toString() );
 							return;						
 						}
+						m_oldest.put(file.getCanonicalPath(), new Date(file.lastModified()));
 					}
 				}
 				logger.fine("Reading assembly file "+file.getAbsolutePath());

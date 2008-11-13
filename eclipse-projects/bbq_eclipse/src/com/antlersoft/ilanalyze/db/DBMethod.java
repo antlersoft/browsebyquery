@@ -14,6 +14,7 @@ import com.antlersoft.ilanalyze.Signature;
 
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.FromRefEnumeration;
+import com.antlersoft.odb.FromRefIteratorEnumeration;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectRefKey;
@@ -37,6 +38,8 @@ public class DBMethod extends DBMember {
 	private ArrayList m_field_references;
 	/** DBStringReferences from this method */
 	private ArrayList m_string_references;
+	/** DBCatches in the method */
+	private ArrayList<ObjectRef<DBCatch>> m_catches;
 	/** True if the method has been read from an assembly, rather than just being referenced */
 	private boolean m_visited;
 	/** Signature key (signature as a single string) */
@@ -54,6 +57,7 @@ public class DBMethod extends DBMember {
 		m_calls=new ArrayList();
 		m_field_references=new ArrayList();
 		m_string_references=new ArrayList();
+		m_catches=new ArrayList<ObjectRef<DBCatch>>();
 		m_signature_key=signature_key;
 		ObjectDB.makePersistent( this);
 	}
@@ -93,6 +97,11 @@ public class DBMethod extends DBMember {
 	public Enumeration getCalls()
 	{
 		return new FromRefEnumeration( new IteratorEnumeration( m_calls.iterator()));
+	}
+	
+	public Enumeration<DBCatch> getCatches()
+	{
+		return new FromRefIteratorEnumeration<DBCatch>( m_catches.iterator());
 	}
 	
 	/**
@@ -207,9 +216,10 @@ public class DBMethod extends DBMember {
 		private ILDB m_db;
 		DBMethod m_method;
 		boolean m_updated;
-		ReferenceUpdater m_call_up;
-		ReferenceUpdater m_string_up;
-		ReferenceUpdater m_field_up;
+		ReferenceUpdater<DBCall> m_call_up;
+		ReferenceUpdater<DBStringReference> m_string_up;
+		ReferenceUpdater<DBFieldReference> m_field_up;
+		ReferenceUpdater<DBCatch> m_catch_up;
 		
 		MethodUpdater( ILDB db, DBMethod method)
 		{
@@ -218,9 +228,10 @@ public class DBMethod extends DBMember {
 			method.taintFileAndLine();
 			method.setVisited(true);
 			m_updated=false;
-			m_call_up=new ReferenceUpdater( method.m_calls);
-			m_string_up=new ReferenceUpdater( method.m_string_references);
-			m_field_up=new ReferenceUpdater( method.m_field_references);
+			m_call_up=new ReferenceUpdater<DBCall>( method.m_calls);
+			m_string_up=new ReferenceUpdater<DBStringReference>( method.m_string_references);
+			m_field_up=new ReferenceUpdater<DBFieldReference>( method.m_field_references);
+			m_catch_up=new ReferenceUpdater<DBCatch>( method.m_catches);
 		}
 		
 		void updateArguments( Signature sig) throws ITypeInterpreter.TIException
@@ -243,6 +254,14 @@ public class DBMethod extends DBMember {
 			if ( ! m_string_up.existsReference( str, file, line))
 			{
 				m_string_up.newReference(new DBStringReference(m_method, str), file, line);
+			}
+		}
+		
+		void addCatch( DBClass c, DBSourceFile file, int line)
+		{
+			if ( ! m_catch_up.existsReference( c, file, line))
+			{
+				m_catch_up.newReference(new DBCatch( m_method, c), file, line);
 			}
 		}
 		
@@ -275,36 +294,37 @@ public class DBMethod extends DBMember {
 				m_updated=true;
 				m_method.m_calls=m_call_up.m_after_list;
 			}
+			if ( m_catch_up.cleanup(m_db))
+			{
+				m_updated=true;
+				m_method.m_catches=m_catch_up.m_after_list;
+			}
 			if ( m_updated)
 			{
 				ObjectDB.makeDirty(m_method);
 			}
 		}
 		
-		static class ReferenceUpdater
+		static class ReferenceUpdater<T extends DBReference>
 		{
-			private ArrayList m_before_list;
-			ArrayList m_after_list;
+			private ArrayList<ObjectRef<T>> m_before_list;
+			ArrayList<ObjectRef<T>> m_after_list;
 			private boolean m_updated;
 			
-			ReferenceUpdater(  ArrayList orig)
+			ReferenceUpdater(  ArrayList<ObjectRef<T>> orig)
 			{
-				m_before_list=(ArrayList)orig.clone();
-				m_after_list=new ArrayList( orig.size());
-				m_updated=false;
 				
-				for ( Iterator i=orig.iterator(); i.hasNext();)
-				{
-					m_before_list.add( i.next());
-				}
+				m_before_list=(ArrayList<ObjectRef<T>>)orig.clone();
+				m_after_list=new ArrayList<ObjectRef<T>>( orig.size());
+				m_updated=false;
 			}
 			
 			boolean existsReference( Object target, DBSourceFile file, int line)
 			{
-				for ( Iterator i=m_before_list.iterator(); i.hasNext();)
+				for ( Iterator<ObjectRef<T>> i=m_before_list.iterator(); i.hasNext();)
 				{
-					ObjectRef o=(ObjectRef)i.next();
-					DBReference dbr=(DBReference)o.getReferenced();
+					ObjectRef<T> o=i.next();
+					T dbr=o.getReferenced();
 					if ( o.getReferenced().equals( target))
 					{
 						dbr.setFileAndLine(file, line);
@@ -317,19 +337,19 @@ public class DBMethod extends DBMember {
 				return false;
 			}
 			
-			void newReference( DBReference r, DBSourceFile file, int line)
+			void newReference( T r, DBSourceFile file, int line)
 			{
 				r.setFileAndLine(file, line);
-				m_after_list.add( new ObjectRef(r));
+				m_after_list.add( new ObjectRef<T>(r));
 				m_updated=true;
 			}
 			
 			boolean cleanup(ILDB db)
 			{
-				for ( Iterator i=m_before_list.iterator(); i.hasNext();)
+				for ( Iterator<ObjectRef<T>> i=m_before_list.iterator(); i.hasNext();)
 				{
 					m_updated=true;
-					db.deleteObject(((ObjectRef)i.next()).getReferenced());
+					db.deleteObject(i.next().getReferenced());
 				}
 				return m_updated;
 			}

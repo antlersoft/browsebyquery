@@ -81,7 +81,7 @@ class QuerySocketServer implements Runnable {
 				try
 				{
 					Socket s=listener.accept();
-					new Thread( new QuerySocketClient( s, bbq), "QuerySocketClient-"+s.getLocalPort()).start();
+					new Thread( new QuerySocketClient( s, this), "QuerySocketClient-"+s.getLocalPort()).start();
 				}
 				catch ( SocketTimeoutException ste)
 				{
@@ -106,6 +106,16 @@ class QuerySocketServer implements Runnable {
 			}
 			logger.info( "Finished listening");			
 		}
+	}
+	
+	public synchronized IBrowseByQuery getXMLIntf()
+	{
+		return bbq;
+	}
+	
+	public synchronized void setXMLIntf( IBrowseByQuery bbq)
+	{
+		this.bbq = bbq;
 	}
 	
 	public synchronized void cancel()
@@ -136,13 +146,13 @@ class QuerySocketServer implements Runnable {
 	{
 		private Messenger messenger;
 		
-		private IBrowseByQuery bbq;
+		private QuerySocketServer bbq;
 		
 		private SAXParser parser;
 		
-		QuerySocketClient( Socket s, IBrowseByQuery i) throws IOException
+		QuerySocketClient( Socket s, QuerySocketServer qs) throws IOException
 		{
-			bbq=i;
+			bbq=qs;
 			messenger=new Messenger(s);
 		}
 		
@@ -161,7 +171,7 @@ class QuerySocketServer implements Runnable {
 					DefaultHandler top=new QueryRequest.Element( request).readFromXML( stack);
 					stack.pushHandlerStack( top);
 					parser.parse( new InputSource( new StringReader( s)), top);
-					QueryResponse response=bbq.PerformQuery(request);
+					QueryResponse response=bbq.getXMLIntf().PerformQuery(request);
 					StringWriter out=new StringWriter();
 					ElementTransformReader.writeElement( new QueryResponse.Element( response), out);
 					String output=out.toString();
