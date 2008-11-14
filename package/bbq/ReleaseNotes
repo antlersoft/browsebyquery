@@ -1,3 +1,8 @@
+bbq0.6.3
+
+Quick fix because 0.6.2 package was missing icons.  Also updated build script
+to tag more files with version number.
+
 bbq0.6.2
 
 This is a release with few visible changes; the data store has been rearranged to improve

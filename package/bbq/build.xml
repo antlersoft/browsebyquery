@@ -14,7 +14,7 @@ Requires ant 1.6+
 	</target>
 	<target name="bbqstandalone" depends="buildcommon">
 		<mkdir dir="dist"/>
-		<jar destfile="dist/bbqstandalone.jar" basedir="classes" manifest="com/antlersoft/analyzer/bbqstandalone.txt"
+		<jar destfile="dist/bbqstandalone_${bbq.version}.jar" basedir="classes" manifest="com/antlersoft/analyzer/bbqstandalone.txt"
 		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/query/** icons/**">
 		</jar>
 	</target>
@@ -36,7 +36,7 @@ Requires ant 1.6+
 		basedir="."
 		includes="feature.xml"	
 		/> 
-		<zip destfile="dist/bbq_eclipse_site.jar" basedir="dist/site" includes="**"  />
+		<zip destfile="dist/bbq_eclipse_site_${bbq.version}.jar" basedir="dist/site" includes="**"  />
 	</target>
 	<target name="buildcommon">
 		<mkdir dir="classes"/>
