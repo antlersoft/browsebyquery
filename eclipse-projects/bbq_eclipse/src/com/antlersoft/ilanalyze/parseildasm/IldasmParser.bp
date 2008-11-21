@@ -1067,7 +1067,7 @@ n_eventDecl : n_languageDecl .
 n_eventDecls : .
 n_eventDecls : n_eventDecls n_eventDecl .
 n_eventHead : t_eventDirective n_eventAttr n_typeSpec n_id .
-n_eventHead : t_eventDirective n_eventAttr n_id .
+n_eventHead : t_eventDirective n_eventAttr n_typeSpec .
 n_exportHead : t_exportDirective n_comtAttr n_name1 .
 # Ext source position is a single integer; we don't care about column position or range
 n_extSourcePosition : n_int32 "m_TopObject" .
