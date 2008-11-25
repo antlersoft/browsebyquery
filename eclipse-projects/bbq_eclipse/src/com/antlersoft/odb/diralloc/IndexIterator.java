@@ -28,6 +28,11 @@ package com.antlersoft.odb.diralloc;
 
 import java.util.NoSuchElementException;
 
+/**
+ * Iterator for traversing keys in unique indices
+ * @author Michael A. MacDonald
+ *
+ */
 class IndexIterator implements com.antlersoft.odb.IndexIterator
 {
     private Index baseIndex;

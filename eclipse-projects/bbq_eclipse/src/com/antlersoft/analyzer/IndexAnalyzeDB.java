@@ -36,6 +36,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.antlersoft.bbq.db.DBString;
+
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexIterator;
 import com.antlersoft.odb.IndexObjectDB;
@@ -101,9 +103,9 @@ public class IndexAnalyzeDB implements DataSource
         		new DBMember.MemberTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
         _session.redefineIndex( DBPackage.PACKAGE_NAME_INDEX, DBPackage.class,
         		new DBPackage.PackageNameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
-        _session.redefineIndex( DBStringConstant.STRING_INDEX, DBStringConstant.class,
-        		new DBStringConstant.StringKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
-        _session.redefineIndex( DBStringReference.SRTARGET, DBStringReference.class,
+        _session.redefineIndex( DBString.STRING_INDEX, DBString.class,
+        		new DBString.StringKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+        _session.redefineIndex( DBString.SRTARGET, DBStringReference.class,
         		new DBReference.ReferenceTargetGenerator(), false, false, TYPEKEY_INDEX_PROPS);
         _session.redefineIndex( DBType.TYPE_CLASS_INDEX, DBType.class,
         		new DBType.TypeClassKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
@@ -206,6 +208,8 @@ public class IndexAnalyzeDB implements DataSource
 		
 		return result;
 	}
+	
+	public IndexObjectDB getSession() { return _session; }
 	
     static class CFactory extends CustomizerFactory
     {

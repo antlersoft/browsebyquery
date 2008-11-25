@@ -32,6 +32,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
+/**
+ * Object DB implementations might use Java ObjectInputStream and ObjectOutputStream
+ * to read/write objects to/from persistent storage.  An implementation of this
+ * interface can specify how object streams are created for this purpose, so that
+ * particular implementations or optimizations can be included.
+ * @author Michael A. MacDonald
+ *
+ */
 public interface ObjectStreamCustomizer
 {
     public abstract ObjectInputStream createObjectInputStream( InputStream is)

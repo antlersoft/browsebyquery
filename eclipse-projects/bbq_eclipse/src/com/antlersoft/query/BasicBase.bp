@@ -131,7 +131,7 @@ return new Constant( DateFormat.getDateInstance().parse( (String)valueStack.get(
 }
 catch ( java.text.ParseException pe)
 {
-throw new RuleActionException( pe.getMessage());
+throw new RuleActionException( pe.getMessage(),pe);
 }
 }" .
 

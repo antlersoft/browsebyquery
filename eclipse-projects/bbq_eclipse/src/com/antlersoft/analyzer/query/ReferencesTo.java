@@ -24,9 +24,10 @@ import java.util.Enumeration;
 import com.antlersoft.analyzer.DBFieldReference;
 import com.antlersoft.analyzer.DBField;
 import com.antlersoft.analyzer.DBReference;
-import com.antlersoft.analyzer.DBStringConstant;
 import com.antlersoft.analyzer.DBStringReference;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
+
+import com.antlersoft.bbq.db.DBString;
 
 import com.antlersoft.query.BindException;
 import com.antlersoft.query.DataSource;
@@ -46,9 +47,9 @@ class ReferencesTo extends Transform
         {
             throw new RuntimeException( "Unbound reference to");
         }
-        if ( appliesClass()==DBStringConstant.class)
+        if ( appliesClass()==DBString.class)
         {
-            return ((DBStringConstant)base).getReferencedBy((IndexAnalyzeDB)source);
+            return ((DBString)base).getReferencesTo(((IndexAnalyzeDB)source).getSession());
         }
         else
 		    return ((DBField)base).getReferencesTo((IndexAnalyzeDB)source);
@@ -75,9 +76,9 @@ class ReferencesTo extends Transform
 		throws BindException
 	{
         if ( newResultClass==DBStringReference.class && ( m_applies==null ||
-            m_applies==DBStringConstant.class))
+            m_applies==DBString.class))
         {
-            m_applies=DBStringConstant.class;
+            m_applies=DBString.class;
             m_result= DBStringReference.class;
         }
         else if ( newResultClass==DBFieldReference.class && ( m_applies==null
@@ -98,10 +99,10 @@ class ReferencesTo extends Transform
 	public void lateBindApplies( Class newAppliesClass)
 		throws BindException
 	{
-        if ( newAppliesClass==DBStringConstant.class && ( m_applies==null ||
-            m_applies==DBStringConstant.class))
+        if ( newAppliesClass==DBString.class && ( m_applies==null ||
+            m_applies==DBString.class))
         {
-            m_applies=DBStringConstant.class;
+            m_applies=DBString.class;
             m_result=DBStringReference.class;
         }
         else if ( newAppliesClass==DBField.class && ( m_applies==null

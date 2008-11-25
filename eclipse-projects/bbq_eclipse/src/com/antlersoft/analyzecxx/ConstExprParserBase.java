@@ -47,7 +47,7 @@ class ConstExprParserBase extends Parser implements LexReader {
 			}
 			catch ( LexException le)
 			{
-				throw new RuleActionException( "Bad character literal: "+le.getMessage());
+				throw new RuleActionException( "Bad character literal: "+le.getMessage(), le);
 			}
 			parse(ConstExprParser.cep_number,
 				  new Integer( ( (CharacterLiteral) next_token).intValue()));
@@ -61,7 +61,7 @@ class ConstExprParserBase extends Parser implements LexReader {
 			}
 			catch (LexException le) {
 				throw new RuleActionException("Bad numeric literal: " +
-											  le.getMessage());
+											  le.getMessage(), le);
 			}
 		else if ( next_token instanceof AltSymbolToken)
 		{

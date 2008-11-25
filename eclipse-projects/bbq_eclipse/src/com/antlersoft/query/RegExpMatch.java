@@ -46,7 +46,7 @@ public class RegExpMatch extends CountPreservingBoundFilter {
 		}
 		catch ( PatternSyntaxException pse)
 		{
-			RuleActionException rae=new RuleActionException( pse.getMessage());
+			RuleActionException rae=new RuleActionException( pse.getMessage(), pse);
 			throw rae;
 		}
 	}

@@ -29,6 +29,8 @@ import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.antlersoft.bbq.db.DBString;
+
 import com.antlersoft.classwriter.*;
 
 import com.antlersoft.odb.KeyGenerator;
@@ -300,10 +302,10 @@ public class DBMethod extends DBMember
 			if ( c.lineNumber== -1 || c.lineNumber>lineNumber)
 				c.lineNumber=lineNumber;
 		}
-		for ( Iterator i=codeAttribute.getInstructions().iterator();
+		for ( Iterator<Instruction> i=codeAttribute.getInstructions().iterator();
 			i.hasNext();)
 		{
-			Instruction instruction=(Instruction)i.next();
+			Instruction instruction=i.next();
 			OpCode opcode=instruction.getOpCode();
 			if ( opcode instanceof InvokeOpCode)
 			{
@@ -364,7 +366,7 @@ public class DBMethod extends DBMember
 						try
 						{
 							int lineNumber=codeAttribute.getLineNumber( instruction.getInstructionStart());
-							DBStringConstant target=DBStringConstant.get(db,constant);
+							DBString target=DBString.get(db.getSession(),constant);
 							if ( ! stringRefUpdater.existsReference(target, lineNumber))
 							{
 								stringRefUpdater.addReference( new DBStringReference(DBMethod.this, target, lineNumber));

@@ -21,6 +21,7 @@ package com.antlersoft.ilanalyze.query;
 
 import java.util.Enumeration;
 
+import com.antlersoft.bbq.db.DBString;
 import com.antlersoft.ilanalyze.db.*;
 
 import com.antlersoft.query.BindException;

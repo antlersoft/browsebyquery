@@ -19,6 +19,11 @@
  */
 package com.antlersoft.odb.diralloc;
 
+/**
+ * Iterator for traversing keys in non-unique indices
+ * @author Michael A. MacDonald
+ *
+ */
 class NonUniqueIndexIterator extends IndexIterator
 {
 	Comparable origKey;

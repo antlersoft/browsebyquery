@@ -10,6 +10,7 @@ symbol SAVING_NAME
 
 reserved Abstract "abstract" 4 right
 reserved all
+reserved any
 reserved are
 reserved arguments
 reserved array
@@ -95,6 +96,10 @@ SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 SET_EXPRESSION : Class literalString "{
 	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((AnalyzerQuery)parser.getParserEnvironment()).getImported());
 	}" .
+	
+SET_EXPRESSION : any Class literalString "{
+	return null; 
+}"
 	
 SET_EXPRESSION : Package literalString "{
 	return new PackageGet( (String)valueStack.get( valueStack.size()-1));

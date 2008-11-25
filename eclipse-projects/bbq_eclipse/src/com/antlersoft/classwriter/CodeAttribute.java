@@ -45,16 +45,18 @@ public class CodeAttribute implements Attribute
 
 	private int maxStack;
 	private int maxLocals;
- 	private ArrayList instructions; // Instruction
-	private ArrayList exceptions;
+	/** JVM instructions in the code */
+ 	private ArrayList<Instruction> instructions;
+ 	/** List of trys where exceptions can be caught */
+	private ArrayList<CodeException> exceptions;
 	private AttributeList attributes;
 
     public CodeAttribute( ClassWriter contains)
     {
         maxStack=0;
         maxLocals=0;
-        instructions=new ArrayList();
-        exceptions=new ArrayList();
+        instructions=new ArrayList<Instruction>();
+        exceptions=new ArrayList<CodeException>();
         attributes=new AttributeList( contains);
     }
 
@@ -65,7 +67,7 @@ public class CodeAttribute implements Attribute
 	    maxLocals=classStream.readUnsignedShort();
 	    int codeLength=classStream.readUnsignedShort()*65536+classStream.readUnsignedShort();
 	    byte[] code=new byte[codeLength];
-        instructions=new ArrayList();
+        instructions=new ArrayList<Instruction>();
 	    classStream.readFully( code);
      	InstructionPointer ip=new InstructionPointer(0);
         try
@@ -86,7 +88,7 @@ public class CodeAttribute implements Attribute
             throw new IllegalStateException( cce.getMessage());
         }
 	    int exceptionCount=classStream.readUnsignedShort();
-	    exceptions=new ArrayList( exceptionCount);
+	    exceptions=new ArrayList<CodeException>( exceptionCount);
 	    int i;
 	    for ( i=0; i<exceptionCount; i++)
 		{
@@ -103,12 +105,17 @@ public class CodeAttribute implements Attribute
 
     public Instruction getByIndex( int i)
     {
-        return (Instruction)instructions.get( i);
+        return instructions.get( i);
     }
 
-    public Collection getInstructions()
+    public Collection<Instruction> getInstructions()
     {
     	return Collections.unmodifiableCollection( instructions);
+    }
+    
+    public Collection<CodeException> getExceptions()
+    {
+    	return Collections.unmodifiableCollection( exceptions);
     }
 
     /**
@@ -154,7 +161,7 @@ public class CodeAttribute implements Attribute
         else
         {
             Instruction endInstruction=
-                (Instruction)instructions.get( instructions.size()-1);
+                instructions.get( instructions.size()-1);
             if ( start==endInstruction.instructionStart+
                 endInstruction.getLength())
                 at=instructions.size();
@@ -170,7 +177,7 @@ public class CodeAttribute implements Attribute
         }
         else
         {
-            Instruction lastInstruction=(Instruction)instructions.get(
+            Instruction lastInstruction=instructions.get(
                 at+oldLength-1);
             oldPostEnd=lastInstruction.instructionStart+
                 lastInstruction.getLength();
@@ -188,10 +195,10 @@ public class CodeAttribute implements Attribute
         instructions.addAll( at, newInstructions);
 
         // Fix instructions for the opcodes
-        for ( ListIterator i=instructions.listIterator(); i.hasNext();)
+        for ( ListIterator<Instruction> i=instructions.listIterator(); i.hasNext();)
         {
             int index=i.nextIndex();
-            Instruction current=(Instruction)i.next();
+            Instruction current=i.next();
             if ( index>=at+newCount)
                 current.opCode.fixStartAddress( current,
                                                 start,
@@ -203,9 +210,9 @@ public class CodeAttribute implements Attribute
         }
 
         // Fix exception ranges
-        for ( Iterator i=exceptions.iterator(); i.hasNext();)
+        for ( Iterator<CodeException> i=exceptions.iterator(); i.hasNext();)
         {
-            CodeException range=(CodeException)i.next();
+            CodeException range=i.next();
             if ( ( range.start>start && range.start<oldPostEnd)
                 || ( range.end>start && range.end<oldPostEnd) ||
                 ( range.handler>start && range.handler<oldPostEnd))
@@ -254,17 +261,17 @@ public class CodeAttribute implements Attribute
          * inserted does not have to and must not take this
          * repad step into account.
          */
-        for ( ListIterator i=instructions.listIterator(); i.hasNext();)
+        for ( ListIterator<Instruction> i=instructions.listIterator(); i.hasNext();)
         {
             int index=i.nextIndex();
-            Instruction current=(Instruction)i.next();
+            Instruction current=i.next();
             if ( index>=at+newCount)
             {
             	Instruction repadded=current.opCode.repadInstruction(
             		current);
                 if ( repadded!=null)
                 {
-					ArrayList repad_collection=new ArrayList(1);
+					ArrayList<Instruction> repad_collection=new ArrayList<Instruction>(1);
 					repad_collection.add( repadded);
 					insertInstructions( current.instructionStart, 1,
 					 repad_collection);
@@ -291,16 +298,16 @@ public class CodeAttribute implements Attribute
          * method and with any exception handlers
          */
         next.add( new InstructionPointer( 0));
-        stackArray[0]=new CheckedInstruction( (Instruction)instructions.get(0),
+        stackArray[0]=new CheckedInstruction( instructions.get(0),
             new Stack());
-        for ( Iterator i=exceptions.iterator(); i.hasNext();)
+        for ( Iterator<CodeException> i=exceptions.iterator(); i.hasNext();)
         {
-            int handler=((CodeException)i.next()).handler;
+            int handler=i.next().handler;
             InstructionPointer ip=new InstructionPointer( handler);
             next.add( ip);
             int index=indexAtOffset( ip);
             stackArray[index]=new CheckedInstruction(
-                (Instruction)instructions.get( index), new Stack());
+                instructions.get( index), new Stack());
             stackArray[index].stack.push( ProcessStack.CAT1);
         }
         while ( ! next.isEmpty())
@@ -329,7 +336,7 @@ public class CodeAttribute implements Attribute
                     if ( stackArray[index]==null)
                     {
                         stackArray[index]=new CheckedInstruction(
-                            (Instruction)instructions.get( index), new_stack);
+                            instructions.get( index), new_stack);
                         next.add( ip);
                     }
                     else
@@ -351,7 +358,7 @@ public class CodeAttribute implements Attribute
                         new_stack=(Stack)new_stack.clone();
                         new_stack.push( ProcessStack.CAT1);
                         stackArray[index]=new CheckedInstruction(
-                            (Instruction)instructions.get( index), new_stack);
+                            instructions.get( index), new_stack);
                         next.add( ip);
                     }
                     stackArray[index].previousCheckedInstructions.add(
@@ -370,7 +377,7 @@ public class CodeAttribute implements Attribute
         {
             if ( stackArray[i]==null)
                 throw new CodeCheckException( "Unvisited opcode at offset "+
-                    ((Instruction)instructions.get( i)).instructionStart);
+                    instructions.get( i).instructionStart);
             int depth=stackArray[i].getStackDepth();
             if ( depth>max_stack)
                 max_stack=depth;
@@ -384,9 +391,9 @@ public class CodeAttribute implements Attribute
   		throws CodeCheckException
     {
         int result=0;
-        for ( Iterator i=instructions.iterator(); i.hasNext(); result++)
+        for ( Iterator<Instruction> i=instructions.iterator(); i.hasNext(); result++)
         {
-            Instruction current=(Instruction)i.next();
+            Instruction current=i.next();
             if ( current.instructionStart==ip.currentPos && current.wideFlag==
             	ip.wide)
             	return result;
@@ -431,25 +438,24 @@ public class CodeAttribute implements Attribute
    	{
     	classStream.writeShort( maxStack);
      	classStream.writeShort( maxLocals);
-      	Instruction lastInstr=
-            (Instruction)instructions.get( instructions.size()-1);
+      	Instruction lastInstr=instructions.get( instructions.size()-1);
         int codeLength=lastInstr.instructionStart+lastInstr.getLength();
       	classStream.writeShort( codeLength >>16);
        	classStream.writeShort( codeLength & 0xffff);
-        for ( Iterator i=instructions.iterator(); i.hasNext();)
+        for ( Iterator<Instruction> i=instructions.iterator(); i.hasNext();)
         {
-            Instruction instr=(Instruction)i.next();
+            Instruction instr=i.next();
             instr.opCode.write( classStream, instr);
         }
         classStream.writeShort( exceptions.size());
-        for ( Iterator i=exceptions.iterator(); i.hasNext();)
+        for ( Iterator<CodeException> i=exceptions.iterator(); i.hasNext();)
         {
-        	((CodeException)i.next()).write( classStream);
+        	i.next().write( classStream);
         }
         attributes.write( classStream);
    	}
 
-	static class CodeException
+	public static class CodeException
 	{
 		int start;
 		int end;
@@ -473,6 +479,10 @@ public class CodeAttribute implements Attribute
          	classStream.writeShort( handler);
           	classStream.writeShort( catchType);
      	}
+  		
+  		public int getStartIndex() { return start; }
+  		public int getEndIndex() { return end; }
+  		public int getCatchType() { return catchType; }
 	}
 
 }

@@ -25,4 +25,9 @@ public class RuleActionException extends Exception
 	{
 		super( msg);
 	}
+	
+	public RuleActionException( String msg, Throwable underlying)
+	{
+		super(msg,underlying);
+	}
 }

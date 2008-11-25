@@ -26,21 +26,21 @@
  */
 package com.antlersoft.analyzer;
 
+import com.antlersoft.bbq.db.DBString;
+
 import com.antlersoft.odb.ObjectDB;
 
 public class DBStringReference extends DBReference
 {
-	final static String SRTARGET="SRTARGET";
-	
-    DBStringReference( DBMethod method, DBStringConstant constant, int l)
+    DBStringReference( DBMethod method, DBString constant, int l)
     {
         super( method, constant, l);
         ObjectDB.makePersistent( this);
      }
 
-    public DBStringConstant getTarget()
+    public DBString getTarget()
     {
-        return (DBStringConstant)target.getReferenced();
+        return (DBString)target.getReferenced();
     }
 
     public String toString()

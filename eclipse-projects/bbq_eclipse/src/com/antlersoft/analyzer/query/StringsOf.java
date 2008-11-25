@@ -26,8 +26,9 @@
  */
 package com.antlersoft.analyzer.query;
 
-import com.antlersoft.analyzer.DBStringConstant;
 import com.antlersoft.analyzer.DBStringReference;
+
+import com.antlersoft.bbq.db.DBString;
 
 import com.antlersoft.query.CountPreservingValueExpression;
 import com.antlersoft.query.DataSource;
@@ -36,7 +37,7 @@ class StringsOf extends CountPreservingValueExpression
 {
     public StringsOf()
     {
-        super( DBStringConstant.class, DBStringReference.class);
+        super( DBString.class, DBStringReference.class);
     }
 
     public Object transformSingleObject( DataSource source, Object parm1)

@@ -3,6 +3,7 @@
  */
 package com.antlersoft.ilanalyze.db;
 
+import com.antlersoft.bbq.db.DBString;
 import com.antlersoft.odb.ObjectDB;
 
 /**
@@ -11,7 +12,6 @@ import com.antlersoft.odb.ObjectDB;
  */
 public class DBStringReference extends DBReference {
 
-	static final String SRTARGET="SRTARGET";
 	/**
 	 * @param source
 	 * @param target The referenced DBString

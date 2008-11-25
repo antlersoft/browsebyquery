@@ -203,7 +203,7 @@ System.out.println( "Include file: "+include_file);
 		}
 		catch ( IOException ioe)
 		{
-			throw new RuleActionException( "Failed to find include file: "+include_file);
+			throw new RuleActionException( "Failed to find include file: "+include_file, ioe);
 		}
 		return "";
 	}
@@ -227,7 +227,7 @@ System.out.println( "Include file: "+include_file);
 				}
 				catch (LexException le) {
 					throw new RuleActionException("Bad numeric literal: " +
-												  le.getMessage());
+												  le.getMessage(), le);
 				}
 				o = line_tokens.get(line_tokens.size() - 1);
 				if (o instanceof StringLiteral)

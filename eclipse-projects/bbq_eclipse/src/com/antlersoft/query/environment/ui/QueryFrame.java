@@ -107,6 +107,8 @@ public abstract class QueryFrame
     
     /**
      * Enter the selected files into the database to be queried.  The default implementation does nothing.
+     * The frame may run this command in a separate thread-- the implementation should not
+     * interact directly with objects on the UI thread.
      * @param selected_files
      */
     protected void analyze( File[] selected_files) throws Exception

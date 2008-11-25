@@ -117,13 +117,13 @@ public class IldasmReader {
 		}
 		catch ( LexException le)
 		{
-			RuleActionException rae=new RuleActionException( "error: "+le.getMessage()+" at line: "+m_line_count+"\n"+m_line.toString());
+			RuleActionException rae=new RuleActionException( "error: "+le.getMessage()+" at line: "+m_line_count+"\n"+m_line.toString(), le);
 			rae.setStackTrace(le.getStackTrace());
 			throw rae;			
 		}
 		catch ( RuleActionException e)
 		{
-			RuleActionException rae=new RuleActionException( "error: "+e.getMessage()+" at line: "+m_line_count+"\n"+m_line.toString());
+			RuleActionException rae=new RuleActionException( "error: "+e.getMessage()+" at line: "+m_line_count+"\n"+m_line.toString(),e);
 			rae.setStackTrace(e.getStackTrace());
 			throw rae;
 		}		

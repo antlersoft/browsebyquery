@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.antlersoft.bbq.db.DBBundleBase;
+import com.antlersoft.bbq.db.DBString;
+
 import com.antlersoft.ilanalyze.BuiltinType;
 import com.antlersoft.ilanalyze.CustomAttributeSetting;
 import com.antlersoft.ilanalyze.DBDriver;
@@ -350,7 +353,7 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#startBundle(java.lang.String)
 	 */
 	public void startBundle(String name) {
-		m_bundle_updater=new DBBundle.BundleUpdater( DBBundle.get(m_db, m_current_assembly, name));
+		m_bundle_updater=new DBBundleBase.BundleUpdater( DBBundle.get(m_db, m_current_assembly, name));
 	}
 
 	/**

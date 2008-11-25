@@ -7,6 +7,8 @@ import java.util.Enumeration;
 
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexObjectDB;
+import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.LongStringKey;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
@@ -91,5 +93,16 @@ public class DBString implements Persistent {
 	public String toString()
 	{
 		return m_string_name;
+	}
+
+	public static class StringKeyGenerator implements KeyGenerator
+	{
+		private LongStringKey lsk=new LongStringKey();
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
+		 */
+		public Comparable generateKey(Object o1) {
+			return lsk.key(((DBString)o1).m_string_name);
+		}
 	}
 }

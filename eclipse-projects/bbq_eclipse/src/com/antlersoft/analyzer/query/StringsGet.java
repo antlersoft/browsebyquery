@@ -28,8 +28,9 @@ package com.antlersoft.analyzer.query;
 
 import java.util.Enumeration;
 
-import com.antlersoft.analyzer.DBStringConstant;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
+
+import com.antlersoft.bbq.db.DBString;
 
 import com.antlersoft.query.DataSource;
 import com.antlersoft.query.SetExpression;
@@ -38,14 +39,14 @@ class StringsGet extends SetExpression
 {
 	public Class getResultClass()
 	{
-		return DBStringConstant.class;
+		return DBString.class;
 	}
 	
     public Enumeration evaluate(DataSource source)
     {
     	try
     	{
-    		return ((IndexAnalyzeDB)source).getAll( DBStringConstant.class.getName());
+    		return ((IndexAnalyzeDB)source).getAll( DBString.class.getName());
     	}
     	catch ( Exception e)
     	{

@@ -6,6 +6,8 @@ package com.antlersoft.ilanalyze.db;
 import java.io.File;
 import java.util.ArrayList;
 
+import com.antlersoft.bbq.db.DBString;
+import com.antlersoft.bbq.db.DBStringResource;
 import com.antlersoft.odb.IndexExistsException;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.ObjectStoreException;
@@ -154,7 +156,7 @@ public class ILDB extends IndexObjectDB implements DataSource {
 		}
 		try
 		{
-			defineIndex( DBStringReference.SRTARGET,
+			defineIndex( DBString.SRTARGET,
 								   DBStringReference.class,
 								   DBReference.ReferenceTargetGenerator.G,
 								   false, false, null);
