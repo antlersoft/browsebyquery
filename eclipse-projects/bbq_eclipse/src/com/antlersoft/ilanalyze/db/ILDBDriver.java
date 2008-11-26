@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.antlersoft.bbq.db.DBBundleBase;
+import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.bbq.db.DBString;
 
 import com.antlersoft.ilanalyze.BuiltinType;
@@ -35,9 +36,9 @@ public class ILDBDriver implements DBDriver {
 	private DBSourceFile m_current_source_file;
 	private int m_current_line;
 	/** List representing current stack of DBNamespace objects */
-	private ArrayList m_namespace_stack;
+	private ArrayList<DBPackage<DBClass>> m_namespace_stack;
 	/** List representing current stack of DBClass objects */
-	private ArrayList m_class_stack;
+	private ArrayList<ClassUpdater> m_class_stack;
 	/** Class that manages updating the contents of a method */
 	private DBMethod.MethodUpdater m_method_updater;
 	/** How many classes processed since last commit */
@@ -240,7 +241,7 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#startNamespace(java.lang.String)
 	 */
 	public void startNamespace(String name) {
-		DBNamespace namespace=DBNamespace.get( m_db, name);
+		DBPackage<DBClass> namespace=DBPackage.get( name, m_db);
 		m_namespace_stack.add( namespace);
 	}
 
@@ -376,12 +377,12 @@ public class ILDBDriver implements DBDriver {
 		}
 		if ( m_class_stack.size()>0)
 		{
-			return ((ClassUpdater)m_class_stack.get( m_class_stack.size()-1)).m_class;
+			return m_class_stack.get( m_class_stack.size()-1).m_class;
 		}
 		String namespace="";
 		if ( m_namespace_stack.size()>0)
 		{
-			namespace=((DBNamespace)m_namespace_stack.get( m_namespace_stack.size()-1)).toString();
+			namespace=m_namespace_stack.get( m_namespace_stack.size()-1).toString();
 		}
 		return DBClass.get( m_db, namespace+"."+NAMELESS_CLASS);
 	}

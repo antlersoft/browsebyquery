@@ -35,6 +35,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
+import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.classwriter.*;
 
 import com.antlersoft.odb.FromRefIteratorEnumeration;
@@ -96,7 +97,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     int lineNumber;
     ObjectRef<DBClass> containingClass;
     ObjectKeyHashSet<DBClass> containedClasses;
-    ObjectRef<DBPackage> myPackage;
+    ObjectRef<DBPackage<DBClass>> myPackage;
     
     public final static String CLASS_NAME_INDEX="CLASS_NAME_INDEX";
     
@@ -122,9 +123,9 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		ObjectDB.makePersistent( this);
 		if ( internalName.charAt(0)!='[')
 		{
-			DBPackage my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db);
+			DBPackage<DBClass> my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db.getSession());
 			my_package.setContainedClass( this);
-			myPackage=new ObjectRef<DBPackage>( my_package);
+			myPackage=new ObjectRef<DBPackage<DBClass>>( my_package);
 			String containing_name=containingClassName( internalName);
 			if ( containing_name!=null)
 			{

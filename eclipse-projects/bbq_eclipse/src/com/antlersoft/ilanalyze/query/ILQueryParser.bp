@@ -101,10 +101,10 @@ SET_EXPRESSION : Class literalString "{
 	}" .
 	
 VALUE_EXPRESSION : Package "{
-	return new CountPreservingValueExpression( DBNamespace.class, String.class) {
+	return new CountPreservingValueExpression( DBPackage.class, String.class) {
 	    protected Object transformSingleObject(DataSource source, Object inputObject)
 	    {
-	    	return ((ILDB)source).findObject( DBNamespace.NAMESPACE_NAME_INDEX, (String)inputObject);
+	    	return ((ILDB)source).findObject( DBPackage.PACKAGE_NAME_INDEX, (String)inputObject);
 	    }
 			
 		};
@@ -119,7 +119,7 @@ SET_EXPRESSION : all StringConstant "{
     }" .
     
 SET_EXPRESSION : all packages "{
-	return new AllGet( DBNamespace.class);
+	return new AllGet( DBPackage.class);
 	}" .
 
 SET_EXPRESSION : ImportExpression "{ return new ImportSet( ((AnalyzerQuery)parser.getParserEnvironment()).getImported()); }" .
@@ -202,10 +202,10 @@ TRANSFORM : arguments with "{
 	};}" .
 	
 TRANSFORM : packages in "{
-	return new TransformImpl( DBNamespace.class, DBNamespace.class) {
+	return new TransformImpl( DBPackage.class, DBPackage.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
-			return ((DBNamespace)to_transform).getChildren();
+			return ((DBPackage)to_transform).getSubPackages();
 		}
 	};}" .
 	
@@ -233,16 +233,16 @@ TRANSFORM : classes in "{
 		throws BindException
 		{
 			if ( DBClass.class.isAssignableFrom( new_applies)
-				|| DBNamespace.class.isAssignableFrom( new_applies))
+				|| DBPackage.class.isAssignableFrom( new_applies))
 				super.lateBindApplies( new_applies);
 			else
-				throw new BindException( \"Can only bind DBClass or DBNamespace\");
+				throw new BindException( \"Can only bind DBClass or DBPackage\");
 		}
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
 			if ( to_transform instanceof DBClass)
 				return ((DBClass)to_transform).getContainedClasses();
-			return ((DBNamespace)to_transform).getClasses();
+			return ((DBPackage)to_transform).getContainedClasses();
 		}
 	};
 	}" .
@@ -387,7 +387,7 @@ VALUE_EXPRESSION : bundles containing "{
 	};
 	}" .
 VALUE_EXPRESSION : packages of "{
-	return new CountPreservingValueExpression( DBNamespace.class, DBClass.class) {
+	return new CountPreservingValueExpression( DBPackage.class, DBClass.class) {
 		public Object transformSingleObject( DataSource source, Object to_transform)
 		{
 			return ((DBClass)to_transform).getNamespace();

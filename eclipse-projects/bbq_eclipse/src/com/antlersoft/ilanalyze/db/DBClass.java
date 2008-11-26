@@ -8,6 +8,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import com.antlersoft.bbq.db.DBPackage;
+
 import com.antlersoft.ilanalyze.DBDriver;
 
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
@@ -40,37 +42,37 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	/**
 	 * Base classes
 	 */
-	private ObjectKeyHashSet m_base;
+	private ObjectKeyHashSet<DBClass> m_base;
 	
 	/**
 	 * Derived classes
 	 */
-	private ObjectKeyHashSet m_derived;
+	private ObjectKeyHashSet<DBClass> m_derived;
 	
 	/**
 	 * The containing DBNamespace
 	 */
-	private ObjectRef m_namespace;
+	private ObjectRef<DBPackage<DBClass>> m_namespace;
 	
 	/**
 	 * The containing DBClass (null if not contained)
 	 */
-	private ObjectRef m_containing;
+	private ObjectRef<DBClass> m_containing;
 	
 	/**
 	 * Contained classes (null until inner classes found)
 	 */
-	private ObjectKeyHashSet m_contained;
+	private ObjectKeyHashSet<DBClass> m_contained;
 	
 	/**
 	 * ObjectRefs of DBFields in name order
 	 */
-	private TreeMap m_fields;
+	private TreeMap<String,ObjectRef<DBField>> m_fields;
 	
 	/**
 	 * ObjectRefs of DBMethods arranged by name+sig key
 	 */
-	private TreeMap m_methods;
+	private TreeMap<String,ObjectRef<DBMethod>> m_methods;
 	
 	/**
 	 * The class key name; this is the namespace name (dotted) followed by the class name, which may contain
@@ -87,12 +89,12 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	/**
 	 * DBAssembly where we find this class
 	 */
-	ObjectRef m_assembly;
+	ObjectRef<DBAssembly> m_assembly;
 	
 	/**
 	 * Module where we find this class
 	 */
-	ObjectRef m_module;
+	ObjectRef<DBModule> m_module;
 	
 	/**
 	 * Visibility and other flags
@@ -102,14 +104,14 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	private DBClass( IndexObjectDB db, String class_key)
 	{
 		m_class_key=class_key;
-		DBNamespace namespace= DBNamespace.get( db, DBNamespace.namespacePart(m_class_key));
-		m_namespace=new ObjectRef(namespace);
-		m_base=new ObjectKeyHashSet();
-		m_fields=new TreeMap();
-		m_methods=new TreeMap();
+		DBPackage<DBClass> namespace= DBPackage.get( DBPackage.namespacePart(m_class_key), db);
+		m_namespace=new ObjectRef<DBPackage<DBClass>>(namespace);
+		m_base=new ObjectKeyHashSet<DBClass>();
+		m_fields=new TreeMap<String,ObjectRef<DBField>>();
+		m_methods=new TreeMap<String,ObjectRef<DBMethod>>();
 		
 		ObjectDB.makePersistent( this);
-		namespace.addClass( this);
+		namespace.setContainedClass( this);
 		// Assume class is public unless we get concrete evidence otherwise
 		m_properties=DBDriver.IS_PUBLIC;
 		// Find containing class, if any
@@ -118,7 +120,7 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 		{
 			String containing_key=class_key.substring( 0, slash_pos);
 			DBClass containing=DBClass.get(db, containing_key);
-			m_containing=new ObjectRef( containing);
+			m_containing=new ObjectRef<DBClass>( containing);
 			containing.addContained( this);
 		}
 	}
@@ -127,9 +129,9 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	 * The namespace that contains this class (or the namespace-level class containing this class)
 	 * @return DBNamespacethat contains the class
 	 */
-	public DBNamespace getNamespace()
+	public DBPackage<DBClass> getNamespace()
 	{
-		return (DBNamespace)m_namespace.getReferenced();
+		return m_namespace.getReferenced();
 	}
 	
 	/**

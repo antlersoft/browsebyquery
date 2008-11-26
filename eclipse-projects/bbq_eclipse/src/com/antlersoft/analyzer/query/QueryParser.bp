@@ -99,7 +99,7 @@ SET_EXPRESSION : Class literalString "{
 	
 SET_EXPRESSION : any Class literalString "{
 	return null; 
-}"
+}" .
 	
 SET_EXPRESSION : Package literalString "{
 	return new PackageGet( (String)valueStack.get( valueStack.size()-1));

@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.bbq.db.DBString;
 
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
