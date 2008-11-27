@@ -10,7 +10,7 @@ Requires ant 1.6+
 	<target name="bbqstandalone" depends="buildcommon">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/bbqilstandalone.jar" basedir="classes" manifest="com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
-		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/** icons/**">
+		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
 		</jar>
 	</target>
 	<target name="buildcommon">
@@ -27,7 +27,7 @@ Requires ant 1.6+
 		<delete dir="com/antlersoft/odb/transp"/>
 		<delete dir="com/antlersoft/odb/postproc"/>
 		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
-			<src path="com/antlersoft/odb;com/antlersoft/ilanalyze;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/query"/>
+			<src path="com/antlersoft/odb;com/antlersoft/ilanalyze;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/query;com/antlersoft/bbq"/>
 		</javac>
 		<copy todir="classes">
 			<fileset dir="." includes="icons/*.gif"/>
