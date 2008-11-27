@@ -9,19 +9,19 @@ Requires ant 1.6+
 	<target name="all" depends="bbqopentool,bbqstandalone,bbq_eclipse_site"/>
 	<target name="bbqopentool" depends="buildopentool">
 		<mkdir dir="dist"/>
-		<jar destfile="dist/bbqopentool.jar" basedir="classes" manifest="com/antlersoft/opentool/classes.opentools" includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/opentool/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/query/**">
+		<jar destfile="dist/bbqopentool.jar" basedir="classes" manifest="com/antlersoft/opentool/classes.opentools" includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/opentool/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/query/** com/antlersoft/bbq/**">
 		</jar>
 	</target>
 	<target name="bbqstandalone" depends="buildcommon">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/bbqstandalone_${bbq.version}.jar" basedir="classes" manifest="com/antlersoft/analyzer/bbqstandalone.txt"
-		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/query/** icons/**">
+		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
 		</jar>
 	</target>
 	<target name="bbq_eclipse" depends="buildeclipse">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/com.antlersoft.bbq_eclipse_${bbq.version}.jar" basedir="classes" manifest="META-INF/MANIFEST.MF"
-		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/bbq_eclipse/** com/antlersoft/query/** icons/** plugin.xml"
+		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/bbq_eclipse/** com/antlersoft/query/** com/antlersoft/bbq/** icons/** plugin.xml"
 		/>
 	</target>
 	<target name="bbq_eclipse_site" depends="bbq_eclipse">
@@ -44,7 +44,7 @@ Requires ant 1.6+
 			<arg file="com/antlersoft/analyzer/query/QueryParser.pre"/>
 		</exec>
 		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
-			<src path="com/antlersoft/odb;com/antlersoft/analyzer;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/classwriter;com/antlersoft/query"/>
+			<src path="com/antlersoft/odb;com/antlersoft/analyzer;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/classwriter;com/antlersoft/query;com/antlersoft/bbq"/>
 		</javac>
 		<copy todir="classes">
 			<fileset dir="." includes="icons/*.gif"/>
