@@ -76,7 +76,8 @@ bbq -a bbq_ref2 bbq_ref3 bbq_ref4 bbq_ref5 bbq_ref6
 bbqil_ref -a com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query com/antlersoft/ilanalyze
 bbqil_ref2 -d bbqil/icons eclipse-projects/bbq_eclipse/icons
 bbqil_ref3 -d bbqil package/bbqil &bbqil_ref
-bbqil -a bbqil_ref2 bbqil_ref3
+bbqil_ref4 -d bbqil/com/antlersoft/bbq eclipse-projects/bbq_eclipse/src/com/antlersoft/bbq
+bbqil -a bbqil_ref2 bbqil_ref3 bbqil_ref4
 
 bbqil_exp_ref -a com/antlersoft/ilanalyze
 bbqil_exp -d bbqil package/bbqil &bbqil_exp_ref
