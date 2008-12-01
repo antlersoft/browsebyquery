@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.bbq.db.DBString;
 import com.antlersoft.bbq.db.DBStringResource;
+
+import com.antlersoft.bbq.query.IDBSource;
+
 import com.antlersoft.odb.IndexExistsException;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.ObjectStoreException;
@@ -18,14 +21,12 @@ import com.antlersoft.odb.diralloc.DirectoryAllocator;
 import com.antlersoft.odb.diralloc.IndexStatistics;
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
 
-import com.antlersoft.query.DataSource;
-
 /**
  * The object database for IL analyzed objects
  * @author Michael A. MacDonald
  *
  */
-public class ILDB extends IndexObjectDB implements DataSource {
+public class ILDB extends IndexObjectDB implements IDBSource {
 
 	/**
 	 * Create interface to ILDB stored in a directory
@@ -200,6 +201,11 @@ public class ILDB extends IndexObjectDB implements DataSource {
 		redefineIndex( DBCatch.CATCH_TARGET, DBCatch.class,
 				DBReference.ReferenceTargetGenerator.G,
 				false,false,null);
+	}
+	
+	public IndexObjectDB getSession()
+	{
+		return this;
 	}
 	
 	public static ILDB clearDB( ILDB db, File dbFile )

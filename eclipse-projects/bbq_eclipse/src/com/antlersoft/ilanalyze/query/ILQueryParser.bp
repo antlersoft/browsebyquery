@@ -10,6 +10,7 @@ symbol SAVING_NAME
 
 reserved Abstract "abstract" 4 right
 reserved all
+reserved any
 reserved are
 reserved arguments
 reserved array
@@ -246,6 +247,7 @@ TRANSFORM : classes in "{
 		}
 	};
 	}" .
+TRANSFORM : any Class "{ return new AnyClass( DBClass.class, DBClass.CLASS_BY_NAME_INDEX); }" .
 	
 
 FILTER : write "{ return new WriteReference(); }" .
