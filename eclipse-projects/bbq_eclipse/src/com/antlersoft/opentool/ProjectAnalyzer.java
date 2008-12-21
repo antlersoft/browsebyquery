@@ -3,7 +3,7 @@
  * Title:        antlersoft java software<p>
  * Description:  antlersoft Moose
  * antlersoft BBQ<p>
- * <p>Copyright (c) 2000-2005  Michael A. MacDonald<p>
+ * <p>Copyright (c) 2000-2005,2008  Michael A. MacDonald<p>
  * ----- - - -- - - --
  * <p>
  *     This package is free software; you can redistribute it and/or modify
@@ -80,7 +80,7 @@ class ProjectAnalyzer
         String canonicalPath=analyzerFile.getCanonicalPath();
         try
         {
-            db.openDB( canonicalPath);
+            db.openDB( analyzerFile);
         }
         catch ( ObjectDBException odb)
         {
@@ -105,7 +105,7 @@ e.printStackTrace();
     void clearDB( BBQNode node, String canonicalPath)
     throws Exception
     {
-        db.clearDB( canonicalPath);
+        db.clearDB();
         BBQPathsGroup.updateTimeProperty.setValue( node, "0");
     }
 
@@ -143,7 +143,7 @@ e.printStackTrace();
             {
                 testPath=goodPath;
                 newPath=BBQPathsGroup.pathsProperty.getValue( node);
-                db.openDB( goodPath);
+                db.openDB( new File(goodPath));
             }
             catch ( Exception e2)
             {
