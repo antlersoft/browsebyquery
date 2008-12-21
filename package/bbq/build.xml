@@ -39,6 +39,7 @@ Requires ant 1.6+
 		<zip destfile="dist/bbq_eclipse_site_${bbq.version}.jar" basedir="dist/site" includes="**"  />
 	</target>
 	<target name="buildcommon">
+		<delete file="com/antlersoft/appcontext/WebStartContext.java"/>
 		<mkdir dir="classes"/>
 		<exec executable="${genparserpath}">
 			<arg file="com/antlersoft/analyzer/query/QueryParser.pre"/>
