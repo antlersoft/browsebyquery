@@ -15,9 +15,11 @@ reserved are
 reserved arguments
 reserved array
 reserved base
+reserved bundles
 reserved by
 reserved called
 reserved calls
+reserved catches
 reserved Class "class"
 reserved classes
 reserved containing
@@ -30,6 +32,7 @@ reserved in
 reserved is
 reserved Interface "interface" 4 right
 reserved methods
+reserved names
 reserved Package "package" 4 right
 reserved packages
 reserved polymorphic
@@ -39,6 +42,7 @@ reserved Public "public" 4 right
 reserved references
 reserved reference
 reserved referenced
+reserved resources
 reserved rightParen ")"
 reserved set
 reserved SetExpressionSymbol "((#1"
@@ -97,10 +101,6 @@ SET_EXPRESSION : Class literalString "{
 	return new ClassGet( (String)valueStack.get( valueStack.size()-1), ((AnalyzerQuery)parser.getParserEnvironment()).getImported());
 	}" .
 	
-SET_EXPRESSION : any Class literalString "{
-	return null; 
-}" .
-	
 SET_EXPRESSION : Package literalString "{
 	return new PackageGet( (String)valueStack.get( valueStack.size()-1));
 	}" 10 .
@@ -154,6 +154,10 @@ TRANSFORM : arguments of "{
 	return new ArgumentsOf();
 	}" .
 
+TRANSFORM : any Class "{
+	return new AnyClass( DBClass.class, DBClass.CLASS_NAME_INDEX); 
+}" .
+	
 TRANSFORM : recursive base classes of "{ return new RecursiveBaseClasses(); }" .
 TRANSFORM : base classes of "{ return new BaseClasses(); }" .
 TRANSFORM : recursive derived classes of "{ return new RecursiveDerivedClasses(); }" .
@@ -167,6 +171,8 @@ TRANSFORM : StringConstant Reference from "{ return new StringReferenceFrom(); }
 TRANSFORM : Reference to "{ return new ReferencesTo(); }" .
 TRANSFORM : calls to "{ return new CallsTo(); }" .
 TRANSFORM : TransformSymbol "{ return ((QueryLanguageEnvironment)parser.getParserEnvironment()).replaceWithStoredValue( (String)valueStack.get( valueStack.size()-1), 1); }" .
+TRANSFORM : catches of "{ return new TransformImpl( DBCatch.class, DBClass.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBClass)to_transform).getCatchesOf((IndexAnalyzeDB)source); } }; }" .
+TRANSFORM : catches in "{ return new TransformImpl( DBCatch.class, DBMethod.class) { public Enumeration transformObject( DataSource source, Object to_transform) { return ((DBMethod)to_transform).getCatches(); } }; }" .
 TRANSFORM : fields with "{
 	return new TransformImpl( DBField.class, DBType.class) {
 		public Enumeration transformObject( DataSource source, Object to_transform)
@@ -216,6 +222,24 @@ TRANSFORM : classes in "{
 		}
 	};
 	}" .
+TRANSFORM : resources containing "{
+	return new TransformImpl( DBStringResource.class, DBString.class ) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBString)to_transform).getResourcesContaining(((IndexAnalyzeDB)source).getSession());
+		}
+	};
+}" .
+
+TRANSFORM : resources with names "{
+	return new TransformImpl( DBStringResource.class, DBString.class ) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBString)to_transform).getResourcesNamedBy(((IndexAnalyzeDB)source).getSession());
+		}
+	};
+}" .
+	
 	
 
 FILTER : write "{ return new WriteReferences(); }" .
@@ -288,6 +312,38 @@ VALUE_EXPRESSION : packages of "{
 			return ((DBClass)to_transform).getPackage();
 		}
 	};		
+	}" .
+VALUE_EXPRESSION : names of "{
+	return new CountPreservingValueExpression( DBString.class, DBStringResource.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBStringResource)to_transform).getName();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : bundles containing "{
+	return new CountPreservingValueExpression( DBString.class, DBStringResource.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBStringResource)to_transform).getBundle();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : names of "{
+	return new CountPreservingValueExpression( DBString.class, DBStringResource.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBStringResource)to_transform).getName();
+		}
+	};
+	}" .
+VALUE_EXPRESSION : bundles containing "{
+	return new CountPreservingValueExpression( DBBundle.class, DBStringResource.class) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBStringResource)to_transform).getBundle();
+		}
+	};
 	}" .
 Reference : reference .
 Reference : references .
