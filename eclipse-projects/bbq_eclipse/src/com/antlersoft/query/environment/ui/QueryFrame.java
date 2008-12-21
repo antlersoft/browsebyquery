@@ -57,7 +57,7 @@ public class QueryFrame
     protected JTextArea queryArea;
     protected JTextArea outputArea;
     protected HistoryList historyList;
-    protected Window frameWindow;
+    protected JFrame frameWindow;
     private DBContainer container;
     private boolean analyzing;
     Action exitAction;
@@ -344,6 +344,17 @@ t.printStackTrace();
         appFrame.setLocation( 10, 10);
         appFrame.setVisible(true);
     }
+    
+    void updateTitleBar()
+    {
+    	StringBuilder sb=new StringBuilder("Database ");
+    	sb.append( container.titleOfDB());
+    	if ( analyzing)
+    	{
+    		sb.append( " - analyzing");
+    	}
+    	frameWindow.setTitle( sb.toString());
+    }
 
     /**
 	 * @param environment_file
@@ -369,6 +380,7 @@ t.printStackTrace();
 		clearAction.setEnabled(!analyzing);
 		if ( analyzeAction!=null )
 			analyzeAction.setEnabled(!analyzing);
+		updateTitleBar();
 	}
 
 	class ExitAction extends AbstractAction
@@ -443,13 +455,13 @@ t.printStackTrace();
                 if ( chooser.showDialog( frameWindow, "Analyze")==JFileChooser.APPROVE_OPTION)
                 {
                 	final File[] files=chooser.getSelectedFiles();
+                	setIsAnalyzing(true);
                 	new Thread( new Runnable() {
                 		public void run()
                 		{
                 			Exception excp=null;
                             try
                             {
-                            	setIsAnalyzing(true);
                                 container.analyze( files);
                             }
                             catch ( Exception e)
@@ -514,8 +526,9 @@ t.printStackTrace();
             {
                 if ( dbChooser.showDialog( frameWindow, getOpenMenuItem())==JFileChooser.APPROVE_OPTION)
                 {
-                	final File new_dir=chooser.getSelectedFile();
+                	final File new_dir=dbChooser.getSelectedFile();
                 	container.openDB(new_dir);
+                	updateTitleBar();
                 }
             }
             catch ( Exception ex)

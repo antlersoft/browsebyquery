@@ -140,7 +140,7 @@ class QueryParserBase extends BasicBase
         {
         	try
         	{
-        		return ((IndexAnalyzeDB)db).getAll( "com.antlersoft.analyzer.DBPackage");
+        		return ((IndexAnalyzeDB)db).getAll( "com.antlersoft.analyzer.bbq.db.DBPackage");
         	}
         	catch ( Exception e)
         	{
