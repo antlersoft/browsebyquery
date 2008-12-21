@@ -1,0 +1,58 @@
+symbol TypeSpec
+
+reserved annotations
+reserved annotated
+reserved cast
+
+SET_EXPRESSION : all annotations "{
+	return new SetExpression() {
+		public Class getResultClass() { return DBAnnotation.class; }
+		public Enumeration evaluate( DataSource source)
+		{
+			return new IteratorEnumeration(((IDBSource)source).getSession().getAll( DBAnnotation.class ));
+		}		
+	};
+}" .
+TRANSFORM : cast TypeSpec "{
+	return new Cast( CastTypeSpec.getClassFor( valueStack.s_0()));
+}" .
+TRANSFORM : annotations of "{
+	return new TransformImpl( DBAnnotation.class, DBAnnotatable.class ) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return ((DBAnnotatable)to_transform).getAnnotationCollection().getAnnotations();
+		}
+	};
+}" .
+TRANSFORM : annotations with "{
+	return new TransformImpl( DBAnnotation.class, DBClassBase.class ) {
+		public Enumeration transformObject( DataSource source, Object to_transform)
+		{
+			return DBAnnotationBase.getAnnotationsWithType( ((IDBSource)source).getSession(),
+				(DBClassBase)to_transform);
+		}
+	};
+}" .
+VALUE_EXPRESSION : annotated by "{
+	return new CountPreservingValueExpression( DBAnnotatable.class, DBAnnotationBase.class ) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBAnnotationBase)to_transform).getAnnotatedObject();
+		}
+	};
+}" .
+VALUE_EXPRESSION : classes of "{
+	return new CountPreservingValueExpression( DBClass.class, DBAnnotationBase.class ) {
+		public Object transformSingleObject( DataSource source, Object to_transform)
+		{
+			return ((DBAnnotationBase)to_transform).getAnnotationClass();
+		}
+	};
+}" .
+
+TypeSpec : methods .
+TypeSpec : fields .
+TypeSpec : arguments .
+TypeSpec : classes .
+	
+

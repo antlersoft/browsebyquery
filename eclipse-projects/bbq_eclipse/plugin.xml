@@ -59,14 +59,14 @@
          point="org.eclipse.ui.views">
       <category
             id="com.antlersoft.bbq_eclipse.ViewCategory"
-            name="BBQ Category"/>
+            name="Browse-by-Query"/>
       <view
             allowMultiple="false"
             category="com.antlersoft.bbq_eclipse.ViewCategory"
             class="com.antlersoft.bbq_eclipse.views.QueryView"
             icon="icons/weber.gif"
             id="com.antlersoft.bbq_eclipse.views.QueryView"
-            name="Browse-By-Query View"/>
+            name="Browse-By-Query Query"/>
       <view
             allowMultiple="false"
             category="com.antlersoft.bbq_eclipse.ViewCategory"
@@ -93,6 +93,26 @@
          id="com.antlersoft.bbq_eclipse.searchresult.QueryResultView"
          class="com.antlersoft.bbq_eclipse.searchresult.QueryResultView"
          searchResultClass="com.antlersoft.bbq_eclipse.searchresult.QueryResult" />
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="com.antlersoft.bbq_eclipse.category.BBQ"
+            description="Run the current Browse-by-Query query"
+            id="com.antlersoft.bbq_eclipse.command.RunQuery"
+            name="Run BBQ Query"/>
+      <category
+            description="Browse-by-Query commands"
+            id="com.antlersoft.bbq_eclipse.category.BBQ"
+            name="Browse-by-Query"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="com.antlersoft.bbq_eclipse.RunQuery"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M2+M3+B"/>
    </extension>
 
 </plugin>

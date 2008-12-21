@@ -130,7 +130,7 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	{
 		try
 		{
-			getDB().clearDB( getDBPath());
+			getDB().clearDB();
 		}
 		catch ( Exception e)
 		{
@@ -140,23 +140,10 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 
 	private void openDBAtCurrentPath() throws Exception
 	{
-        try
-        {
-            m_db.openDB( getDBPath());
-            _pathChanged=false;
-        }
-        catch ( ObjectDBException odb)
-        {
-            m_db.clearDB( getDBPath());
-            try
-            {
-            	logError( "There was a problem opening the BBQ database; the database was cleared and must be rebuilt before use",odb);
-            }
-            catch ( CoreException ce)
-            {
-            	
-            }
-        }					
+        m_db.openDB( new File(getDBPath()));
+        _pathChanged=false;
+        if ( m_db.isCleared())
+        	logError(m_db.getOpenMessage(),null);
 	}
 	
 	/**

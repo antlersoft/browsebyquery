@@ -30,11 +30,11 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 
 import com.antlersoft.query.BasicBase;
-import com.antlersoft.query.DataSource;
 import com.antlersoft.query.SetExpression;
 
 import com.antlersoft.query.environment.AnalyzerQuery;
@@ -49,15 +49,21 @@ import com.antlersoft.util.ExtensionFileFilter;
  * @author Michael A. MacDonald
  *
  */
-public abstract class QueryFrame
+public class QueryFrame
 {
-    JFileChooser chooser;
+	JFileChooser chooser;
+	JFileChooser dbChooser;
     AnalyzerQuery qp;
     protected JTextArea queryArea;
     protected JTextArea outputArea;
     protected HistoryList historyList;
     protected Window frameWindow;
-    protected File environmentFile;
+    private DBContainer container;
+    private boolean analyzing;
+    Action exitAction;
+    Action openAction;
+    Action clearAction;
+    Action analyzeAction;
     
     /**
      * Get filter for open file dialog
@@ -68,34 +74,35 @@ public abstract class QueryFrame
     	return null;
     }
     
+    /**
+     * Get string for Open Database menu item, or null if this app doesn't support
+     * opening a new database.
+     * @return Menu item string or null
+     */
+    protected String getOpenMenuItem()
+    {
+    	return null;
+    }
+    
+    /**
+     * Get filter for open db file dialog
+     * @return Menu item string or null
+     */
+    protected ExtensionFileFilter getDBExtensionFileFilter()
+    {
+    	return null;
+    }
+    
     public AnalyzerQuery getEnvironment()
     {
     	return qp;
     }
     
-    /**
-     * Get the DataSource used for this app
-     * @return Object implementing DataSource
-     */
-    abstract protected DataSource getDataSource();
+    public DBContainer getDBContainer()
+    {
+    	return container;
+    }
     
-    /**
-     * Close the datasource on shutdown
-     *
-     */
-    abstract protected void closeDB() throws Exception;
-    
-    /**
-     * Make sure query db is sync'd to filesystem
-     *
-     */
-    abstract protected void saveDB() throws Exception;
-    
-    /**
-     * Clear the queried db
-     */
-    abstract protected void clearDB() throws Exception;
-
     /**
      * Get string to associate with analyze menu action (if any)
      * Default implementation returns null
@@ -106,22 +113,14 @@ public abstract class QueryFrame
     }
     
     /**
-     * Enter the selected files into the database to be queried.  The default implementation does nothing.
-     * The frame may run this command in a separate thread-- the implementation should not
-     * interact directly with objects on the UI thread.
-     * @param selected_files
-     */
-    protected void analyze( File[] selected_files) throws Exception
-    {
-    }
-
-    /**
      * Create the base frame for a bbq ui with the provided parser environment
      * @param query_environment Query parser environment
+     * @param cont Container of the database connection
      */
-    protected QueryFrame( AnalyzerQuery query_environment)
+    protected QueryFrame( AnalyzerQuery query_environment, DBContainer cont)
     {
         qp=query_environment;
+        container=cont;
         ExtensionFileFilter filter=getExtensionFileFilter();
         if ( filter!=null)
         {
@@ -130,15 +129,17 @@ public abstract class QueryFrame
 	        chooser.setMultiSelectionEnabled( true);
 	        chooser.setFileFilter( filter);
         }
+        exitAction=new ExitAction();
     }
     
     /**
      * Convenience constructor for creating a frame from the query parser, with the standard AnalyzerQuery environment
      * @param parser Query parser
+     * @param cont Container of the database connection
      */
-    protected QueryFrame( BasicBase parser)
+    protected QueryFrame( BasicBase parser, DBContainer cont)
     {
-    	this(new AnalyzerQuery(parser));
+    	this(new AnalyzerQuery(parser), cont);
     }
 
     protected Component createComponents()
@@ -180,7 +181,7 @@ public abstract class QueryFrame
                         qp.setLine( line);
                         SetExpression se=qp.getExpression();
                         historyList.addQuery( line);
-                        Enumeration e=se.evaluate( getDataSource());
+                        Enumeration e=se.evaluate( container.getDataSource());
                         TreeSet resultSorter=new TreeSet();
                         while ( e.hasMoreElements())
                             resultSorter.add( e.nextElement().toString());
@@ -216,18 +217,36 @@ public abstract class QueryFrame
 
         // Create analyze action
         if ( chooser!=null)
-        	fileMenu.add( new AnalyzeAction());
+        {
+        	analyzeAction=new AnalyzeAction();
+        	fileMenu.add( analyzeAction);
+        }
 
         // Create save action
         fileMenu.add( new SaveAction());
 
         // Create clear action
         fileMenu.addSeparator();
-        fileMenu.add( new ClearAction());
+        clearAction=new ClearAction();
+        fileMenu.add( clearAction);
+        
+        // Create open action
+        if ( getOpenMenuItem()!=null)
+        {
+        	dbChooser=new JFileChooser();
+        	dbChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        	ExtensionFileFilter eff=getDBExtensionFileFilter();
+        	if ( eff!=null)
+        		dbChooser.setFileFilter(eff);
+        	dbChooser.setMultiSelectionEnabled(false);
+        	fileMenu.addSeparator();
+        	openAction=new OpenAction();
+        	fileMenu.add( openAction);
+        }
         
         // Create Exit action
         fileMenu.addSeparator();
-        fileMenu.add( new ExitAction());
+        fileMenu.add( exitAction);
 
         // Add menu to menu bar
         menuBar.add( fileMenu);
@@ -252,27 +271,12 @@ t.printStackTrace();
             caption, JOptionPane.ERROR_MESSAGE);
     }
     
-    protected void showFrame( String title, File environment_dir, boolean db_cleared, String icon_resource_path)
-    {
-    	showFrame( title, environment_dir, db_cleared, getClass().getResource(icon_resource_path));
-    }
-    
-    protected void showFrame( String title, File environment_dir, boolean db_cleared, URL icon_resource)
-    {
-        JFrame appFrame=new JFrame( title );
-        if ( icon_resource!=null)
-        	appFrame.setIconImage(appFrame.getToolkit().getImage(icon_resource));
-        frameWindow=appFrame;
-        if ( db_cleared)
-        	JOptionPane.showMessageDialog( appFrame, "There was a problem opening the existing database, so it was cleared,\nand you must rebuild it by analyzing classes.", "Corrupt Database", JOptionPane.ERROR_MESSAGE);
-        Component contents = createComponents();
-        appFrame.getContentPane().add(contents, BorderLayout.CENTER);
-        appFrame.setJMenuBar( createMenuBar());
-        
-		environmentFile=new File( environment_dir, "environment.xml");
+    private void readEnvironment()
+    {	
+		File environmentFile=container.getEnvironmentFile();
 		try
 		{
-			if ( environmentFile.canRead())
+			if ( environmentFile!=null && environmentFile.canRead())
 			{
 				FileReader reader=new FileReader( environmentFile);
 				qp.readEnvironment( reader);
@@ -283,13 +287,53 @@ t.printStackTrace();
 		{
 			displayException( "Error loading saved expressions", e);
 		}
+    }
+    
+    protected void showFrame( String icon_resource_path)
+    {
+    	showFrame( getClass().getResource(icon_resource_path));
+    }
+    
+    protected void showFrame( URL icon_resource)
+    {
+        JFrame appFrame=new JFrame( container.titleOfDB() );
+        if ( icon_resource!=null)
+        	appFrame.setIconImage(appFrame.getToolkit().getImage(icon_resource));
+        frameWindow=appFrame;
+        Component contents = createComponents();
+        appFrame.getContentPane().add(contents, BorderLayout.CENTER);
+        appFrame.setJMenuBar( createMenuBar());
+
+        readEnvironment();
 
         //Finish setting up the frame, and show it.
         appFrame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
+            /* (non-Javadoc)
+			 * @see java.awt.event.WindowAdapter#windowOpened(java.awt.event.WindowEvent)
+			 */
+			@Override
+			public void windowOpened(WindowEvent e) {
+				super.windowOpened(e);
+		        if ( container.getOpenMessage()!=null)
+		        	JOptionPane.showMessageDialog( frameWindow, container.getOpenMessage(), "Opening Database Issue", JOptionPane.ERROR_MESSAGE);
+		        if ( getDBContainer().getDataSource()==null)
+		        {
+		        	if ( openAction!=null)
+		        	{
+		        		openAction.actionPerformed(null);
+		        	}
+		        	else
+		        	{
+		        		JOptionPane.showMessageDialog( frameWindow, "No datasource available");
+		        		exitAction.actionPerformed(null);
+		        	}
+		        }
+			}
+
+			public void windowClosing(WindowEvent e) {
                 try
                 {
-                	closeDB();
+                	container.closeDB();
                     saveEnvironment();
                 }
                 catch ( Exception exception)
@@ -307,9 +351,24 @@ t.printStackTrace();
 	 * @throws QueryException
 	 */
 	void saveEnvironment() throws IOException, QueryException {
-		FileWriter writer=new FileWriter( environmentFile);
-		qp.writeEnvironment( writer);
-		writer.close();
+		if ( container.getEnvironmentFile()!=null)
+		{
+			FileWriter writer=new FileWriter( container.getEnvironmentFile());
+			qp.writeEnvironment( writer);
+			writer.close();
+		}
+	}
+	
+	protected void setIsAnalyzing(boolean isAnalyzing)
+	{
+		analyzing=isAnalyzing;
+		
+		exitAction.setEnabled(!analyzing);
+		if ( openAction!=null )
+			openAction.setEnabled(!analyzing);
+		clearAction.setEnabled(!analyzing);
+		if ( analyzeAction!=null )
+			analyzeAction.setEnabled(!analyzing);
 	}
 
 	class ExitAction extends AbstractAction
@@ -336,7 +395,7 @@ t.printStackTrace();
         {
             try
             {
-                saveDB();
+                container.saveDB();
                 saveEnvironment();
             }
             catch ( Exception e)
@@ -361,7 +420,7 @@ t.printStackTrace();
                     "Are you sure you want to clear all the program data from the database?",
                     "Confirm Clear Database", JOptionPane.YES_NO_OPTION)==
                      JOptionPane.YES_OPTION)
-                    clearDB();
+                    container.clearDB();
             }
             catch ( Exception e)
             {
@@ -369,10 +428,10 @@ t.printStackTrace();
             }
          }
     }
-
+    
     class AnalyzeAction extends AbstractAction
     {
-        AnalyzeAction()
+		AnalyzeAction()
         {
             super( getAnalyzeMenuItem());
         }
@@ -383,16 +442,26 @@ t.printStackTrace();
             {
                 if ( chooser.showDialog( frameWindow, "Analyze")==JFileChooser.APPROVE_OPTION)
                 {
-                    Cursor oldCursor=frameWindow.getCursor();
-                    frameWindow.setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR));
-                    try
-                    {
-                        analyze( chooser.getSelectedFiles());
-                    }
-                    finally
-                    {
-                        frameWindow.setCursor( oldCursor);
-                    }
+                	final File[] files=chooser.getSelectedFiles();
+                	new Thread( new Runnable() {
+                		public void run()
+                		{
+                			Exception excp=null;
+                            try
+                            {
+                            	setIsAnalyzing(true);
+                                container.analyze( files);
+                            }
+                            catch ( Exception e)
+                            {
+                            	excp=e;
+                            }
+                            finally
+                            {
+                            	SwingUtilities.invokeLater( new AnalyzeComplete( excp));
+                            }
+                		}
+                	}).start();
                 }
             }
             catch ( Exception e)
@@ -400,5 +469,61 @@ t.printStackTrace();
                 displayException( "Analyze Error", e);
             }
         }
+        /**
+         * Invoke this on the UI thread when the analyzing task is complete
+         * @author Michael A. MacDonald
+         *
+         */
+        class AnalyzeComplete implements Runnable
+        {
+        	Exception excp;
+        	
+        	/**
+        	 * 
+        	 * @param e Exception that ended analysis, or null if it ended normally
+        	 */
+        	AnalyzeComplete( Exception e)
+        	{
+        		excp=e;
+        	}
+        	
+        	public void run()
+        	{
+        		setIsAnalyzing(false);
+        		if ( excp!=null)
+        			displayException( "Analyze Error", excp);
+        	}
+        }
     }
+    
+    /**
+     * Open a new database
+	 * @author Michael A. MacDonald
+	 *
+	 */
+	class OpenAction extends AbstractAction {
+		OpenAction()
+		{
+			super(getOpenMenuItem());
+		}
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+            try
+            {
+                if ( dbChooser.showDialog( frameWindow, getOpenMenuItem())==JFileChooser.APPROVE_OPTION)
+                {
+                	final File new_dir=chooser.getSelectedFile();
+                	container.openDB(new_dir);
+                }
+            }
+            catch ( Exception ex)
+            {
+                displayException( "Open Database Error", ex);
+                exitAction.actionPerformed(e);
+            }
+		}
+
+	}
 }

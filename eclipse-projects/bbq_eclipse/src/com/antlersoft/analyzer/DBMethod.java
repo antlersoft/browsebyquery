@@ -57,6 +57,7 @@ public class DBMethod extends DBMember
     ArrayList<ObjectRef<DBFieldReference>> fieldReferences;
     ArrayList<ObjectRef<DBStringReference>> stringReferences;
     ArrayList<ObjectRef<DBArgument>> arguments;
+    ArrayList<ObjectRef<DBCatch>> catches;
     private boolean resolved;
 
     DBMethod( IndexAnalyzeDB db, DBClass containing, String name, String signature)
@@ -179,6 +180,11 @@ public class DBMethod extends DBMember
     	return (Enumeration<DBCall>)db.retrieveByIndex( DBCall.CALL_TARGET, new ObjectRefKey(this));
     }
     
+    public Enumeration<DBCatch> getCatches()
+    {
+    	return new FromRefIteratorEnumeration<DBCatch>( catches.iterator());
+    }
+    
     private boolean isSpecialOrStatic()
     {
     	return (accessFlags & ClassWriter.ACC_STATIC)!=0 || name.startsWith("<");
@@ -294,6 +300,7 @@ public class DBMethod extends DBMember
 		ReferenceUpdater<DBCall> callUpdater = new ReferenceUpdater<DBCall>(calls);
 		FieldReferenceUpdater fieldRefUpdater=new FieldReferenceUpdater(fieldReferences);
 		ReferenceUpdater<DBStringReference> stringRefUpdater=new ReferenceUpdater<DBStringReference>(stringReferences);
+		ReferenceUpdater<DBCatch> catchUpdater=new ReferenceUpdater<DBCatch>( catches);
 		lineNumber=codeAttribute.getLineNumber( 0);
 		// Class linenumber = minimum linenumber of any method in the class
 		if ( lineNumber>0)
@@ -380,6 +387,27 @@ public class DBMethod extends DBMember
 				}
 			}
 		}
+		for ( CodeAttribute.CodeException i : codeAttribute.getExceptions())
+		{
+			try
+			{
+				if ( i.getCatchType()!=0)
+				{
+					DBClass caught=DBClass.getByInternalName(ac.getInternalClassName(i.getCatchType()), db);
+					int lineNumber=codeAttribute.getLineNumber( i.getEndIndex());
+					if ( ! catchUpdater.existsReference( caught, lineNumber))
+					{
+						DBCatch c=new DBCatch( this, caught, lineNumber);
+						catchUpdater.addReference( c);
+					}
+				}
+			}
+			catch ( Exception e)
+			{
+				logger.log( Level.WARNING, "Failed to find caught class: "+ac.getInternalClassName(i.getCatchType()), e);
+			}
+		}
+		
 		if ( callUpdater.cleanup(db))
 		{
 			calls=callUpdater.afterList;
@@ -393,6 +421,11 @@ public class DBMethod extends DBMember
 		if ( stringRefUpdater.cleanup(db))
 		{
 			stringReferences=stringRefUpdater.afterList;
+			ObjectDB.makeDirty(this);
+		}
+		if ( catchUpdater.cleanup(db))
+		{
+			catches=catchUpdater.afterList;
 			ObjectDB.makeDirty(this);
 		}
     }

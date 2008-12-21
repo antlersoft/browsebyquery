@@ -18,6 +18,11 @@ import org.eclipse.jdt.ui.JavaUI;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
+
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.SWT;
@@ -119,6 +124,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 		_selectAction=new SelectAction();
 		MenuManager manager=new MenuManager( "#PopupResult");
 		manager.add( _selectAction);
+		manager.add( new CopyAction());
 		_viewer.getTable().setMenu( manager.createContextMenu( _viewer.getTable()));
 		_viewer.addDoubleClickListener( new IDoubleClickListener() {
 			public void doubleClick( DoubleClickEvent evt) {
@@ -311,6 +317,26 @@ public class QueryResultView extends Page implements ISearchResultPage {
 						createStatus( "null or empty selection",new Exception("benign"),
 								org.eclipse.core.runtime.IStatus.INFO, 0));
 			 */
+		}
+	}
+	
+	class CopyAction extends Action
+	{
+		public void run()
+		{
+			if ( _selection!=null && ! _selection.isEmpty() && _selection instanceof IStructuredSelection)
+			{
+				Object selected=((IStructuredSelection)_selection).getFirstElement();
+				Clipboard c=new Clipboard(_viewer.getControl().getDisplay());
+				try
+				{
+					c.setContents( new Object[] { selected.toString()}, new Transfer[] { TextTransfer.getInstance()});
+				}
+				finally
+				{
+					c.dispose();
+				}
+			}
 		}
 	}
 	

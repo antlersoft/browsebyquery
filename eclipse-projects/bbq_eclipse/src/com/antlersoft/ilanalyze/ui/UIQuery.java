@@ -48,35 +48,9 @@ import com.antlersoft.util.ExtensionFileFilter;
 
 public class UIQuery extends QueryFrame
 {
-    private ILDB analyzerDB;
-    private File analyzerDBOpenFile;
+	private ILDBContainer container;
     JCheckBoxMenuItem listeningCheckBox;
     QuerySocketServer server;
-
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.environment.ui.QueryFrame#clearDB()
-	 */
-	protected synchronized void clearDB() throws Exception {
-        analyzerDB=ILDB.clearDB( analyzerDB, analyzerDBOpenFile);
-        if ( server!=null)
-        {
-        	server.setXMLIntf( new BrowseByQueryXml( getEnvironment(), analyzerDB));
-        }
-	}
-
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.environment.ui.QueryFrame#closeDB()
-	 */
-	protected void closeDB() throws Exception {
-		analyzerDB.close();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.environment.ui.QueryFrame#getDataSource()
-	 */
-	protected DataSource getDataSource() {
-		return analyzerDB;
-	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.query.environment.ui.QueryFrame#getExtensionFileFilter()
@@ -89,45 +63,15 @@ public class UIQuery extends QueryFrame
         return filter;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.environment.ui.QueryFrame#saveDB()
-	 */
-	protected void saveDB() throws Exception {
-        analyzerDB.commit();		
-	}
-
-
     /* (non-Javadoc)
 	 * @see com.antlersoft.query.environment.ui.QueryFrame#getAnalyzeMenuItem()
 	 */
+	@Override
 	protected String getAnalyzeMenuItem() {
 		return "Analyze directories or assembly files";
 	}
 
 
-	/* (non-Javadoc)
-	 * @see com.antlersoft.query.environment.ui.QueryFrame#analyze(java.io.File[])
-	 */
-	protected void analyze(File[] selectedFiles) throws Exception {
-	   	ILDBDriver driver=new ILDBDriver(analyzerDB);
-	   	IldasmReader reader=new IldasmReader();
-	   	Object last_scanned=analyzerDB.getRootObject("LAST_SCANNED");
-	   	TreeMap<String,Date> oldest;
-	   	if ( last_scanned==null || ! (last_scanned instanceof TreeMap))
-	   		oldest=new TreeMap<String,Date>();
-	   	else
-	   		oldest=(TreeMap<String,Date>)last_scanned;
-	   	reader.setOldestFileDate(oldest);
-
-		for ( int i=0; i<selectedFiles.length; i++)
-		{
-		   reader.sendFileToDriver(selectedFiles[i], driver);
-		}
-       
-		analyzerDB.makeRootObject("LAST_SCANNED", oldest);
-		analyzerDB.commitAndRetain();
-	}
-	
 	/**
 	 * Add server menu to the menubar
 	 */
@@ -143,9 +87,10 @@ public class UIQuery extends QueryFrame
 		return result;
 	}
 
-	UIQuery()
+	UIQuery( ILDBContainer c)
     {
-    	super( new ILQueryParser());
+    	super( new ILQueryParser(), c);
+		container=c;
     }
 	
 	private synchronized void setListeningThread( boolean status)
@@ -154,7 +99,7 @@ public class UIQuery extends QueryFrame
 		{
 	        try
 	        {
-	        	server=new QuerySocketServer( new BrowseByQueryXml( getEnvironment(), analyzerDB), QuerySocketServer.DEFAULT_PORT);
+	        	server=new QuerySocketServer( new BrowseByQueryXml( getEnvironment(), container), QuerySocketServer.DEFAULT_PORT);
 	        }
 	        catch ( IOException ioe)
 	        {
@@ -177,7 +122,7 @@ public class UIQuery extends QueryFrame
 		{
 			listeningCheckBox.setSelected( status);
 		}
-		analyzerDB.makeRootObject( "RUN_SERVER", new Boolean(status));
+		((ILDB)container.getDataSource()).makeRootObject( "RUN_SERVER", new Boolean(status));
 	}
 	
 	class ListeningAction extends AbstractAction
@@ -196,33 +141,21 @@ public class UIQuery extends QueryFrame
 	}
 
     public static void main( String argv[])
+    throws Exception
     {
-        final UIQuery app = new UIQuery();
-        boolean db_cleared=false;
-        String openString;
-        if ( argv.length<=0)
-        	openString="test.bbq";
-		else
-			openString=argv[0];
-        app.analyzerDBOpenFile=new File( openString);
-        try
-        {
-            app.analyzerDB=new ILDB(app.analyzerDBOpenFile);
-        }
-        catch ( ObjectDBException odb)
-        {
-        	db_cleared=true;
-            app.analyzerDB=ILDB.clearDB( app.analyzerDB, app.analyzerDBOpenFile);
-        }
-        catch ( RuntimeException rte)
-        {
-        	db_cleared=true;
-            app.analyzerDB=ILDB.clearDB( app.analyzerDB, app.analyzerDBOpenFile);
-        }
+    	ILDBContainer c=new ILDBContainer();
+    	c.initializeFromContext(c.createContextWithLegacyCommandLine(argv),
+    			"test.bbq", "com.antlersoft.browsebyquery.il");
+        final UIQuery app = new UIQuery(c);
         
-        app.showFrame((argv.length>0 ? "Querying " : "Querying default DB ")+openString, app.analyzerDBOpenFile, db_cleared, "/icons/weber-small.gif");
+        app.showFrame("/icons/weber-small.gif");
         
-        Boolean b=(Boolean)app.analyzerDB.getRootObject( "RUN_SERVER");
-        app.setListeningThread( b==null ? false : b.booleanValue());
+        ILDB db=(ILDB)c.getDataSource();
+        
+        if ( db!=null)
+        {
+	        Boolean b=(Boolean)((ILDB)c.getDataSource()).getRootObject( "RUN_SERVER");
+	        app.setListeningThread( b==null ? false : b.booleanValue());
+        }
     }
 }

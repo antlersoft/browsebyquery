@@ -30,17 +30,24 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
+import com.antlersoft.bbq.db.*;
+
+import com.antlersoft.bbq.db.AnnotationCollection;
+import com.antlersoft.bbq.db.DBAnnotatable;
+import com.antlersoft.bbq.db.DBClassBase;
 import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.classwriter.*;
 
 import com.antlersoft.odb.FromRefIteratorEnumeration;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectRef;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.Persistent;
@@ -52,7 +59,7 @@ import com.antlersoft.query.EmptyEnum;
  * @author Michael A. MacDonald
  *
  */
-public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags, HasDBType
+public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlags, HasDBType, DBAnnotatable
 {
 
 	/**
@@ -84,6 +91,9 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		}
 
 	}
+	
+	private static String PROPERTIES_SUFFIX=".properties";
+	
 	String name;
     ObjectKeyHashSet<DBClass> superClasses;
     private TreeMap<String,ObjectRef<DBMethod>> methods;
@@ -97,7 +107,8 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     int lineNumber;
     ObjectRef<DBClass> containingClass;
     ObjectKeyHashSet<DBClass> containedClasses;
-    ObjectRef<DBPackage<DBClass>> myPackage;
+    ObjectRef<DBPackage> myPackage;
+    private AnnotationCollection annotations;
     
     public final static String CLASS_NAME_INDEX="CLASS_NAME_INDEX";
     
@@ -118,14 +129,15 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		resolved=false;
 		deprecated=false;
 		_persistentImpl=new PersistentImpl();
+		annotations=new AnnotationCollection();
 		lineNumber= -1;
 		name=TypeParse.convertFromInternalClassName( internalName);
 		ObjectDB.makePersistent( this);
 		if ( internalName.charAt(0)!='[')
 		{
-			DBPackage<DBClass> my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db.getSession());
+			DBPackage my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db.getSession());
 			my_package.setContainedClass( this);
-			myPackage=new ObjectRef<DBPackage<DBClass>>( my_package);
+			myPackage=new ObjectRef<DBPackage>( my_package);
 			String containing_name=containingClassName( internalName);
 			if ( containing_name!=null)
 			{
@@ -199,16 +211,24 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		return DBType.getFromClass( db, this); 
     }
     
-    static class ClearUnfound<E>
+    /* (non-Javadoc)
+	 * @see com.antlersoft.bbq.db.DBAnnotatable#getAnnotationCollection()
+	 */
+	public AnnotationCollection getAnnotationCollection() {
+		return annotations;
+	}
+
+	static class ClearUnfound<E>
     {
-    	void clearUnfound( TreeMap<String,ObjectRef<E>> tree, HashSet<E> set)
+    	void clearUnfound( IndexAnalyzeDB db, String indexName, TreeMap<String,ObjectRef<E>> tree, HashSet<E> set)
     	{
     		for ( Iterator<Map.Entry<String,ObjectRef<E>>> i=tree.entrySet().iterator(); i.hasNext();)
     		{
     			Map.Entry<String,ObjectRef<E>> entry=i.next();
     			if ( ! set.contains(entry.getValue().getReferenced()))
     			{
-    				i.remove();
+    				if ( ! db.retrieveByIndex(indexName, new ObjectRefKey(entry.getValue())).hasMoreElements())
+    					i.remove();
     			}
     		}
     	}
@@ -285,6 +305,17 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
     		result=new FromRefIteratorEnumeration<DBClass>( containedClasses.iterator());
     	
     	return result;
+    }
+    
+    /**
+     * Enumeration of
+     * DBCatch object representing places in the analyzed system where this class is caught
+     * @param db Analyzed system db
+     * @return
+     */
+    public Enumeration getCatchesOf( IndexAnalyzeDB db)
+    {
+    	return db.retrieveByIndex( DBCatch.CATCH_TARGET, new ObjectRefKey(this));
     }
     
     public DBPackage getPackage()
@@ -380,6 +411,70 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		superClasses.clear();
 		ObjectDB.makeDirty( this);
     }
+    
+    /**
+     * Add a stream representing a .properties file to the database as a resource bundle
+     * (DBBundle)
+     * @param input
+     * @param db
+     */
+    public static void addPropertiesToDB( String name, InputStream input, IndexAnalyzeDB db)
+    {
+    	try
+    	{
+	    	Properties p=new Properties();
+	    	p.load(input);
+	    	DBBundle bundle=DBBundle.get( db.getSession(), name);
+	    	DBBundleBase.BundleUpdater updater = new DBBundle.BundleUpdater(bundle);
+	    	for ( Map.Entry<Object,Object> entry : p.entrySet())
+	    	{
+	    		updater.addNameValuePair(db.getSession(), entry.getKey().toString(), entry.getValue().toString());
+	    	}
+	    	updater.finishBundle(db.getSession());
+    	}
+    	catch ( IOException ioe)
+    	{
+    		
+    	}
+    	catch ( IllegalArgumentException iae)
+    	{
+    		
+    	}
+    	finally
+    	{
+    		try
+    		{
+    			input.close();
+    		}
+    		catch ( IOException ioe)
+    		{}
+    	}
+    }
+    
+    private static void processArgumentAnnotations( ClassWriter ac, IndexAnalyzeDB db, DBMethod method, AnnotationInitializerHolder holder, AttributeList attr)
+    throws Exception
+    {
+    	RuntimeVisibleParameterAnnotationsAttribute vis=(RuntimeVisibleParameterAnnotationsAttribute)attr.getAttributeByType(RuntimeVisibleParameterAnnotationsAttribute.typeString);
+    	RuntimeInvisibleParameterAnnotationsAttribute invis=(RuntimeInvisibleParameterAnnotationsAttribute)attr.getAttributeByType(RuntimeInvisibleParameterAnnotationsAttribute.typeString);
+    	
+    	if ( vis!=null || invis!=null)
+    	{
+    		RuntimeVisibleParameterAnnotationsAttribute.ParameterAnnotation[] visArray=(vis==null) ? null : vis.getParameterAnnotations();
+    		RuntimeVisibleParameterAnnotationsAttribute.ParameterAnnotation[] invisArray=(invis==null) ? null : invis.getParameterAnnotations();
+    		int argCount=method.arguments.size();
+    		for ( int i=0; i<argCount; i++)
+    		{
+    			if ( ( visArray!=null && i<visArray.length) || (invisArray!=null && i<invisArray.length))
+    			{
+    				AnnotationProcessor<DBArgument> processor=new AnnotationProcessor<DBArgument>(ac, db, method.arguments.get(i).getReferenced(), holder);
+    				if ( visArray!=null && i<visArray.length)
+    					processor.addAnnotations(visArray[i], false);
+    				if ( invisArray!=null && i<invisArray.length)
+    					processor.addAnnotations(invisArray[i], true);
+    			}
+    		}
+    	}
+    }
 
     public static void addClassToDB( ClassWriter ac, IndexAnalyzeDB db)
 		throws Exception
@@ -402,6 +497,8 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		{
 		    dbc.addSuperClass( getByInternalName( ac.getInternalClassName(i.next()), db));
 		}
+		AnnotationInitializerHolder initializerHolder=new AnnotationInitializerHolder(db,dbc,foundMethods);
+		new AnnotationProcessor<DBClass>(ac,db,dbc,initializerHolder).processAttributeList(ac.getAttributeList());
 		for ( Iterator<FieldInfo> i=ac.getFields().iterator(); i.hasNext();)
 		{
             FieldInfo fi=(FieldInfo)i.next();
@@ -409,6 +506,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
             foundFields.add( new_field);
             new_field.accessFlags=fi.getFlags();
             new_field.setDeprecated( fi.isDeprecated());
+            new AnnotationProcessor<DBField>(ac,db,new_field,initializerHolder).processAttributeList(fi.getAttributeList());
 		}
 		for ( Iterator<MethodInfo> i=ac.getMethods().iterator(); i.hasNext();)
 		{
@@ -416,9 +514,27 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		    DBMethod method=dbc.getOrCreateMethod(db, mi.getName(), mi.getType());
 		    foundMethods.add( method);
 		    method.setFromClassWriter( ac, mi, db);
+		    new AnnotationProcessor<DBMethod>(ac,db,method,initializerHolder).processAttributeList(mi.getAttributeList());
+		    processArgumentAnnotations(ac,db,method,initializerHolder,mi.getAttributeList());
 		}
-		new ClearUnfound<DBField>().clearUnfound( dbc.fields, foundFields);
-		new ClearUnfound<DBMethod>().clearUnfound( dbc.methods, foundMethods);
+		initializerHolder.finish();
+		new ClearUnfound<DBField>().clearUnfound( db, DBFieldReference.FRTARGET, dbc.fields, foundFields);
+		new ClearUnfound<DBMethod>().clearUnfound( db, DBCall.CALL_TARGET, dbc.methods, foundMethods);
+    }
+    
+    /**
+     * Determine if a file name is a valid resource bundle we want to include in
+     * the analyzed system.
+     * @param name File name
+     * @return true if it is a bundle we want to include
+     */
+    private static boolean isValidPropertiesName( String name)
+    {
+    	if ( name.endsWith( PROPERTIES_SUFFIX) && name.indexOf('_')== -1)
+    	{
+    		return true;
+    	}
+    	return false;
     }
 
     public static void addFileToDB( File file, IndexAnalyzeDB db)
@@ -451,8 +567,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		    {
 				ZipEntry entry=e.nextElement();
 				String entryName=entry.getName();
-				int length=entryName.length();
-				if ( length>6 && entryName.substring( length-6).equals( ".class"))
+				if ( entryName.endsWith( ".class"))
 				{
 			    	InputStream is=zip.getInputStream( entry);
 				    try
@@ -477,6 +592,10 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 				    	is.close();
 				    }
 				}
+				else if ( isValidPropertiesName(entryName))
+				{
+					addPropertiesToDB(entryName, zip.getInputStream(entry), db);
+				}
 		    }
 
 		    zip.close();
@@ -487,8 +606,7 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		{
 		}
 		String fileName=file.getName();
-		int fileLength=fileName.length();
-		if ( fileLength>6 && fileName.substring( fileLength-6).equals( ".class"))
+		if ( fileName.endsWith( ".class"))
 		{
 	    	InputStream is=new BufferedInputStream( new FileInputStream( file));
 		    try
@@ -505,6 +623,11 @@ public class DBClass implements Persistent, Cloneable, SourceObject, AccessFlags
 		    {
 		    	is.close();
 		    }
+		}
+		else if ( isValidPropertiesName(fileName))
+		{
+			InputStream is=new BufferedInputStream( new FileInputStream(file));
+			addPropertiesToDB(file.getCanonicalPath(), is, db);
 		}
     }
     

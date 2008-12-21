@@ -239,7 +239,7 @@ TRANSFORM : resources with names "{
 		}
 	};
 }" .
-	
+
 	
 
 FILTER : write "{ return new WriteReferences(); }" .
@@ -358,4 +358,6 @@ Types : types .
 
 Identity : is .
 Identity : are .
+
+#include ../../bbq/query/AnnotationModule.bp
 

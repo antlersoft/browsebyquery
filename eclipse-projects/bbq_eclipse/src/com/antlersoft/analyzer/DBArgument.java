@@ -1,5 +1,8 @@
 package com.antlersoft.analyzer;
 
+import com.antlersoft.bbq.db.AnnotationCollection;
+import com.antlersoft.bbq.db.DBAnnotatable;
+
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
@@ -14,10 +17,11 @@ import com.antlersoft.odb.PersistentImpl;
  * @author Michael MacDonald
  *
  */
-public class DBArgument implements Persistent, SourceObject, HasDBType {
+public class DBArgument implements Persistent, SourceObject, HasDBType, DBAnnotatable {
 	
 	ObjectRef _dbtype;
 	ObjectRef _dbmethod;
+	AnnotationCollection _annotationCollection;
 	/**
 	 * 0-based position of the argument in the method.
 	 * For non-static, non-constructor methods, position 0
@@ -67,6 +71,7 @@ public class DBArgument implements Persistent, SourceObject, HasDBType {
 		_ordinal=ordinal;
 		_dbtype=new ObjectRef( type);
 		_name="";
+		_annotationCollection=new AnnotationCollection();
 		ObjectDB.makePersistent( this);
 	}
 	
@@ -86,6 +91,13 @@ public class DBArgument implements Persistent, SourceObject, HasDBType {
 		return getMethod().toString()+" #"+_ordinal+"; "+_name+" ("+getDBType(null).toString()+")";
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.bbq.db.DBAnnotatable#getAnnotationCollection()
+	 */
+	public AnnotationCollection getAnnotationCollection() {
+		return _annotationCollection;
+	}
+
 	static class ArgumentTypeKeyGenerator implements KeyGenerator
 	{
 		/**

@@ -28,7 +28,7 @@ public class TestAnalyze
 	throws Exception
     {
 	IndexAnalyzeDB sadb=new IndexAnalyzeDB();
-	sadb.openDB( argv[0]);
+	sadb.openDB( new File(argv[0]));
 	try
 	{
 		DBClass.addFileToDB( new File( argv[1]), sadb);

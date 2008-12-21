@@ -27,6 +27,8 @@ public class DBString implements Persistent {
 	/** Index of string references by DBString key */
 	public static final String SRTARGET="SRTARGET";
 	
+	public static final LongStringKey LSK=new LongStringKey();
+	
 	private transient PersistentImpl _persistentImpl;
 	
 	private String m_string_name;
@@ -46,8 +48,16 @@ public class DBString implements Persistent {
 		return _persistentImpl;
 	}
 	
+	/**
+	 * Find the DBString matching a particular string, or create it
+	 * @param db Database
+	 * @param f String to find
+	 * @return Existing or newly created DBString
+	 */
 	public static DBString get( IndexObjectDB db, String f)
 	{
+		if ( f==null )
+			throw new IllegalArgumentException("Argument to DBString.get is null");
 		DBString result=find( db, f);
 		if ( result==null)
 			result=new DBString( f);
@@ -57,7 +67,7 @@ public class DBString implements Persistent {
 	public static DBString find( IndexObjectDB db, String f)
 	{
 		 return (DBString)db.findObject( STRING_INDEX,
-			f);
+			LSK.key(f));
 	}
 	
 	/**
@@ -81,7 +91,7 @@ public class DBString implements Persistent {
 	}
 	
 	/**
-	 * Return an enumeration over DBStringResource whose namee is this string
+	 * Return an enumeration over DBStringResource whose name is this string
 	 * @param db ILDB for this analyzed system
 	 * @return an enumeration over string resources with this string as the name
 	 */

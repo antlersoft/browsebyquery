@@ -53,6 +53,11 @@ public class FieldInfo
         accessFlags=flags;
         attributes=new AttributeList( contains);
     }
+    
+    public AttributeList getAttributeList()
+    {
+    	return attributes;
+    }
 
     public String getName()
     {

@@ -3,6 +3,9 @@
  */
 package com.antlersoft.analyzer;
 
+import com.antlersoft.bbq.db.AnnotationCollection;
+import com.antlersoft.bbq.db.DBAnnotatable;
+
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
@@ -16,7 +19,7 @@ import com.antlersoft.odb.PersistentImpl;
  *
  */
 public abstract class DBMember implements Persistent, Cloneable, SourceObject,
-		HasDBType, AccessFlags {
+		HasDBType, AccessFlags, DBAnnotatable {
 	
 	/** Containing class */
     private ObjectRef<DBClass> dbclass;
@@ -24,6 +27,8 @@ public abstract class DBMember implements Persistent, Cloneable, SourceObject,
     private ObjectRef<DBType> dbtype;
     String name;
     int accessFlags;
+    
+    private AnnotationCollection annotationCollection;
 
     private boolean deprecated;
 
@@ -34,9 +39,17 @@ public abstract class DBMember implements Persistent, Cloneable, SourceObject,
     	this.name=name;
     	this.dbclass=new ObjectRef<DBClass>( containingClass);
     	this.dbtype = new ObjectRef<DBType>( type);
+    	annotationCollection=new AnnotationCollection();
     }
     
     /* (non-Javadoc)
+	 * @see com.antlersoft.bbq.db.DBAnnotatable#getAnnotationCollection()
+	 */
+	public AnnotationCollection getAnnotationCollection() {
+		return annotationCollection;
+	}
+
+	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.Persistent#_getPersistentImpl()
 	 */
 	public PersistentImpl _getPersistentImpl() {

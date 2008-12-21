@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import com.antlersoft.bbq.db.DBClassBase;
 import com.antlersoft.bbq.db.DBPackage;
 
 import com.antlersoft.ilanalyze.DBDriver;
@@ -32,7 +33,7 @@ import com.antlersoft.query.EmptyEnum;
  * @author Michael A. MacDonald
  *
  */
-public class DBClass extends DBSourceObject implements HasProperties, HasDBType {
+public class DBClass extends DBSourceObject implements DBClassBase, HasProperties, HasDBType {
 	
 	/** Primary key on class name in key form */
 	public static final String CLASS_KEY_INDEX="CLASS_KEY_INDEX";
@@ -52,7 +53,7 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	/**
 	 * The containing DBNamespace
 	 */
-	private ObjectRef<DBPackage<DBClass>> m_namespace;
+	private ObjectRef<DBPackage> m_namespace;
 	
 	/**
 	 * The containing DBClass (null if not contained)
@@ -104,8 +105,8 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	private DBClass( IndexObjectDB db, String class_key)
 	{
 		m_class_key=class_key;
-		DBPackage<DBClass> namespace= DBPackage.get( DBPackage.namespacePart(m_class_key), db);
-		m_namespace=new ObjectRef<DBPackage<DBClass>>(namespace);
+		DBPackage namespace= DBPackage.get( DBPackage.namespacePart(m_class_key), db);
+		m_namespace=new ObjectRef<DBPackage>(namespace);
 		m_base=new ObjectKeyHashSet<DBClass>();
 		m_fields=new TreeMap<String,ObjectRef<DBField>>();
 		m_methods=new TreeMap<String,ObjectRef<DBMethod>>();
@@ -129,7 +130,7 @@ public class DBClass extends DBSourceObject implements HasProperties, HasDBType 
 	 * The namespace that contains this class (or the namespace-level class containing this class)
 	 * @return DBNamespacethat contains the class
 	 */
-	public DBPackage<DBClass> getNamespace()
+	public DBPackage getNamespace()
 	{
 		return m_namespace.getReferenced();
 	}

@@ -36,7 +36,7 @@ public class ILDBDriver implements DBDriver {
 	private DBSourceFile m_current_source_file;
 	private int m_current_line;
 	/** List representing current stack of DBNamespace objects */
-	private ArrayList<DBPackage<DBClass>> m_namespace_stack;
+	private ArrayList<DBPackage> m_namespace_stack;
 	/** List representing current stack of DBClass objects */
 	private ArrayList<ClassUpdater> m_class_stack;
 	/** Class that manages updating the contents of a method */
@@ -241,7 +241,7 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#startNamespace(java.lang.String)
 	 */
 	public void startNamespace(String name) {
-		DBPackage<DBClass> namespace=DBPackage.get( name, m_db);
+		DBPackage namespace=DBPackage.get( name, m_db);
 		m_namespace_stack.add( namespace);
 	}
 

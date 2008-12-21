@@ -208,31 +208,6 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 		return this;
 	}
 	
-	public static ILDB clearDB( ILDB db, File dbFile )
-	{
-		try
-		{
-			db.close();
-		}
-		catch ( Exception e)
-		{
-			
-		}
-        if ( dbFile.exists())
-        {
-            File[] children=dbFile.listFiles();
-            for ( int i=0; i<children.length; ++i)
-            {
-            	if ( children[i].isFile() && children[i].getName().indexOf('.')== -1)
-            	{
-            		if ( ! children[i].delete())
-            			throw new ObjectStoreException( "Cleaning up failed to delete: "+children[i].getAbsolutePath());
-            	}
-            }
-        }
-        return new ILDB( dbFile);
-	}
-	
     /**
      * validates indices in this database
      * @param args The first argument should be the database directory

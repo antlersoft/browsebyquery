@@ -42,6 +42,6 @@ class StringGet extends CountPreservingValueExpression
 
     protected Object transformSingleObject(DataSource source, Object inputObject)
     {
-  		return ((IndexAnalyzeDB)source).findWithIndex( DBString.STRING_INDEX, (String)inputObject);
+  		return ((IndexAnalyzeDB)source).findWithIndex( DBString.STRING_INDEX, DBString.LSK.key((String)inputObject));
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2007 Michael A. MacDonald
+ * Copyright (c) 2007,2008 Michael A. MacDonald
  */
 package com.antlersoft.ilanalyze.xmlintf;
 
@@ -7,9 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.SwingUtilities;
 
-import com.antlersoft.query.DataSource;
-
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
+import com.antlersoft.query.environment.ui.DBContainer;
 
 /**
  * Executes a query against a query language environment/data source shared
@@ -19,9 +18,9 @@ import com.antlersoft.query.environment.QueryLanguageEnvironment;
  */
 public class BrowseByQueryXml implements IBrowseByQuery {
 	QueryLanguageEnvironment env;
-	DataSource source;
+	DBContainer source;
 	
-	public BrowseByQueryXml( QueryLanguageEnvironment environment, DataSource datasource)
+	public BrowseByQueryXml( QueryLanguageEnvironment environment, DBContainer datasource)
 	{
 		env=environment;
 		source=datasource;
@@ -70,7 +69,7 @@ public class BrowseByQueryXml implements IBrowseByQuery {
 			try
 			{
 				env.setLine( request.getText());
-				response=new QueryResponse( env.getExpression().evaluate( source));
+				response=new QueryResponse( env.getExpression().evaluate( source.getDataSource()));
 			}
 			catch ( Exception e)
 			{

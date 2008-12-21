@@ -9,6 +9,7 @@ import java.util.List;
 import com.antlersoft.analyzer.*;
 
 import com.antlersoft.bbq.db.*;
+import com.antlersoft.bbq.query.*;
 
 import com.antlersoft.classwriter.ClassWriter;
 
@@ -30,6 +31,8 @@ import com.antlersoft.query.environment.AnalyzerQuery;
 import com.antlersoft.query.environment.ImportSet;
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
 import com.antlersoft.query.environment.SavingName;
+
+import com.antlersoft.util.IteratorEnumeration;
 
 public class QueryParser extends QueryParserBase
 {

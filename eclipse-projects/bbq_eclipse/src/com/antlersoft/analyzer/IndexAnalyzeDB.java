@@ -36,29 +36,31 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.antlersoft.bbq.db.DBAnnotationBase;
 import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.bbq.db.DBString;
+import com.antlersoft.bbq.db.DBStringResource;
+
+import com.antlersoft.bbq.query.IDBSource;
 
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexIterator;
 import com.antlersoft.odb.IndexObjectDB;
-import com.antlersoft.odb.IndexExistsException;
-import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectStreamCustomizer;
 
 import com.antlersoft.odb.diralloc.CustomizerFactory;
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
-import com.antlersoft.odb.diralloc.IndexStatistics;
 import com.antlersoft.odb.diralloc.NoSuchClassException;
 
 import com.antlersoft.odb.schemastream.SchemaCustomizer;
 
-import com.antlersoft.query.DataSource;
 import com.antlersoft.query.EmptyEnum;
+
+import com.antlersoft.query.environment.ui.AbstractDBContainer;
 
 import com.antlersoft.util.IteratorEnumeration;
 
-public class IndexAnalyzeDB implements DataSource
+public class IndexAnalyzeDB extends AbstractDBContainer implements IDBSource
 {
     private IndexObjectDB _session;
     private int createCount;
@@ -77,16 +79,26 @@ public class IndexAnalyzeDB implements DataSource
 
 	public IndexAnalyzeDB()
 	{
-		_session=null;
-        createCount=0;
+		super("DB70");
 	}
 
-    public void openDB(String dbName) throws Exception
+    /* (non-Javadoc)
+	 * @see com.antlersoft.query.environment.ui.QueryFrame#analyze(java.io.File[])
+	 */
+	@Override
+	public void analyze(File[] selectedFiles) throws Exception {
+		super.analyze(selectedFiles);
+        for ( int i=0; i<selectedFiles.length; i++)
+        {
+            DBClass.addFileToDB( selectedFiles[i], this);
+        }
+	}
+
+	@Override
+    protected IDBSource internalOpen(File location) throws Exception
     {
-        if ( _session!=null)
-            closeDB();
         createCount=0;
-        _session=new IndexObjectDB( new DirectoryAllocator( new File( dbName),
+        _session=new IndexObjectDB( new DirectoryAllocator( location,
             new CFactory()));
         _session.redefineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
         		new DBArgument.ArgumentTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
@@ -112,6 +124,20 @@ public class IndexAnalyzeDB implements DataSource
         		new DBType.TypeClassKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
         _session.redefineIndex( DBType.TYPE_KEY_INDEX, DBType.class,
         		new DBType.TypeKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+        _session.redefineIndex( DBBundle.BUNDLE_KEY_INDEX, DBBundle.class, new DBBundle.NameKeyGenerator(), false, true, CLASSNAME_INDEX_PROPS);
+		_session.redefineIndex( DBStringResource.STRING_RESOURCE_VALUE_INDEX,
+				DBStringResource.class,
+				new DBStringResource.ValueKeyGenerator(),
+				false, false, null);
+		_session.redefineIndex( DBStringResource.STRING_RESOURCE_NAME_INDEX,
+				DBStringResource.class,
+				new DBStringResource.NameKeyGenerator(),
+				false, false, null);
+        _session.redefineIndex( DBCatch.CATCH_TARGET, DBCatch.class,
+        		new DBReference.ReferenceTargetGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        _session.redefineIndex( DBAnnotationBase.ANNOTATION_CLASS, DBAnnotation.class, new DBAnnotationBase.AnnotationClassKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
+        
+        return this;
     }
     
     /**
@@ -126,38 +152,6 @@ public class IndexAnalyzeDB implements DataSource
     		commit();
     }
 
-    public void closeDB() throws Exception
-    {
-        _session.close();
-        _session=null;
-    }
-
-    public synchronized void clearDB( String dbName)
-        throws Exception
-    {
-        // Ignore exceptions closing the database
-        try
-        {
-            if (_session != null)
-                closeDB();
-        }
-        catch ( Exception e)
-        {
-
-        }
-        File f=new File( dbName);
-        if ( f.exists())
-        {
-            File[] children=f.listFiles();
-            for ( int i=0; i<children.length; ++i)
-            {
-            	if ( children[i].isFile() && children[i].getName().indexOf('.')== -1)
-            		children[i].delete();            	
-            }
-        }
-        openDB( dbName);
-    }
-    
     public synchronized void commit()
     throws Exception
     {
@@ -230,6 +224,7 @@ public class IndexAnalyzeDB implements DataSource
 			nameList.add( "com.antlersoft.odb.ObjectRef");
 			nameList.add( "com.antlersoft.analyzer.DBMember");
             nameList.add( "com.antlersoft.analyzer.DBReference");
+            nameList.add( "com.antlersoft.bbq.db.AnnotationCollection");
             nameList.add( toStore.getName());
             return new SchemaCustomizer( nameList);
         }

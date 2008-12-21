@@ -22,7 +22,7 @@ import java.util.HashMap;
  * @author Michael A. MacDonald
  *
  */
-public class ObjectKeyHashMap<K,V> implements Serializable {
+public class ObjectKeyHashMap<K extends Persistent,V> implements Serializable {
 	
     /**
 	 * Map of ObjectKey's to Object; ObjectKey's implementation must have
@@ -48,6 +48,12 @@ public class ObjectKeyHashMap<K,V> implements Serializable {
 		return m_backing_map.containsKey( keyFromRef(ref));
 	}
 	
+	/** Returns true if this map contains a mapping for the ObjectKey of the specified object */
+	public boolean containsKey( K ref)
+	{
+		return m_backing_map.containsKey( ref._getPersistentImpl().objectKey);
+	}
+	
 	/** Returns true if this map contains a mapping for the specified value. */
 	public boolean containsValue( V value)
 	{
@@ -58,6 +64,12 @@ public class ObjectKeyHashMap<K,V> implements Serializable {
 	public V get( ObjectRef<K> ref)
 	{
 		return m_backing_map.get(keyFromRef(ref));
+	}
+	
+	/** Returns the object associated with the ObjectKey of the specified object */
+	public V get( K ref)
+	{
+		return m_backing_map.get(ref._getPersistentImpl().objectKey);
 	}
 	
 	/** Returns true if the mapping has no entries */
@@ -87,6 +99,17 @@ public class ObjectKeyHashMap<K,V> implements Serializable {
 	public Object remove( ObjectRef<K> ref)
 	{
 		return m_backing_map.remove( keyFromRef(ref));
+	}
+	
+	/**
+	 * Removes the mapping for the ObjectKey of the supplied value
+	 * @param ref key object
+	 * @return Value that was associated with the key before it was remove, or null if the key was not in the map
+	 * (or was associated with null)
+	 */
+	public Object remove( K ref)
+	{
+		return m_backing_map.remove( ref._getPersistentImpl().objectKey);
 	}
 	
 	/**

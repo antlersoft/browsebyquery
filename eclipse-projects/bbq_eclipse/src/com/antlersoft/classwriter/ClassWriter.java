@@ -134,6 +134,8 @@ public class ClassWriter
 		}
   		attributes.read( classStream);
     }
+    
+    public AttributeList getAttributeList() { return attributes; }
 
     public void writeClass( OutputStream is)
 		throws IOException

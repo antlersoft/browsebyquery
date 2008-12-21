@@ -89,6 +89,7 @@ public class AttributeList implements Cloneable
 	    }
 	}
 
+    static java.util.HashSet known_set=new java.util.HashSet();
 	private Attribute readAttribute( DataInputStream classStream)
 	    throws IOException
 	{
@@ -120,8 +121,31 @@ public class AttributeList implements Cloneable
 	    {
 			value=new LocalVariableTableAttribute( classStream);
 	    }
+	    else if ( type.equals( RuntimeVisibleAnnotationsAttribute.typeString))
+	    {
+	    	value=new RuntimeVisibleAnnotationsAttribute(classStream);
+	    }
+	    else if ( type.equals( RuntimeInvisibleAnnotationsAttribute.typeString))
+	    {
+	    	value=new RuntimeVisibleAnnotationsAttribute(classStream);
+	    }
+	    else if ( type.equals( RuntimeVisibleParameterAnnotationsAttribute.typeString))
+	    {
+	    	System.err.println("Found "+type);
+	    	value=new RuntimeVisibleParameterAnnotationsAttribute(classStream);
+	    }
+	    else if ( type.equals( RuntimeInvisibleParameterAnnotationsAttribute.typeString))
+	    {
+	    	System.err.println("Found "+type);
+	    	value=new RuntimeInvisibleParameterAnnotationsAttribute(classStream);
+	    }
 	    else
 	    {
+	    	if ( ! known_set.contains(type))
+	    	{
+	    		known_set.add(type);
+	    		System.err.println(type);
+	    	}
 			/* Unknown type -- pass through silently */
    			value=new UnknownAttribute( length, type, classStream);
 	    }

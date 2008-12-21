@@ -63,7 +63,7 @@ public class DBBundleBase implements Persistent {
 	}
 
 	/**
-	 * Populates a new resource bundle, or populates and existing resource bundle.
+	 * Populates a new resource bundle, or populates and updates an existing resource bundle.
 	 * @author Michael A. MacDonald
 	 *
 	 */

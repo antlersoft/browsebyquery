@@ -18,8 +18,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.handlers.*;
 import org.eclipse.ui.part.*;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Menu;
@@ -51,7 +53,10 @@ public class QueryView extends ViewPart {
 	
 	private String[] _savedState;
 	
+	private IHandlerActivation _activation;
+	
 	final static String QUERY_VIEW_TYPE="com.antlersoft.bbq_eclipse.views.QueryView";
+	final static String RUN_QUERY_COMMAND="com.antlersoft.bbq_eclipse.command.RunQuery";
 
 	/**
 	 * The constructor.
@@ -71,11 +76,23 @@ public class QueryView extends ViewPart {
 		_queryText=new Text( _queryArea, SWT.MULTI|SWT.H_SCROLL|SWT.V_SCROLL);
 		initializeHistoryList();
 		makeActions();
+		_activation=((IHandlerService)PlatformUI.getWorkbench().getService(IHandlerService.class)).
+		activateHandler(RUN_QUERY_COMMAND, new ActionHandler(_queryAction));
 		hookContextMenu();
 		hookDoubleClickAction();
 		contributeToActionBars();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.part.WorkbenchPart#dispose()
+	 */
+	@Override
+	public void dispose() {
+		((IHandlerService)PlatformUI.getWorkbench().getService(IHandlerService.class)).deactivateHandler(_activation);
+		_activation = null;
+		super.dispose();
+	}
+
 	/**
 	 * Save the state of this view, which is the history list
 	 *

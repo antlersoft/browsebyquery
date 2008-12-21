@@ -3,16 +3,9 @@
  */
 package com.antlersoft.ilanalyze.db;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-
 import com.antlersoft.bbq.db.DBBundleBase;
-import com.antlersoft.bbq.db.DBString;
-import com.antlersoft.bbq.db.DBStringResource;
 
 import com.antlersoft.odb.CompoundKey;
-import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;

@@ -19,10 +19,9 @@
  */
 package com.antlersoft.analyzer;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.util.Enumeration;
 
 import com.antlersoft.analyzer.query.QueryParser;
@@ -36,10 +35,9 @@ public class TestQuery
     public static void main( String argv[])
 	throws Exception
     {
-	int i=0;
 	IndexAnalyzeDB sadb=new IndexAnalyzeDB();
 	BufferedReader in=new BufferedReader( new InputStreamReader( System.in));
-	sadb.openDB( argv[0]);
+	sadb.openDB( new File(argv[0]));
 	AnalyzerQuery qp=new AnalyzerQuery( new QueryParser());
 	try
 	{

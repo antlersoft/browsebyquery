@@ -19,9 +19,15 @@
  */
 package com.antlersoft.appcontext;
 
-class Starter
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
+import java.util.Properties;
+
+public class Starter
 {
-	static void start( AppContext context)
+	public static void start( AppContext context)
 		throws Exception
 	{
 		String app_class=context.getParameter( "app_class");
@@ -35,5 +41,23 @@ class Starter
 		Class start_class=loader.loadClass( app_class);
 		Object[] args=new Object[] { context };
 		start_class.getMethod( app_start, arg_list).invoke( null, args);
+	}
+	
+	public static Properties getProperties(AppContext context, String tag)
+	throws IOException
+	{
+		InputStream is=context.getConfigStream(tag);
+		Properties p=new Properties();
+		p.load(is);
+		is.close();
+		return p;
+	}
+	
+	public static void saveProperties( AppContext context, String tag, Properties p)
+	throws IOException
+	{
+		OutputStream os=context.setConfigStream(tag);
+		p.store( os, null);
+		os.close();
 	}
 }

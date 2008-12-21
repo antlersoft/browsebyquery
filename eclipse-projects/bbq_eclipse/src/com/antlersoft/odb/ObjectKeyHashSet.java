@@ -20,7 +20,7 @@ import java.util.Set;
  * @author Michael A. MacDonald
  *
  */
-public class ObjectKeyHashSet<E> extends AbstractSet<ObjectRef<E>> implements Set<ObjectRef<E>>, Serializable {
+public class ObjectKeyHashSet<E extends Persistent> extends AbstractSet<ObjectRef<E>> implements Set<ObjectRef<E>>, Serializable {
 	private ObjectKeyHashMap<E,ObjectRef<E>> m_map;
 
     /**
