@@ -343,6 +343,7 @@ t.printStackTrace();
         appFrame.pack();
         appFrame.setLocation( 10, 10);
         appFrame.setVisible(true);
+        updateTitleBar();
     }
     
     void updateTitleBar()
