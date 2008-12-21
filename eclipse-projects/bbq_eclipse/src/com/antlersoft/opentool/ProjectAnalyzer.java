@@ -133,8 +133,9 @@ e.printStackTrace();
         String testPath="";
         try
         {
-            testPath=new File( newPath).getCanonicalPath();
-            db.openDB( testPath);
+			File testFile=new File(newPath);
+            testPath=testFile.getCanonicalPath();
+            db.openDB( testFile);
             BBQPathsGroup.updateTimeProperty.setValue( node, "0");
         }
         catch ( Exception e)
@@ -215,7 +216,7 @@ System.out.println( "Analyzing "+contents[i].toString());
                     }
                 }
                 db.closeDB();
-                db.openDB( goodPath);
+                db.openDB( new File(goodPath));
                 EventQueue.invokeLater( new Runnable() {
                         public void run()
                         {
