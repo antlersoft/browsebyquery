@@ -182,7 +182,11 @@ public class DBMethod extends DBMember
     
     public Enumeration<DBCatch> getCatches()
     {
-    	return new FromRefIteratorEnumeration<DBCatch>( catches.iterator());
+    	if ( catches==null )
+    	{
+    		return EmptyEnum.empty;
+    	}
+		return new FromRefIteratorEnumeration<DBCatch>( catches.iterator());
     }
     
     private boolean isSpecialOrStatic()
