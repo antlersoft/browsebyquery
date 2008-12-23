@@ -1,6 +1,6 @@
 package com.antlersoft.bbq_eclipse.views;
 
-
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -15,6 +15,8 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
@@ -190,6 +192,7 @@ public class QueryView extends ViewPart {
 		manager.add(_selectAction);
 		manager.add(_deleteAction);
 		manager.add(new Separator());
+		manager.add( new AnalyzeAction());
 		manager.add(_rebuildAction);
 	}
 
@@ -269,7 +272,7 @@ public class QueryView extends ViewPart {
         _queryAction.setText( "Query");
         
         _rebuildAction=new Action( "Rebuild") {
-        	public void run()
+         	public void run()
         	{
         		try
         		{
@@ -282,7 +285,13 @@ public class QueryView extends ViewPart {
 	        		    	  }
 							catch ( CoreException ce)
 							{
-								handleError( ce);
+								final CoreException e=ce;
+								Display.getDefault().asyncExec( new Runnable() {
+									public void run()
+									{
+										handleError( e);										
+									}
+								});
 							}
 	        		      }
 	        		   });
@@ -296,21 +305,63 @@ public class QueryView extends ViewPart {
         			handleError( ie);
         		}
         	}
-        	
-        	public void handleError( Throwable e)
-        	{
+        };
+	}
+	
+	void handleError( final Throwable e)
+	{
+		Bbq_eclipsePlugin.getDefault().logNoThrow( e.getLocalizedMessage(), e);
+		displayException( "Error during rebuild", e);
+ 	}
+
+	class AnalyzeAction extends Action
+	{
+		AnalyzeAction()
+		{
+			super("Analyze additional files...");
+		}
+		
+		public void run()
+		{
+			FileDialog fd=new FileDialog(getSite().getShell());
+			fd.setFilterExtensions(new String[] { "class", "jar" });
+			final String path=fd.open();
+			if ( path!=null)
+			{
         		try
         		{
-        			// Will this mean it gets logged twice?
-        			Bbq_eclipsePlugin.getDefault().logError( e.getLocalizedMessage(), e);
+	        		PlatformUI.getWorkbench().getProgressService().
+	        		   busyCursorWhile(new IRunnableWithProgress(){
+	        		      public void run(IProgressMonitor monitor) {
+	        		    	  try
+	        		    	  {
+	        		    		  Bbq_eclipsePlugin.getDefault().getDB().analyze(
+	        		    				  new File[] { new File( path) }
+	        		    				  );
+	        		    	  }
+							catch ( Exception ce)
+							{
+								final Exception e=ce;
+								Display.getDefault().asyncExec( new Runnable() {
+									public void run()
+									{
+										handleError( e);										
+									}
+								});
+							}
+	        		      }
+	        		   });
         		}
-        		catch ( CoreException ce)
+        		catch ( InvocationTargetException ite)
         		{
-        			// drop logged exception
+        			handleError( ite.getCause()==null ? ite : ite.getCause());
         		}
-        		displayException( "Error Rebuilding", e);
-        	}
-        };
+        		catch ( InterruptedException ie)
+        		{
+        			handleError( ie);
+        		}
+			}
+		}
 	}
 
     void displayException( String caption, Throwable t)

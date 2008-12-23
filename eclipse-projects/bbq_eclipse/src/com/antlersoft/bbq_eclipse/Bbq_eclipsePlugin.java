@@ -17,6 +17,9 @@ import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+
+import org.eclipse.swt.widgets.Display;
+
 import org.osgi.framework.BundleContext;
 
 import com.antlersoft.analyzer.IndexAnalyzeDB;
@@ -113,17 +116,40 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 		return new Status(severity, "com.antlersoft.bbq_eclipse", code, message, ex);
 	}
 	
-	private IStatus logNoThrow( String message, Throwable ex)
+	public IStatus logNoThrow( String message, Throwable ex)
 	{
 		IStatus status=createStatus( message, ex, IStatus.ERROR, 0);
 		getLog().log( status);
 		return status;
 	}
 	
+	class LogRunner implements Runnable
+	{
+		String message;
+		Throwable ex;
+		
+		LogRunner( String m, Throwable e)
+		{
+			message=m;
+			ex=e;
+		}
+		IStatus result;
+		public void run() {
+			result=logNoThrow( message, ex);
+		}	
+	}
+	
 	public void logError( String message, Throwable ex)
 		throws CoreException
 	{
 		throw new CoreException( logNoThrow( message, ex));
+	}
+	
+	public IStatus asyncLogErrorNoThrow( final String message, final Throwable ex)
+	{
+		LogRunner t=new LogRunner( message, ex);
+		Display.getDefault().syncExec(t);
+		return t.result;
 	}
 	
 	public synchronized void clearDB() throws CoreException

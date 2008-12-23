@@ -18,6 +18,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 
+import org.eclipse.swt.widgets.Display;
+
 import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 
@@ -30,6 +32,8 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 		 * @see org.eclipse.core.resources.IResourceDeltaVisitor#visit(org.eclipse.core.resources.IResourceDelta)
 		 */
 		public boolean visit(IResourceDelta delta) throws CoreException {
+			if ( monitor.isCanceled())
+				return false;
 			IResource resource = delta.getResource();
 			switch (delta.getKind()) {
 			case IResourceDelta.ADDED:
@@ -47,13 +51,29 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 			//return true to continue visiting children.
 			return true;
 		}
+		
+		IProgressMonitor monitor;
+		
+		BBQDeltaVisitor( IProgressMonitor m)
+		{
+			monitor=m;
+		}
 	}
 
 	class BBQResourceVisitor implements IResourceVisitor {
 		public boolean visit(IResource resource) throws CoreException {
+			if ( monitor.isCanceled())
+				return false;
 			analyzeFile(resource);
 			//return true to continue visiting children.
 			return true;
+		}
+		
+		IProgressMonitor monitor;
+		
+		BBQResourceVisitor( IProgressMonitor m)
+		{
+			monitor=m;
 		}
 	}
 
@@ -77,6 +97,7 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 				incrementalBuild(delta, monitor);
 			}
 		}
+		monitor.done();
 		return null;
 	}
 
@@ -97,21 +118,21 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 			}
 			catch ( Exception e)
 			{
-				Bbq_eclipsePlugin.getDefault().logError(
-					"Error adding file:"+((IFile)resource).getFullPath().toOSString(), e);
+				throw new CoreException( Bbq_eclipsePlugin.getDefault().asyncLogErrorNoThrow(
+					"Error adding file:"+((IFile)resource).getFullPath().toOSString(), e));
 			}
 		}
 	}
 
 	protected void fullBuild(final IProgressMonitor monitor)
 			throws CoreException {
-		getProject().accept(new BBQResourceVisitor());
+		getProject().accept(new BBQResourceVisitor(monitor));
 	}
 
 	protected void incrementalBuild(IResourceDelta delta,
 			IProgressMonitor monitor) throws CoreException {
 		// the visitor does the work.
-		delta.accept(new BBQDeltaVisitor());
+		delta.accept(new BBQDeltaVisitor(monitor));
 	}
 	
 	public static void buildSingleProject( IProject project, IProgressMonitor monitor)
@@ -141,7 +162,7 @@ public class BBQBuilder extends IncrementalProjectBuilder {
 				}
 			}
 		}
-		monitor.beginTask( "Rebuild BBQ database", 10*bbq_projects.size());
+		monitor.beginTask( "Rebuild BBQ database", bbq_projects.size()*10);
 		for ( Iterator i=bbq_projects.iterator(); i.hasNext() && ! monitor.isCanceled();)
 		{
 			SubProgressMonitor spm=new SubProgressMonitor( monitor, 10);

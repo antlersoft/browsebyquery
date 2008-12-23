@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.viewers.*;
 
 import org.eclipse.swt.dnd.Clipboard;
@@ -36,6 +37,8 @@ import org.eclipse.swt.widgets.Control;
 
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.Page;
 import org.eclipse.ui.texteditor.ITextEditor;
 
@@ -48,6 +51,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	private TableViewer _viewer;
 	private ISelection _selection;
 	private IAction _selectAction;
+	private IHandlerActivation _copyActivation;
 	
 	/* (non-Javadoc)
 	 * @see org.eclipse.search.ui.ISearchResultPage#getID()
@@ -124,7 +128,8 @@ public class QueryResultView extends Page implements ISearchResultPage {
 		_selectAction=new SelectAction();
 		MenuManager manager=new MenuManager( "#PopupResult");
 		manager.add( _selectAction);
-		manager.add( new CopyAction());
+		CopyAction copyAction=new CopyAction();
+		manager.add( copyAction);
 		_viewer.getTable().setMenu( manager.createContextMenu( _viewer.getTable()));
 		_viewer.addDoubleClickListener( new IDoubleClickListener() {
 			public void doubleClick( DoubleClickEvent evt) {
@@ -132,7 +137,8 @@ public class QueryResultView extends Page implements ISearchResultPage {
 			}
 		});
 		_viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-		
+		_copyActivation=((IHandlerService)getSite().getService(IHandlerService.class))
+			.activateHandler("org.eclipse.ui.edit.copy", new ActionHandler(copyAction));
 	}
 
 	/* (non-Javadoc)
@@ -147,6 +153,19 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	 */
 	public void setFocus() {
 		_viewer.getControl().setFocus();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.ui.part.Page#dispose()
+	 */
+	@Override
+	public void dispose() {
+		if ( _copyActivation!=null)
+		{
+			((IHandlerService)getSite().getService(IHandlerService.class)).deactivateHandler(_copyActivation);
+			_copyActivation=null;
+		}
+		super.dispose();
 	}
 
 	class SelectAction extends Action
@@ -322,6 +341,10 @@ public class QueryResultView extends Page implements ISearchResultPage {
 	
 	class CopyAction extends Action
 	{
+		CopyAction()
+		{
+			super("Copy");
+		}
 		public void run()
 		{
 			if ( _selection!=null && ! _selection.isEmpty() && _selection instanceof IStructuredSelection)

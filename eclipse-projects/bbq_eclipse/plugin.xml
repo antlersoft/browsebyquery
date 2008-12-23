@@ -109,7 +109,7 @@
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="com.antlersoft.bbq_eclipse.RunQuery"
+            commandId="com.antlersoft.bbq_eclipse.command.RunQuery"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M2+M3+B"/>
