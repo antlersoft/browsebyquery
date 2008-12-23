@@ -52,7 +52,7 @@ public class RuntimeVisibleAnnotationsAttribute implements Attribute, Annotation
 	 * @see com.antlersoft.classwriter.AnnotationInfo#gatherAnnotationInfo(com.antlersoft.classwriter.ClassWriter, java.util.Collection, java.util.Collection)
 	 */
 	public void gatherAnnotationInfo(ClassWriter container, Collection<Annotation> annotations, Collection<String> strings) {
-		for ( Annotation a : annotations)
+		for ( Annotation a : this.annotations)
 		{
 			annotations.add(a);
 			a.gatherAnnotationInfo( container, annotations, strings);

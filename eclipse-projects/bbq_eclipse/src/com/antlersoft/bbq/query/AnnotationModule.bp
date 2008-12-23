@@ -14,7 +14,7 @@ SET_EXPRESSION : all annotations "{
 	};
 }" .
 TRANSFORM : cast TypeSpec "{
-	return new Cast( CastTypeSpec.getClassFor( valueStack.s_0()));
+	return new Cast( CastTypeSpec.getClassFor( (String)((ArrayList)valueStack.o_0()).get(0)));
 }" .
 TRANSFORM : annotations of "{
 	return new TransformImpl( DBAnnotation.class, DBAnnotatable.class ) {

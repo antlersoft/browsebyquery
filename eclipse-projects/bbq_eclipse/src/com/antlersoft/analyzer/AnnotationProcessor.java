@@ -48,9 +48,9 @@ class AnnotationProcessor<A extends DBAnnotatable & SourceObject> {
 		{
 			if ( updater==null )
 				updater=new DBAnnotationBase.AnnotationUpdater(target);
-			DBClass annotationClass=DBClass.getByInternalName( cw.getInternalClassName(a.getClassIndex()), db);
+			DBClass annotationClass=DBType.getWithTypeKey( cw.getString(a.getClassIndex()), db).getReferencedClass();
 			DBAnnotation annotation=(DBAnnotation)updater.getExisting(annotationClass);
-			if ( annotation!=null )
+			if ( annotation==null )
 			{
 				updater.addNew(new DBAnnotation<A>(annotationClass,target,hidden));
 			}

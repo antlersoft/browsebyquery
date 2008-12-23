@@ -156,7 +156,12 @@ public class DBAnnotationBase implements Persistent {
 			}
 			if ( changed )
 			{
-				collection.annotations.clear();
+				if ( collection.annotations==null)
+				{
+					collection.annotations=new ArrayList<ObjectRef<DBAnnotationBase>>(after.size());
+				}
+				else
+					collection.annotations.clear();
 				for ( DBAnnotationBase ann : after)
 				{
 					collection.annotations.add(new ObjectRef<DBAnnotationBase>(ann));
