@@ -126,7 +126,7 @@ public class AttributeList implements Cloneable
 	    }
 	    else if ( type.equals( RuntimeInvisibleAnnotationsAttribute.typeString))
 	    {
-	    	value=new RuntimeVisibleAnnotationsAttribute(classStream);
+	    	value=new RuntimeInvisibleAnnotationsAttribute(classStream);
 	    }
 	    else if ( type.equals( RuntimeVisibleParameterAnnotationsAttribute.typeString))
 	    {
