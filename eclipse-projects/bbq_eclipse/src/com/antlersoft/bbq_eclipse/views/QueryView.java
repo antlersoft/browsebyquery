@@ -15,6 +15,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.List;
@@ -193,6 +194,7 @@ public class QueryView extends ViewPart {
 		manager.add(_deleteAction);
 		manager.add(new Separator());
 		manager.add( new AnalyzeAction());
+		manager.add( new AnalyzeDirectoryAction());
 		manager.add(_rebuildAction);
 	}
 
@@ -313,57 +315,77 @@ public class QueryView extends ViewPart {
 		Bbq_eclipsePlugin.getDefault().logNoThrow( e.getLocalizedMessage(), e);
 		displayException( "Error during rebuild", e);
  	}
+	
+	void analyzePath( final String path)
+	{
+		if ( path!=null)
+		{
+    		try
+    		{
+        		PlatformUI.getWorkbench().getProgressService().
+        		   busyCursorWhile(new IRunnableWithProgress(){
+        		      public void run(IProgressMonitor monitor) {
+        		    	  try
+        		    	  {
+        		    		  Bbq_eclipsePlugin.getDefault().getDB().analyze(
+        		    				  new File[] { new File( path) }
+        		    				  );
+        		    	  }
+						catch ( Exception ce)
+						{
+							final Exception e=ce;
+							Display.getDefault().asyncExec( new Runnable() {
+								public void run()
+								{
+									handleError( e);										
+								}
+							});
+						}
+        		      }
+        		   });
+    		}
+    		catch ( InvocationTargetException ite)
+    		{
+    			handleError( ite.getCause()==null ? ite : ite.getCause());
+    		}
+    		catch ( InterruptedException ie)
+    		{
+    			handleError( ie);
+    		}
+		}		
+	}
 
 	class AnalyzeAction extends Action
 	{
 		AnalyzeAction()
 		{
-			super("Analyze additional files...");
+			super("Analyze additional file...");
 		}
 		
 		public void run()
 		{
 			FileDialog fd=new FileDialog(getSite().getShell());
-			fd.setFilterExtensions(new String[] { "class", "jar" });
-			final String path=fd.open();
-			if ( path!=null)
-			{
-        		try
-        		{
-	        		PlatformUI.getWorkbench().getProgressService().
-	        		   busyCursorWhile(new IRunnableWithProgress(){
-	        		      public void run(IProgressMonitor monitor) {
-	        		    	  try
-	        		    	  {
-	        		    		  Bbq_eclipsePlugin.getDefault().getDB().analyze(
-	        		    				  new File[] { new File( path) }
-	        		    				  );
-	        		    	  }
-							catch ( Exception ce)
-							{
-								final Exception e=ce;
-								Display.getDefault().asyncExec( new Runnable() {
-									public void run()
-									{
-										handleError( e);										
-									}
-								});
-							}
-	        		      }
-	        		   });
-        		}
-        		catch ( InvocationTargetException ite)
-        		{
-        			handleError( ite.getCause()==null ? ite : ite.getCause());
-        		}
-        		catch ( InterruptedException ie)
-        		{
-        			handleError( ie);
-        		}
-			}
+			fd.setFilterExtensions(new String[] { "*.class", "*.jar" });
+			fd.setFilterNames(new String[] {"class files", "jar files"});
+			analyzePath(fd.open());
 		}
 	}
 
+
+	class AnalyzeDirectoryAction extends Action
+	{
+		AnalyzeDirectoryAction()
+		{
+			super("Analyze additional folder...");
+		}
+		
+		public void run()
+		{
+			DirectoryDialog fd=new DirectoryDialog(getSite().getShell());
+			analyzePath(fd.open());
+		}
+	}
+	
     void displayException( String caption, Throwable t)
     {
         StringWriter sw=new StringWriter( 1000);
