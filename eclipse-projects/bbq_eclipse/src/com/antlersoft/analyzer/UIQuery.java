@@ -54,6 +54,7 @@ public class UIQuery extends QueryFrame
 	@Override
 	protected ExtensionFileFilter getDBExtensionFileFilter() {
         ExtensionFileFilter filter=new ExtensionFileFilter( "Browse-by-Query database");
+        filter.addExtension( "pj");
         filter.addExtension( "bbq");
         return filter;
 	}
