@@ -232,6 +232,8 @@ public abstract class AbstractDBContainer implements DBContainer {
 		String v=(String)session.getSession().getRootObject(DB_VERSION_KEY);
 		if ( v==null || (v!=null && ! v.equals(versionString)))
 		{
+			if (v==null)
+				v="(no version)";
 			cleared=true;
 			clearDB();
 			openMessage="The existing database was for a different version of BBQ, so it was cleared,\nand you must rebuild it by analyzing classes."+v;
