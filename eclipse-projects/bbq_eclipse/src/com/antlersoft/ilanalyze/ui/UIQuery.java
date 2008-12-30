@@ -71,7 +71,25 @@ public class UIQuery extends QueryFrame
 		return "Analyze directories or assembly files";
 	}
 
+    /* (non-Javadoc)
+	 * @see com.antlersoft.query.environment.ui.QueryFrame#getDBExtensionFileFilter()
+	 */
+	@Override
+	protected ExtensionFileFilter getDBExtensionFileFilter() {
+        ExtensionFileFilter filter=new ExtensionFileFilter( "Browse-by-Query database");
+        filter.addExtension( "pj");
+        filter.addExtension( "bbq");
+        return filter;
+	}
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.query.environment.ui.QueryFrame#getOpenMenuItem()
+	 */
+	@Override
+	protected String getOpenMenuItem() {
+		return "Open a different database...";
+	}
+	
 	/**
 	 * Add server menu to the menubar
 	 */
