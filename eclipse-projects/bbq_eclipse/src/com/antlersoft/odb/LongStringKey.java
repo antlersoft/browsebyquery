@@ -34,7 +34,7 @@ public class LongStringKey implements Serializable {
 		trailingLength=trailing;
 	}
 	
-	public String key( String input)
+	public final String key( String input)
 	{
 		int l=input.length();
 		if ( l<=initialLength+trailingLength)

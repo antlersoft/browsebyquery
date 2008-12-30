@@ -150,7 +150,7 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 		{
 			defineIndex( DBString.STRING_INDEX,
 								   DBString.class,
-								   new StringKeyGenerator(),
+								   new DBString.StringKeyGenerator(),
 								   false, true, null);
 		}
 		catch ( IndexExistsException iee)
