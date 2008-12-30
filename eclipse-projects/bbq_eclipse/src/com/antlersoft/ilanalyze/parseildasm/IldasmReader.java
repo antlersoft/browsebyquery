@@ -271,28 +271,47 @@ public class IldasmReader {
 				Object[] format_args=new Object[] { file.getAbsolutePath() };
 				Process process=Runtime.getRuntime().exec(formatCommandArgs(m_disassembly_command_format, format_args));
 				InputStreamReader reader=new InputStreamReader(process.getInputStream());
-				Read( driver, reader);
 				try
 				{
-					process.waitFor();
+					Read( driver, reader);
+					try
+					{
+						process.waitFor();
+					}
+					catch ( InterruptedException ie)
+					{
+						logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
+					}
 				}
-				catch ( InterruptedException ie)
+				finally
 				{
-					logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
+					reader.close();
 				}
-				reader.close();
-				process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args));
-				reader=new InputStreamReader(process.getInputStream());
-				readResources( driver, reader);
 				try
 				{
-					process.waitFor();
+					process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args), null, null);
+					reader=new InputStreamReader(process.getInputStream());
+					try
+					{
+						readResources( driver, reader);
+						try
+						{
+							process.waitFor();
+						}
+						catch ( InterruptedException ie)
+						{
+							logger.warning( "Interrupted waiting for resource reader process: " + ie.getMessage());
+						}
+					}
+					finally
+					{
+						reader.close();						
+					}
 				}
-				catch ( InterruptedException ie)
+				catch ( Exception e)
 				{
-					logger.warning( "Interrupted waiting for resource reader process: " + ie.getMessage());
+					logger.log( Level.INFO, "Problem running ResourceLister on "+format_args[0], e);
 				}
-				reader.close();
 				driver.endAnalyzedFile();
 			}
 		}
