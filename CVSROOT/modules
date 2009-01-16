@@ -85,10 +85,10 @@ bbqil_exp -d bbqil package/bbqil &bbqil_exp_ref
 
 BBQVSAddIn -d BBQVSAddIn package/BBQAddIn
 
-sqlitegen_ref -a com/antlersoft/classwriter com/antlersoft/util
+sqlitegen_ref -a -l com/antlersoft/classwriter com/antlersoft/util
 sqlitegen_ref2 -d sqlitegen package/sqlitegen &sqlitegen_ref
 sqlitegen_ref3 -d sqlitegen -l eclipse-projects/SQLiteGen
 sqlitegen_ref4 -d sqlitegen/com/antlersoft/sqlitegen eclipse-projects/SQLiteGen/src/com/antlersoft/sqlitegen
-sqlitegen_ref5 -d sqlitegen/MANIFEST.MF eclipse-projects/SQLiteGen/MANIFEST.MF
+sqlitegen_ref5 -d sqlitegen/META-INF eclipse-projects/SQLiteGen/META-INF
 sqlitegen -a sqlitegen_ref2 sqlitegen_ref3 sqlitegen_ref4 sqlitegen_ref5
 
