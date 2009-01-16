@@ -57,19 +57,19 @@ mars_mola_viewer_src -a mars_mola_viewer_ref \
 	humus_demos/MarsDemo/MarsDemo.dsw \
 	humus_demos/libs
 
-cpp_home cppquery com
+	cpp_home cppquery com
 
-stdio_tunnel_ref -d stdio_tunnel package/stdio_tunnel
-stdio_tunnel_cpp_ref -d stdio_tunnel/src/com/antlersoft -l cppquery/com/antlersoft
-stdio_tunnel_cpp2_ref -d stdio_tunnel/src/com/antlersoft cppquery/com/antlersoft stdio_tunnel net
-stdio_tunnel -a stdio_tunnel_ref stdio_tunnel_cpp_ref stdio_tunnel_cpp2_ref
+	stdio_tunnel_ref -d stdio_tunnel package/stdio_tunnel
+	stdio_tunnel_cpp_ref -d stdio_tunnel/src/com/antlersoft -l cppquery/com/antlersoft
+	stdio_tunnel_cpp2_ref -d stdio_tunnel/src/com/antlersoft cppquery/com/antlersoft stdio_tunnel net
+	stdio_tunnel -a stdio_tunnel_ref stdio_tunnel_cpp_ref stdio_tunnel_cpp2_ref
 
-bbq_ref -a com/antlersoft/classwriter com/antlersoft/analyzer com/antlersoft/opentool com/antlersoft/analyzecxx com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query com/antlersoft/appcontext
-bbq_ref2 -d bbq -l eclipse-projects/bbq_eclipse
-bbq_ref3 -d bbq eclipse-projects/bbq_eclipse/src
-bbq_ref4 -d bbq package/bbq &bbq_ref
-bbq_ref5 -d bbq/META-INF eclipse-projects/bbq_eclipse/META-INF
-bbq_ref6 -d bbq/icons eclipse-projects/bbq_eclipse/icons
+	bbq_ref -a com/antlersoft/classwriter com/antlersoft/analyzer com/antlersoft/opentool com/antlersoft/analyzecxx com/antlersoft/util com/antlersoft/odb com/antlersoft/parser com/antlersoft/query com/antlersoft/appcontext
+	bbq_ref2 -d bbq -l eclipse-projects/bbq_eclipse
+	bbq_ref3 -d bbq eclipse-projects/bbq_eclipse/src
+	bbq_ref4 -d bbq package/bbq &bbq_ref
+	MANIFEST.MFbbq_ref5 -d bbq/META-INF eclipse-projects/bbq_eclipse/META-INF
+6bq_ref6 -d bbq/icons eclipse-projects/bbq_eclipse/icons
 bbq_ref7 -d bbq/com/antlersoft/bbq eclipse-projects/bbq_eclipse/src/com/antlersoft/bbq
 bbq -a bbq_ref2 bbq_ref3 bbq_ref4 bbq_ref5 bbq_ref6 bbq_ref7
 
@@ -85,10 +85,11 @@ bbqil_exp -d bbqil package/bbqil &bbqil_exp_ref
 
 BBQVSAddIn -d BBQVSAddIn package/BBQAddIn
 
-sqlitegen_ref -a -l com/antlersoft/classwriter com/antlersoft/util
-sqlitegen_ref2 -d sqlitegen package/sqlitegen &sqlitegen_ref
+sqlitegen_ref -d sqlitegen/com/antlersoft/classwriter -l com/antlersoft/classwriter
+sqlitegen_ref6 -d sqlitegen/com/antlersoft/util -l com/antlersoft/util
+sqlitegen_ref2 -d sqlitegen package/sqlitegen
 sqlitegen_ref3 -d sqlitegen -l eclipse-projects/SQLiteGen
 sqlitegen_ref4 -d sqlitegen/com/antlersoft/sqlitegen eclipse-projects/SQLiteGen/src/com/antlersoft/sqlitegen
 sqlitegen_ref5 -d sqlitegen/META-INF eclipse-projects/SQLiteGen/META-INF
-sqlitegen -a sqlitegen_ref2 sqlitegen_ref3 sqlitegen_ref4 sqlitegen_ref5
+sqlitegen -a sqlitegen sqlitegen_ref6 sqlitegen_ref2 sqlitegen_ref3 sqlitegen_ref4 sqlitegen_ref5
 
