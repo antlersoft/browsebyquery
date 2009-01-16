@@ -115,13 +115,13 @@ public class TypeParse
         return convertFromInternalClassName( toConvert.substring( 0, index));
     }
 
-	public static ArrayList parseMethodType( String methodType)
+	public static ArrayList<String> parseMethodType( String methodType)
  		throws CodeCheckException
  	{
   		char[] array=methodType.toCharArray();
     	try
      	{
-          	ArrayList result=new ArrayList( 20);
+          	ArrayList<String> result=new ArrayList<String>( 20);
 	    	if ( array.length<3 || array[0]!='(')
 	     	{
 				throw new CodeCheckException( "Bad method signature "+methodType);

@@ -30,6 +30,8 @@ public class RuntimeVisibleAnnotationsAttribute implements Attribute, Annotation
 		}
 	}
 	
+	public Annotation[] getAnnotations() { return annotations.clone(); }
+	
 	/* (non-Javadoc)
 	 * @see com.antlersoft.classwriter.Attribute#getTypeString()
 	 */
