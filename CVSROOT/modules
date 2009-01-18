@@ -91,7 +91,7 @@ sqlitegen_ref2 -d sqlitegen package/sqlitegen
 sqlitegen_ref3 -d sqlitegen -l eclipse-projects/SQLiteGen
 sqlitegen_ref4 -d sqlitegen/com/antlersoft eclipse-projects/SQLiteGen/src/com/antlersoft
 sqlitegen_ref7 -d sqlitegen/com/antlersoft eclipse-projects/android_db/src/com/antlersoft
-sqlitegen_ref8 -d sqlitegen/com/antlersoft eclipse-projects/android_dbimpl/src/com/antlersoft
+sqlitegen_ref8 -d sqlitegen/com/antlersoft eclipse-projects/android-dbimpl/src/com/antlersoft
 sqlitegen_ref5 -d sqlitegen/META-INF eclipse-projects/SQLiteGen/META-INF
 sqlitegen -a sqlitegen_ref sqlitegen_ref6 sqlitegen_ref2 sqlitegen_ref3 sqlitegen_ref4 sqlitegen_ref5 sqlitegen_ref7 sqlitegen_ref8
 
