@@ -291,7 +291,10 @@ public class Annotation implements AnnotationInfo {
 		 * @see com.antlersoft.classwriter.AnnotationInfo#gatherAnnotationInfo(com.antlersoft.classwriter.ClassWriter, java.util.Collection, java.util.Collection)
 		 */
 		public void gatherAnnotationInfo(ClassWriter container, Collection<Annotation> annotations, Collection<String> strings) {
-			String s=container.getIfStringConstant(poolIndex);
+			ClassWriter.CPInfo info=container.constantPool.get(poolIndex);
+			String s=null;
+			if (info instanceof ClassWriter.CPUtf8)
+				s=container.getString(poolIndex);
 			if ( s!=null)
 				strings.add(s);
 		}
