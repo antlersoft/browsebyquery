@@ -17,6 +17,8 @@ import com.antlersoft.parser.lex.LexState;
  */
 public class IdentifierState extends LexStateBase {
 	private StringBuilder m_sb;
+	private boolean m_lastWasDot;
+	private boolean m_inQuotedPart;
 
 	/**
 	 * @param parent
@@ -35,6 +37,28 @@ public class IdentifierState extends LexStateBase {
 		if ( c=='.' || CharClass.isIDPart(c))
 		{
 			m_sb.append(c);
+			m_lastWasDot = (c=='.');
+			return this;
+		}
+		else if (m_inQuotedPart)
+		{
+			if (c=='\'')
+			{
+				m_inQuotedPart = false;
+			}
+			else if (c=='\\')
+			{
+				return new EscapeInStringState(this,this.m_reader,m_sb);
+			}
+			else
+			{
+				m_sb.append(c);
+			}
+			return this;
+		}
+		else if (m_lastWasDot && c=='\'')
+		{
+			m_inQuotedPart = true;
 			return this;
 		}
 		processToken();
