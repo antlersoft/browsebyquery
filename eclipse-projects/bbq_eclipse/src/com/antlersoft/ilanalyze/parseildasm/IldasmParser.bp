@@ -582,6 +582,7 @@ reserved t_stream "stream"
 reserved t_streamed_object "streamed_object"
 reserved t_string "string"
 reserved t_struct "struct"
+reserved t_strict "strict"
 reserved t_stsfld "stsfld"
 reserved t_sub "sub"
 reserved t_sub_ovf "sub.ovf"
@@ -1247,6 +1248,7 @@ n_methAttr : n_methAttr t_newslot "m_AddIgnoredAttrib" .
 n_methAttr : n_methAttr t_rtspecialname "m_AddIgnoredAttrib" .
 n_methAttr : n_methAttr t_unmanagedexp "m_AddIgnoredAttrib" .
 n_methAttr : n_methAttr t_reqsecobj "m_AddIgnoredAttrib" .
+n_methAttr : n_methAttr t_strict "m_AddIgnoredAttrib" .
 n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring t_as n_compQstring n_pinvAttr t_right_paren "{ return new Integer( valueStack.i_n(7)); }" .
 n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_compQstring n_pinvAttr t_right_paren "{ return new Integer( valueStack.i_n(5)); }" .
 n_methAttr : n_methAttr t_pinvokeimpl t_left_paren n_pinvAttr t_right_paren "{ return new Integer( valueStack.i_n(4)); }" .
