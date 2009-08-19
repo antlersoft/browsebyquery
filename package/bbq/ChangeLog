@@ -1,3 +1,146 @@
+--bbq0.7.3
+
+BBQ for Java now captures and lets you query information about exception
+catches (not throws though; look for calls to exception class constructors),
+resource bundles included in analyzed jars, and annotations.  This new
+functionality is experimental
+
+It also includes what has proven to be the very convenient "any class" operator.  The set expression 
+
+any class "classname"
+
+will return all the classes with that name regardless of the namespace
+they are in.  This is generally much more convenient than typing in the
+complete class name or keeping your import list set properly.
+
+The cast operator allows you to explicitly specify a type
+for an ambiguously typed expression, which helps build more complex
+expressions.
+
+Grammar summary:
+
+The new language keywords are:
+
+annotations
+annotated
+any
+bundles
+cast
+catches
+names
+resources
+
+TypeSpec : methods
+TypeSpec : fields
+TypeSpec : arguments
+TypeSpec : classes
+SET_EXPRESSION : all annotations
+TRANSFORM : cast TypeSpec
+TRANSFORM : annotations of
+TRANSFORM : annotations with
+TRANSFORM : any class
+TRANSFORM : catches of
+TRANSFORM : catches in
+TRANSFORM : resources containing
+TRANSFORM : resources with names
+VALUE_EXPRESSION : annotated by
+VALUE_EXPRESSION : classes of
+VALUE_EXPRESSION : names of
+VALUE_EXPRESSION : bundles containing
+
+--bbq0.6.3
+
+Quick fix because 0.6.2 package was missing icons.  Also updated build script
+to tag more files with version number.
+
+--bbq0.6.2
+
+Switch Java version to 1.5+; start switching to using generics for type safety
+
+Change database layout to use indexes more and collections less; should be faster and more reliable
+
+Fix rare crash bug
+
+--bbq0.5.10
+
+Fix bug maintaining indices
+
+Fix bug traversing non-unique indices (affects queries on types)
+
+Fix bug displaying save expressions that reference saved expressions
+
+Make recovering from a corrupt database more robust (particularly in Windows
+environment)
+
+Update database version
+
+--bbq0.5.9
+
+Regular expression matching
+
+Display saved values in a table; new saved value window in eclipse version
+
+Fix bug clearing saved expressions and imports clearing database
+
+Refactor for bbqil
+
+Update manual
+
+--bbq0.5.4
+
+static filter
+
+Relational expressions (making value expressions useful)
+
+Manual changes, including tutorial examples
+
+--bbq0.5.2
+
+New object types: Type, Argument, Package
+
+Track inner classes
+
+Persist state of the query engine between sessions
+
+Refactor query engine; implement value expressions
+
+User interface changes
+
+Make database detect version changes
+
+Change indexing in the database to make it faster and more robust.
+
+--bbq0.4.2
+Set command lets you assign a name to transforms as well as set expressions.
+
+recursive operator for general recursive transforms
+
+Lexer improvements so you don't have to set off parentheses with spaces
+
+Updates to the language manual
+
+--bbq0.3.13
+Add eclipse plugin
+Update storage engine memory management
+Fix bugs in storage engine
+
+--bbq20050721
+Added ant build.xml and properties file
+
+Make standalone work with no command line argument, opening a default database in the current directory
+
+Make opening an obsolete database work, although it gets cleared and you have to re-analyze
+
+Add ability to clear (reset) a database at will
+
+
+--bbq20050601
+Initial version
+
+Java BBQ in standalone and JBuilder opentool flavors.
+
+C++ BBQ standalone; basically only handles preprocessor constructs and string constants at this point.
+
 --bbq0.6.3
 
 Quick fix because 0.6.2 package was missing icons.  Also updated build script
