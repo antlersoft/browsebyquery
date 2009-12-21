@@ -417,6 +417,7 @@ reserved t_ldc_i4_s "ldc.i4.s"
 reserved t_ldc_i8 "ldc.i8"
 reserved t_ldc_r4 "ldc.r4"
 reserved t_ldc_r8 "ldc.r8"
+reserved t_ldelem "ldelem"
 reserved t_ldelem_any "ldelem.any"
 reserved t_ldelem_i "ldelem.i"
 reserved t_ldelem_i1 "ldelem.i1"
@@ -854,6 +855,7 @@ n_INSTR_TYPE : t_unbox .
 n_INSTR_TYPE : t_stobj .
 n_INSTR_TYPE : t_box .
 n_INSTR_TYPE : t_newarr .
+n_INSTR_TYPE : t_ldelem .
 n_INSTR_TYPE : t_ldelem_any .
 n_INSTR_TYPE : t_ldelema .
 n_INSTR_TYPE : t_refanyval .
