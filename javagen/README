@@ -1,7 +1,17 @@
 Converts parser grammars into fragments of java source files
 
-To build this you will need the buildparse library
+To build this you will need to have installed the buildparse library
 (http://sourceforge.net/projects/buildparse)
 
+To build from source as it is in cvs, run
 
+aclocal
+automake --foreign --add-missing
+autoconfig
+./configure
+make && make install
 
+To build from source tarball
+
+./configure
+make && make install
