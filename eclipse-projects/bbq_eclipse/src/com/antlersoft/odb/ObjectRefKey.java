@@ -23,7 +23,7 @@ import java.io.Serializable;
  * <p>
  * ----- - - -- - - --
  * <p>Company: </p>
- * @author not attributable
+ * @author Michael MacDonald
  * @version 1.0
  */
 
