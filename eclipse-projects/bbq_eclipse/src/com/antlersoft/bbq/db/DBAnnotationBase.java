@@ -3,6 +3,8 @@
  */
 package com.antlersoft.bbq.db;
 
+import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -30,16 +32,14 @@ import com.antlersoft.query.SingleEnum;
  * @author Michael A. MacDonald
  *
  */
-public class DBAnnotationBase implements Persistent {
+public class DBAnnotationBase implements AnnotationBase, Serializable {
 
 	public final static String ANNOTATION_CLASS="ANNOTATION_CLASS";
 
-	private transient PersistentImpl _persistentImpl;
-	
 	private ObjectRef<DBClassBase> annotationClass;
 	private ObjectRef<DBAnnotatable> annotatedObject;
 	
-	protected DBAnnotationBase( DBClassBase annotationClass, DBAnnotatable annotated)
+	public DBAnnotationBase( DBClassBase annotationClass, DBAnnotatable annotated)
 	{
 		this.annotationClass=new ObjectRef<DBClassBase>(annotationClass);
 		this.annotatedObject=new ObjectRef<DBAnnotatable>(annotated);
@@ -53,6 +53,11 @@ public class DBAnnotationBase implements Persistent {
 	public DBAnnotatable getAnnotatedObject()
 	{
 		return annotatedObject.getReferenced();
+	}
+	
+	public ObjectRef<DBClassBase> getAnnotationClassRef()
+	{
+		return annotationClass;
 	}
 	
 	/* (non-Javadoc)
@@ -75,29 +80,18 @@ public class DBAnnotationBase implements Persistent {
 				db.greaterThanOrEqualEntries(ANNOTATION_CLASS, new ObjectRefKey(annotationClass)));
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.antlersoft.odb.Persistent#_getPersistentImpl()
-	 */
-	public PersistentImpl _getPersistentImpl() {
-		if ( _persistentImpl==null)
-		{
-			_persistentImpl = new PersistentImpl();
-		}
-		return _persistentImpl;
-	}
-	
 	public static class AnnotationUpdater
 	{
 		/** Map of annotation classes to values in the current annotated object */
-		private ObjectKeyHashMap<DBClassBase,DBAnnotationBase> existing;
-		private ArrayList<DBAnnotationBase> after;
+		private ObjectKeyHashMap<DBClassBase,AnnotationBase> existing;
+		private ArrayList<AnnotationBase> after;
 		boolean changed;
 		private AnnotationCollection collection;
 		
-		private ArrayList<DBAnnotationBase> getAfter()
+		private ArrayList<AnnotationBase> getAfter()
 		{
 			if ( after==null)
-				after=new ArrayList<DBAnnotationBase>();
+				after=new ArrayList<AnnotationBase>();
 			return after;
 		}
 		
@@ -109,18 +103,18 @@ public class DBAnnotationBase implements Persistent {
 			Enumeration e=collection.getAnnotations();
 			if ( e.hasMoreElements())
 			{
-				existing=new ObjectKeyHashMap<DBClassBase,DBAnnotationBase>();
+				existing=new ObjectKeyHashMap<DBClassBase,AnnotationBase>();
 				while ( e.hasMoreElements())
 				{
-					DBAnnotationBase annotation=(DBAnnotationBase)e.nextElement();
-					existing.put(annotation.annotationClass, annotation);
+					AnnotationBase annotation=(AnnotationBase)e.nextElement();
+					existing.put(annotation.getAnnotationClassRef(), annotation);
 				}
 			}
 		}
 		
-		public DBAnnotationBase getExisting(DBClassBase annotationclass)
+		public AnnotationBase getExisting(DBClassBase annotationclass)
 		{
-			DBAnnotationBase result = null;
+			AnnotationBase result = null;
 			
 			if ( existing!=null)
 				result=existing.get(annotationclass);
@@ -149,7 +143,7 @@ public class DBAnnotationBase implements Persistent {
 			if ( existing!=null && existing.size()>0 )
 			{
 				changed=true;
-				for ( DBAnnotationBase i : existing.values())
+				for ( AnnotationBase i : existing.values())
 				{
 					db.deleteObject(i);
 				}
@@ -158,13 +152,13 @@ public class DBAnnotationBase implements Persistent {
 			{
 				if ( collection.annotations==null)
 				{
-					collection.annotations=new ArrayList<ObjectRef<DBAnnotationBase>>(after.size());
+					collection.annotations=new ArrayList<ObjectRef<AnnotationBase>>(after.size());
 				}
 				else
 					collection.annotations.clear();
-				for ( DBAnnotationBase ann : after)
+				for ( AnnotationBase ann : after)
 				{
-					collection.annotations.add(new ObjectRef<DBAnnotationBase>(ann));
+					collection.annotations.add(new ObjectRef<AnnotationBase>(ann));
 				}
 			}
 				
@@ -182,7 +176,7 @@ public class DBAnnotationBase implements Persistent {
 		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
 		 */
 		public Comparable generateKey(Object o1) {
-			return new ObjectRefKey(((DBAnnotationBase)o1).annotationClass);
+			return new ObjectRefKey(((AnnotationBase)o1).getAnnotationClassRef());
 		}
 	}
 }

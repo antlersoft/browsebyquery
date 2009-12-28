@@ -19,7 +19,7 @@ import com.antlersoft.query.EmptyEnum;
  */
 public class AnnotationCollection implements Serializable {
 
-	ArrayList<ObjectRef<DBAnnotationBase>> annotations;
+	ArrayList<ObjectRef<AnnotationBase>> annotations;
 	
  	public Enumeration getAnnotations()
 	{
@@ -30,7 +30,7 @@ public class AnnotationCollection implements Serializable {
  		}
  		else
  		{
- 			result = new FromRefIteratorEnumeration<DBAnnotationBase>(annotations.iterator());
+ 			result = new FromRefIteratorEnumeration<AnnotationBase>(annotations.iterator());
  		}
  		return result;
 	}
