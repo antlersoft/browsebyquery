@@ -14,6 +14,7 @@ reserved any
 reserved are
 reserved arguments
 reserved array
+reserved assembly
 reserved base
 reserved bundles
 reserved by
@@ -109,6 +110,15 @@ VALUE_EXPRESSION : Package "{
 	    }
 			
 		};
+	}" 10 .
+	
+VALUE_EXPRESSION : assembly "{
+	return new CountPreservingValueExpression(DBAssembly.class, String.class) {
+		protected Object transformSingleObject(DataSource source, Object inputObject)
+		{
+			return ((ILDB)source).findObject(DBAssembly.ASSEMBLY_NAME_INDEX,(String)inputObject);
+		}
+	};
 	}" 10 .
 
 SET_EXPRESSION : all classes "{
@@ -234,15 +244,18 @@ TRANSFORM : classes in "{
 		throws BindException
 		{
 			if ( DBClass.class.isAssignableFrom( new_applies)
-				|| DBPackage.class.isAssignableFrom( new_applies))
+				|| DBPackage.class.isAssignableFrom( new_applies)
+				|| DBAssembly.class.isAssignableFrom( new_applies))
 				super.lateBindApplies( new_applies);
 			else
-				throw new BindException( \"Can only bind DBClass or DBPackage\");
+				throw new BindException( \"Can only bind DBClass or DBPackage or DBAssembly\");
 		}
 		public Enumeration transformObject( DataSource source, Object to_transform)
 		{
 			if ( to_transform instanceof DBClass)
 				return ((DBClass)to_transform).getContainedClasses();
+			else if (to_transform instanceof DBAssembly)
+				return ((DBAssembly)to_transform).getContainedClasses((ILDB)source);
 			return ((DBPackage)to_transform).getContainedClasses();
 		}
 	};
@@ -396,6 +409,14 @@ VALUE_EXPRESSION : packages of "{
 		}
 	};		
 	}" .
+VALUE_EXPRESSION : assembly of "{
+	return new CountPreservingValueExpression(DBAssembly.class, DBClass.class) {
+		public Object transformSingleObject(DataSource source, Object to_transform)
+		{
+			return ((DBClass)to_transform).getAssembly();
+		}
+	};
+	}" .
 Reference : reference .
 Reference : references .
 
@@ -409,3 +430,5 @@ Types : types .
 
 Identity : is .
 Identity : are .
+
+#import 
