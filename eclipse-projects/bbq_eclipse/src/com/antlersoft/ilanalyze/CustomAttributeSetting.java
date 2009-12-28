@@ -16,8 +16,8 @@ public class CustomAttributeSetting {
 	
 	private ReadType containing;
 	private Signature signature;
-	private List stringArguments;
-	private List namedArguments;
+	private List<String> stringArguments;
+	private List<NamedArgument> namedArguments;
 	
 	/**
 	 * Create when there is a single string associated with the declaration
@@ -29,9 +29,9 @@ public class CustomAttributeSetting {
 	{
 		containing=cont;
 		signature=sig;
-		stringArguments=new ArrayList(1);
+		stringArguments=new ArrayList<String>(1);
 		stringArguments.add( data);
-		namedArguments=new ArrayList(0);
+		namedArguments=new ArrayList<NamedArgument>(0);
 	}
 	
 	/**
@@ -43,8 +43,8 @@ public class CustomAttributeSetting {
 	{
 		containing=cont;
 		signature=sig;
-		stringArguments=new ArrayList();
-		namedArguments=new ArrayList();
+		stringArguments=new ArrayList<String>();
+		namedArguments=new ArrayList<NamedArgument>();
 	}
 	
 	/**
@@ -69,7 +69,7 @@ public class CustomAttributeSetting {
 	 * All string arguments for the constructor (including all the members of string arrays)
 	 * @return
 	 */
-	public List getStringArguments()
+	public List<String> getStringArguments()
 	{
 		return stringArguments;
 	}
@@ -77,7 +77,7 @@ public class CustomAttributeSetting {
 	/**
 	 * @return A collection of NamedArgument objects giving the properties/fields being set and the values set in them
 	 */
-	public List getNamedArguments()
+	public List<NamedArgument> getNamedArguments()
 	{
 		return namedArguments;
 	}
@@ -90,16 +90,16 @@ public class CustomAttributeSetting {
 		sb.append( "::.ctor(");
 		sb.append( signature.toString());
 		sb.append( ")");
-		for ( Iterator i=stringArguments.iterator(); i.hasNext();)
+		for ( Iterator<String> i=stringArguments.iterator(); i.hasNext();)
 		{
-			sb.append( (String)i.next());
+			sb.append( i.next());
 			if ( i.hasNext())
 				sb.append( ',');
 		}
-		for ( Iterator i=namedArguments.iterator(); i.hasNext();)
+		for ( Iterator<NamedArgument> i=namedArguments.iterator(); i.hasNext();)
 		{
 			sb.append("\r\n");
-			((NamedArgument)i.next()).addNamedArgument(sb);
+			i.next().addNamedArgument(sb);
 		}
 		return sb.toString();
 	}
@@ -113,14 +113,14 @@ public class CustomAttributeSetting {
 	{
 		private String name;
 		private boolean isProp;
-		private List stringArguments;
+		private List<String> stringArguments;
 		private ReadType type;
 		
 		NamedArgument( String n, boolean is_prop, ReadType t)
 		{
 			name=n;
 			isProp=is_prop;
-			stringArguments=new ArrayList();
+			stringArguments=new ArrayList<String>();
 			type=t;
 		}
 		
@@ -137,7 +137,7 @@ public class CustomAttributeSetting {
 		 * 
 		 * @return All string arguments for the constructor (including all the members of string arrays)
 		 */
-		public List getStringArguments()
+		public List<String> getStringArguments()
 		{
 			return stringArguments;
 		}
@@ -153,7 +153,7 @@ public class CustomAttributeSetting {
 		
 		/**
 		 * 
-		 * @return The name of the argumet, corresponding to the name of the property or field in the attribute being set
+		 * @return The name of the argument, corresponding to the name of the property or field in the attribute being set
 		 */
 		public String getName()
 		{
@@ -166,9 +166,9 @@ public class CustomAttributeSetting {
 			sb.append( '(');
 			sb.append( isProperty() ? "property" : "field");
 			sb.append(")=");
-			for ( Iterator i=stringArguments.iterator(); i.hasNext();)
+			for ( Iterator<String> i=stringArguments.iterator(); i.hasNext();)
 			{
-				sb.append( (String)i.next());
+				sb.append( i.next());
 				if ( i.hasNext())
 					sb.append( ',');
 			}
