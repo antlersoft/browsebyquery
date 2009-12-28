@@ -8,6 +8,8 @@ import com.antlersoft.bbq.db.DBAnnotationBase;
 import com.antlersoft.bbq.db.DBClassBase;
 
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.PersistentImpl;
 
 /**
  * An annotation defined on a Java object in the analyzed system
@@ -15,7 +17,9 @@ import com.antlersoft.odb.ObjectDB;
  * @author Michael A. MacDonald
  *
  */
-public class DBAnnotation<A extends DBAnnotatable & SourceObject> extends DBAnnotationBase implements SourceObject {
+public class DBAnnotation<A extends DBAnnotatable & SourceObject> extends DBAnnotationBase implements Persistent, SourceObject {
+	
+	private transient PersistentImpl _persistentImpl;
 	
 	private boolean hiddenAtRuntime;
 	
@@ -41,6 +45,17 @@ public class DBAnnotation<A extends DBAnnotatable & SourceObject> extends DBAnno
 	public A getAnnotatedObject()
 	{
 		return (A)super.getAnnotatedObject();
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.odb.Persistent#_getPersistentImpl()
+	 */
+	public PersistentImpl _getPersistentImpl() {
+		if ( _persistentImpl==null)
+		{
+			_persistentImpl = new PersistentImpl();
+		}
+		return _persistentImpl;
 	}
 
 	/* (non-Javadoc)
