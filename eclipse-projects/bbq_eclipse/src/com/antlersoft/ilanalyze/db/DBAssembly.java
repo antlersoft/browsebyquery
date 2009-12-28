@@ -3,8 +3,12 @@
  */
 package com.antlersoft.ilanalyze.db;
 
+import java.util.Enumeration;
+
+import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectRefKey;
 import com.antlersoft.odb.Persistent;
 import com.antlersoft.odb.PersistentImpl;
 
@@ -35,6 +39,16 @@ public class DBAssembly implements Persistent {
 		if ( _persistentImpl==null)
 			_persistentImpl=new PersistentImpl();
 		return _persistentImpl;
+	}
+	
+	/**
+	 * Return an enumeration the classes in this assembly
+	 * @param db ILDB for this analyzed system
+	 * @return an enumeration over classes in this assembly
+	 */
+	public Enumeration getContainedClasses( ILDB db)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBClass.CLASS_ASSEMBLY_INDEX, new ObjectRefKey(this)));
 	}
 	
 	static DBAssembly get( IndexObjectDB db, String f)
