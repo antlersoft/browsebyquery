@@ -116,6 +116,7 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 		m_base=new ObjectKeyHashSet<DBClass>();
 		m_fields=new TreeMap<String,ObjectRef<DBField>>();
 		m_methods=new TreeMap<String,ObjectRef<DBMethod>>();
+		m_annotations=new AnnotationCollection();
 		
 		ObjectDB.makePersistent( this);
 		namespace.setContainedClass( this);
