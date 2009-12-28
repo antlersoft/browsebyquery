@@ -21,7 +21,7 @@ import com.antlersoft.odb.PersistentImpl;
 public class DBAssembly implements Persistent {
 	
 	/** Primary key on assembly name */
-	static final String ASSEMBLY_NAME_INDEX="ASSEMBLY_NAME_INDEX";
+	static public final String ASSEMBLY_NAME_INDEX="ASSEMBLY_NAME_INDEX";
 	private transient PersistentImpl _persistentImpl;
 	
 	private String m_assembly_name;
