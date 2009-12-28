@@ -329,22 +329,7 @@ VALUE_EXPRESSION : bundles containing "{
 		}
 	};
 	}" .
-VALUE_EXPRESSION : names of "{
-	return new CountPreservingValueExpression( DBString.class, DBStringResource.class) {
-		public Object transformSingleObject( DataSource source, Object to_transform)
-		{
-			return ((DBStringResource)to_transform).getName();
-		}
-	};
-	}" .
-VALUE_EXPRESSION : bundles containing "{
-	return new CountPreservingValueExpression( DBBundle.class, DBStringResource.class) {
-		public Object transformSingleObject( DataSource source, Object to_transform)
-		{
-			return ((DBStringResource)to_transform).getBundle();
-		}
-	};
-	}" .
+
 Reference : reference .
 Reference : references .
 
