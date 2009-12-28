@@ -8,6 +8,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import com.antlersoft.bbq.db.AnnotationCollection;
+import com.antlersoft.bbq.db.DBAnnotatable;
 import com.antlersoft.bbq.db.DBClassBase;
 import com.antlersoft.bbq.db.DBPackage;
 
@@ -33,12 +35,14 @@ import com.antlersoft.query.EmptyEnum;
  * @author Michael A. MacDonald
  *
  */
-public class DBClass extends DBSourceObject implements DBClassBase, HasProperties, HasDBType {
+public class DBClass extends DBSourceObject implements DBClassBase, HasProperties, HasDBType, DBAnnotatable {
 	
 	/** Primary key on class name in key form */
 	public static final String CLASS_KEY_INDEX="CLASS_KEY_INDEX";
 	/** Primary key on class name in key form */
 	public static final String CLASS_BY_NAME_INDEX="CLASS_BY_NAME_INDEX";
+	/** Index by assembly ObjectRef */
+	public static final String CLASS_ASSEMBLY_INDEX="CLASS_ASSEMBLY_INDEX";
 
 	/**
 	 * Base classes
@@ -102,6 +106,8 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 	 */
 	private int m_properties;
 	
+	private AnnotationCollection m_annotations;
+	
 	private DBClass( IndexObjectDB db, String class_key)
 	{
 		m_class_key=class_key;
@@ -124,6 +130,13 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 			m_containing=new ObjectRef<DBClass>( containing);
 			containing.addContained( this);
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.bbq.db.DBAnnotatable#getAnnotationCollection()
+	 */
+	public AnnotationCollection getAnnotationCollection() {
+		return m_annotations;
 	}
 
 	/**
@@ -422,6 +435,17 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 		 */
 		public Comparable generateKey(Object o1) {
 			return ((DBClass)o1).m_class_key;
+		}
+	}
+	
+	static class ClassAssemblyKeyGenerator implements KeyGenerator
+	{
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.KeyGenerator#generateKey(java.lang.Object)
+		 */
+		public Comparable generateKey(Object o1) {
+			return new ObjectRefKey(((DBClass)o1).m_assembly);
 		}
 	}
 }

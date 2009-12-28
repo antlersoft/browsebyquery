@@ -6,6 +6,7 @@ package com.antlersoft.ilanalyze.db;
 import java.io.File;
 import java.util.ArrayList;
 
+import com.antlersoft.bbq.db.DBAnnotationBase;
 import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.bbq.db.DBString;
 import com.antlersoft.bbq.db.DBStringResource;
@@ -86,6 +87,9 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 		catch ( IndexExistsException iee)
 		{
 		}
+		redefineIndex(DBClass.CLASS_ASSEMBLY_INDEX, DBClass.class,
+				new DBClass.ClassAssemblyKeyGenerator(),
+				false, false, null);
 		try
 		{
 			defineIndex( DBClass.CLASS_BY_NAME_INDEX,
@@ -201,6 +205,7 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 		redefineIndex( DBCatch.CATCH_TARGET, DBCatch.class,
 				DBReference.ReferenceTargetGenerator.G,
 				false,false,null);
+        redefineIndex( DBAnnotationBase.ANNOTATION_CLASS, DBAnnotation.class, new DBAnnotation.AnnotationClassKeyGenerator(), false, false, null);
 	}
 	
 	public IndexObjectDB getSession()

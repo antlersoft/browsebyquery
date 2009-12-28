@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.antlersoft.bbq.db.DBAnnotatable;
+import com.antlersoft.bbq.db.DBAnnotationBase;
 import com.antlersoft.bbq.db.DBBundleBase;
 import com.antlersoft.bbq.db.DBPackage;
 import com.antlersoft.bbq.db.DBString;
@@ -47,14 +49,18 @@ public class ILDBDriver implements DBDriver {
 	/** Updates the current bundle */
 	private DBBundle.BundleUpdater m_bundle_updater;
 	
+	/** Custom attributes applicable to the next declaration */
+	private ArrayList<CustomAttributeSetting> m_custom_attributes;
+	
 	private final static String ATTRIBUTE_INITIALIZER=".attributeinitializer";
 	
 	public ILDBDriver( ILDB db)
 	{
 		m_db=db;
-		m_namespace_stack=new ArrayList();
-		m_class_stack=new ArrayList();
+		m_namespace_stack=new ArrayList<DBPackage>();
+		m_class_stack=new ArrayList<ClassUpdater>();
 		m_class_count=0;
+		m_custom_attributes = new ArrayList<CustomAttributeSetting>();
 	}
 
 	/* (non-Javadoc)
@@ -192,6 +198,7 @@ public class ILDBDriver implements DBDriver {
 		DBClass read_class=DBClass.get(m_db, className);
 		read_class.setProperties(properties);
 		read_class.setVisited( true);
+		applyCurrentAttributes(read_class);
 		ObjectKeyHashSet base=new ObjectKeyHashSet();
 		try
 		{
@@ -222,6 +229,7 @@ public class ILDBDriver implements DBDriver {
 			m_method_updater=new DBMethod.MethodUpdater( m_db, getCurrentClass( null).getMethod( name, DBType.get( m_db, signature.getReturnType()), getSignatureKey( signature)));
 			m_method_updater.updateArguments(signature);
 			m_method_updater.m_method.setProperties(properties);
+			applyCurrentAttributes(m_method_updater.m_method);
 		}
 		catch ( ITypeInterpreter.TIException ti)
 		{
@@ -254,6 +262,7 @@ public class ILDBDriver implements DBDriver {
 			DBField field=getCurrentClass(null).getField( name, DBType.get( m_db, type));
 			field.setProperties( properties);
 			field.setFileAndLine(m_current_source_file, m_current_line);
+			applyCurrentAttributes(field);
 		}
 		catch ( ITypeInterpreter.TIException ti)
 		{
@@ -281,50 +290,66 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#addCustomAttribute(com.antlersoft.ilanalyze.ReadType, com.antlersoft.ilanalyze.Signature, byte[])
 	 */
 	public void addCustomAttribute(CustomAttributeSetting custom) {
-		if ( m_class_stack.size()>0)
+		m_custom_attributes.add(custom);
+	}
+	
+	private void applyCurrentAttributes(DBAnnotatable annotatable)
+	{
+		DBAnnotationBase.AnnotationUpdater annotation_updater = new DBAnnotationBase.AnnotationUpdater(annotatable);
+		for (CustomAttributeSetting custom : m_custom_attributes)
 		{
 			try
 			{
-				ReadType void_read_type=new BuiltinType("void");
-				DBType void_type=DBType.get( m_db, void_read_type);
-				DBMethod.MethodUpdater attrUpdater=m_method_updater;
-				if ( attrUpdater==null)
+				DBClass annotation_class = getCurrentClass(custom.getContainingType());
+				DBAnnotation annotation = (DBAnnotation)annotation_updater.getExisting(annotation_class);
+				if (annotation==null)
 				{
-					ClassUpdater u=(ClassUpdater)m_class_stack.get( m_class_stack.size()-1);
-					if ( u.m_updater==null)
-					{
-						u.m_updater=new DBMethod.MethodUpdater( m_db, u.m_class.getMethod(ATTRIBUTE_INITIALIZER, void_type, getSignatureKey( new Signature())));
-					}
-					attrUpdater=u.m_updater;
+					annotation = new DBAnnotation(annotation_class, annotatable);
 				}
-				DBMethod called=getCurrentClass(custom.getContainingType()).getMethod(".ctor", DBType.get(m_db, custom.getSignature().getReturnType()), getSignatureKey( custom.getSignature()));
-				if ( called.updateArguments(m_db, custom.getSignature()))
-					ObjectDB.makeDirty( called);
-				attrUpdater.addCall( called, m_current_source_file, m_current_line);
-				for ( Iterator i=custom.getStringArguments().iterator(); i.hasNext();)
+				annotation.setFileAndLine(((DBSourceObject)annotatable).getSourceFile(), ((DBSourceObject)annotatable).getLineNumber());
+				if ( m_class_stack.size()>0)
 				{
-					attrUpdater.addStringReference( DBString.get( m_db, (String)i.next()), m_current_source_file, m_current_line);
-				}
-				for ( Iterator i=custom.getNamedArguments().iterator(); i.hasNext();)
-				{
-					CustomAttributeSetting.NamedArgument named=(CustomAttributeSetting.NamedArgument)i.next();
-					if ( named.isProperty())
+					ReadType void_read_type=new BuiltinType("void");
+					DBType void_type=DBType.get( m_db, void_read_type);
+					DBMethod.MethodUpdater attrUpdater=m_method_updater;
+					if ( attrUpdater==null)
 					{
-						Signature s=new Signature();
-						s.addArgument( new ReadArg(named.getType()));
-						s.setReturnType( void_read_type);
-						DBMethod propertySetter=getCurrentClass(custom.getContainingType()).getMethod("set_"+named.getName(), void_type, getSignatureKey( s));
-						if ( propertySetter.updateArguments(m_db, s))
-							ObjectDB.makeDirty( propertySetter);
-						attrUpdater.addCall(propertySetter, m_current_source_file, m_current_line);
+						ClassUpdater u=(ClassUpdater)m_class_stack.get( m_class_stack.size()-1);
+						if ( u.m_updater==null)
+						{
+							u.m_updater=new DBMethod.MethodUpdater( m_db, u.m_class.getMethod(ATTRIBUTE_INITIALIZER, void_type, getSignatureKey( new Signature())));
+						}
+						attrUpdater=u.m_updater;
 					}
-					else
+					DBMethod called=getCurrentClass(custom.getContainingType()).getMethod(".ctor", DBType.get(m_db, custom.getSignature().getReturnType()), getSignatureKey( custom.getSignature()));
+					if ( called.updateArguments(m_db, custom.getSignature()))
+						ObjectDB.makeDirty( called);
+					attrUpdater.addCall( called, m_current_source_file, m_current_line);
+					for ( Iterator i=custom.getStringArguments().iterator(); i.hasNext();)
 					{
-						attrUpdater.addFieldReference( getCurrentClass(custom.getContainingType()).getField(named.getName(), DBType.get( m_db, named.getType())), true, m_current_source_file, m_current_line);
+						attrUpdater.addStringReference( DBString.get( m_db, (String)i.next()), m_current_source_file, m_current_line);
 					}
-					for ( Iterator si=named.getStringArguments().iterator(); si.hasNext();)
+					for ( Iterator<CustomAttributeSetting.NamedArgument> i=custom.getNamedArguments().iterator(); i.hasNext();)
 					{
-						attrUpdater.addStringReference( DBString.get(m_db, (String)si.next()), m_current_source_file, m_current_line);
+						CustomAttributeSetting.NamedArgument named=i.next();
+						if ( named.isProperty())
+						{
+							Signature s=new Signature();
+							s.addArgument( new ReadArg(named.getType()));
+							s.setReturnType( void_read_type);
+							DBMethod propertySetter=getCurrentClass(custom.getContainingType()).getMethod("set_"+named.getName(), void_type, getSignatureKey( s));
+							if ( propertySetter.updateArguments(m_db, s))
+								ObjectDB.makeDirty( propertySetter);
+							attrUpdater.addCall(propertySetter, m_current_source_file, m_current_line);
+						}
+						else
+						{
+							attrUpdater.addFieldReference( getCurrentClass(custom.getContainingType()).getField(named.getName(), DBType.get( m_db, named.getType())), true, m_current_source_file, m_current_line);
+						}
+						for ( Iterator<String> si=named.getStringArguments().iterator(); si.hasNext();)
+						{
+							attrUpdater.addStringReference( DBString.get(m_db, si.next()), m_current_source_file, m_current_line);
+						}
 					}
 				}
 			}
@@ -333,6 +358,7 @@ public class ILDBDriver implements DBDriver {
 				LoggingDBDriver.logger.info(ti.getMessage());				
 			}
 		}
+		m_custom_attributes.clear();
 	}
 
 	/* (non-Javadoc)
@@ -355,6 +381,22 @@ public class ILDBDriver implements DBDriver {
 	 */
 	public void startBundle(String name) {
 		m_bundle_updater=new DBBundleBase.BundleUpdater( DBBundle.get(m_db, m_current_assembly, name));
+	}
+
+	private static String getSignatureKey( Signature sig) throws ITypeInterpreter.TIException
+	{
+		StringBuilder sb=new StringBuilder();
+		for ( Iterator i=sig.getArguments().iterator(); i.hasNext();)
+		{
+			sb.append(',');
+			ReadType t=((ReadArg)i.next()).getType();
+			if ( t==null)
+				sb.append("...");
+			else
+				sb.append( ITypeInterpreter.Factory.getTypeKey(t));
+		}
+		
+		return sb.toString();
 	}
 
 	/**
@@ -385,22 +427,6 @@ public class ILDBDriver implements DBDriver {
 			namespace=m_namespace_stack.get( m_namespace_stack.size()-1).toString();
 		}
 		return DBClass.get( m_db, namespace+"."+NAMELESS_CLASS);
-	}
-	
-	private static String getSignatureKey( Signature sig) throws ITypeInterpreter.TIException
-	{
-		StringBuilder sb=new StringBuilder();
-		for ( Iterator i=sig.getArguments().iterator(); i.hasNext();)
-		{
-			sb.append(',');
-			ReadType t=((ReadArg)i.next()).getType();
-			if ( t==null)
-				sb.append("...");
-			else
-				sb.append( ITypeInterpreter.Factory.getTypeKey(t));
-		}
-		
-		return sb.toString();
 	}
 	
 	/**

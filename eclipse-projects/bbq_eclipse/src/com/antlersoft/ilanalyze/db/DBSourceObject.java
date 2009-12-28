@@ -20,7 +20,7 @@ public class DBSourceObject implements Persistent {
 	
 	private transient boolean m_tainted;
 	
-	private ObjectRef m_source_file;
+	private ObjectRef<DBSourceFile> m_source_file;
 	private int m_line;
 	
 	/* (non-Javadoc)
@@ -62,7 +62,7 @@ public class DBSourceObject implements Persistent {
 				m_source_file.setReferenced( file);
 			}
 			else
-				m_source_file=new ObjectRef( file);
+				m_source_file=new ObjectRef<DBSourceFile>( file);
 			m_line=line;
 			ObjectDB.makeDirty( this);
 		}
@@ -89,7 +89,7 @@ public class DBSourceObject implements Persistent {
 	
 	public DBSourceFile getSourceFile()
 	{
-		return (DBSourceFile)OptionalRefGet( m_source_file);
+		return OptionalRefGet( m_source_file);
 	}
 	
 	public int getLineNumber()
@@ -99,24 +99,24 @@ public class DBSourceObject implements Persistent {
 	
 	static interface IRefSetter
 	{
-		void set( Persistent container, ObjectRef ref);
+		void set( Persistent container, ObjectRef<? extends Persistent> ref);
 	}
 	
-	static Object OptionalRefGet( ObjectRef ref)
+	static <T extends Persistent> T OptionalRefGet( ObjectRef<T> ref)
 	{
-		Object result=null;
+		T result=null;
 		if ( ref!=null)
 			result=ref.getReferenced();
 		return result;
 	}
 	
-	static void OptionalRefSet( Persistent container, IRefSetter setter, ObjectRef ref, Persistent to_set)
+	static <T extends Persistent> void OptionalRefSet( Persistent container, IRefSetter setter, ObjectRef<T> ref, T to_set)
 	{
 		if ( to_set!=null)
 		{
 			if ( ref==null)
 			{
-				ref=new ObjectRef( to_set);
+				ref=new ObjectRef<T>( to_set);
 				setter.set( container, ref);
 			}
 			else

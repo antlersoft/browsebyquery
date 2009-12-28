@@ -3,6 +3,9 @@
  */
 package com.antlersoft.ilanalyze.db;
 
+import com.antlersoft.bbq.db.AnnotationCollection;
+import com.antlersoft.bbq.db.DBAnnotatable;
+
 import com.antlersoft.ilanalyze.DBDriver;
 
 import com.antlersoft.odb.KeyGenerator;
@@ -15,19 +18,21 @@ import com.antlersoft.odb.ObjectRefKey;
  * @author Michael A. MacDonald
  *
  */
-public abstract class DBMember extends DBSourceObject implements HasProperties, HasDBType {
+public abstract class DBMember extends DBSourceObject implements HasProperties, HasDBType, DBAnnotatable {
 	private String m_name;
-	private ObjectRef m_class;
-	private ObjectRef m_type;
+	private ObjectRef<DBClass> m_class;
+	private ObjectRef<DBType> m_type;
 	private int m_properties;
+	private AnnotationCollection m_annotations;
 	
 	DBMember( DBClass container, String name, DBType type)
 	{
-		m_class=new ObjectRef( container);
+		m_class=new ObjectRef<DBClass>( container);
 		m_name=name;
-		m_type=new ObjectRef( type);
+		m_type=new ObjectRef<DBType>( type);
 		// Public until shown otherwise
 		m_properties=DBDriver.IS_PUBLIC;
+		m_annotations = new AnnotationCollection();
 	}
 	
 	public String getName()
@@ -37,7 +42,7 @@ public abstract class DBMember extends DBSourceObject implements HasProperties, 
 	
 	public DBType getDBType()
 	{
-		return (DBType)m_type.getReferenced();
+		return m_type.getReferenced();
 	}
 	
 	public DBType getDBType( ILDB db)
@@ -47,7 +52,7 @@ public abstract class DBMember extends DBSourceObject implements HasProperties, 
 	
 	public DBClass getDBClass()
 	{
-		return (DBClass)m_class.getReferenced();
+		return m_class.getReferenced();
 	}
 	
 	void setDBType( DBType new_type)
@@ -73,6 +78,13 @@ public abstract class DBMember extends DBSourceObject implements HasProperties, 
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.antlersoft.bbq.db.DBAnnotatable#getAnnotationCollection()
+	 */
+	public AnnotationCollection getAnnotationCollection() {
+		return m_annotations;
+	}
+
 	static class MemberTypeGenerator implements KeyGenerator
 	{
 
