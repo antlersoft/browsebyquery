@@ -8,6 +8,7 @@ import com.antlersoft.bbq.db.DBAnnotatable;
 import com.antlersoft.bbq.db.DBAnnotationBase;
 import com.antlersoft.bbq.db.DBClassBase;
 import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectRefKey;
 
@@ -25,6 +26,7 @@ public class DBAnnotation extends DBSourceObject implements AnnotationBase {
 	 */
 	public DBAnnotation(DBClassBase annotationClass, DBAnnotatable annotated) {
 		m_base = new DBAnnotationBase(annotationClass, annotated);
+		ObjectDB.makePersistent(this);
 	}
 
 	/**
