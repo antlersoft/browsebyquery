@@ -1392,6 +1392,35 @@ to get to your desired object type.</para>
   		that don't contain any fields.
   		</para>
   		<informalexample><programlisting>not exists ( fields in ) classes in package "com.antlersoft.odb"</programlisting></informalexample>
+  		<refentry id="r-any-class">
+  		  <refnamediv>
+  		    <refname>any class</refname>
+  		    <refpurpose>Returns classes in any namespace/package with a given name</refpurpose>
+  		  </refnamediv>
+  		  <refsynopsisdiv>
+  		    <synopsis>any class</synopsis>
+  		  </refsynopsisdiv>
+  		  <refsect1>
+  		    <title>Description</title>
+  		    <para>
+  		    This transform applies to the <link linkend="r-type-string">string type</link> (often used with a string constant) and
+  		    returns classes named by that string in any namespace or package.
+  		    </para>
+  		    <refsect2>
+  		      <title>Example</title>
+  		      <para><userinput>any class "ArrayList"</userinput></para>
+  		      <para>This would return <userinput>java.util.ArrayList</userinput>.</para>
+  		    </refsect2>
+  		  </refsect1>
+ 		  <refsect1>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-string">string</link></para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+  		</refentry>
   		<refentry id="r-arguments-of">
 		  <refnamediv>
 		    <refname>arguments of</refname>
