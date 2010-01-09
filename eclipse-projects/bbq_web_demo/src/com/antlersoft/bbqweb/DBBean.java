@@ -3,6 +3,7 @@
  */
 package com.antlersoft.bbqweb;
 
+import java.io.File;
 import com.antlersoft.analyzer.IndexAnalyzeDB;
 
 import java.util.logging.Level;
@@ -38,7 +39,7 @@ public class DBBean {
 			try
 			{
 				m_logger.fine ( "Opening db");
-				m_db.openDB( "/mnt/external2/scratch/eclipse_eclipse.pj");
+				m_db.openDB( new File("/mnt/external2/scratch/eclipse_eclipse.pj"));
 			}
 			catch ( Exception e)
 			{
