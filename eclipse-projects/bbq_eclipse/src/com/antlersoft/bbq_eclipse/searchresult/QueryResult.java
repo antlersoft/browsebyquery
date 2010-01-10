@@ -20,13 +20,13 @@ import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 public class QueryResult implements ISearchResult {
 	
 	private Query _query;
-	private ArrayList _searchResultListeners;
+	private ArrayList<ISearchResultListener> _searchResultListeners;
 	private ArrayList _resultItems;
 	
 	QueryResult( Query query)
 	{
 		_query=query;
-		_searchResultListeners=new ArrayList();
+		_searchResultListeners=new ArrayList<ISearchResultListener>();
 		_resultItems=new ArrayList();
 	}
 
@@ -84,9 +84,9 @@ public class QueryResult implements ISearchResult {
 		synchronized ( _searchResultListeners)
 		{
 			QueryResultEvent evt=new QueryResultEvent( QueryResult.this, QueryResultEvent.ADDED);
-			for ( Iterator i=_searchResultListeners.iterator(); i.hasNext();)
+			for ( Iterator<ISearchResultListener> i=_searchResultListeners.iterator(); i.hasNext();)
 			{
-				ISearchResultListener listener=(ISearchResultListener)i.next();
+				ISearchResultListener listener=i.next();
 				listener.searchResultChanged( evt);
 			}
 		}

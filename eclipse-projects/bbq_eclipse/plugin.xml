@@ -43,6 +43,26 @@
                state="false"
                style="toggle">
          </action>
+	  </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="com.antlersoft.bbq_eclipse.addToBBQObjContrib"
+            objectClass="org.eclipse.core.resources.IResource">
+         <menu
+               id="com.antlersoft.bbq_eclipse.addToBBQMenu"
+               label="Browse-By-Query"
+               path="additions">
+            <separator
+                  name="BBQGroup">
+            </separator>
+         </menu>
+         <action
+               class="com.antlersoft.bbq_eclipse.popup.actions.AddToBBQDB"
+               id="com.antlersoft.bbq_eclipse.addToBBQDBAction"
+               label="Add to BBQ DB"
+               enablesFor="+"
+               menubarPath="com.antlersoft.bbq_eclipse.addToBBQMenu/BBQGroup">
+         </action>
       </objectContribution>
    </extension>
    <extension

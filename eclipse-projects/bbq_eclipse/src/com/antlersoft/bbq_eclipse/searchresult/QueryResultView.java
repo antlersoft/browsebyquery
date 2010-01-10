@@ -1,430 +1,100 @@
 package com.antlersoft.bbq_eclipse.searchresult;
 
-import java.io.*;
-import java.util.ArrayList;
-
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.ui.JavaUI;
-
-import org.eclipse.jface.action.*;
-import org.eclipse.jface.commands.ActionHandler;
-import org.eclipse.jface.viewers.*;
-
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
-
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.ISearchResultPage;
 import org.eclipse.search.ui.ISearchResultViewPart;
-import org.eclipse.search.ui.ISearchResultListener;
-import org.eclipse.search.ui.SearchResultEvent;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-
 import org.eclipse.ui.IMemento;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.handlers.IHandlerActivation;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.Page;
-import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.antlersoft.analyzer.SourceObject;
-import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 
 public class QueryResultView extends Page implements ISearchResultPage {
-	
-	private String _id="com.antlersoft.bbq_eclipse.searchresult.QueryResultView";
-	private TableViewer _viewer;
-	private ISelection _selection;
-	private IAction _selectAction;
-	private IHandlerActivation _copyActivation;
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#getID()
-	 */
-	public String getID() {
-		return _id;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#getLabel()
-	 */
-	public String getLabel() {
-		return "BBQ Result";
-	}
+  private String     _id = "com.antlersoft.bbq_eclipse.searchresult.QueryResultView";
+  public TableViewer _viewer;
+  ISelection         _selection;
+  private IAction    _selectAction;
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#getUIState()
-	 */
-	public Object getUIState() {
-		// TODO Auto-generated method stub
-		return _id;
-	}
+  public String getID() {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#restoreState(org.eclipse.ui.IMemento)
-	 */
-	public void restoreState(IMemento memento) {
-		// TODO Auto-generated method stub
-		
-	}
+    return _id;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#saveState(org.eclipse.ui.IMemento)
-	 */
-	public void saveState(IMemento memento) {
-		// TODO Auto-generated method stub
-		
-	}
+  public String getLabel() {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#setID(java.lang.String)
-	 */
-	public void setID(String id) {
-		_id=id;
-	}
+    return "BBQ Result";
+  }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#setInput(org.eclipse.search.ui.ISearchResult, java.lang.Object)
-	 */
-	public void setInput(ISearchResult search, Object uiState) {
-		_viewer.setInput( search);
-	}
+  public Object getUIState() {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.search.ui.ISearchResultPage#setViewPart(org.eclipse.search.ui.ISearchResultViewPart)
-	 */
-	public void setViewPart(ISearchResultViewPart part) {
-	}
+    // TODO Auto-generated method stub
+    return _id;
+  }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.Page#createControl(org.eclipse.swt.widgets.Composite)
-	 */
-	public void createControl(Composite parent) {
-		_viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-		_viewer.setContentProvider(new ViewContentProvider());
-		_viewer.setLabelProvider(new ViewLabelProvider());
-		_viewer.setSorter(new NameSorter());
-		_viewer.addSelectionChangedListener( new ISelectionChangedListener() {
-			public void selectionChanged( SelectionChangedEvent evt)
-			{
-				_selection=evt.getSelection();
-			}
-		});
-		_selectAction=new SelectAction();
-		MenuManager manager=new MenuManager( "#PopupResult");
-		manager.add( _selectAction);
-		CopyAction copyAction=new CopyAction();
-		manager.add( copyAction);
-		_viewer.getTable().setMenu( manager.createContextMenu( _viewer.getTable()));
-		_viewer.addDoubleClickListener( new IDoubleClickListener() {
-			public void doubleClick( DoubleClickEvent evt) {
-				_selectAction.run();
-			}
-		});
-		_viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-		_copyActivation=((IHandlerService)getSite().getService(IHandlerService.class))
-			.activateHandler("org.eclipse.ui.edit.copy", new ActionHandler(copyAction));
-	}
+  public void restoreState(IMemento memento) {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.Page#getControl()
-	 */
-	public Control getControl() {
-		return _viewer.getControl();
-	}
+  }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.Page#setFocus()
-	 */
-	public void setFocus() {
-		_viewer.getControl().setFocus();
-	}
+  public void saveState(IMemento memento) {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.part.Page#dispose()
-	 */
-	@Override
-	public void dispose() {
-		if ( _copyActivation!=null)
-		{
-			((IHandlerService)getSite().getService(IHandlerService.class)).deactivateHandler(_copyActivation);
-			_copyActivation=null;
-		}
-		super.dispose();
-	}
+    // TODO Auto-generated method stub
+  }
 
-	class SelectAction extends Action
-	{
-		SelectAction()
-		{
-			super( "Jump to");
-		}
-		public void run() {			
-			if ( _selection!=null && ! _selection.isEmpty() && _selection instanceof IStructuredSelection)
-			{
-				Object selected=((IStructuredSelection)_selection).getFirstElement();
-				if ( selected instanceof SourceObject)
-				{
-					try
-					{
-						SourceObject source=(SourceObject)selected;
-						if ( source.getDBClass().getSourceFile()==null)
-							return;
-						IWorkspaceRoot root=ResourcesPlugin.getWorkspace().getRoot();
-						IFile file=null;
-						String path=source.getDBClass().getInternalName();
-						if ( path==null)
-							path="";
-						int lastSlash=path.lastIndexOf( '/');
-						if ( lastSlash!= -1)
-							path=path.substring( 0, lastSlash+1);
-						path=path+source.getDBClass().getSourceFile();
-						Path sourcePath=new Path( path);
-						try
-						{
-							file=root.getFile( sourcePath);
-							if ( ! file.exists())
-								file=null;
-						}
-						catch ( IllegalArgumentException iae)
-						{
-							file=null;
-						}
-						if ( file==null)
-						{
-							/*
-		 
-							Bbq_eclipsePlugin.getDefault().getLog()
-							.log( 
-									Bbq_eclipsePlugin.
-									createStatus( "Can't get file at "+sourcePath.toOSString()+" "+path,new Exception("benign"),
-											org.eclipse.core.runtime.IStatus.INFO, 0));
-							 */
-							IProject[] projects=root.getProjects();
-							for ( int i=0; i<projects.length && file==null; ++i)
-							{
-								IPackageFragmentRoot[] fragments;
-								try
-								{
-									IJavaProject project=JavaCore.create( projects[i]);
-									if ( project==null)
-										continue;
-									fragments=project.getPackageFragmentRoots();
-								}
-								catch ( JavaModelException jme)
-								{
-									// Catching this exception means that the project wasn't really a
-									// Java project
-									continue;
-								}
-								for ( int j=0; j<fragments.length; ++j)
-								{
-									if ( fragments[j].getKind()==IPackageFragmentRoot.K_SOURCE)
-									{
-										try
-										{
-											file=root.getFile( fragments[j].getPath().append( sourcePath));
-										}
-										catch ( IllegalArgumentException ae)
-										{
-											/*
-											Bbq_eclipsePlugin.getDefault().getLog()
-											.log( 
-													Bbq_eclipsePlugin.
-													createStatus( "Can't get file at "+fragments[j].getPath().append( sourcePath).toOSString(),new Exception("benign"),
-															org.eclipse.core.runtime.IStatus.INFO, 0));
-											 */
-											continue;
-										}
-										if ( file.exists())
-											break;
-										else
-										{
-											/*
-											Bbq_eclipsePlugin.getDefault().getLog()
-											.log( 
-													Bbq_eclipsePlugin.
-													createStatus( "file "+file.getLocation().toOSString()+" does not exist",new Exception("benign"),
-															org.eclipse.core.runtime.IStatus.INFO, 0));
-											 */
-											file=null;
-										}
-									}
-								}
-							}
-						}
-						if ( file==null)
-						{
-							Bbq_eclipsePlugin.getDefault().getLog()
-							.log( 
-									Bbq_eclipsePlugin.
-									createStatus( "unable to find file: "+path,new Exception("benign"),
-											org.eclipse.core.runtime.IStatus.INFO, 0));
-							return;
-						}
-						int ch=0;
-						int offset=0;
-						StringBuilder sb=new StringBuilder();
-						try
-						{
-							InputStreamReader input=new InputStreamReader( file.getContents(), "UTF-8");
-							for ( int currentLine=1; currentLine<source.getLineNumber() && ( ch=input.read())>=0; offset++)
-							{
-								if ( ch=='\n')
-									currentLine++;
-							}
-							if ( ch=='\n')
-							{
-								ch=0;
-								while ( ( ch=input.read())>=0 && ch!='\n')
-								{
-									sb.append((char)ch);
-								}
-							}
-							input.close();
-						}
-						catch ( IOException ioe)
-						{
-							Bbq_eclipsePlugin.getDefault().logError( "IO Error finding linenumber", ioe);
-						}
-						IEditorPart ep=JavaUI.openInEditor( JavaCore.create( file));
-						if ( ep instanceof ITextEditor)
-						{
-							((ITextEditor)ep).selectAndReveal( offset, sb.length());
-						}
-						else
-							Bbq_eclipsePlugin.getDefault().getLog()
-							.log( 
-									Bbq_eclipsePlugin.
-									createStatus( "editor part type is "+ep.getClass().getName(),new Exception("benign"),
-											org.eclipse.core.runtime.IStatus.INFO, 0));							
-					}
-					catch ( CoreException ce)
-					{
-						Bbq_eclipsePlugin.getDefault().getLog().log( ce.getStatus());
-					}
-				}
-				/*
-				else
-					Bbq_eclipsePlugin.getDefault().getLog()
-					.log( 
-							Bbq_eclipsePlugin.
-							createStatus( "selection not source object",new Exception("benign"),
-									org.eclipse.core.runtime.IStatus.INFO, 0));
-				 */
-			}
-			/*
-			else
-				Bbq_eclipsePlugin.getDefault().getLog()
-				.log( 
-						Bbq_eclipsePlugin.
-						createStatus( "null or empty selection",new Exception("benign"),
-								org.eclipse.core.runtime.IStatus.INFO, 0));
-			 */
-		}
-	}
-	
-	class CopyAction extends Action
-	{
-		CopyAction()
-		{
-			super("Copy");
-		}
-		public void run()
-		{
-			if ( _selection!=null && ! _selection.isEmpty() && _selection instanceof IStructuredSelection)
-			{
-				Object selected=((IStructuredSelection)_selection).getFirstElement();
-				Clipboard c=new Clipboard(_viewer.getControl().getDisplay());
-				try
-				{
-					c.setContents( new Object[] { selected.toString()}, new Transfer[] { TextTransfer.getInstance()});
-				}
-				finally
-				{
-					c.dispose();
-				}
-			}
-		}
-	}
-	
-	/*
-	 * The content provider class is responsible for
-	 * providing objects to the view. It can wrap
-	 * existing objects in adapters or simply return
-	 * objects as-is. These objects may be sensitive
-	 * to the current input of the view, or ignore
-	 * it and always show the same content 
-	 * (like Task List, for example).
-	 */
-	 
-	class ViewContentProvider implements IStructuredContentProvider, ISearchResultListener {
-		ArrayList _pendingAdds=new ArrayList();
-		
-		public synchronized void inputChanged(Viewer v, Object oldInput, Object newInput) {
-			if ( oldInput!=null)
-				((QueryResult)oldInput).removeListener( this);
-			if ( newInput!=null)
-				((QueryResult)newInput).addListener( this);
-			_pendingAdds.clear();
-		}
-		public void dispose() {
-		}
-		public synchronized void searchResultChanged( SearchResultEvent evt)
-		{
-			ArrayList l=((QueryResult)evt.getSearchResult()).getResultItems();
-			_pendingAdds.add( l.get( l.size()-1));
-			if ( _pendingAdds.size()==1)
-			{
-				getSite().getShell().getDisplay().asyncExec( new Runnable() {
-					public void run() {
-						synchronized( ViewContentProvider.this) {
-							if ( _pendingAdds.size()>0)
-							{
-								//_viewer.add( _pendingAdds.toArray());
-								_pendingAdds.clear();
-								_viewer.refresh();
-							}
-						}
-					}
-				});
-			}
-		}
-		public Object[] getElements(Object parent) {
-			QueryResult result=(QueryResult)parent;
-			return result.getResultItems().toArray();
-		}
-	}
-	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
-		public String getColumnText(Object obj, int index) {
-			return getText(obj);
-		}
-		public Image getColumnImage(Object obj, int index) {
-			//return getImage(obj);
-			return null;
-		}
-		/*
-		public Image getImage(Object obj) {
-			return PlatformUI.getWorkbench().
-					getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
-		}
-		*/
-	}
-	class NameSorter extends ViewerSorter {
-	}
+  public void setID(String id) {
+
+    _id = id;
+  }
+
+  public void setInput(ISearchResult search, Object uiState) {
+
+    _viewer.setInput(search);
+  }
+
+  public void setViewPart(ISearchResultViewPart part) {
+  }
+
+  public void createControl(Composite parent) {
+
+    _viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+    _viewer.setContentProvider(new QueryResultViewContentProvider(this));
+    _viewer.setLabelProvider(new QueryResultViewViewLabelProvider(this));
+    _viewer.setSorter(new QueryResultViewNameSorter(this));
+    _viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+      public void selectionChanged(SelectionChangedEvent evt) {
+        _selection = evt.getSelection();
+      }
+    });
+    _selectAction = new QueryResultViewSelectAction(this);
+    MenuManager manager = new MenuManager("#PopupResult");
+    manager.add(_selectAction);
+    _viewer.getTable().setMenu(manager.createContextMenu(_viewer.getTable()));
+    _viewer.addDoubleClickListener(new IDoubleClickListener() {
+      public void doubleClick(DoubleClickEvent evt) {
+        _selectAction.run();
+      }
+    });
+    _viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+  }
+
+  public Control getControl() {
+
+    return _viewer.getControl();
+  }
+
+  public void setFocus() {
+
+    _viewer.getControl().setFocus();
+  }
 }
