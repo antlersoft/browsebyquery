@@ -1,51 +1,7 @@
-bbq0.7.3 --
+bbq0.7.5 --
 
-BBQ for Java now captures and lets you query information about exception
-catches (not throws though; look for calls to exception class constructors),
-resource bundles included in analyzed jars, and annotations.  All this new
-functionality is rather experimental and is (as of 8/17/2009)
-not yet documented in the language manual.  Also further additions
-to the grammar to query this information are forthcoming.
+--Eclipse plugin enhancements due to Dirk Faulhaber.
 
-It also includes what has proven to be the very convenient "any class" operator.  The set expression 
+--Fix for "all packages" set expression
 
-any class "classname"
-
-will return all the classes with that name regardless of the namespace
-they are in.  This is generally much more convenient than typing in the
-complete class name or keeping your import list set properly.
-
-Finally, the cast operator allows you to explicitly specify a type
-for an ambiguously typed expression, which helps build more complex
-expressions.
-
-Grammar summary:
-
-The new language keywords are:
-
-annotations
-annotated
-any
-bundles
-cast
-catches
-names
-resources
-
-TypeSpec : methods
-TypeSpec : fields
-TypeSpec : arguments
-TypeSpec : classes
-SET_EXPRESSION : all annotations
-TRANSFORM : cast TypeSpec
-TRANSFORM : annotations of
-TRANSFORM : annotations with
-TRANSFORM : any class
-TRANSFORM : catches of
-TRANSFORM : catches in
-TRANSFORM : resources containing
-TRANSFORM : resources with names
-VALUE_EXPRESSION : annotated by
-VALUE_EXPRESSION : classes of
-VALUE_EXPRESSION : names of
-VALUE_EXPRESSION : bundles containing
+--Fix for reading class files with parameter annotations (thanks to Larry Edelstein)

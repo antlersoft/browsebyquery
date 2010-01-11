@@ -1,3 +1,11 @@
+--bbq0.7.5
+
+--Eclipse plugin enhancements due to Dirk Faulhaber.
+
+--Fix for "all packages" set expression
+
+--Fix for reading class files with parameter annotations (thanks to Larry Edelstein)
+
 --bbq0.7.3
 
 BBQ for Java now captures and lets you query information about exception
