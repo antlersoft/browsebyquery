@@ -46,6 +46,7 @@ reserved reference
 reserved referenced
 reserved resources
 reserved rightParen ")"
+reserved Serializable "serializable"
 reserved set
 reserved SetExpressionSymbol "((#1"
 reserved Static "static" 4 right
@@ -288,6 +289,9 @@ FILTER : Protected "{
 FILTER : Internal "{
     return new AccessFilter( DBDriver.IS_ASSEMBLY);
     }" .
+FILTER : Serializable "{
+	return new AccessFilter( DBDriver.IS_SERIALIZABLE);
+	}" .
 FILTER : Abstract "{ return new AccessFilter( DBDriver.IS_ABSTRACT); }" .
 FILTER : Static "{ return new AccessFilter( DBDriver.IS_STATIC); }" .
 FILTER : Interface "{ return new AccessFilter( DBDriver.IS_INTERFACE); }" .
