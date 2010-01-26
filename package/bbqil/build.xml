@@ -9,7 +9,7 @@ Requires ant 1.6+
 	<target name="all" depends="bbqstandalone"/>
 	<target name="bbqstandalone" depends="buildcommon">
 		<mkdir dir="dist"/>
-		<jar destfile="dist/bbqilstandalone.jar" basedir="classes" manifest="com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
+		<jar destfile="dist/bbqilstandalone.jar" basedir="classes" manifest="${bbq.project.path}/src/com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
 		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/appcontext/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
 		</jar>
 	</target>
@@ -28,7 +28,7 @@ Requires ant 1.6+
 		<delete dir="${bbq.project.path}/src/com/antlersoft/odb/postproc"/>
 		<delete file="${bbq.project.path}/src/com/antlersoft/appcontext/WebStartContext.java"/>
 		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}/src" destdir="classes">
-			<src path="com/antlersoft/odb;com/antlersoft/ilanalyze;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/query;com/antlersoft/bbq;com/antlersoft/appcontext"/>
+			<src path="${bbq.project.path}/src/com/antlersoft/odb;${bbq.project.path}/src/com/antlersoft/ilanalyze;${bbq.project.path}/src/com/antlersoft/util;${bbq.project.path}/src/com/antlersoft/parser;${bbq.project.path}/src/com/antlersoft/query;${bbq.project.path}/src/com/antlersoft/bbq;${bbq.project.path}/src/com/antlersoft/appcontext"/>
 		</javac>
 		<copy todir="classes">
 			<fileset dir="." includes="${bbq.project.path}/icons/*.gif"/>
