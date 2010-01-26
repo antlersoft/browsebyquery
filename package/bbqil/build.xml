@@ -16,22 +16,22 @@ Requires ant 1.6+
 	<target name="buildcommon">
 		<mkdir dir="classes"/>
 		<exec executable="${genparserpath}">
-			<arg file="com/antlersoft/ilanalyze/parseildasm/IldasmParser.pre"/>
+			<arg file="${bbq.project.path}/src/com/antlersoft/ilanalyze/parseildasm/IldasmParser.pre"/>
 		</exec>
 		<exec executable="${genparserpath}">
-			<arg file="com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
+			<arg file="${bbq.project.path}/src/com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
 		</exec>
 		<exec executable="${genparserpath}">
-			<arg file="com/antlersoft/ilanalyze/parseildasm/ResourceParser.pre"/>
+			<arg file="${bbq.project.path}/src/com/antlersoft/ilanalyze/parseildasm/ResourceParser.pre"/>
 		</exec>
-		<delete dir="com/antlersoft/odb/transp"/>
-		<delete dir="com/antlersoft/odb/postproc"/>
-		<delete file="com/antlersoft/appcontext/WebStartContext.java"/>
-		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
+		<delete dir="${bbq.project.path}/src/com/antlersoft/odb/transp"/>
+		<delete dir="${bbq.project.path}/src/com/antlersoft/odb/postproc"/>
+		<delete file="${bbq.project.path}/src/com/antlersoft/appcontext/WebStartContext.java"/>
+		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}/src" destdir="classes">
 			<src path="com/antlersoft/odb;com/antlersoft/ilanalyze;com/antlersoft/util;com/antlersoft/parser;com/antlersoft/query;com/antlersoft/bbq;com/antlersoft/appcontext"/>
 		</javac>
 		<copy todir="classes">
-			<fileset dir="." includes="icons/*.gif"/>
+			<fileset dir="." includes="${bbq.project.path}/icons/*.gif"/>
 		</copy>
 	</target>
 	<target name="clean">
