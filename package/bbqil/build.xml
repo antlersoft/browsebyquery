@@ -31,7 +31,7 @@ Requires ant 1.6+
 			<src path="${bbq.project.path}/src/com/antlersoft/odb;${bbq.project.path}/src/com/antlersoft/ilanalyze;${bbq.project.path}/src/com/antlersoft/util;${bbq.project.path}/src/com/antlersoft/parser;${bbq.project.path}/src/com/antlersoft/query;${bbq.project.path}/src/com/antlersoft/bbq;${bbq.project.path}/src/com/antlersoft/appcontext"/>
 		</javac>
 		<copy todir="classes">
-			<fileset dir="." includes="${bbq.project.path}/icons/*.gif"/>
+			<fileset dir="${bbq.project.path}" includes="icons/*.gif"/>
 		</copy>
 	</target>
 	<target name="clean">
