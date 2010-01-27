@@ -50,10 +50,10 @@ public class BBQResourceAnalyzer {
           IFile file = (IFile) toAnalyze;
 
           DBClass.addFileToDB(file.getLocation().toFile(),
-                              Bbq_eclipsePlugin.getDefault().getDB(),
-                              monitor);
+                              Bbq_eclipsePlugin.getDefault().getDB());
           
           monitor.setTaskName("Saving BBQ DB");
+          monitor.done();
           Bbq_eclipsePlugin.getDefault().getDB().commit();
         }
 
