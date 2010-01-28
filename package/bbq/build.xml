@@ -40,7 +40,6 @@ Requires ant 1.6+
 		<zip destfile="dist/bbq_eclipse_site_${bbq.version}.jar" basedir="dist/site" includes="**"  />
 	</target>
 	<target name="buildcommon">
-		<delete file="${bbq.project.path}/src/com/antlersoft/appcontext/WebStartContext.java"/>
 		<mkdir dir="classes"/>
 		<exec executable="${genparserpath}">
 			<arg file="${bbq.project.path}/src/com/antlersoft/analyzer/query/QueryParser.pre"/>
@@ -64,6 +63,7 @@ Requires ant 1.6+
 		<delete dir="classes"/>
 		<delete dir="dist"/>
 		<delete dir="META-INF"/>
+		<delete file="feature.xml"/>
 	</target>
 	<target name="buildeclipse" depends="buildcommon">
 	    <mkdir dir="META-INF" />
