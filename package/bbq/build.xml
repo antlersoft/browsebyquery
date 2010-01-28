@@ -1,5 +1,5 @@
 <!--
-Copyright 2005-2008 Michael A. MacDonald
+Copyright 2005-2010 Michael A. MacDonald
 Please make changes to the bbq_ant.properties file
 
 Requires ant 1.6+
@@ -14,7 +14,7 @@ Requires ant 1.6+
 	</target>
 	<target name="bbqstandalone" depends="buildcommon">
 		<mkdir dir="dist"/>
-		<jar destfile="dist/bbqstandalone_${bbq.version}.jar" basedir="classes" manifest="com/antlersoft/analyzer/bbqstandalone.txt"
+		<jar destfile="dist/bbqstandalone_${bbq.version}.jar" basedir="classes" manifest="${bbq.project.path}/src/com/antlersoft/analyzer/bbqstandalone.txt"
 		includes="com/antlersoft/odb/** com/antlersoft/analyzer/** com/antlersoft/appcontext/** com/antlersoft/util/** com/antlersoft/parser/** com/antlersoft/classwriter/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
 		</jar>
 	</target>
@@ -28,7 +28,8 @@ Requires ant 1.6+
 		<mkdir dir="dist/site"/>
 		<mkdir dir="dist/site/features"/>
 		<mkdir dir="dist/site/plugins" />
-		<copy todir="dist/site" file="site.xml" />
+		<copy todir="dist/site" file="${bbq.project.path}/site.xml" />
+		<copy todir="." file="${bbq.project.path}/feature.xml" />
 		<replace file="dist/site/site.xml" token="7.007.007" value="${bbq.version}"/>
 		<copy todir="dist/site/plugins" file="dist/com.antlersoft.bbq_eclipse_${bbq.version}.jar" />
 		<replace file="feature.xml" token="7.007.007" value="${bbq.version}"/>
@@ -39,42 +40,44 @@ Requires ant 1.6+
 		<zip destfile="dist/bbq_eclipse_site_${bbq.version}.jar" basedir="dist/site" includes="**"  />
 	</target>
 	<target name="buildcommon">
-		<delete file="com/antlersoft/appcontext/WebStartContext.java"/>
+		<delete file="${bbq.project.path}/src/com/antlersoft/appcontext/WebStartContext.java"/>
 		<mkdir dir="classes"/>
 		<exec executable="${genparserpath}">
-			<arg file="com/antlersoft/analyzer/query/QueryParser.pre"/>
+			<arg file="${bbq.project.path}/src/com/antlersoft/analyzer/query/QueryParser.pre"/>
 		</exec>
-		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
-			<src path="com/antlersoft/odb;com/antlersoft/analyzer;com/antlersoft/util;com/antlersoft/appcontext;com/antlersoft/parser;com/antlersoft/classwriter;com/antlersoft/query;com/antlersoft/bbq"/>
+		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}/src" destdir="classes">
+			<src path="${bbq.project.path}/src/com/antlersoft/odb;${bbq.project.path}/src/com/antlersoft/analyzer;${bbq.project.path}/src/com/antlersoft/util;${bbq.project.path}/src/com/antlersoft/appcontext;${bbq.project.path}/src/com/antlersoft/parser;${bbq.project.path}/src/com/antlersoft/classwriter;${bbq.project.path}/src/com/antlersoft/query;${bbq.project.path}/src/com/antlersoft/bbq"/>
 		</javac>
 		<copy todir="classes">
-			<fileset dir="." includes="icons/*.gif"/>
+			<fileset dir="." includes="${bbq.project.path}/src/icons/*.gif"/>
 		</copy>
 	</target>
 	<target name="buildopentool" depends="buildcommon">
-		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes" classpath="${classpath};${opentoolpath}">
-			<src path="com/antlersoft/opentool"/>
+		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}" destdir="classes" classpath="${classpath};${opentoolpath}">
+			<src path="${bbq.project.path}/src/com/antlersoft/opentool"/>
 		</javac>
 		<copy todir="classes/com/antlersoft/opentool">
-			<fileset dir="com/antlersoft/opentool" includes="**/*.gif"/>
+			<fileset dir="${bbq.project.path}/src/com/antlersoft/opentool" includes="**/*.gif"/>
 		</copy>
 	</target>
 	<target name="clean">
 		<delete dir="classes"/>
 		<delete dir="dist"/>
+		<delete dir="META-INF"/>
 	</target>
 	<target name="buildeclipse" depends="buildcommon">
-		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="." destdir="classes">
+		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}" destdir="classes">
 			<classpath>
 			  <pathelement path="${classpath}"/>
 			  <fileset dir="${plugins.path}">
 			    <include name="*.jar"/>
 		      </fileset>
 			</classpath>
-			<src path="com/antlersoft/bbq_eclipse"/>
+			<src path="${bbq.project.path}/com/antlersoft/bbq_eclipse"/>
 		</javac>
-		<copy todir="classes" file="plugin.xml">
+		<copy todir="classes" file="${bbq.project.path}/plugin.xml">
 		</copy>
+		<copy todir="META-INF" file="${bbq.project.path}/META-INF/MANIFEST.MF"/>
 		<replace file="META-INF/MANIFEST.MF" token="7.007.007" value="${bbq.version}"/>
 	</target>
 </project>
