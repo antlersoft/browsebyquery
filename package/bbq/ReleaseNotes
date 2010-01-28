@@ -1,4 +1,6 @@
-bbq0.7.5 --
+bbq0.7.7 --
+
+Fix for Browse-By-Query popup menu actions missing from plugin enhancements.
 
 --Eclipse plugin enhancements due to Dirk Faulhaber.
 

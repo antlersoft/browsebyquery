@@ -1,3 +1,9 @@
+--bbq0.7.7
+
+  Fix missing actions for Browse-By-Query menu popup
+
+  Fix ant builds to work with new project layout with git conversion
+
 --bbq0.7.5
 
 --Eclipse plugin enhancements due to Dirk Faulhaber.
