@@ -71,7 +71,7 @@ Requires ant 1.6+
 			<classpath>
 			  <pathelement path="${classpath}"/>
 			  <fileset dir="${plugins.path}">
-			    <include name="*.jar"/>
+			    <include name="**/*.jar"/>
 		      </fileset>
 			</classpath>
 			<src path="${bbq.project.path}/src/com/antlersoft/bbq_eclipse"/>
