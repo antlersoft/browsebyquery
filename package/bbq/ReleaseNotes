@@ -1,9 +1,6 @@
-bbq0.7.7 --
+bbq0.7.8 --
 
-Fix for Browse-By-Query popup menu actions missing from plugin enhancements.
-
---Eclipse plugin enhancements due to Dirk Faulhaber.
-
---Fix for "all packages" set expression
-
---Fix for reading class files with parameter annotations (thanks to Larry Edelstein)
+  Fix standalone startup when it has never run before.  Instead of
+  crashing, or using the default database (which was the previous
+  behavior) it will ask for a directory in which to put the initial
+  database.

@@ -1,3 +1,10 @@
+--bbq0.7.8
+
+  Fix standalone startup when it has never run before.  Instead of
+  crashing, or using the default database (which was the previous
+  behavior) it will ask for a directory in which to put the initial
+  database.
+
 --bbq0.7.7
 
   Fix missing actions for Browse-By-Query menu popup
