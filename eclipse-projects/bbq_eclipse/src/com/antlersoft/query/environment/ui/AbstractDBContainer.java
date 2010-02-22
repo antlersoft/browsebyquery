@@ -132,6 +132,10 @@ public abstract class AbstractDBContainer implements DBContainer {
 			appDirectory=null;
 			openDB( p);
 		}
+		else
+		{
+			openMessage = "Please select a directory to hold the BBQ database";
+		}
 	}
 
 	/* (non-Javadoc)
@@ -191,7 +195,7 @@ public abstract class AbstractDBContainer implements DBContainer {
 	 */
 	public File getEnvironmentFile() {
 		if ( appDirectory==null )
-			throw new java.lang.IllegalStateException( "No open file defined");
+			return null;
 		return new File(appDirectory,ENVIRONMENT_FILE_NAME);
 	}
 

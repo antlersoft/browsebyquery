@@ -303,7 +303,7 @@ t.printStackTrace();
         Component contents = createComponents();
         appFrame.getContentPane().add(contents, BorderLayout.CENTER);
         appFrame.setJMenuBar( createMenuBar());
-
+        
         readEnvironment();
 
         //Finish setting up the frame, and show it.
@@ -321,6 +321,12 @@ t.printStackTrace();
 		        	if ( openAction!=null)
 		        	{
 		        		openAction.actionPerformed(null);
+		        		if (getDBContainer().getDataSource()==null)
+		        		{
+		        			JOptionPane.showMessageDialog(frameWindow, "No database selected");
+		        			exitAction.actionPerformed(null);
+		        		}
+		        	
 		        	}
 		        	else
 		        	{
@@ -527,8 +533,10 @@ t.printStackTrace();
             {
                 if ( dbChooser.showDialog( frameWindow, getOpenMenuItem())==JFileChooser.APPROVE_OPTION)
                 {
+                	saveEnvironment();
                 	final File new_dir=dbChooser.getSelectedFile();
                 	container.openDB(new_dir);
+                	readEnvironment();
                 	updateTitleBar();
                 }
             }

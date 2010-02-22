@@ -70,7 +70,8 @@ public interface DBContainer {
     abstract public String titleOfDB();
     
     /**
-     * Returns file used to persist the environment
+     * Returns file used to persist the environment.  May return null if no such file
+     * is available (as if the environment is not initialized yet)
      */
     abstract public File getEnvironmentFile();
 
