@@ -144,6 +144,7 @@ public class IldasmReader {
 		m_driver=driver;
 		m_parser.reset();
 		m_parser.setDriver(m_driver);
+		m_parser.setReader(reader);
 		m_expected=null;
 		readToLexer(reader, state);
 	}
