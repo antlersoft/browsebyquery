@@ -3,6 +3,7 @@
  */
 package com.antlersoft.ilanalyze.parseildasm;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStreamReader;
@@ -237,7 +238,15 @@ public class IldasmReader {
 			{
 				logger.fine( "Reading .il file "+file.getAbsolutePath());
 				driver.startAnalyzedFile(file.getAbsolutePath());
-				Read( driver, new FileReader(file));
+				Reader r = new BufferedReader(new FileReader(file));
+				try
+				{
+					Read( driver, r);
+				}
+				finally
+				{
+					r.close();
+				}
 				driver.endAnalyzedFile();
 			}
 			else if ( lower_file.endsWith(".dll") || lower_file.endsWith(".exe"))
@@ -270,7 +279,7 @@ public class IldasmReader {
 				// Tokenize the command format, substitute the file path as necessary
 				Object[] format_args=new Object[] { file.getAbsolutePath() };
 				Process process=Runtime.getRuntime().exec(formatCommandArgs(m_disassembly_command_format, format_args));
-				InputStreamReader reader=new InputStreamReader(process.getInputStream());
+				Reader reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
 				try
 				{
 					Read( driver, reader);
@@ -290,7 +299,7 @@ public class IldasmReader {
 				try
 				{
 					process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args), null, null);
-					reader=new InputStreamReader(process.getInputStream());
+					reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
 					try
 					{
 						readResources( driver, reader);

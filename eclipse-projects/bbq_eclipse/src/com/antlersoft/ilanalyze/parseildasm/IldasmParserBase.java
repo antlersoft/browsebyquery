@@ -4,6 +4,8 @@
 package com.antlersoft.ilanalyze.parseildasm;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Reader;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import com.antlersoft.parser.ValueStack;
 class IldasmParserBase extends Parser {
 
 	DBDriver m_driver;
+	private Reader m_reader;
 	
 	IldasmParserBase( ParseState[] states)
 	{
@@ -34,10 +37,45 @@ class IldasmParserBase extends Parser {
 		m_driver=driver;
 	}
 	
+	/**
+	 * Called during error processing to drop characters until you get a new-line
+	 */
+	void dropToEndOfLine()
+	{
+		if (m_reader != null)
+		{
+			try {
+				IldasmReader.logger.info("Handling error by dropping characters to end of line");
+				for (int ch = m_reader.read(); ch >= 0 && (char)ch != '\n'; ch = m_reader.read());
+			} catch (IOException e) {
+				
+			}
+		}
+	}
+	
+	/**
+	 * Sets the reader to use to clear to end of line during error recovery
+	 * @param reader
+	 */
+	void setReader(Reader reader)
+	{
+		m_reader = reader;
+	}
+	
 	static DBDriver Driver( Parser p)
 	{
 		return ((IldasmParserBase)p).m_driver;
 	}
+	
+	static RuleAction m_ErrorAction = new RuleAction() {
+
+		@Override
+		public Object ruleFire(Parser parser, ValueStack valueStack)
+				throws RuleActionException {
+			((IldasmParserBase)parser).dropToEndOfLine();
+			return "";
+		}
+	};
 	
 	/** Action object that just returns the string at the top of the stack */
 	static RuleAction m_TopString=new RuleAction() {
@@ -79,7 +117,7 @@ class IldasmParserBase extends Parser {
 			return new BasicType( valueStack.s_0());
 		} };
 
-	/** Create a builtin type from the top string */
+	/** Create a built-in type from the top string */
 	static RuleAction m_BuiltinType=new RuleAction() {
 
 		/* (non-Javadoc)
@@ -89,7 +127,7 @@ class IldasmParserBase extends Parser {
 			return new BuiltinType( valueStack.s_0());
 		} };
 
-	/** Create a builtin type from top two strings concated together */
+	/** Create a built-in type from top two strings concated together */
 	static RuleAction m_BuiltinType2Words=new RuleAction() {
 
 		/* (non-Javadoc)

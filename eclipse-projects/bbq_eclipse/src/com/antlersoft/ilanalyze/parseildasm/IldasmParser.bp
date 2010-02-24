@@ -967,6 +967,7 @@ n_classDecl : n_fieldDecl .
 n_classDecl : n_dataDecl .
 n_classDecl : n_secDecl .
 n_classDecl : n_extSourceSpec .
+n_classDecl : errorSymbol "m_ErrorAction" .
 n_classDecl : n_customAttrDecl .
 n_classDecl : t_sizeDirective n_int32 .
 n_classDecl : t_packDirective n_int32 .
@@ -1039,6 +1040,7 @@ n_decl : n_dataDecl .
 n_decl : n_vtableDecl .
 n_decl : n_vtfixupDecl .
 n_decl : n_extSourceSpec .
+n_decl : errorSymbol "m_ErrorAction" .
 n_decl : n_fileDecl .
 n_decl : n_assemblyHead t_left_brace n_assemblyDecls t_right_brace .
 n_decl : n_assemblyRefHead t_left_brace n_assemblyRefDecls t_right_brace .
@@ -1065,6 +1067,7 @@ n_eventDecl : t_fireDirective n_callConv n_type n_methodName n_sigArgs0 .
 n_eventDecl : t_otherDirective n_callConv n_type n_typeSpec t_member_op n_methodName n_sigArgs0 .
 n_eventDecl : t_otherDirective n_callConv n_type n_methodName n_sigArgs0 .
 n_eventDecl : n_extSourceSpec .
+n_eventDecl : errorSymbol "m_ErrorAction" .
 n_eventDecl : n_customAttrDecl .
 n_eventDecl : n_languageDecl .
 n_eventDecls : .
@@ -1266,6 +1269,7 @@ n_methodDecl : n_instr .
 n_methodDecl : n_id t_colon .
 n_methodDecl : n_secDecl .
 n_methodDecl : n_extSourceSpec .
+n_methodDecl : errorSymbol "m_ErrorAction" .
 n_methodDecl : n_languageDecl .
 n_methodDecl : n_customAttrDecl .
 n_methodDecl : t_exportDirective t_left_square n_int32 t_right_square .
@@ -1380,6 +1384,7 @@ n_propDecl : t_otherDirective n_callConv n_type n_methodName n_sigArgs0 .
 n_propDecl : n_customAttrDecl .
 n_propDecl : n_extSourceSpec .
 n_propDecl : n_languageDecl .
+n_propDecl : errorSymbol "m_ErrorAction" .
 n_propDecls : .
 n_propDecls : n_propDecls n_propDecl .
 n_propHead : t_propertyDirective n_propAttr n_callConv n_type n_name1 n_sigArgs0 n_initOpt .
