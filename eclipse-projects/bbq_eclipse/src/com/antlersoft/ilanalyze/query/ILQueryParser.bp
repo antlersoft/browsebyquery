@@ -291,7 +291,7 @@ FILTER : Internal "{
     return new AccessFilter( DBDriver.IS_ASSEMBLY);
     }" .
 FILTER : Enum "{
-	return new AccessFilter( DBDriver.IS_ENUM);
+	return new EnumFilter();
 	}" .
 FILTER : Serializable "{
 	return new AccessFilter( DBDriver.IS_SERIALIZABLE);
