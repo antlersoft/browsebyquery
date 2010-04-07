@@ -26,6 +26,7 @@ reserved classes
 reserved containing
 #reserved deprecated 4 right
 reserved derived
+reserved Enum "enum"
 reserved fields
 reserved from
 reserved Import "using"
@@ -289,6 +290,9 @@ FILTER : Protected "{
 FILTER : Internal "{
     return new AccessFilter( DBDriver.IS_ASSEMBLY);
     }" .
+FILTER : Enum "{
+	return new AccessFilter( DBDriver.IS_ENUM);
+	}" .
 FILTER : Serializable "{
 	return new AccessFilter( DBDriver.IS_SERIALIZABLE);
 	}" .
