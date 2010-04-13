@@ -142,10 +142,8 @@ VALUE_LIST : list
 "{ return new ValueList(); }" .
 VALUE_LIST : list VALUE_EXPRESSION
 "{ return new ValueList( (ValueExpression)valueStack.get( valueStack.size()-1)); }" .
-VALUE_LIST : VALUE_EXPRESSION
-"{ return new ValueList( (ValueExpression)valueStack.get( valueStack.size()-1)); }" 1 .
-VALUE_LIST : VALUE_LIST comma VALUE_EXPRESSION
-"{ ValueList result=(ValueList)valueStack.get( valueStack.size()-3);
+VALUE_LIST : VALUE_EXPRESSION comma VALUE_EXPRESSION
+"{ ValueList result=new ValueList( (ValueExpression)valueStack.get( valueStack.size()-3));
 result.add((ValueExpression)valueStack.get( valueStack.size()-1));
 return result; }" .
 
