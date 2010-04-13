@@ -93,6 +93,7 @@ public class UIQuery extends QueryFrame
 	/**
 	 * Add server menu to the menubar
 	 */
+	@Override
 	protected JMenuBar createMenuBar()
 	{
 		JMenuBar result=super.createMenuBar();

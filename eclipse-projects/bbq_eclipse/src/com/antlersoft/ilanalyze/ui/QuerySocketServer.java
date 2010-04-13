@@ -33,8 +33,9 @@ import com.antlersoft.util.xml.ElementTransformReader;
 import com.antlersoft.util.xml.HandlerStack;
 
 /**
- * Listens on a certain port for connections from query clients, which will make query requests,
- * and perform these requests on an IBrowseByQuery interface, which must be thread-safe.
+ * Listens on a certain port for connections from query clients.  For each connection,
+ * creates a QuerySocketClient that will listen on the connection for query requests, and
+ * process the query requests on the supplied IBrowseByQuery object.
  * 
  * @author Michael A. MacDonald
  *
