@@ -1,9 +1,9 @@
 #!/bin/sh
 
-JG_ARGS = ""
+JG_ARGS=""
 if [ "$1" == "-l" ]
 then
-	JG_ARGS = "$1"
+	JG_ARGS="$1"
 	shift
 fi
 dir=$(dirname "$1")
