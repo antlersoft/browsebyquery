@@ -313,6 +313,7 @@ class NoPrecedenceAction : public RuleAction
 
 int main( int argc, char* argv[])
 	{
+	bool use_large = (string(argv[1]) == "-l");
 	BuildParser x;
 	BuildParser java_parser;
 	x.setDebug( 0);
@@ -439,7 +440,7 @@ int main( int argc, char* argv[])
 			}
 		while ( ! ( ts==Parser::_end_));
 		Parser* out_parser=java_parser.build( cerr);
-		if ( out_parser->getStateCount()>300)
+		if ( use_large || out_parser->getStateCount()>300)
 		{
 			return bigParserOutput( out_parser);
 		}

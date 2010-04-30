@@ -1,4 +1,11 @@
 #!/bin/sh
+
+JG_ARGS = ""
+if [ "$1" == "-l" ]
+then
+	JG_ARGS = "$1"
+	shift
+fi
 dir=$(dirname "$1")
 base=$(basename "$1" .pre)
 base=$(basename "$base" .bp)
@@ -14,6 +21,6 @@ function expand_include
 
 shift
 {
-cat $(expand_include "$dir" "$base.bp") $* | javagen 2> "$dir/$base".out
+cat $(expand_include "$dir" "$base.bp") $* | javagen "$JG_ARGS" 2> "$dir/$base".out
 echo "}"
 } | ( cat "$dir/$base".pre - ) > "$dir/$base".java
