@@ -29,10 +29,10 @@ public class DBType implements Persistent {
 	private String m_type_key;
 	
 	/** DBClass that implements this type; null if this is not a class type */
-	private ObjectRef m_class;
+	private ObjectRef<DBClass> m_class;
 	
 	/** DBType that this array references, or null if this in not an array type */
-	private ObjectRef m_referenced;
+	private ObjectRef<DBType> m_referenced;
 	
 	/** User visible representation of the type */
 	private String m_type_user_name;
@@ -49,9 +49,9 @@ public class DBType implements Persistent {
 	DBType( String key, DBClass type_class, DBType array_referenced_type, String user_name) {
 		m_type_key=key;
 		if ( type_class!=null)
-			m_class=new ObjectRef( type_class);
+			m_class=new ObjectRef<DBClass>( type_class);
 		if ( array_referenced_type!=null)
-			m_referenced=new ObjectRef(array_referenced_type);
+			m_referenced=new ObjectRef<DBType>(array_referenced_type);
 		m_type_user_name=user_name;
 		ObjectDB.makePersistent( this);
 	}
@@ -85,7 +85,18 @@ public class DBType implements Persistent {
 	
 	public DBType getArrayReferencedType()
 	{
-		return (DBType)DBClass.OptionalRefGet(m_referenced);
+		return DBClass.OptionalRefGet(m_referenced);
+	}
+	
+	public DBType getArrayType( ILDB db)
+	{
+		String arrayTypeKey = m_type_key + "[]";
+		DBType result = (DBType)db.findObject(TYPE_KEY_INDEX,arrayTypeKey);
+		if (result == null)
+		{
+			result = new DBType(arrayTypeKey, null, this, m_type_user_name + "[]");
+		}
+		return result;
 	}
 	
 	public boolean isArray()
@@ -95,7 +106,7 @@ public class DBType implements Persistent {
 	
 	public DBClass getReferencedClass()
 	{
-		return (DBClass)DBClass.OptionalRefGet(m_class);
+		return DBClass.OptionalRefGet(m_class);
 	}
 	
 	public boolean isClass()

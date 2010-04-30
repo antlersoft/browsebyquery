@@ -32,6 +32,7 @@
 	</target>	
 	<target name="ILQueryParser">
 		<exec executable="genparser.sh">
+			<arg value="-l" />
 			<arg file="src/com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
 		</exec>
 	</target>

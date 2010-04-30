@@ -322,10 +322,19 @@ VALUE_EXPRESSION : names of "{
 	};
 	}" .
 VALUE_EXPRESSION : bundles containing "{
-	return new CountPreservingValueExpression( DBString.class, DBStringResource.class) {
+	return new CountPreservingValueExpression( DBBundle.class, DBStringResource.class) {
 		public Object transformSingleObject( DataSource source, Object to_transform)
 		{
-			return ((DBStringResource)to_transform).getBundle();
+			return (DBBundle)((DBStringResource)to_transform).getBundle();
+		}
+	};
+	}" .
+	
+VALUE_EXPRESSION : array of "{
+	return new CountPreservingValueExpression( DBType.class, DBType.class) {
+		public Object transformSingleObject(DataSource source, Object to_transform)
+		{
+			return ((DBType)to_transform).getArrayRef((IndexAnalyzeDB)source);
 		}
 	};
 	}" .
