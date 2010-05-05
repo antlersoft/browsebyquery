@@ -334,7 +334,7 @@ VALUE_EXPRESSION : array of "{
 	return new CountPreservingValueExpression( DBType.class, DBType.class) {
 		public Object transformSingleObject(DataSource source, Object to_transform)
 		{
-			return ((DBType)to_transform).getArrayRef((IndexAnalyzeDB)source);
+			return ((DBType)to_transform).getArrayType((IndexAnalyzeDB)source);
 		}
 	};
 	}" .

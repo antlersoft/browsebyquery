@@ -100,9 +100,16 @@ public class DBType implements Persistent, Cloneable {
 	}
 	
 	public DBType getArrayType( IndexAnalyzeDB db)
-	throws Exception
 	{
-		return getWithTypeKey( "["+_typeString, db);
+		try
+		{
+			return getWithTypeKey( "["+_typeString, db);
+		}
+		catch (Exception e)
+		{
+			DBMethod.logger.log(java.util.logging.Level.WARNING, "Failed to get array type ["+_typeString, e);
+		}
+		return null;
 	}
 	
 	/**

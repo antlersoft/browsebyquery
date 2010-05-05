@@ -48,7 +48,7 @@ public class DBMethod extends DBMember
     public static final int UNRESOLVED=1;
     public static final int VIRTUAL=2;
     public static final int REAL=3;
-    private static Logger logger=Logger.getLogger( "com.antlersoft.analyzer.DBMethod");
+    static Logger logger=Logger.getLogger( "com.antlersoft.analyzer.DBMethod");
     static final String RETURN_TYPE_INDEX="MethodType";
     
     String signature;
