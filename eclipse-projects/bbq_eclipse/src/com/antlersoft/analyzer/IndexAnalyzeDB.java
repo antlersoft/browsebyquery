@@ -241,4 +241,16 @@ public class IndexAnalyzeDB extends AbstractDBContainer implements IDBSource
                 new CFactory());
     	store.logAllStatistics();
     }
+
+    /**
+     * validates indices in this database
+     * @param args The first argument should be the database directory
+     */
+    public static void validate( String[] args)
+    throws Exception
+    {
+    	DirectoryAllocator store=new DirectoryAllocator( new File( args[0]),
+                new CFactory());
+    	store.validateIndex(null, true);
+    }
 }
