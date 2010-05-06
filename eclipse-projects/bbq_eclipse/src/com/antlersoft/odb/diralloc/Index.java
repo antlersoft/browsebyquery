@@ -29,6 +29,8 @@ package com.antlersoft.odb.diralloc;
 import java.io.IOException;
 import java.io.Serializable;
 
+import java.util.Set;
+
 import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectStoreException;
@@ -306,13 +308,13 @@ class Index
     	}
     }
     
-    void validate( boolean checkReferences)
+    void validate(Set<Integer> freeSet)
     throws ObjectStoreException
     {
     	try
     	{
     		indexModificationLock.enterProtected();
-    		validateIndexPage( checkReferences, entry.startPageOffset, null);
+    		validateIndexPage(freeSet, entry.startPageOffset, null);
     	}
     	catch ( ClassNotFoundException cnfe)
     	{
@@ -332,7 +334,7 @@ class Index
     	}
     }
     
-    private void validateIndexPage( boolean checkReferences, int offset, Comparable parentKey)
+    private void validateIndexPage(Set<Integer> freeSet, int offset, Comparable parentKey)
     throws ObjectStoreException, ClassNotFoundException, DiskAllocatorException, IOException
     {
     	IndexPage page=(IndexPage)streams.readImmovableObject(offset);
@@ -353,9 +355,9 @@ class Index
     		previous=next;
     		if ( page.reuseArray==null)
     		{
-    			validateIndexPage( checkReferences, page.nextOffsetArray[i], previous);
+    			validateIndexPage( freeSet, page.nextOffsetArray[i], previous);
     		}
-    		else if ( checkReferences)
+    		else if (freeSet != null)
     		{
     			DAKey objKey=new DAKey( page.nextOffsetArray[i], page.reuseArray[i]);
     			Serializable obj=manager.retrieve( objKey);
@@ -363,9 +365,13 @@ class Index
     			if ( ! entry.unique)
     			{
     				compareKey=new UniqueKey(compareKey,objKey);
-    				if ( compareKey.compareTo( previous)!=0)
-    					throw new ObjectStoreException( "Keys fail to compare");
     			}
+   				if ( compareKey.compareTo( previous)!=0)
+    				throw new ObjectStoreException( "Keys fail to compare");
+   				if (freeSet.contains(objKey.index))
+   				{
+   					throw new ObjectStoreException("Free set contains object index for object " + obj.toString());
+   				}
     		}
     	}
     }

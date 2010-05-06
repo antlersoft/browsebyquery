@@ -30,7 +30,9 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.InvalidObjectKeyException;
@@ -437,6 +439,31 @@ class EntryPageList implements Serializable
             entryOffset=streams.writeObject( this, entryOffset);
         }
         return entryOffset;
+    }
+    
+    /**
+     * To be used by validation code to get the set of all object indices in the free list.  #releaseFreeSet()
+     * must be called afterwards to release the deleteLock
+     * @param streams StreamPair for overhead
+     * @return Set of all object indices in the free list
+     * @throws ObjectStoreException when there is a problem retrieving or corruption in the free list
+     */
+    Set<Integer> getFreeSet(StreamPair streams)
+    throws ObjectStoreException
+    {
+    	Set<Integer> freeSet = new HashSet<Integer>(1000);
+    	deleteLock.enterProtected();
+    	if (freePage != null)
+    		freePage.populateFreeSet(streams, freeSet);
+    	return freeSet;
+    }
+ 
+	/**
+	 * Call to indicate you are done with the free set retrieved by #getFreeSet; releases the deleteLock
+	 */
+    void releaseFreeSet()
+    {
+    	deleteLock.leaveProtected();
     }
 
     private void makeRoomInCache( StreamPair streams)

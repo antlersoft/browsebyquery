@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.Set;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -256,17 +257,22 @@ ioe.printStackTrace();
      * @param checkReferences If true, checks all objects referenced by the index
      * @throws ObjectStoreException Throws if any problem with the index, with message describing the problem
      */
-    public void validateIndex( String indexName, boolean checkReferences)
+    public void validateIndex( String indexName, final boolean checkReferences)
     throws ObjectStoreException
     {
     	try
     	{
+    		Set<Integer> freeSet = null;
     		classList.classChangeLock.enterProtected();
+    		if (checkReferences)
+    		{
+    			freeSet = entryList.getFreeSet(overheadStreams);
+    		}
     		if ( indexName==null)
     		{
         		for ( Iterator i=classList.indexMap.values().iterator(); i.hasNext();)
         		{
-        			((Index)i.next()).validate(checkReferences);
+        			((Index)i.next()).validate(freeSet);
         		}
     		}
     		else
@@ -275,11 +281,15 @@ ioe.printStackTrace();
                 if ( named==null)
                     throw new ObjectStoreException( "validateIndex: Index "+indexName+
                     " undefined");
-                named.validate(checkReferences);
+                named.validate(freeSet);
     		}
     	}
     	finally
     	{
+    		if (checkReferences)
+    		{
+    			entryList.releaseFreeSet();
+    		}
     		classList.classChangeLock.leaveProtected();
     	}
     	
