@@ -262,6 +262,7 @@ ioe.printStackTrace();
     {
     	try
     	{
+    		sync();
     		Set<Integer> freeSet = null;
     		classList.classChangeLock.enterProtected();
     		if (checkReferences)
