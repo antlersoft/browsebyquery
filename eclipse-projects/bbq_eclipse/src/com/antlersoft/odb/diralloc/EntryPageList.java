@@ -188,6 +188,7 @@ class EntryPageList implements Serializable
         if ( freePage!=null)
         {
             freePage.size--;
+            freePage.modified=true;
             offset=freePage.freeArray[freePage.size];
             if ( freePage.size==0)
             {
