@@ -1,4 +1,6 @@
 --bbq0.7.10
+  Add "each" value expression (value expression equivalent of "same"); also
+  make same work like value expression when necessary. (not in manual yet)
 
   Fix cause of database corruption where object index free list was
   sometimes not written to the database correctly.
