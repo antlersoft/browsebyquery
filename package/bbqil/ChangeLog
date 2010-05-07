@@ -1,3 +1,40 @@
+
+  Fix cause of database corruption where object index free list was
+  sometimes not written to the database correctly.
+
+  Add "array of" value expression to return a type that represents
+  an array of a type. (not in manual yet)
+
+  Add "enum" filter to check if a class is an enum
+
+  Add "serializable" filter
+
+  Fix ambiguity in query parser that would cause parsing some queries
+  with Value Expressions (e.g. type of) to fail
+
+  Fix standalone startup when it has never run before.  Instead of
+  crashing, or using the default database (which was the previous
+  behavior) it will ask for a directory in which to put the initial
+  database.
+
+	BBQ for .Net now captures and lets you query information about exception
+	catches (not throws though; look for calls to exception class constructors),
+	resources included in analyzed assemblies, and annotations.  This new
+	functionality is experimental
+
+	It also includes what has proven to be the very convenient "any class" operator.  The set expression 
+
+	any class "classname"
+
+	will return all the classes with that name regardless of the namespace
+	they are in.  This is generally much more convenient than typing in the
+	complete class name or keeping your import list set properly.
+
+	The cast operator allows you to explicitly specify a type
+	for an ambiguously typed expression, which helps build more complex
+	expressions.
+
+
 bbqil 0.1.5 --
 
 Based off of bbq0.5.10

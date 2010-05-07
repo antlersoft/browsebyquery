@@ -1,3 +1,11 @@
+--bbq0.7.10
+
+  Fix cause of database corruption where object index free list was
+  sometimes not written to the database correctly.
+
+  Add "array of" value expression to return a type that represents
+  an array of a type. (not in manual yet)
+
 --bbq0.7.9
 
   Fix ambiguity in query parser that would cause parsing some queries
