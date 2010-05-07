@@ -1,11 +1,13 @@
-bbq0.7.9--
+bbq0.7.10 --
 
-  Fix ambiguity in query parser that would cause parsing some queries
-  with Value Expressions (e.g. type of) to fail
+  Add "each" value expression (value expression equivalent of "same"); also
+  make same work like value expression when necessary. (not in manual yet)
 
-bbq0.7.8 --
+  Fix cause of database corruption where object index free list was
+  sometimes not written to the database correctly.  Updated allocator
+  version in order to force databases to be rebuilt so the problem gets
+  cleaned (even though there would otherwise be no problem opening
+  existing databases.)
 
-  Fix standalone startup when it has never run before.  Instead of
-  crashing, or using the default database (which was the previous
-  behavior) it will ask for a directory in which to put the initial
-  database.
+  Add "array of" value expression to return a type that represents
+  an array of a type. (not in manual yet)

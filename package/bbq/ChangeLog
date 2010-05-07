@@ -3,7 +3,8 @@
   make same work like value expression when necessary. (not in manual yet)
 
   Fix cause of database corruption where object index free list was
-  sometimes not written to the database correctly.
+  sometimes not written to the database correctly. Increment
+  DirectoryAllocator version
 
   Add "array of" value expression to return a type that represents
   an array of a type. (not in manual yet)
