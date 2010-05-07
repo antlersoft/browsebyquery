@@ -42,6 +42,7 @@ Requires ant 1.6+
 	<target name="buildcommon">
 		<mkdir dir="classes"/>
 		<exec executable="${genparserpath}">
+			<arg value="-l" />
 			<arg file="${bbq.project.path}/src/com/antlersoft/analyzer/query/QueryParser.pre"/>
 		</exec>
 		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}/src" destdir="classes">
