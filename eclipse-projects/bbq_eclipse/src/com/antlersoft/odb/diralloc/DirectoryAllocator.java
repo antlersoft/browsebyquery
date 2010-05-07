@@ -571,9 +571,9 @@ ioe.printStackTrace();
     private static final int INDEX_PAGE_CACHE_SIZE=100;
     /** 
      * BBQ magic number; the last byte is the version number, it gets incremented with each version
-     * the current version is 2.
+     * the current version is 3.
      */
-    private static final int DIR_ALLOC_VERSION=0x42425102;
+    private static final int DIR_ALLOC_VERSION=0x42425103;
 
     void startIndexPageNoFlush()
     {
