@@ -19,7 +19,6 @@ Requires ant 1.6+
 			<arg file="${bbq.project.path}/src/com/antlersoft/ilanalyze/parseildasm/IldasmParser.pre"/>
 		</exec>
 		<exec executable="${genparserpath}">
-			<arg value="-l"/>
 			<arg file="${bbq.project.path}/src/com/antlersoft/ilanalyze/query/ILQueryParser.pre"/>
 		</exec>
 		<exec executable="${genparserpath}">
