@@ -2,6 +2,7 @@
 	<target name="all" depends="QueryParser,Basic,PreprocessParser,ConstExprParser,Reflect,IldasmParser,ILQueryParser,ResourceParser"/>
 	<target name="QueryParser">
 		<exec executable="genparser.sh">
+			<arg value="-l" />
 			<arg file="src/com/antlersoft/analyzer/query/QueryParser.pre"/>
 		</exec>
 	</target>

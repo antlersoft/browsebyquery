@@ -96,9 +96,9 @@ SET_EXPRESSION : SetExpressionSymbol "{ return ((QueryLanguageEnvironment)parser
 
 SET_EXPRESSION : SET_EXPRESSION that Identity FILTER "{
 	int size=valueStack.size();
-	return new TransformSet( new FilterTransform( (Filter)valueStack.get( size-1),
-		(SetExpression)valueStack.get( size-4)));
-	}" .
+	return new TransformSet( new FilterTransform( (Filter)valueStack.get( size-1)),
+		(SetExpression)valueStack.get( size-4));
+	}" 10 .
 
 SET_EXPRESSION : Class literalString "{
 	return new ClassGet( (String)valueStack.s_0(), ((AnalyzerQuery)parser.getParserEnvironment()).getImported());

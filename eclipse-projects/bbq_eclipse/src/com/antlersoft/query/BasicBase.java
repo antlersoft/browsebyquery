@@ -25,6 +25,18 @@ public class BasicBase extends Parser {
 	static public final Symbol literalString=Symbol.get( "literalString");
 	static public final Symbol number=Symbol.get( "number");
     static public final Symbol nameSymbol=Symbol.get( "_nameSymbol");
+    
+    static public final RuleAction m_eachExpression = new RuleAction() {
+		public Object ruleFire(Parser parser, ValueStack valueStack) throws RuleActionException {
+    	
+			return new CountPreservingValueExpression(null, null) {
+				public Object transformSingleObject( DataSource source, Object to_transform)
+				{
+					return to_transform;
+				}				
+			};
+		}
+    };
 
 	private ParserEnvironment m_environment;
 	
