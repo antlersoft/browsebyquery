@@ -4,6 +4,7 @@ reserved And "and" 4 left
 reserved count
 reserved date
 reserved deintersection 2 left
+reserved each
 reserved execute
 reserved exists
 reserved expression_separator ";"
@@ -87,11 +88,12 @@ SET_EXPRESSION : previous "{
 	}
 	return se;
 	}" .
-
+SET_EXPRESSION : literalString
+"{ return new ValueListSetExpression(new ValueList(new Constant(valueStack.o_0()))); }" 11 .
 
 # Value Expression Rules
 VALUE_EXPRESSION : literalString
-"{ return new Constant( valueStack.get( valueStack.size()-1)); }" .
+"{ return new Constant( valueStack.get( valueStack.size()-1)); }" 10 .
 VALUE_EXPRESSION : number
 "{ 
 	Integer val;
@@ -118,6 +120,8 @@ VALUE_EXPRESSION : GROUP_EXPRESSION
 VALUE_EXPRESSION : VALUE_EXPRESSION ampersand VALUE_EXPRESSION
 "{ return new StringConcat( (ValueExpression)valueStack.get( valueStack.size()-3),
 (ValueExpression)valueStack.get( valueStack.size()-1)); }" .
+VALUE_EXPRESSION : same "m_eachExpression" 9 .
+VALUE_EXPRESSION : each "m_eachExpression" .
 VALUE_EXPRESSION : FILTER
 "{ return valueStack.get( valueStack.size()-1); }" 1 .
 VALUE_EXPRESSION : GROUP_EXPRESSION of left_paren TRANSFORM right_paren
@@ -153,7 +157,7 @@ return result; }" .
 
 
 # Transform rules
-TRANSFORM : same "{ return new SameTransform(); }" .
+TRANSFORM : same "{ return new SameTransform(); }" 10 .
 TRANSFORM : FILTER "{ return new FilterTransform( (Filter)valueStack.get( valueStack.size()-1)); }" 2 .
 
 TRANSFORM : TRANSFORM SET_OPERATOR TRANSFORM "{
@@ -176,10 +180,10 @@ TRANSFORM : uncorrelated left_paren SET_EXPRESSION right_paren
 "{ return new UncorrelatedSetTransform( (SetExpression)valueStack.get( valueStack.size()-2)); }" .
 TRANSFORM : unique "{ return new UniqueTransform(); }" .
 
-GROUP_TRANSFORM : VALUE_LIST
-"{ return new ValueListGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" 1 .
-GROUP_TRANSFORM : SET_EXPRESSION
-"{ return new SetExpressionGroupTransform( (SetExpression)valueStack.get( valueStack.size()-1)); }" .
+#GROUP_TRANSFORM : VALUE_LIST
+#"{ return new ValueListGroupTransform( (ValueList)valueStack.get( valueStack.size()-1)); }" 1 .
+#GROUP_TRANSFORM : SET_EXPRESSION
+#"{ return new SetExpressionGroupTransform( (SetExpression)valueStack.get( valueStack.size()-1)); }" .
 
 FILTER : Not FILTER
 "{ Filter result=(Filter)valueStack.get(valueStack.size()-1);
