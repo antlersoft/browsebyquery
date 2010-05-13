@@ -77,7 +77,7 @@ public class DBStringResource implements Persistent {
 		sb.append( getName().toString());
 		sb.append( "\" = \"");
 		sb.append( getValue().toString());
-		sb.append( "\" in bundle ");
+		sb.append( "\" in ");
 		sb.append( getBundle().toString());
 		return sb.toString();
 	}
