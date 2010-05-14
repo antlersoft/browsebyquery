@@ -1,7 +1,8 @@
 #!/bin/sh
 
 #xsltproc /usr/kde/3.4/share/apps/ksgmltools2/docbook/xsl/html/chunk.xsl $1
-xsltproc --param generate.section.toc.level 1 /usr/share/sgml/docbook/xsl-stylesheets-1.70.1/html/chunk.xsl $1
+xsltproc ../bbq_type_map.xsl $1 | xsltproc --param generate.section.toc.level 1 /usr/share/sgml/docbook/xsl-stylesheets/html/chunk.xsl -
+#xsltproc ../bbq_type_map.xsl $1 | xsltproc --param generate.section.toc.level 1 /usr/share/sgml/docbook/xsl-stylesheets/html/onechunk.xsl -
 
 perl -pi -e '
 if ( /^(.*)(\<\/body\>.*)/ )
