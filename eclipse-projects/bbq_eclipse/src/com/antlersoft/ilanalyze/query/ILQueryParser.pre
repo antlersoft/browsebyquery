@@ -22,6 +22,8 @@ import com.antlersoft.query.environment.ImportSet;
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
 import com.antlersoft.query.environment.SavingName;
 
+import com.antlersoft.util.IteratorEnumeration;
+
 public class ILQueryParser extends ILQueryParserBase
 {
 	public ILQueryParser()
