@@ -34,18 +34,18 @@ TRANSFORM : annotations with "{
 	};
 }" .
 VALUE_EXPRESSION : annotated by "{
-	return new CountPreservingValueExpression( DBAnnotatable.class, DBAnnotationBase.class ) {
+	return new CountPreservingValueExpression( DBAnnotatable.class, AnnotationBase.class ) {
 		public Object transformSingleObject( DataSource source, Object to_transform)
 		{
-			return ((DBAnnotationBase)to_transform).getAnnotatedObject();
+			return ((AnnotationBase)to_transform).getAnnotatedObject();
 		}
 	};
 }" .
 VALUE_EXPRESSION : classes of "{
-	return new CountPreservingValueExpression( DBClass.class, DBAnnotationBase.class ) {
+	return new CountPreservingValueExpression( DBClass.class, AnnotationBase.class ) {
 		public Object transformSingleObject( DataSource source, Object to_transform)
 		{
-			return ((DBAnnotationBase)to_transform).getAnnotationClass();
+			return ((AnnotationBase)to_transform).getAnnotationClass();
 		}
 	};
 }" .
