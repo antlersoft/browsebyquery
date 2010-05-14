@@ -156,7 +156,7 @@ TRANSFORM : VALUE_EXPRESSION TRANSFORM "
 		int size=valueStack.size();
 		return new TransformTransform( (Transform)valueStack.get(size-1),
 			new ValueExpressionTransform( (ValueExpression)valueStack.get( size-2)));
-	}" .
+	}" 4 .
 
 TRANSFORM : TRANSFORM TRANSFORM
 "{ return new TransformTransform( (Transform)valueStack.get( valueStack.size()-1),
@@ -315,7 +315,7 @@ VALUE_EXPRESSION : Types of "{
 
 VALUE_EXPRESSION : VALUE_EXPRESSION VALUE_EXPRESSION
 "{ return new CompoundExpression( (ValueExpression)valueStack.get( valueStack.size()-1),
-(ValueExpression)valueStack.get( valueStack.size()-2)); }" .
+(ValueExpression)valueStack.get( valueStack.size()-2)); }" 5 .
 
 VALUE_EXPRESSION : StringConstant "{
 	return new CountPreservingValueExpression( DBString.class, String.class) {
@@ -450,4 +450,4 @@ Types : types .
 Identity : is .
 Identity : are .
 
-#import 
+#include ../../bbq/query/AnnotationModule.bp

@@ -108,6 +108,7 @@ VALUE_EXPRESSION : number
 	return new Constant( val); }" .
 VALUE_EXPRESSION : to stringconstant
 "{ return new ToString(); }" .
+VALUE_EXPRESSION : left_paren VALUE_EXPRESSION right_paren "{ return valueStack.o_1(); }" .
 VALUE_EXPRESSION : substitute left_paren VALUE_EXPRESSION comma VALUE_EXPRESSION right_paren
 "{ return new RegExpSubstitute( (ValueExpression)valueStack.get(valueStack.size()-4), (ValueExpression)valueStack.get(valueStack.size()-2)); }"
 .
@@ -122,8 +123,8 @@ VALUE_EXPRESSION : VALUE_EXPRESSION ampersand VALUE_EXPRESSION
 (ValueExpression)valueStack.get( valueStack.size()-1)); }" .
 VALUE_EXPRESSION : same "m_eachExpression" 9 .
 VALUE_EXPRESSION : each "m_eachExpression" .
-VALUE_EXPRESSION : FILTER
-"{ return valueStack.get( valueStack.size()-1); }" 1 .
+#VALUE_EXPRESSION : FILTER
+#"{ return valueStack.get( valueStack.size()-1); }" 1 .
 VALUE_EXPRESSION : GROUP_EXPRESSION of left_paren TRANSFORM right_paren
 "{ return new GroupOfTransformExpression( (ValueExpression)valueStack.get( valueStack.size()-5),
 (Transform)valueStack.get( valueStack.size()-2)); }" .
@@ -170,7 +171,7 @@ TRANSFORM : left_paren TRANSFORM right_paren
 "{ return valueStack.get( valueStack.size()-2); }" .
 TRANSFORM : VALUE_EXPRESSION
 "{ return new ValueExpressionTransform( (ValueExpression)valueStack.get(
-valueStack.size()-1)); }" .
+valueStack.size()-1)); }" 3 .
 TRANSFORM : recursive left_paren TRANSFORM right_paren
 "{ return new RecursiveTransform( (Transform)valueStack.get( valueStack.size()-2)); }" .
 TRANSFORM : recursive left_paren TRANSFORM comma TRANSFORM right_paren
