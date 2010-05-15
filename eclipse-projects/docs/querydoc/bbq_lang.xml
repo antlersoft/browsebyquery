@@ -2589,7 +2589,7 @@ instances are discarded.
 		  </refsect1>
 		  <refsect1>
 			<title>Applies to Type</title>
-		  	<para><link linkend="r-type-annotation">type</link></para>
+		  	<para><link linkend="r-type-annotation">annotation</link></para>
 		  </refsect1>
 		  <refsect1>
 			<title>Results in Type</title>
