@@ -12,7 +12,7 @@
 			<refsect1><title>Relevant Operators</title>
 			<xsl:call-template name="add-crossref-section">
 				<xsl:with-param name="refnodes"
-					select="//sect1[@id='r-setexpressions']//refsect1[title='Type' and .//link[@linkend=$id_node]]"/>
+					select="//sect1[@id='r-simplesetexpressions']//refsect1[title='Type' and .//link[@linkend=$id_node]]"/>
 				<xsl:with-param name="title" select="'Producing Set Expressions'"/>
 			</xsl:call-template>
 			<xsl:call-template name="add-crossref-section">

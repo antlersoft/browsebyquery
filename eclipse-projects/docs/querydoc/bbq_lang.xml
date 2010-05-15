@@ -708,7 +708,7 @@ or a filter enclosed within parentheses.
 </para>
 <para>
 A value expression is a constant,
-one of the value expression operators defined in the langauge,
+one of the value expression operators defined in the language,
 two value expressions with compatible context combined with value operators,
 or a value expression enclosed within parentheses.
 </para>
@@ -718,12 +718,19 @@ or a value expression enclosed within parentheses.
 	<member>all</member>
 	<member>arguments</member>
 	<member>and</member>
+	<member>annotated</member>
+	<member>annotations</member>
+	<member>any</member>
 	<member>are</member>
 	<member>array</member>
+	<member>assembly <emphasis>C#</emphasis></member>
 	<member>base</member>
+	<member>bundles</member>
 	<member>by</member>
 	<member>called</member>
 	<member>calls</member>
+	<member>cast</member>
+	<member>catches</member>
 	<member>class</member>
 	<member>classes</member>
 	<member>containing</member>
@@ -732,6 +739,7 @@ or a value expression enclosed within parentheses.
 	<member>deintersection</member>
 	<member>deprecated  <emphasis>Java</emphasis></member>
 <member>derived</member>
+<member>each</member>
 <member>execute</member>
 <member>exists</member>
 <member>fields</member>
@@ -763,6 +771,7 @@ or a value expression enclosed within parentheses.
 <member>references</member>
 <member>reference</member>
 <member>referenced</member>
+<member>resources</member>
 <member>same</member>
 <member>set</member>
 <member>static</member>
@@ -829,7 +838,7 @@ and the applicable type of the compound filter is the most-derived
 type.
 </para>
 <para>
-When you combine two transforms with a logical operator,
+When you combine two transforms with a set operator,
 both kinds of type resolution may happen.
 If the transforms have different applicable types,
 one must derive from the other and the applicable type
@@ -851,7 +860,7 @@ type that is an ancestor of each of the constituent result types.
 	  in the methods argument list (note that non-static, non-constructor
 	  methods have an implicit argument-0 representing the this object).
 	  If the information is available in the database, an argument
-	  will also have a name, which is the name defined in the Java source
+	  will also have a name, which is the name defined in the source
 	  code.
 	  </para>
 	</refsect1>
@@ -860,6 +869,51 @@ type that is an ancestor of each of the constituent result types.
 	  <para><link linkend="r-type-object">Object</link></para>
 	</refsect1>
       </refentry>
+    <refentry id="r-type-annotation">
+      <refnamediv>
+      	<refname>annotation</refname>
+      	<refpurpose>User-defined metadata</refpurpose>
+      </refnamediv>
+      <refsect1>
+        <title>Parent</title>
+        <para><link linkend="r-type-object">object</link></para>
+      </refsect1>
+      <refsect1>
+        <title>Description</title>
+        <para>An annotation object represents an instance of user-defined metadata associated with
+        another object in the analyzed system: these are termed annotations in the Java world,
+        and Attributes in .Net/C#.</para>
+        <para>Each annotation has a <link linkend="r-type-class">class</link>, which is the class
+        of the annotation object.  An annotation also has a reference to the object that is
+        annotated, which may be a class, field, method or argument.</para>
+      </refsect1>
+    </refentry>
+    <refentry id="r-type-assembly">
+      <refnamediv>
+      	<refname>assembly (C#/CIL)</refname>
+      	<refpurpose>An assembly in the analyzed system</refpurpose>
+      </refnamediv>
+      <refsect1>
+        <title>Parent</title>
+        <para><link linkend="r-type-object">object</link></para>
+      </refsect1>
+    </refentry>
+    <refentry id="r-type-bundle">
+      <refnamediv>
+      	<refname>resource bundle</refname>
+      	<refpurpose>A collection of resources in the analyzed system</refpurpose>
+      </refnamediv>
+      <refsect1>
+        <title>Parent</title>
+        <para><link linkend="r-type-object">object</link></para>
+      </refsect1>
+      <refsect1>
+        <title>Description</title>
+        <para>A bundle represents a .properties file for Java, or a resource file in .Net/C#.
+        A bundle has a name and contains a collection of <link linkend="r-type-string-resource">string resources</link>,
+        which are name/value pairs.</para>
+      </refsect1>
+    </refentry>
       <refentry id="r-type-call">
 	<refnamediv>
 	  <refname>call</refname>
@@ -869,6 +923,16 @@ type that is an ancestor of each of the constituent result types.
 	  <title>Parent</title>
 	  <para><link linkend="r-type-reference">reference</link></para>
 	</refsect1>
+      </refentry>
+      <refentry id="r-type-catch">
+      	<refnamediv>
+      	  <refname>catch</refname>
+      	  <refpurpose>A catch of some exception type in a method</refpurpose>
+      	</refnamediv>
+      	<refsect1>
+      	  <title>Parent</title>
+      	  <para><link linkend="r-type-reference">reference</link></para>
+      	</refsect1>
       </refentry>
       <refentry id="r-type-class">
 	<refnamediv>
@@ -903,7 +967,7 @@ type that is an ancestor of each of the constituent result types.
 	</refnamediv>
 	<refsect1>
 	  <title>Parent</title>
-	  <para><link linkend="r-type-object">Object</link></para>
+	  <para><link linkend="r-type-member">Object</link></para>
 	</refsect1>
       </refentry>
       <refentry id="r-type-field-reference">
@@ -926,10 +990,24 @@ type that is an ancestor of each of the constituent result types.
 	  <para><link linkend="r-type-object">Object</link></para>
 	</refsect1>
       </refentry>
+      <refentry id="r-type-member">
+		<refnamediv>
+		  <refname>member</refname>
+		  <refpurpose>A class member; a method or field</refpurpose>
+		</refnamediv>
+		<refsect1>
+		  <title>Description</title>
+		  <para>The common base class for methods and fields.</para>
+		</refsect1>
+		<refsect1>
+		  <title>Parent</title>
+		  <para><link linkend="r-type-object">Object</link></para>
+		</refsect1>
+      </refentry>
       <refentry id="r-type-method">
 	<refnamediv>
 	  <refname>method</refname>
-	  <refpurpose>Represents a method in a Java class in the analyzed system</refpurpose>
+	  <refpurpose>Represents a method in a class in the analyzed system</refpurpose>
 	</refnamediv>
 	<refsect1>
 	  <title>Description</title>
@@ -1023,6 +1101,26 @@ this type.</para>
 	  <para><link linkend="r-type-reference">reference</link></para>
 	</refsect1>
       </refentry>
+      <refentry id="r-type-string-resource">
+		<refnamediv>
+		  <refname>string resource</refname>
+		  <refpurpose>A named value representing a string, defined in a .properties or resource file</refpurpose>
+		</refnamediv>
+		<refsect1>
+		  <title>Description</title>
+		  <para>Each string resource found in the analyzed system has a name and a value.  There may be
+		  many resources that have the same name.</para>
+		  <para>
+		  The name and value of each resource are stored in the database as <link linkend="r-type-string-constant">string constant</link>
+		  objects, so you can search for these in the same collection as strings that are directly referenced in
+		  the program's source.
+		  </para>
+		</refsect1>
+		<refsect1>
+		  <title>Parent</title>
+		  <para><link linkend="r-type-object">Object</link></para>
+		</refsect1>
+      </refentry>
       <refentry id="r-type-type">
 	<refnamediv>
 	  <refname>type</refname>
@@ -1066,6 +1164,29 @@ the interpreter's state.</para>
       <para>
       The other simple set expressions are listed in this section.
       </para>
+      <refentry id="r-all-annotations">
+		<refnamediv>
+		  <refname>all annotations</refname>
+		  <refpurpose>Returns all the annotations in the analyzed system</refpurpose>
+		</refnamediv>
+		<refsynopsisdiv>
+		  <synopsis><userinput>all annotations</userinput></synopsis>
+		</refsynopsisdiv>
+		<refsect1>
+		  <title>Description</title>
+		  <para>
+Returns the complete set of all annotations in the analyzed system; you can use this
+expression as a starting point when you are doing a global search
+of your system.
+		  </para>
+		</refsect1>
+	    <refsect1>
+	      <title>Type</title>
+		  <para>
+		  <link linkend="r-type-annotation">annotation</link>
+		  </para>
+		</refsect1>
+      </refentry>
       <refentry id="r-all-classes">
 	<refnamediv>
 	  <refname>all classes</refname>
@@ -1392,6 +1513,65 @@ to get to your desired object type.</para>
   		that don't contain any fields.
   		</para>
   		<informalexample><programlisting>not exists ( fields in ) classes in package "com.antlersoft.odb"</programlisting></informalexample>
+  		<refentry id="r-annotations-of">
+  		  <refnamediv>
+  		    <refname>annotations of</refname>
+  		    <refpurpose>Returns any annotations of an element in the system</refpurpose>
+  		  </refnamediv>
+  		  <refsynopsisdiv>
+  		    <synopsis>annotations of</synopsis>
+  		  </refsynopsisdiv>
+  		  <refsect1>
+  		    <title>Description</title>
+  		    <para>
+  		    This transform returns all the annotations on the set of code elements to which it is applied.
+  		    </para>
+  		    <refsect2>
+  		      <title>Example</title>
+  		      <programlisting>annotations of methods in class "Foo"</programlisting>
+  		      <para>This would return any annotations of the methods in class <userinput>Foo</userinput>.</para>
+  		    </refsect2>
+  		  </refsect1>
+ 		  <refsect1>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-class">class</link></para>
+		    <para><link linkend="r-type-member">member</link></para>
+		    <para><link linkend="r-type-argument">argument</link></para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-annotation">annotation</link></para>
+		  </refsect1>
+  		</refentry>
+  		<refentry id="r-annotations-with">
+  		  <refnamediv>
+  		    <refname>annotations with</refname>
+  		    <refpurpose>Returns all the annotations where the annotation class is the class supplied</refpurpose>
+  		  </refnamediv>
+  		  <refsynopsisdiv>
+  		    <synopsis>annotations with</synopsis>
+  		  </refsynopsisdiv>
+  		  <refsect1>
+  		    <title>Description</title>
+  		    <para>Each annotation has a class which represents the type of the annotation.
+  		    This transform applies to a set of classes, and returns the set of annotations with those
+  		    classes.
+  		    </para>
+  		    <refsect2>
+  		      <title>Example</title>
+  		      <para><userinput>annotations with class "org.junit.After"</userinput></para>
+  		      <para>This would return all the annotations with the class <userinput>org.junit.After</userinput>.</para>
+  		    </refsect2>
+  		  </refsect1>
+ 		  <refsect1>
+		    <title>Applies to Type</title>
+		    <para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+		    <title>Results in Type</title>
+		    <para><link linkend="r-type-annotation">annotation</link></para>
+		  </refsect1>
+  		</refentry>
   		<refentry id="r-any-class">
   		  <refnamediv>
   		    <refname>any class</refname>
@@ -1559,6 +1739,62 @@ where bar is called, you might use:
 		  	<para><link linkend="r-type-call">call</link></para>
 		  </refsect1>
 		</refentry>
+	  	<refentry id="r-cast">
+	  	  <refnamediv>
+	  	    <refname>cast</refname>
+	  	    <refpurpose>Converts a set of objects to a known type</refpurpose>
+	  	  </refnamediv>
+	  	  <refsynopsisdiv>
+	  	    <cmdsynopsis>
+	  	    	<command>cast</command>
+	  	    	<group>
+	  	    		<arg>arguments</arg>
+	  	    		<arg>classes</arg>
+	  	    		<arg>fields</arg>
+	  	    		<arg>methods</arg>
+	  	    	</group>
+	  	    </cmdsynopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
+	  	  </refsynopsisdiv>
+	  	  <refsect1>
+	  	    <title>Description</title>
+	  	    <para>
+	  	    Some expressions (such as <userinput><link linkend="r-annotated-by">annotated by</link></userinput>)
+	  	    might return results of any type.  This leads to a situation where you might know
+	  	    better than the &p-bbq; parser what the result type of an expression is.  The <userinput>cast</userinput>
+	  	    transform allows you to supply that knowledge back to the parser so you can add
+	  	    further processing to the expression without the parser complaining about type safety.
+	  	    </para>
+	  	    <para><userinput>cast</userinput> forces the objects in the set to be interpreted
+	  	    as the specified type; any objects that aren't convertible to that type
+	  	    are dropped from the set.</para>
+	  	    <refsect2>
+	  	      <title>Example</title>
+	  	      <para>The following query returns methods annotated by annotations with the class <userinput>org.junit.After</userinput>
+	  	      that do not call a method matching "finish."</para>
+	  	      <informalexample>
+	  	        <programlisting>not exists ( ~ "finish" methods called by calls from )
+	  	        cast methods annotated by annotations with class "org.junit.After"</programlisting>
+	  	      </informalexample>
+	  	      <para>Note that without the <userinput>cast</userinput> transform,
+	  	      the <userinput>calls from</userinput>
+	  	      operator would produce a type mismatch error, since it can not be applied to
+	  	      <link linkend="r-type-object"><userinput>object</userinput></link>.</para>
+	  	    </refsect2>
+	  	  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para>The type specified by the argument</para>
+		  </refsect1>
+	  	</refentry>
 		<refentry id="r-classes-in">
 		  <refnamediv>
 		    <refname>classes in</refname>
@@ -1963,6 +2199,80 @@ in the set.
 		  	<para><link linkend="r-type-string-constant-reference">string constant reference</link></para>
 		  </refsect1>
 		</refentry>
+	  	<refentry id="r-resources-containing">
+	  	  <refnamediv>
+	  	    <refname>resources containing</refname>
+	  	    <refpurpose>Finds the string resource that's value is a given string constant</refpurpose>
+	  	  </refnamediv>
+	  	  <refsynopsisdiv>
+			<synopsis>resources containing</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
+	  	  </refsynopsisdiv>
+	  	  <refsect1>
+	  	    <title>Description</title>
+	  	    <para>
+	  	    Applied to a set of <userinput><link linkend="r-type-string-constant">string constants</link></userinput>,
+	  	    this transform returns the set of <userinput>string resources</userinput>
+	  	    that have a value equal to one of the constants.
+	  	    </para>
+	  	    <refsect2>
+	  	      <title>Example</title>
+	  	      <para>The following query returns resources that contain strings that match "Foo":</para>
+	  	      <informalexample>
+	  	        <programlisting>resources containing ~ "Foo" all strings</programlisting>
+	  	      </informalexample>
+	  	    </refsect2>
+	  	  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string-constant">object</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string-resource">string resource</link></para>
+		  </refsect1>
+	  	</refentry>
+	  	<refentry id="r-resources-with-names">
+	  	  <refnamediv>
+	  	    <refname>resources with names</refname>
+	  	    <refpurpose>Finds the string resource that's name is a given string constant</refpurpose>
+	  	  </refnamediv>
+	  	  <refsynopsisdiv>
+			<synopsis>resources with names</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
+	  	  </refsynopsisdiv>
+	  	  <refsect1>
+	  	    <title>Description</title>
+	  	    <para>
+	  	    Applied to a set of <userinput><link linkend="r-type-string-constant">string constants</link></userinput>,
+	  	    this transform returns the set of <userinput>string resources</userinput>
+	  	    that have a name equal to one of the constants.
+	  	    </para>
+	  	    <refsect2>
+	  	      <title>Example</title>
+	  	      <para>The following query returns resources named "Foo":</para>
+	  	      <informalexample>
+	  	        <programlisting>resources with names string "Foo"</programlisting>
+	  	      </informalexample>
+	  	    </refsect2>
+	  	  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string-constant">object</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string-resource">string resource</link></para>
+		  </refsect1>
+	  	</refentry>
 		<refentry id="r-same">
 		  <refnamediv>
 			<refname>same</refname>
@@ -2097,9 +2407,9 @@ instances are discarded.
  	<sect1 id="r-value-expressions">
   		<title>Value Expressions</title>
   		<para>
-  		Count-preserving and group value expressions share many of the properties of transforms.<footnote id="fn-value-expression">Some value expressions
+  		Count-preserving and group value expressions share many of the properties of transforms.<footnote id="fn-value-expression"><para>Some value expressions
   		were transforms in previous releases of the language; they can still be used
-  		as transforms, and also used with value-expression specific operators.</footnote>
+  		as transforms, and also used with value-expression specific operators.</para></footnote>
         Scalar value expressions can be used as simple set-expressions, as well as with value operators.
   		The available value expressions
   		are listed including the context in which they may be applied.
@@ -2125,6 +2435,109 @@ instances are discarded.
 	  			<programlisting>( count of ( arguments of ) > 1 ) methods in class "ObjectDB"</programlisting>
 	  		</informalexample>
 	  	</sect2>
+	  	<refentry id="r-annotated-by">
+	  	  <refnamediv>
+	  	    <refname>annotated by</refname>
+	  	    <refpurpose>Returns the object that is annotated by an annotation</refpurpose>
+	  	  </refnamediv>
+	  	  <refsynopsisdiv>
+	  	    <synopsis>annotated by</synopsis>
+	  	  </refsynopsisdiv>
+	  	  <refsect1>
+	  	    <title>Description</title>
+	  	    <para>This expression applies to an <link linkend="r-type-annotation">annotation</link>
+	  	    object and returns the object that it annotates, which can be a
+	  	    <link linkend="r-type-class">class</link>,
+	  	    <link linkend="r-type-method">method</link>,
+	  	    <link linkend="r-type-field">field</link> or
+	  	    <link linkend="r-type-argument">argument</link>.
+	  	    Since the returned type is unknown, you will often use <userinput>annotated by</userinput>
+	  	    in conjunction with the <link linkend="r-cast"><userinput>cast</userinput></link>
+	  	    operator if you want to further process the results.
+	  	    </para>
+	  	    <refsect2>
+	  	      <title>Example</title>
+	  	      <para>The following query returns the objects annotated by annotations with the class <userinput>org.junit.After</userinput></para>
+	  	      <informalexample>
+	  	        <programlisting>annotated by annotations with class "org.junit.After"</programlisting>
+	  	      </informalexample>
+	  	    </refsect2>
+	  	  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-annotation">annotation</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-object">object</link></para>
+		  </refsect1>
+	  	</refentry>
+	  	<refentry id="r-array-of">
+	  	  <refnamediv>
+	  	    <refname>array of</refname>
+	  	    <refpurpose>Returns a type that is an array of the supplied type</refpurpose>
+	  	  </refnamediv>
+	  	  <refsynopsisdiv>
+	  	    <synopsis>array of</synopsis>
+	  	  </refsynopsisdiv>
+	  	  <refsect1>
+	  	    <title>Description</title>
+	  	    <para>The value of this expression is the <link linkend="r-type-type">type</link> object
+	  	    representing an array of the type to which it is applied.</para>
+	  	    <refsect2>
+	  	      <title>Example</title>
+	  	      <para>The following set expression searches the entire analyzed system for
+	  	      any method that returns a type that is an array of the method's first argument.</para>
+	  	      <informalexample>
+	  	        <programlisting>exists ( ( methods with array of type of first of ( arguments of ) ) intersection same ) methods in all classes</programlisting>
+	  	      </informalexample>
+	  	    </refsect2>
+	  	  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-type">type</link></para>
+		  </refsect1>
+	  	</refentry>
+		<refentry id="r-bundles-containing">
+		  <refnamediv>
+			<refname>bundles containing</refname>
+			<refpurpose>Returns the bundles containing a string resource</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>bundles containing</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to a set of <link linkend="r-type-string-resource"><userinput>string resources</userinput></link>
+			this transform returns the bundles that contain those resources.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string-resource">string resource</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-bundle">bundle</link></para>
+		  </refsect1>
+		</refentry>
 		<refentry id="r-classes-containing">
 		  <refnamediv>
 			<refname>classes containing</refname>
@@ -2148,8 +2561,35 @@ instances are discarded.
 		  <refsect1>
 			<title>Applies to Type</title>
 		  	<para><link linkend="r-type-class">class</link></para>
-		  	<para><link linkend="r-type-field">field</link></para>
-		  	<para><link linkend="r-type-method">method</link></para>
+		  	<para><link linkend="r-type-member">member</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-classes-of">
+		  <refnamediv>
+			<refname>classes of</refname>
+			<refpurpose>Returns the class of an annotation</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>classes of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			Applied to an annotation, returns the <link linkend="r-type-class">class</link> of the
+			annotation.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-annotation">type</link></para>
 		  </refsect1>
 		  <refsect1>
 			<title>Results in Type</title>
@@ -2207,6 +2647,34 @@ instances are discarded.
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para><link linkend="r-type-integer">integer</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-each">
+		  <refnamediv>
+			<refname>each</refname>
+			<refpurpose>Makes the value of a set item available in a value expression unchange</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>each</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			This is the equivalent of the <link linkend="r-same"><userinput>same</userinput></link>
+			transform except for value expressions.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para>Any</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para>Same as Applies to Type</para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-fields-referenced-by">
@@ -2376,6 +2844,34 @@ Applied to an argument, returns the method that has that argument.
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		</refentry>
+		<refentry id="r-names-of">
+		  <refnamediv>
+			<refname>names of</refname>
+			<refpurpose>Returns the string constant representing the name of a string resource</refpurpose>
+		  </refnamediv>
+		  <refsynopsisdiv>
+			<synopsis>names of</synopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+			<title>Description</title>
+			<para>
+			String resources have a name and a value; applied to a string resource object, this
+			expression returns the string constant that is its name.
+			</para>
+		  </refsect1>
+		  <refsect1>
+		  	<title>Context</title>
+		  	<para>Count-Preserving</para>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-string-resource">string resource</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-string-constant">string constant</link></para>
 		  </refsect1>
 		</refentry>
 		<refentry id="r-number-value">
@@ -3120,6 +3616,8 @@ SET_EXPRESSION : SET_EXPRESSION SET_OPERATOR SET_EXPRESSION
 	| VALUE_LIST 
 	| 'execute' SET_EXPRESSION 
 	| 'previous' 
+	| literalString 
+	| 'all' 'annotations' 
 	| 'unset' nameSymbol 
 	| SAVING_NAME SET_EXPRESSION 
 	| SAVING_NAME TRANSFORM 
@@ -3131,8 +3629,8 @@ SET_EXPRESSION : SET_EXPRESSION SET_OPERATOR SET_EXPRESSION
 	| 'all' StringConstant 
 	| 'all' 'packages' 
 	| ImportExpression 
-	| TRANSFORM SET_EXPRESSION 
-	# or name of saved set expression
+	| TRANSFORM SET_EXPRESSION
+	# or the name of a saved set expression
 	;
 DELIMITED_QUERY : SET_EXPRESSION ';' 
 	| DELIMITED_QUERY ';' 
@@ -3146,7 +3644,7 @@ SET_OPERATOR : 'union'
 VALUE_LIST : '(' ')' 
 	| 'list' 
 	| 'list' VALUE_EXPRESSION 
-	| VALUE_EXPRESSION 
+	| VALUE_EXPRESSION ',' VALUE_EXPRESSION 
 	| VALUE_LIST ',' VALUE_EXPRESSION 
 	;
 SAVING_NAME : 'set' nameSymbol 'to' 
@@ -3160,10 +3658,14 @@ TRANSFORM : 'same'
 	| 'recursive' '(' TRANSFORM ',' TRANSFORM ')' 
 	| 'uncorrelated' '(' SET_EXPRESSION ')' 
 	| 'unique' 
+	| 'cast' TypeSpec 
+	| 'annotations' 'of' 
+	| 'annotations' 'with' 
 	| VALUE_EXPRESSION TRANSFORM 
 	| TRANSFORM TRANSFORM 
 	| TRANSFORM 'that' Identity FILTER 
 	| 'arguments' 'of' 
+	| 'any' 'class' 
 	| 'recursive' 'base' 'classes' 'of' 
 	| 'base' 'classes' 'of' 
 	| 'recursive' 'derived' 'classes' 'of' 
@@ -3176,23 +3678,31 @@ TRANSFORM : 'same'
 	| StringConstant Reference 'from' 
 	| Reference 'to' 
 	| 'calls' 'to' 
+	| 'catches' 'of' 
+	| 'catches' 'in' 
 	| 'fields' 'with' 
 	| 'methods' 'with' 
 	| 'arguments' 'with' 
 	| 'packages' 'in' 
 	| 'classes' 'in' 
-	# or name of saved transform
+	| 'resources' 'containing' 
+	| 'resources' 'with' 'names' 
+	# or the name of a saved transform
 	;
 VALUE_EXPRESSION : literalString 
 	| number 
 	| 'to' 'string' 
+	| '(' VALUE_EXPRESSION ')' 
 	| 'substitute' '(' VALUE_EXPRESSION ',' VALUE_EXPRESSION ')' 
 	| 'substitute' '(' VALUE_EXPRESSION ',' VALUE_EXPRESSION ',' VALUE_EXPRESSION ')' 
 	| GROUP_EXPRESSION 
 	| VALUE_EXPRESSION '&amp;' VALUE_EXPRESSION 
-	| FILTER 
+	| 'same' 
+	| 'each' 
 	| GROUP_EXPRESSION 'of' '(' TRANSFORM ')' 
 	| 'date' '(' literalString ')' 
+	| 'annotated' 'by' 
+	| 'classes' 'of' 
 	| Types 'of' 
 	| VALUE_EXPRESSION VALUE_EXPRESSION 
 	| StringConstant 
@@ -3206,6 +3716,9 @@ VALUE_EXPRESSION : literalString
 	| 'type' 'referenced' 'by' 
 	| 'methods' 'of' 
 	| 'packages' 'of' 
+	| 'names' 'of' 
+	| 'bundles' 'containing' 
+	| 'array' 'of' 
 	;
 Identity : 'is' 
 	| 'are' 
@@ -3241,6 +3754,11 @@ ImportExpression : 'import'
 	| ImportExpression 'set' 
 	| ImportExpression literalString 
 	;
+TypeSpec : 'methods' 
+	| 'fields' 
+	| 'arguments' 
+	| 'classes' 
+	;
 Reference : 'reference' 
 	| 'references' 
 	;
@@ -3259,6 +3777,7 @@ RELATIONAL_OPERATOR : '&lt;'
 	;
 UncalledPolymorphic : 'uncalled' 'polymorphic' 
 	;
+
   	</programlisting>
   </appendix>
 </book>
