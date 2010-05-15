@@ -1795,6 +1795,77 @@ where bar is called, you might use:
 		  	<para>The type specified by the argument</para>
 		  </refsect1>
 	  	</refentry>
+	  	<refentry id="r-catches-in">
+	  	  <refnamediv>
+	  	    <refname>catches in</refname>
+	  	    <refpurpose>Returns the exception catches in a method</refpurpose>
+	  	  </refnamediv>
+	  	  <refsynopsisdiv>
+			<synopsis>catches in</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
+	  	  </refsynopsisdiv>
+	  	  <refsect1>
+	  	    <title>Description</title>
+	  	    <para>
+	  	    For each method in the set, this transform returns all the exception catches in the method.
+	  	    </para>
+	  	    <refsect2>
+	  	      <title>Example</title>
+	  	      <para>The following returns the catches in method <userinput>Foo.Bar()</userinput></para>
+	  	      <informalexample>
+  	        	<programlisting>catches in ~ "Bar" methods in class "Foo"</programlisting>
+	  	      </informalexample>
+	  	    </refsect2>
+	  	  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-method">method</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-catch">catch</link></para>
+		  </refsect1>
+	  	</refentry>
+	  	<refentry id="r-catches-of">
+	  	  <refnamediv>
+	  	    <refname>catches of</refname>
+	  	    <refpurpose>Finds catches of an exception class</refpurpose>
+	  	  </refnamediv>
+	  	  <refsynopsisdiv>
+			<synopsis>catches of</synopsis>
+			<highlights>
+				<itemizedlist>
+					<listitem>stateless</listitem>
+				</itemizedlist>
+			</highlights>
+	  	  </refsynopsisdiv>
+	  	  <refsect1>
+	  	    <title>Description</title>
+	  	    <para>
+	  	    Each catch statement in the analyzed system specifies an exception class to catch.  This
+	  	    transform, applied to a set of classes, returns the set of catches of those classes.
+	  	    </para>
+	  	    <refsect2>
+	  	      <title>Example</title>
+	  	      <para>The following query returns catches of <userinput>java.lang.Exception</userinput>.</para>
+	  	      <informalexample>
+	  	        <programlisting>catches of class "java.lang.Exception"</programlisting>
+	  	      </informalexample>
+	  	    </refsect2>
+	  	  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para><link linkend="r-type-class">class</link></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para><link linkend="r-type-catch">catch</link></para>
+		  </refsect1>
+	  	</refentry>
 		<refentry id="r-classes-in">
 		  <refnamediv>
 		    <refname>classes in</refname>
