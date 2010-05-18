@@ -37,7 +37,7 @@
 		<link>
 			<name>WebContent/WEB-INF/classes</name>
 			<type>2</type>
-			<location>/home/mike/src/eclipse-workspaces/bbq/bbq_eclipse/bin</location>
+			<location>/home/mike/src/git/browsebyquery/eclipse-projects/bbq_eclipse/bin</location>
 		</link>
 	</linkedResources>
 </projectDescription>

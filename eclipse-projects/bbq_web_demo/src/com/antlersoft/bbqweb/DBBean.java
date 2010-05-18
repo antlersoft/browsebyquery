@@ -51,6 +51,10 @@ public class DBBean {
 				}
 				throw new RuntimeException(e);
 			}
+			if (m_db.getOpenMessage() != null)
+			{
+				m_logger.warning(m_db.getOpenMessage());
+			}
 		}
 		return m_db;
 	}
