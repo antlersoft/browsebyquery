@@ -24,10 +24,18 @@ import java.util.ListIterator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+
+import java.nio.MappedByteBuffer;
+
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 
 /**
  * This class allocates regions within a RandomAccessFile much like
@@ -140,7 +148,7 @@ public class DiskAllocator
 	{
 		checkInvariant();
         modifyCount++;
-		ListIterator freeIterator=freeList.listIterator(freeList.size());
+		ListIterator<FreeRegion> freeIterator=freeList.listIterator(freeList.size());
 		FreeRegion freeRegion=null;
 		int biggestSoFar=0;
 		size=normalizeRegionSize( size);
@@ -149,7 +157,7 @@ public class DiskAllocator
 			// Walk free list to see if there is an available free region
 			for ( ;	freeIterator.hasPrevious();)
 			{
-				freeRegion=(FreeRegion)freeIterator.previous();
+				freeRegion=freeIterator.previous();
 				if ( freeRegion.size>biggestSoFar)
 					biggestSoFar=freeRegion.size;
 				if ( freeRegion.size>=size)
@@ -168,7 +176,7 @@ public class DiskAllocator
 			}
 			extendFile( size);
 			freeIterator=freeList.listIterator();
-			freeRegion=(FreeRegion)freeIterator.next();
+			freeRegion=freeIterator.next();
 		}
 		else
 		{
@@ -183,14 +191,14 @@ public class DiskAllocator
 		int nextFreeRegionOffset=0;
 		if ( freeIterator.hasNext())
 		{
-			nextFreeRegionOffset=((FreeRegion)freeIterator.next()).offset;
+			nextFreeRegionOffset=freeIterator.next().offset;
 			freeIterator.previous();
 		}
 		int prevOffset=0;
 		freeIterator.previous();
 		if ( freeIterator.hasPrevious())
 		{
-			prevOffset=((FreeRegion)freeIterator.previous()).offset;
+			prevOffset=freeIterator.previous().offset;
 			freeIterator.next();
 		}
 		freeIterator.next();
@@ -297,10 +305,10 @@ public class DiskAllocator
 			return;
 		}
 		/* Position free list iterator where this should go */
-		ListIterator freeIterator=freeList.listIterator();
+		ListIterator<FreeRegion> freeIterator=freeList.listIterator();
 		FreeRegion prevFreeRegion=null;
-		FreeRegion nextFreeRegion=(FreeRegion)freeIterator.next();
-		for ( ; nextFreeRegion.offset>regionOffset; nextFreeRegion=(FreeRegion)freeIterator.next())
+		FreeRegion nextFreeRegion=freeIterator.next();
+		for ( ; nextFreeRegion.offset>regionOffset; nextFreeRegion=freeIterator.next())
 		{
 			prevFreeRegion=nextFreeRegion;
 			if ( ! freeIterator.hasNext())
@@ -320,7 +328,7 @@ public class DiskAllocator
 			freeIterator.remove();
 			if ( freeIterator.hasNext())
 			{
-				nextFreeRegion=(FreeRegion)freeIterator.next();
+				nextFreeRegion=freeIterator.next();
 			}
 			else
 			{
@@ -341,7 +349,7 @@ public class DiskAllocator
 			freeIterator.remove();
 			if ( freeIterator.hasPrevious())
 			{
-				prevFreeRegion=(FreeRegion)freeIterator.previous();
+				prevFreeRegion=freeIterator.previous();
 				freeIterator.next();
 			}
 			else
@@ -441,7 +449,7 @@ public class DiskAllocator
 		throws IOException
 	{
 		writeOverhead();
-		randomFile.getFD().sync();
+		randomFile.sync();
 	}
 
 	public synchronized void close()
@@ -475,7 +483,7 @@ public class DiskAllocator
      * This iterator becomes invalid if the underlying DiskAllocator
      * object is modified in any way (allocations, frees, writes).
      */
-    public Iterator iterator()
+    public Iterator<Integer> iterator()
         throws IOException
     {
         return new DiskAllocatorIterator( this);
@@ -487,9 +495,9 @@ public class DiskAllocator
 		int oldOffset= -1;
 		int oldSize=0;
 		ps.println( "Largest free region: "+Integer.toString( largestFreeRegion));
-		for ( ListIterator li=freeList.listIterator(); li.hasNext();)
+		for ( ListIterator<FreeRegion> li=freeList.listIterator(); li.hasNext();)
 		{
-			FreeRegion fr=(FreeRegion)li.next();
+			FreeRegion fr=li.next();
 			if ( oldOffset!= -1)
 			{
 				if ( fr.offset>=oldOffset)
@@ -509,9 +517,9 @@ public class DiskAllocator
     {
         Statistics stats=new Statistics();
 
-        for ( Iterator i=iterator(); i.hasNext();)
+        for ( Iterator<Integer> i=iterator(); i.hasNext();)
         {
-            stats.addValue( getRegionSize( ((Integer)i.next()).intValue()));
+            stats.addValue( getRegionSize( i.next().intValue()));
         }
         ps.println( stats.toString());
     }
@@ -525,7 +533,7 @@ public class DiskAllocator
 	private static final int REGION_FREE_PTR_OFFSET=4;
 	private static final int REGION_PREV_FREE_OFFSET=REGION_FREE_PTR_OFFSET+4;
 
-    private RandomAccessFile randomFile;
+    private IRandomAccess randomFile;
     private long modifyCount;
 	private boolean newFile;
 	private int initialRegionOffset;
@@ -535,7 +543,7 @@ public class DiskAllocator
 	private int lastFreeRegionOffset;
 
 	private int largestFreeRegion;
-	private LinkedList freeList;
+	private LinkedList<FreeRegion> freeList;
 
 	private void initializeFromExisting( File file, int initialRegionSize, int chunkSize,
 		int sizeIncrement, int creationFlags)
@@ -545,7 +553,16 @@ public class DiskAllocator
 		{
 			throw new DiskAllocatorException( "File already exists");
 		}
-		randomFile=new RandomAccessFile( file, "rw");
+		ORandomAccess underlying = new ORandomAccess( file, "rw");
+		randomFile = underlying;
+		try 
+		{
+			randomFile = new MappedAccess(underlying, 0L);
+		}
+		catch ( IOException ioe)
+		{
+			
+		}
 		newFile=false;
 		randomFile.seek(0);
 		initialRegionOffset=randomFile.readInt();
@@ -582,7 +599,8 @@ public class DiskAllocator
 		{
 			throw new DiskAllocatorException( "File does not exist");
 		}
-		randomFile=new RandomAccessFile( file, "rw");
+		ORandomAccess underlying = new ORandomAccess( file, "rw");
+		randomFile = underlying;
 		newFile=true;
 		initialRegionOffset=OVERHEAD_SIZE;
 		minimumRegionSize=chunkSize+REGION_OVERHEAD_SIZE;
@@ -600,6 +618,13 @@ public class DiskAllocator
 			fileSize+=fileIncrementSize;
 		if ( fileSize<fileIncrementSize)
 			throw new DiskAllocatorException( "Initial size overflow");
+		try
+		{
+			randomFile = new MappedAccess(underlying, fileSize);
+		}
+		catch (IOException ioe)
+		{
+		}
 		if ( fileSize==usedLength)
 		{
 			lastFreeRegionOffset=0;
@@ -653,7 +678,7 @@ public class DiskAllocator
 	private void readFreeList()
 		throws IOException, DiskAllocatorException
 	{
-		freeList=new LinkedList();
+		freeList=new LinkedList<FreeRegion>();
 		for ( int nextFreeRegion=lastFreeRegionOffset; nextFreeRegion!=0;)
 		{
 			randomFile.seek( nextFreeRegion);
@@ -680,7 +705,7 @@ public class DiskAllocator
 		int endRegionSize=0;
 		if ( lastFreeRegionOffset!=0)
 		{
-			endRegionSize=((FreeRegion)freeList.getFirst()).size;
+			endRegionSize=freeList.getFirst().size;
 			/* If last region is not free, we don't care about it */
 			if ( lastFreeRegionOffset+endRegionSize!=fileSize)
 				endRegionSize=0;
@@ -716,6 +741,7 @@ public class DiskAllocator
 		}
 		if ( fileSize+addedSize!=newRegionOffset+newLastRegionSize)
 			throw new DiskAllocatorException( "File size mismatch");
+		randomFile = randomFile.extend(fileSize + addedSize);
 		fileSize=fileSize+addedSize;
 		randomFile.seek( newRegionOffset);
 		randomFile.writeInt( -newLastRegionSize);
@@ -743,10 +769,10 @@ public class DiskAllocator
 		{
 			if ( freeList.isEmpty())
 				throw new DiskAllocatorException( "Non-zero offset with empty free list");
-			if ( lastFreeRegionOffset!=((FreeRegion)freeList.getFirst()).offset)
+			if ( lastFreeRegionOffset!=freeList.getFirst().offset)
 			{
 				throw new DiskAllocatorException( "lastFreeRegionOffset "+Integer.toString( lastFreeRegionOffset)+
-				" does not match first offset "+Integer.toString( ((FreeRegion)freeList.getFirst()).offset));
+				" does not match first offset "+Integer.toString( freeList.getFirst().offset));
 			}
 		}
 	}
@@ -762,7 +788,7 @@ public class DiskAllocator
 		}
 	}
 
-    private static class DiskAllocatorIterator implements Iterator
+    private static class DiskAllocatorIterator implements Iterator<Integer>
     {
         private DiskAllocator allocator;
         private long startingModifyCount;
@@ -793,7 +819,7 @@ public class DiskAllocator
             return isNext;
         }
 
-        public Object next()
+        public Integer next()
         {
             synchronized ( allocator)
             {
@@ -806,7 +832,7 @@ public class DiskAllocator
                 {
                     throw new NoSuchElementException();
                 }
-                Object result=new Integer( nextOffset+REGION_START_OFFSET);
+                Integer result=new Integer( nextOffset+REGION_START_OFFSET);
                 try
                 {
                     getNextNonFree();
@@ -841,5 +867,140 @@ public class DiskAllocator
         {
             throw new UnsupportedOperationException();
         }
+    }
+    
+    /**
+     * Common interface for random file access that may be backed by a very thinly wrapped
+     * RandomAccessFile or a memory buffer
+     * 
+     * @author Michael A. MacDonald
+     *
+     */
+    static interface IRandomAccess extends Closeable
+    {
+    	void sync() throws IOException;
+    	void readFully(byte[] buf) throws IOException;
+    	int readInt() throws IOException;
+    	void seek(long addr) throws IOException;
+    	void write(byte[] buf) throws IOException;
+    	void writeInt(int i) throws IOException;
+    	IRandomAccess extend(long newSize) throws IOException;
+    }
+    
+    static class ORandomAccess extends RandomAccessFile implements IRandomAccess
+    {
+    	private FileDescriptor fd;
+    	
+    	ORandomAccess(File f, String mode) throws FileNotFoundException
+    	{
+    		super(f, mode);
+    	}
+    	
+    	public void sync()
+    	throws IOException
+    	{
+    		if (fd == null)
+    		{
+    			fd = getFD();
+    		}
+    		fd.sync();
+    	}
+    	
+    	public IRandomAccess extend(long newSize) throws IOException
+    	{
+    		return this;
+    	}
+    }
+    
+    static class MappedAccess implements IRandomAccess
+    {
+    	private FileChannel channel;
+    	private ORandomAccess randomAccess;
+    	private MappedByteBuffer buffer;
+    	
+    	MappedAccess(ORandomAccess underlying, long initialSize)
+    		throws IOException
+    	{
+    		randomAccess = underlying;
+    		channel = underlying.getChannel();
+    		if (initialSize <= 0L)
+    			initialSize = channel.size();
+    		buffer = channel.map(MapMode.READ_WRITE, 0L, initialSize);
+    	}
+
+		/* (non-Javadoc)
+		 * @see java.io.Closeable#close()
+		 */
+		@Override
+		public void close() throws IOException {
+			buffer.force();
+			buffer = null;
+			randomAccess.close();
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.DiskAllocator.IRandomAccess#extend(long)
+		 */
+		@Override
+		public IRandomAccess extend(long newSize) throws IOException {
+			buffer.force();
+			buffer = null;
+			try {
+				buffer = channel.map(MapMode.READ_WRITE, 0L, newSize);
+			}
+			catch (IOException ioe)
+			{
+				return randomAccess;
+			}
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.DiskAllocator.IRandomAccess#readFully(byte[])
+		 */
+		@Override
+		public void readFully(byte[] buf) throws IOException {
+			buffer.get(buf);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.DiskAllocator.IRandomAccess#readInt()
+		 */
+		@Override
+		public int readInt() throws IOException {
+			return buffer.getInt();
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.DiskAllocator.IRandomAccess#seek(long)
+		 */
+		@Override
+		public void seek(long addr) throws IOException {
+			buffer.position((int)addr);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.DiskAllocator.IRandomAccess#sync()
+		 */
+		@Override
+		public void sync() throws IOException {
+			buffer.force();
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.DiskAllocator.IRandomAccess#write(byte[])
+		 */
+		@Override
+		public void write(byte[] buf) throws IOException {
+			buffer.put(buf);
+		}
+
+		/* (non-Javadoc)
+		 * @see com.antlersoft.odb.DiskAllocator.IRandomAccess#writeInt(int)
+		 */
+		@Override
+		public void writeInt(int i) throws IOException {
+			buffer.putInt(i);
+		}
     }
 }
