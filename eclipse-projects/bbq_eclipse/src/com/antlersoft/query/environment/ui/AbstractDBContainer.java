@@ -67,7 +67,7 @@ public abstract class AbstractDBContainer implements DBContainer {
 		if ( path_string!=null)
 		{
 			appDirectory=new File(path_string);
-			if ( ! (appDirectory.exists() && appDirectory.isDirectory()) || ( ! appDirectory.exists() && ! appDirectory.getParentFile().canWrite()))
+			if ( ! ((appDirectory.exists() && appDirectory.isDirectory()) || ( ! appDirectory.exists() && appDirectory.getParentFile().canWrite())))
 				appDirectory=null;
 		}
 	}
