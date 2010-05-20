@@ -37,21 +37,26 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.PhantomReference;
+import java.lang.ref.WeakReference;
+
 /**
+ * <p>
  * This class allocates regions within a RandomAccessFile much like
  * malloc allocates regions in memory.  The caller can request a
  * region of arbitrary size; the class will extend the file if necessary
  * to accomodate it.  A caller can free a region, making the space inside
  * available for re-allocation.  Adjacent free regions are coalesced when
  * the second is freed.
- *
+ * </p><p>
  * This allocator makes no attempt to take into account the performance
  * properties of different random access operations on different architectures.
- *
+ * </p><p>
  * When a new allocator in a new file is created, it is created with an
  * initial region.  This initial region is made available to the user as
  * getInitialRegion, but may not be freed or re-allocated.
- *
+ * </p><p>
  * The allocator is initially created with three parameters: the first
  * is the size of the initial region.  The second is the minimum client visible
  * portion of a region; as discussed below, this must be at least 4.  It
@@ -59,16 +64,29 @@ import java.nio.channels.FileChannel.MapMode;
  * final parameter is the minimum amount to be added to a file when a region
  * that is larger than any available free region is requested.  This can
  * reduce fragmentation of the file in the file system(?).
- *
+ * </p><p>
  * Default values are available for all the parameters.
- *
+ * </p><p>
+ * By specifying a USE_MEMORY_MAPPED flag in the creation flags,
+ * you tell the allocator to make a best effort to use a MappedByteBuffer
+ * rather than RandomAccessFile to perform IO on the underlying file.  Since
+ * resizing a byte buffer is expensive, it is only resized in 4 MB increments
+ * (after the initial size).
+ * </p><p>
+ * This class is not thread-safe; the client is responsible for coordinating
+ * access to a single instance.  SafeDiskAllocator provides a thread-safe
+ * implementation.  Conceptually, there are two distinct resources that
+ * might be contended for at runtime: the internal state, and the underlying
+ * file.  The modify count, used for managing allocators, is part of the internal
+ * state but is grouped with the underlying file for this purpose.
+ * </p><p>
  * Implementation Details:
- *
+ * </p><p>
  * All numbers are stored in Java-serialization standard format as 32-bit
  * integers.  Sizes and offsets are stored as signed integers; the absolute
  * value is taken when the values are interpreted.  If the integers is
  * negative, that provides additional information about the associated region.
- *
+ * </p><p>
  * Each region is 8 bytes longer than the client visible portion.
  * The first and last four bytes of a region are the size of the region in
  * the file.  If the first four bytes are
@@ -76,31 +94,32 @@ import java.nio.channels.FileChannel.MapMode;
  * four bytes of what was the client visible portion of the region is
  * converted to the file offset to the next free region, or 0 if this is
  * the last free region.  The next four bytes refer to the
- *
+ * </p><p>
  * This implies that the smallest allowable client part of a region is 4
  * bytes, and therefore the smallest allowable region is 12 bytes.  Callers
  * can request smaller regions, but the region size will silently be increased
  * to the minimum.  The allocator does not keep track of what the originally
  * requested size of the region was.
- *
+ * </p><p>
  * If there are free regions when an allocation call is made, the first free
  * region large enough to contain the requested allocation is used.  If this
  * free region is big enough so that more than the minimum region size is
  * left over, the region is split.
- *
+ * </p><p>
  * Free regions are kept in a linked list that starts with the last free
  * region in the file.  When looking for a free region for an allocation,
  * this linked list is traversed towards the front of the file.
- *
+ * </p><p>
  * In addition to the regions, the file uses some overhead space at the
  * front of the file.
- * 4 bytes - Offset of initial region
+ * </p><p>
+ * 4 bytes - Offset of initial region<br>
  * 4 bytes - Smallest allocatable region size (internal size,
- * not client visible size)
- * 4 bytes - Size increment when file is expanded
- * 4 bytes - Total size of file
- * 4 bytes - Offset of last free region in file (start of free region
- * list).  If there are no free regions, this value is 0.
+ * not client visible size)<br>
+ * 4 bytes - Size increment when file is expanded<br>
+ * 4 bytes - Total size of file<br>
+ * 4 bytes - Offset of last free region in file (start of free region<br>
+ * list).  If there are no free regions, this value is 0.<br>
  */
 public class DiskAllocator
 {
@@ -108,6 +127,7 @@ public class DiskAllocator
     public static final int FORCE_EXIST=2;
     public static final int FORCE_MATCHING=4;
     public static final int OVERWRITE_PARAMS=8;
+    public static final int USE_MEMORY_MAPPED=16;
 
     public static final int DEFAULT_CHUNK_SIZE=8;
     public static final int MIN_CHUNK_SIZE=8;
@@ -143,7 +163,14 @@ public class DiskAllocator
 		this( file, DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE, DEFAULT_INCREMENT_SIZE, 0);
     }
 
-	public synchronized int allocate( int size)
+    /**
+     * Depends on and modifies internal state of the class as well as the underlying file
+     * @param size
+     * @return
+     * @throws IOException
+     * @throws DiskAllocatorException
+     */
+	public int allocate( int size)
 		throws IOException, DiskAllocatorException
 	{
 		checkInvariant();
@@ -257,7 +284,13 @@ public class DiskAllocator
 		return freeRegion.offset+REGION_START_OFFSET;
 	}
 
-	public synchronized void free( int regionOffset)
+	/**
+	 * Depends on an modifies internal state of the class and the underlying file
+	 * @param regionOffset
+	 * @throws IOException
+	 * @throws DiskAllocatorException
+	 */
+	public void free( int regionOffset)
 		throws IOException, DiskAllocatorException
 	{
 		checkInvariant();
@@ -397,16 +430,31 @@ public class DiskAllocator
 		checkInvariant();
 	}
 
+	/**
+	 * Does not change or depend on non-fixed internal state of class
+	 * @return Offset of the initial, fixed-size region
+	 */
 	public int getInitialRegion()
 	{
 		return initialRegionOffset+REGION_START_OFFSET;
 	}
 
+	/**
+	 * Does not change or depend on non-fixed internal state of class
+	 * @return Size of smallest allocatable chunk
+	 */
     public int getChunkSize()
     {
         return minimumRegionSize;
     }
 
+    /**
+     * Depends on internal state of class and underlying file but does not modify it
+     * @param regionOffset
+     * @return
+     * @throws IOException
+     * @throws DiskAllocatorException
+     */
 	public int getRegionSize( int regionOffset)
 		throws IOException, DiskAllocatorException
 	{
@@ -418,6 +466,14 @@ public class DiskAllocator
 		return randomFile.readInt()-REGION_OVERHEAD_SIZE;
 	}
 
+	/**
+	 * Depends on internal state of class and underlying file but does not modify it
+	 * @param offset
+	 * @param size
+	 * @return
+	 * @throws IOException
+	 * @throws DiskAllocatorException
+	 */
 	public byte[] read( int offset, int size)
 		throws IOException, DiskAllocatorException
 	{
@@ -432,6 +488,13 @@ public class DiskAllocator
 		return retVal;
 	}
 
+	/**
+	 * Depends on but does not modify internal state; modifies underlying file/modify count
+	 * @param offset
+	 * @param toWrite
+	 * @throws IOException
+	 * @throws DiskAllocatorException
+	 */
 	public void write( int offset, byte[] toWrite)
 		throws IOException, DiskAllocatorException
 	{
@@ -445,14 +508,18 @@ public class DiskAllocator
 		randomFile.write( toWrite);
 	}
 
-	public synchronized void sync()
+	/**
+	 * Depends on internal state but does not modify it; modifies underlying file
+	 * @throws IOException
+	 */
+	public void sync()
 		throws IOException
 	{
 		writeOverhead();
 		randomFile.sync();
 	}
 
-	public synchronized void close()
+	public void close()
 		throws IOException
 	{
 		IOException syncException=null;
@@ -800,18 +867,15 @@ public class DiskAllocator
             throws IOException
         {
             allocator=alloc;
-            synchronized ( allocator)
-            {
-                startingModifyCount=allocator.modifyCount;
-                nextOffset=allocator.initialRegionOffset;
-                allocator.randomFile.seek( nextOffset);
-                nextSize=allocator.randomFile.readInt();
-                if ( nextSize<0)
-                    nextSize= -nextSize;
-                // Don't return initial region-- it can't be freed, and
-                // won't be used as regular object
-                getNextNonFree();
-            }
+	        startingModifyCount=allocator.modifyCount;
+	        nextOffset=allocator.initialRegionOffset;
+	        allocator.randomFile.seek( nextOffset);
+	        nextSize=allocator.randomFile.readInt();
+	        if ( nextSize<0)
+	            nextSize= -nextSize;
+	        // Don't return initial region-- it can't be freed, and
+	        // won't be used as regular object
+	        getNextNonFree();
         }
 
         public boolean hasNext()
@@ -821,28 +885,25 @@ public class DiskAllocator
 
         public Integer next()
         {
-            synchronized ( allocator)
+            if ( allocator.modifyCount!=startingModifyCount)
             {
-                if ( allocator.modifyCount!=startingModifyCount)
-                {
-                    throw new IllegalStateException(
-                        "Underlying allocator modified");
-                }
-                if ( ! isNext)
-                {
-                    throw new NoSuchElementException();
-                }
-                Integer result=new Integer( nextOffset+REGION_START_OFFSET);
-                try
-                {
-                    getNextNonFree();
-                }
-                catch ( IOException ioe)
-                {
-                    throw new IllegalStateException( ioe.getMessage());
-                }
-                return result;
+                throw new IllegalStateException(
+                    "Underlying allocator modified");
             }
+            if ( ! isNext)
+            {
+                throw new NoSuchElementException();
+            }
+            Integer result=new Integer( nextOffset+REGION_START_OFFSET);
+            try
+            {
+                getNextNonFree();
+            }
+            catch ( IOException ioe)
+            {
+                throw new IllegalStateException( ioe.getMessage());
+            }
+            return result;
         }
 
         private void getNextNonFree()
@@ -914,9 +975,12 @@ public class DiskAllocator
     
     static class MappedAccess implements IRandomAccess
     {
+    	private static final long MAPPED_SIZE_INCREMENT = 4 * 1024 * 1024;
+    	private static final long MINIMUM_MAPPED_SIZE = 16 * 1024;
     	private FileChannel channel;
     	private ORandomAccess randomAccess;
     	private MappedByteBuffer buffer;
+    	private long currentMax;
     	
     	MappedAccess(ORandomAccess underlying, long initialSize)
     		throws IOException
@@ -924,8 +988,15 @@ public class DiskAllocator
     		randomAccess = underlying;
     		channel = underlying.getChannel();
     		if (initialSize <= 0L)
+    		{
     			initialSize = channel.size();
-    		buffer = channel.map(MapMode.READ_WRITE, 0L, initialSize);
+    		}
+			if (initialSize < MINIMUM_MAPPED_SIZE)
+			{
+				initialSize = MINIMUM_MAPPED_SIZE;
+			}
+    		currentMax = initialSize;
+    		buffer = channel.map(MapMode.READ_WRITE, 0L, currentMax);
     	}
 
 		/* (non-Javadoc)
@@ -943,10 +1014,30 @@ public class DiskAllocator
 		 */
 		@Override
 		public IRandomAccess extend(long newSize) throws IOException {
+			if (newSize <= currentMax)
+				return this;
 			buffer.force();
+			ReferenceQueue<MappedByteBuffer> queue = new ReferenceQueue<MappedByteBuffer>();
+			@SuppressWarnings("unused")
+			PhantomReference<MappedByteBuffer> phantom = new PhantomReference<MappedByteBuffer>(buffer,queue);
+			@SuppressWarnings("unused")
+			WeakReference<MappedByteBuffer> weak = new WeakReference<MappedByteBuffer>(buffer,null);
 			buffer = null;
+			if (newSize - currentMax < MAPPED_SIZE_INCREMENT)
+				currentMax += MAPPED_SIZE_INCREMENT;
+			else
+				currentMax = newSize;
 			try {
-				buffer = channel.map(MapMode.READ_WRITE, 0L, newSize);
+				System.gc();
+				try
+				{
+					queue.remove();
+				}
+				catch (InterruptedException ie)
+				{
+					
+				}
+				buffer = channel.map(MapMode.READ_WRITE, 0L, currentMax);
 			}
 			catch (IOException ioe)
 			{
