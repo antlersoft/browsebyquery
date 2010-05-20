@@ -89,7 +89,7 @@ public final class Semaphore
         notifyAll();
     }
 
-    public synchronized void runCritical( Action toRun)
+    public void runCritical( Action toRun)
         throws Exception
     {
         enterCritical();
