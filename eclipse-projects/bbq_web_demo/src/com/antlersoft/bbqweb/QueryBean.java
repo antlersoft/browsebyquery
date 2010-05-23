@@ -34,7 +34,7 @@ public class QueryBean {
 	
 	private IndexAnalyzeDB m_db;
 	
-	private ArrayList m_history;
+	private ArrayList<String> m_history;
 	
 	private static Logger m_logger=Logger.getLogger("com.antlersoft.bbq_web_demo"); 
 	private ServletContext m_context;
@@ -47,7 +47,7 @@ public class QueryBean {
 	public QueryBean()
 	{
 		m_query=new AnalyzerQuery( new QueryParser());
-		m_history=new ArrayList();
+		m_history=new ArrayList<String>();
 	}
 	
 	public void setQueryText( String text)
@@ -126,7 +126,7 @@ public class QueryBean {
 			sb.append( "</option>\n");
 		}
 		boolean first=true;
-		for ( Iterator it=m_history.iterator(); it.hasNext();)
+		for ( Iterator<String> it=m_history.iterator(); it.hasNext();)
 		{
 			if ( first)
 			{
@@ -135,7 +135,7 @@ public class QueryBean {
 			}
 			else
 				sb.append( "<option>");
-			escapeAppend( sb, (String)it.next());
+			escapeAppend( sb, it.next());
 			sb.append( "</option>\n");
 		}
 		
@@ -146,7 +146,7 @@ public class QueryBean {
 	{
 		evaluate();
 		m_query.getStoredValues();
-		ArrayList al=new ArrayList();
+		ArrayList<String> al=new ArrayList<String>();
 		String[] saved=m_query.getStoredValues();
 		if ( saved.length>0)
 			al.add( "(select to add to query)");
@@ -157,7 +157,7 @@ public class QueryBean {
 		
 		StringBuilder sb=new StringBuilder();
 		boolean first=true;
-		for ( Iterator i=al.iterator(); i.hasNext();)
+		for ( Iterator<String> i=al.iterator(); i.hasNext();)
 		{
 			if ( first)
 			{
@@ -166,7 +166,7 @@ public class QueryBean {
 			}
 			else
 				sb.append( "<option>");
-			escapeAppend( sb, (String)i.next());
+			escapeAppend( sb, i.next());
 			sb.append("</option>\n");
 		}
 		
@@ -192,7 +192,7 @@ public class QueryBean {
 				try
 				{
 					boolean results=false;
-					for ( Enumeration e = m_query.getExpression().evaluate(m_db); e.hasMoreElements();)
+					for ( Enumeration<?> e = m_query.getExpression().evaluate(m_db); e.hasMoreElements();)
 					{
 						results=true;
 						escapeAppend( sb, e.nextElement().toString());
@@ -209,9 +209,9 @@ public class QueryBean {
 					{
 						sb.append( "<i>(No results found)</i>");
 					}
-					for ( Iterator it=m_history.iterator(); it.hasNext();)
+					for ( Iterator<String> it=m_history.iterator(); it.hasNext();)
 					{
-						String s=(String)it.next();
+						String s=it.next();
 						if ( s.equals( m_text))
 						{
 							it.remove();
