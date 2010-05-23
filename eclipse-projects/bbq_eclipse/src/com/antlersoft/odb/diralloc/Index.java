@@ -35,14 +35,11 @@ import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.KeyGenerator;
 import com.antlersoft.odb.ObjectStoreException;
 
-import com.antlersoft.util.Semaphore;
-
 class Index
 {
     IndexEntry entry;
     StreamPair streams;
     DirectoryAllocator manager;
-    Semaphore indexModificationLock;
     private IndexPageKey topKey;
 
     Index( DirectoryAllocator m, IndexEntry e, StreamPair s)
@@ -51,8 +48,7 @@ class Index
         entry=e;
         streams=s;
         topKey=new IndexPageKey( this, entry.startPageOffset, null);
-        indexModificationLock=new Semaphore();
-    }
+     }
 
     IndexPage getChildPage( IndexPage parent, int index)
     {
@@ -65,7 +61,7 @@ class Index
         throws ObjectStoreException
     {
         manager.startIndexPageNoFlush();
-        indexModificationLock.enterProtected();
+        streams.enterProtected();
         try
         {
             Comparable origKey=key;
@@ -81,7 +77,7 @@ class Index
         }
         finally
         {
-            indexModificationLock.leaveProtected();
+            streams.leaveProtected();
             manager.endIndexPageNoFlush();
         }
     }
@@ -90,7 +86,7 @@ class Index
         throws ObjectStoreException
     {
         manager.startIndexPageNoFlush();
-        indexModificationLock.enterProtected();
+        streams.enterProtected();
         try
         {
             Comparable origKey=key;
@@ -106,7 +102,7 @@ class Index
         }
         finally
         {
-            indexModificationLock.leaveProtected();
+            streams.leaveProtected();
             manager.endIndexPageNoFlush();
         }
     }
@@ -123,14 +119,14 @@ class Index
             key=new UniqueKey( key, objectRef);
         }
         manager.startIndexPageNoFlush();
-        indexModificationLock.enterCritical();
+        streams.enterCritical();
         try
         {
             removeKey( objectRef, key);
         }
         finally
         {
-            indexModificationLock.leaveCritical();
+            streams.leaveCritical();
             manager.endIndexPageNoFlush();
         }
     }
@@ -147,14 +143,14 @@ class Index
             key=new UniqueKey( key, objectRef);
         }
         manager.startIndexPageNoFlush();
-        indexModificationLock.enterCritical();
+        streams.enterCritical();
         try
         {
             insertKey( objectRef, key);
         }
         finally
         {
-            indexModificationLock.leaveCritical();
+            streams.leaveCritical();
             manager.endIndexPageNoFlush();
         }
     }
@@ -170,7 +166,7 @@ class Index
         if ( oldKey!=null && newKey!=null && oldKey.compareTo( newKey)==0)
             return;
         manager.startIndexPageNoFlush();
-        indexModificationLock.enterCritical();
+        streams.enterCritical();
         try
         {
             if ( oldKey!=null)
@@ -193,7 +189,7 @@ class Index
         }
         finally
         {
-            indexModificationLock.leaveCritical();
+            streams.leaveCritical();
             manager.endIndexPageNoFlush();
         }
     }
@@ -265,7 +261,7 @@ class Index
     	
     	try
     	{
-    		indexModificationLock.enterProtected();
+    		streams.enterProtected();
     		evaluatePageStatistics( result, entry.startPageOffset);
     	}
     	catch ( ClassNotFoundException cnfe)
@@ -282,7 +278,7 @@ class Index
     	}
     	finally
     	{
-    		indexModificationLock.leaveProtected();
+    		streams.leaveProtected();
     	}
     	
     	return result;
@@ -313,7 +309,7 @@ class Index
     {
     	try
     	{
-    		indexModificationLock.enterProtected();
+    		streams.enterProtected();
     		validateIndexPage(freeSet, entry.startPageOffset, null);
     	}
     	catch ( ClassNotFoundException cnfe)
@@ -330,7 +326,7 @@ class Index
     	}
     	finally
     	{
-    		indexModificationLock.leaveProtected();
+    		streams.leaveProtected();
     	}
     }
     

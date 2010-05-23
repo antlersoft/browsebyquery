@@ -161,8 +161,8 @@ public class IndexObjectDB extends ObjectDB
 
     class DBAllIterator implements Iterator
     {
-        private Iterator base;
-        DBAllIterator( Iterator i)
+        private Iterator<ObjectKey> base;
+        DBAllIterator( Iterator<ObjectKey> i)
         {
             base=i;
         }
@@ -174,7 +174,7 @@ public class IndexObjectDB extends ObjectDB
 
         public Object next()
         {
-            return getObjectByKey( (ObjectKey)base.next());
+            return getObjectByKey(base.next());
         }
 
         public void remove()

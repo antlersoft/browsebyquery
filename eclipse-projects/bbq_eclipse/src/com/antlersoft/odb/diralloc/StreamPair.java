@@ -38,6 +38,7 @@ import com.antlersoft.odb.ObjectStreamCustomizer;
 import com.antlersoft.util.NetByte;
 import com.antlersoft.util.RandomInputStream;
 import com.antlersoft.util.RandomOutputStream;
+import com.antlersoft.util.Semaphore;
 
 class StreamPair
 {
@@ -46,6 +47,7 @@ class StreamPair
     {
         super();
         allocator=a;
+        allocatorLock = new Semaphore();
         chunkSize=allocator.getChunkSize();
         customizer=c;
         randomOutput=new RandomOutputStream();
@@ -289,10 +291,31 @@ class StreamPair
         objectOutput.close();
         allocator.close();
     }
-
+    
+    final void enterProtected()
+    {
+    	allocatorLock.enterProtected();
+    }
+    
+    final void leaveProtected()
+    {
+    	allocatorLock.leaveProtected();
+    }
+    
+    final void enterCritical()
+    {
+    	allocatorLock.enterCritical();
+    }
+    
+    final void leaveCritical()
+    {
+    	allocatorLock.leaveCritical();
+    }
+    
     int first;
     int second;
 
+    private Semaphore allocatorLock;
     DiskAllocator allocator;
     private ObjectStreamCustomizer customizer;
     private int chunkSize;

@@ -65,7 +65,7 @@ class IndexIterator implements com.antlersoft.odb.IndexIterator
     {
 		exactMatch=false;
         baseIndex.manager.startIndexPageNoFlush();
-        baseIndex.indexModificationLock.enterProtected();
+        baseIndex.streams.enterProtected();
         try
         {
             if ( findResult.offset>=findResult.page.size)
@@ -81,7 +81,7 @@ class IndexIterator implements com.antlersoft.odb.IndexIterator
         }
         finally
         {
-            baseIndex.indexModificationLock.leaveProtected();
+            baseIndex.streams.leaveProtected();
             baseIndex.manager.endIndexPageNoFlush();
         }
     }

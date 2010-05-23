@@ -65,7 +65,7 @@ public class DiskAllocatorStore implements ObjectStore
 
 			// Initialize streams with stream header data
 			((ObjectInputStream)inputStreams.objectStream).readObject();
-			allocator=new DiskAllocator( file, initialRegionSize,
+			allocator=new SafeDiskAllocator( file, initialRegionSize,
                 chunkSize, incrementSize, allocatorFlags);
 		}
 		catch ( Exception e)
@@ -247,7 +247,7 @@ public class DiskAllocatorStore implements ObjectStore
             "DiskAllocatorStore does not support rollback");
     }
 
-	private DiskAllocator allocator;
+	private SafeDiskAllocator allocator;
 	private StoreState storeState;
 	private int stateRegion;
 	private StreamPair dataOutputStream;

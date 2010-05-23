@@ -33,19 +33,26 @@ import java.util.NoSuchElementException;
 
 import com.antlersoft.util.NetByte;
 
-import com.antlersoft.odb.DiskAllocator;
 import com.antlersoft.odb.DiskAllocatorException;
+import com.antlersoft.odb.ObjectKey;
 
-class ClassIterator implements Iterator
+class ClassIterator implements Iterator<ObjectKey>
 {
-    private DiskAllocator allocator;
-    private Iterator allocatorIterator;
+    private StreamPair pair;
+    private Iterator<Integer> allocatorIterator;
 
-    ClassIterator( DiskAllocator a)
+    ClassIterator( StreamPair pair)
         throws IOException
     {
-        allocator=a;
-        allocatorIterator=allocator.iterator();
+        this.pair = pair;
+        pair.enterProtected();
+        try {
+            allocatorIterator=pair.allocator.iterator();
+        }
+        finally
+        {
+        	pair.leaveProtected();
+        }
     }
 
     public boolean hasNext()
@@ -53,30 +60,35 @@ class ClassIterator implements Iterator
         return allocatorIterator.hasNext();
     }
 
-    public Object next()
+    public ObjectKey next()
         throws NoSuchElementException
     {
-        synchronized ( allocator)
-        {
-            int offset=((Integer)allocatorIterator.next()).intValue();
-            byte[] prefix;
-            try
-            {
-                prefix=allocator.read( offset, 8);
-            }
-            catch ( IOException ioe)
-            {
-                throw new IllegalStateException(
-                    "ClassIterator: Allocator I/O error");
-            }
-            catch ( DiskAllocatorException dae)
-            {
-                throw new IllegalStateException(
-                    "ClassIterator: Allocator error");
-            }
-            return new DAKey( NetByte.quadToInt( prefix, 0),
-                NetByte.quadToInt( prefix, 4));
-        }
+    	pair.enterProtected();
+    	try
+    	{
+	        int offset=((Integer)allocatorIterator.next()).intValue();
+	        byte[] prefix;
+	        try
+	        {
+	            prefix= pair.allocator.read( offset, 8);
+	        }
+	        catch ( IOException ioe)
+	        {
+	            throw new IllegalStateException(
+	                "ClassIterator: Allocator I/O error");
+	        }
+	        catch ( DiskAllocatorException dae)
+	        {
+	            throw new IllegalStateException(
+	                "ClassIterator: Allocator error");
+	        }
+	        return new DAKey( NetByte.quadToInt( prefix, 0),
+	            NetByte.quadToInt( prefix, 4));
+    	}
+    	finally
+    	{
+    		pair.leaveProtected();
+    	}
     }
 
     public void remove()

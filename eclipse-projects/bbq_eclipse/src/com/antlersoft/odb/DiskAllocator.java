@@ -509,7 +509,7 @@ public class DiskAllocator
 	}
 
 	/**
-	 * Depends on internal state but does not modify it; modifies underlying file
+	 * Depends on and modifies internal state; modifies underlying file
 	 * @throws IOException
 	 */
 	public void sync()
@@ -519,6 +519,9 @@ public class DiskAllocator
 		randomFile.sync();
 	}
 
+	/**
+	 * Depends on an modifies internal state of the class and the underlying file
+	 */
 	public void close()
 		throws IOException
 	{
@@ -532,6 +535,7 @@ public class DiskAllocator
 			syncException=ioe;
 		}
 		randomFile.close();
+		randomFile = null;
 		if ( syncException!=null)
 			throw syncException;
 	}

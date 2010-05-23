@@ -38,6 +38,7 @@ import com.antlersoft.odb.DiskAllocator;
 import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.IndexExistsException;
 import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.ObjectKey;
 import com.antlersoft.odb.ObjectStoreException;
 
 import com.antlersoft.util.Semaphore;
@@ -84,11 +85,26 @@ class ClassList implements Serializable
             for ( Iterator i=classEntries.iterator(); i.hasNext();)
             {
                 ClassEntry entry=(ClassEntry)i.next();
-                synchronized ( entry)
+                entry.objectStreams.enterCritical();
+                try
                 {
-                    entry.objectStreams.sync();
-                    if ( entry.indexStreams!=null)
-                        entry.indexStreams.sync();
+                	entry.objectStreams.sync();
+                }
+                finally
+                {
+                	entry.objectStreams.leaveCritical();
+                }
+                if ( entry.indexStreams!=null)
+                {
+                	entry.indexStreams.enterCritical();
+                	try
+                	{
+                		entry.indexStreams.sync();
+                	}
+                	finally
+                	{
+                		entry.indexStreams.leaveCritical();
+                	}
                 }
             }
             if ( listModified)
@@ -182,21 +198,38 @@ class ClassList implements Serializable
             for ( Iterator i=classEntries.iterator(); i.hasNext();)
             {
                 ClassEntry entry=(ClassEntry)i.next();
-                synchronized ( entry)
+                entry.objectStreams.enterCritical();
+                try
                 {
-                    entry.objectStreams.close();
-                    if ( entry.indexStreams!=null)
-                        entry.indexStreams.close();
+                	entry.objectStreams.close();
+                }
+                finally
+                {
+                	entry.objectStreams.leaveCritical();
+                }
+                if ( entry.indexStreams!=null)
+                {
+                	entry.indexStreams.enterCritical();
+                	try
+                	{
+                		entry.indexStreams.close();
+                	}
+                	finally
+                	{
+                		entry.indexStreams.leaveCritical();
+                	}
                 }
             }
         }
         finally
         {
-            classChangeLock.leaveCritical();
+            Semaphore temp = classChangeLock;
+            classChangeLock = null;
+            temp.leaveProtected();
         }
     }
 
-    Iterator getClassIterator( Class toRetrieve)
+    Iterator<ObjectKey> getClassIterator( Class toRetrieve)
         throws ObjectStoreException
     {
         classChangeLock.enterProtected();
@@ -207,7 +240,7 @@ class ClassList implements Serializable
                 throw new NoSuchClassException( toRetrieve);
             try
             {
-                return new ClassIterator( entry.objectStreams.allocator);
+                return new ClassIterator( entry.objectStreams);
             }
             catch ( IOException ioe)
             {
@@ -223,6 +256,8 @@ class ClassList implements Serializable
     /**
      * Returns the entry corresponding to a class, or if no such entry
      * exists, adds that entry to the list.
+     * 
+     * Enters protected state in classChangeLock
      */
     ClassEntry getEntry( Class toFind, File baseDirectory)
         throws ObjectStoreException

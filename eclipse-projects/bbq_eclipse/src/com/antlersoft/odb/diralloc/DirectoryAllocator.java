@@ -418,60 +418,64 @@ ioe.printStackTrace();
 
     public synchronized void sync() throws ObjectStoreException
     {
+    	classList.classChangeLock.enterProtected();
         try
         {
-            boolean initialModified=false;
-
-            // Sync index pages
-            indexPageFlushLock.enterCritical();
-            try
-            {
-                for ( Iterator i=indexPageLRU.iterator(); i.hasNext();)
-                {
-                    flushIndexPage( (IndexPage)i.next());
-                }
-            }
-            finally
-            {
-                indexPageFlushLock.leaveCritical();
-            }
-            int newEntryOffset=entryList.sync( overheadStreams, entryOffset);
-            int newClassOffset=classList.sync( overheadStreams, classOffset);
-            int newRootOffset=rootOffset;
-
-            if ( rootModified)
-            {
-                if ( rootObject==null)
-                    newRootOffset=0;
-                else
-                    newRootOffset=overheadStreams.writeObject( rootObject,
-                        rootOffset);
-                rootModified=false;
-            }
-            if ( newEntryOffset!=entryOffset)
-            {
-                entryOffset=newEntryOffset;
-                initialModified=true;
-            }
-            if ( newClassOffset!=classOffset)
-            {
-                classOffset=newClassOffset;
-                initialModified=true;
-            }
-            if ( newRootOffset!=rootOffset)
-            {
-                rootOffset=newRootOffset;
-                initialModified=true;
-            }
-            if ( initialModified)
-            {
-            	NetByte.intToQuad( DIR_ALLOC_VERSION, offsets, 0);
-                NetByte.intToQuad( entryOffset, offsets, 4);
-                NetByte.intToQuad( classOffset, offsets, 8);
-                NetByte.intToQuad( rootOffset, offsets, 12);
-                overhead.write( overhead.getInitialRegion(), offsets);
-            }
-            overhead.sync();
+	    	synchronized (entryList)
+	    	{
+	            boolean initialModified=false;
+	
+	            // Sync index pages
+	            indexPageFlushLock.enterCritical();
+	            try
+	            {
+	                for ( Iterator i=indexPageLRU.iterator(); i.hasNext();)
+	                {
+	                    flushIndexPage( (IndexPage)i.next());
+	                }
+	            }
+	            finally
+	            {
+	                indexPageFlushLock.leaveCritical();
+	            }
+	            int newEntryOffset=entryList.sync( overheadStreams, entryOffset);
+	            int newClassOffset=classList.sync( overheadStreams, classOffset);
+	            int newRootOffset=rootOffset;
+	
+	            if ( rootModified)
+	            {
+	                if ( rootObject==null)
+	                    newRootOffset=0;
+	                else
+	                    newRootOffset=overheadStreams.writeObject( rootObject,
+	                        rootOffset);
+	                rootModified=false;
+	            }
+	            if ( newEntryOffset!=entryOffset)
+	            {
+	                entryOffset=newEntryOffset;
+	                initialModified=true;
+	            }
+	            if ( newClassOffset!=classOffset)
+	            {
+	                classOffset=newClassOffset;
+	                initialModified=true;
+	            }
+	            if ( newRootOffset!=rootOffset)
+	            {
+	                rootOffset=newRootOffset;
+	                initialModified=true;
+	            }
+	            if ( initialModified)
+	            {
+	            	NetByte.intToQuad( DIR_ALLOC_VERSION, offsets, 0);
+	                NetByte.intToQuad( entryOffset, offsets, 4);
+	                NetByte.intToQuad( classOffset, offsets, 8);
+	                NetByte.intToQuad( rootOffset, offsets, 12);
+	                overhead.write( overhead.getInitialRegion(), offsets);
+	            }
+	            overhead.sync();
+	        }
         }
         catch ( IOException ioe)
         {
@@ -483,6 +487,10 @@ ioe.printStackTrace();
             throw new ObjectStoreException(
                 "DiskAllocator error syncing", dae);
         }
+        finally
+        {
+        	classList.classChangeLock.leaveProtected();
+        }
     }
 
     public void rollback() throws ObjectStoreException
@@ -493,46 +501,43 @@ ioe.printStackTrace();
 
     public synchronized void close() throws ObjectStoreException
     {
-        synchronized ( classList)
+        synchronized ( entryList)
         {
-            synchronized ( entryList)
+        	ObjectStoreException storedException=null;
+        	try
+        	{
+        		sync();
+        	}
+        	catch ( ObjectStoreException ose)
+        	{
+        		storedException=ose;
+        	}
+            try
             {
-            	ObjectStoreException storedException=null;
-            	try
-            	{
-            		sync();
-            	}
-            	catch ( ObjectStoreException ose)
-            	{
-            		storedException=ose;
-            	}
-                try
-                {
-                    classList.close();
-                }
-                catch ( IOException ioe)
-                {
-                	if ( storedException==null)
-                		storedException=new ObjectStoreException( "IO error closing classlist", ioe);
-                	else
-                		storedException=new ObjectStoreException( "Exception closing classlist after sync exception: "+ioe.getMessage(), storedException);
-                }
-                try
-                {
-                    overheadStreams.close();
-                }
-                catch ( IOException ioe)
-                {
-                	if ( storedException==null)
-                		storedException=new ObjectStoreException( "IO error closing overhead streams", ioe);
-                	else
-                		storedException=new ObjectStoreException( "Exception closing overhead streams after class list exception: "+ioe.getMessage(), storedException);
-                }
-                if ( storedException!=null)
-                	emergencyCleanup( storedException);
+                classList.close();
             }
+            catch ( IOException ioe)
+            {
+            	if ( storedException==null)
+            		storedException=new ObjectStoreException( "IO error closing classlist", ioe);
+            	else
+            		storedException=new ObjectStoreException( "Exception closing classlist after sync exception: "+ioe.getMessage(), storedException);
+            }
+            try
+            {
+                overheadStreams.close();
+            }
+            catch ( IOException ioe)
+            {
+            	if ( storedException==null)
+            		storedException=new ObjectStoreException( "IO error closing overhead streams", ioe);
+            	else
+            		storedException=new ObjectStoreException( "Exception closing overhead streams after class list exception: "+ioe.getMessage(), storedException);
+            }
+            if ( storedException!=null)
+            	emergencyCleanup( storedException);
         }
-    }
+     }
 
     /**
      * List of classes this database knows about; class entry free list

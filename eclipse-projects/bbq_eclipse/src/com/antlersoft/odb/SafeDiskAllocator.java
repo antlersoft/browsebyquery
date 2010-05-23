@@ -143,12 +143,12 @@ public class SafeDiskAllocator extends DiskAllocator {
 	 */
 	@Override
 	public void sync() throws IOException {
-		fileLock.enterProtected();
+		fileLock.enterCritical();
 		try {
 			super.sync();
 		}
 		finally {
-			fileLock.leaveProtected();
+			fileLock.leaveCritical();
 		}
 	}
 

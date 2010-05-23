@@ -490,6 +490,11 @@ class EntryPageList implements Serializable
         }
     }
 
+    /**
+     * Updates LRU to indicate a page was retrieved; must be called when
+     * pageFlushLock in protected state to protect from non-promote LRU operations
+     * @param pageIndex
+     */
     private void promotePage( int pageIndex)
     {
         synchronized ( pageLRU)
