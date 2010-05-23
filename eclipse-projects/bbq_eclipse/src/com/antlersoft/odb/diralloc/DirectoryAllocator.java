@@ -358,8 +358,17 @@ ioe.printStackTrace();
                 baseDirectory);
             result=entryList.getNewKey( overheadStreams,
                 classEntry.index, classEntry.reuseCount);
-            int region=classEntry.objectStreams.writeObjectWithPrefix(
-                insertObject, 0, result.index, result.reuseCount);
+            int region;
+            classEntry.objectStreams.enterCritical();
+            try
+            {
+	            region=classEntry.objectStreams.writeObjectWithPrefix(
+	                insertObject, 0, result.index, result.reuseCount);
+            }
+            finally
+            {
+            	classEntry.objectStreams.leaveCritical();
+            }
             entryList.setRegion( result, region, overheadStreams);
             for ( Iterator i=classEntry.indices.iterator(); i.hasNext();)
                 ((IndexEntry)i.next()).index.insertKey( result, insertObject);
