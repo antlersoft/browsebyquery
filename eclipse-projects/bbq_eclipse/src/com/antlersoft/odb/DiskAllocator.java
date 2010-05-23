@@ -626,13 +626,16 @@ public class DiskAllocator
 		}
 		ORandomAccess underlying = new ORandomAccess( file, "rw");
 		randomFile = underlying;
-		try 
+		if ((creationFlags & USE_MEMORY_MAPPED) != 0)
 		{
-			randomFile = new MappedAccess(underlying, 0L);
-		}
-		catch ( IOException ioe)
-		{
-			
+			try 
+			{
+				randomFile = new MappedAccess(underlying, 0L);
+			}
+			catch ( IOException ioe)
+			{
+				
+			}
 		}
 		newFile=false;
 		randomFile.seek(0);
@@ -689,12 +692,16 @@ public class DiskAllocator
 			fileSize+=fileIncrementSize;
 		if ( fileSize<fileIncrementSize)
 			throw new DiskAllocatorException( "Initial size overflow");
-		try
+		if ((creationFlags & USE_MEMORY_MAPPED) != 0)
 		{
-			randomFile = new MappedAccess(underlying, fileSize);
-		}
-		catch (IOException ioe)
-		{
+			try 
+			{
+				randomFile = new MappedAccess(underlying, 0L);
+			}
+			catch ( IOException ioe)
+			{
+				
+			}
 		}
 		if ( fileSize==usedLength)
 		{

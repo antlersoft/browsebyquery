@@ -115,17 +115,25 @@ class EntryPageList implements Serializable
                     (ClassEntry)classList.classEntries.get( classIndex);
                 if ( classEntry.reuseCount!=page.classReuse[localOffset])
                     throw new InvalidObjectKeyException();
-                if ( classEntry.indices.size()!=0)
+                classEntry.objectStreams.enterCritical();
+                try
                 {
-                    Object toDelete=classEntry.objectStreams.readObjectWithPrefix(
-                        page.offset[localOffset]);
-                    for ( Iterator i=classEntry.indices.iterator();
-                        i.hasNext();)
-                    {
-                        ((IndexEntry)i.next()).index.removeKey( key, toDelete);
-                    }
+	                if ( classEntry.indices.size()!=0)
+	                {
+	                    Object toDelete=classEntry.objectStreams.readObjectWithPrefix(
+	                        page.offset[localOffset]);
+	                    for ( Iterator i=classEntry.indices.iterator();
+	                        i.hasNext();)
+	                    {
+	                        ((IndexEntry)i.next()).index.removeKey( key, toDelete);
+	                    }
+	                }
+	                classEntry.objectStreams.free( page.offset[localOffset]);
                 }
-                classEntry.objectStreams.free( page.offset[localOffset]);
+                finally
+                {
+                	classEntry.objectStreams.leaveCritical();
+                }
             }
             finally
             {
@@ -304,8 +312,16 @@ class EntryPageList implements Serializable
                     (ClassEntry)classList.classEntries.get( classIndex);
                 if ( classEntry.reuseCount!=page.classReuse[localOffset])
                     throw new InvalidObjectKeyException();
-                return classEntry.objectStreams.readObjectWithPrefix(
-                    page.offset[localOffset]);
+                classEntry.objectStreams.enterProtected();
+                try
+                {
+	                return classEntry.objectStreams.readObjectWithPrefix(
+	                    page.offset[localOffset]);
+                }
+                finally
+                {
+                	classEntry.objectStreams.leaveProtected();
+                }
             }
             finally
             {
@@ -354,24 +370,32 @@ class EntryPageList implements Serializable
                     (ClassEntry)classList.classEntries.get( classIndex);
                 if ( classEntry.reuseCount!=page.classReuse[localOffset])
                     throw new InvalidObjectKeyException();
-                if ( classEntry.indices.size()!=0)
+                classEntry.objectStreams.enterCritical();
+                try
                 {
-                    Object oldVersion=classEntry.objectStreams.
-                        readObjectWithPrefix( page.offset[localOffset]);
-                    for ( Iterator i=classEntry.indices.iterator();
-                        i.hasNext();)
-                    {
-                        ((IndexEntry)i.next()).index.updateKey( key, oldVersion,
-                            toUpdate);
-                    }
+	                if ( classEntry.indices.size()!=0)
+	                {
+	                    Object oldVersion=classEntry.objectStreams.
+	                        readObjectWithPrefix( page.offset[localOffset]);
+	                    for ( Iterator i=classEntry.indices.iterator();
+	                        i.hasNext();)
+	                    {
+	                        ((IndexEntry)i.next()).index.updateKey( key, oldVersion,
+	                            toUpdate);
+	                    }
+	                }
+	                int newRegion=classEntry.objectStreams.
+	                    writeObjectWithPrefix( toUpdate,
+	                    page.offset[localOffset], key.index, key.reuseCount);
+	                if ( newRegion!=page.offset[localOffset])
+	                {
+	                    page.offset[localOffset]=newRegion;
+	                    page.modified=true;
+	                }
                 }
-                int newRegion=classEntry.objectStreams.
-                    writeObjectWithPrefix( toUpdate,
-                    page.offset[localOffset], key.index, key.reuseCount);
-                if ( newRegion!=page.offset[localOffset])
+                finally
                 {
-                    page.offset[localOffset]=newRegion;
-                    page.modified=true;
+                	classEntry.objectStreams.leaveCritical();
                 }
             }
             finally
