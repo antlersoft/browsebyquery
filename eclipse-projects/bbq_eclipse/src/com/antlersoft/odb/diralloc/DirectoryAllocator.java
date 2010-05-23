@@ -85,7 +85,7 @@ public class DirectoryAllocator implements IndexObjectStore
     public static final int FAVORED_CHUNK_SIZE=10240;
     public static final String ENTRIES_PER_PAGE="ENTRIES_PER_PAGE";
 
-    public DirectoryAllocator( File file, CustomizerFactory factory)
+    public DirectoryAllocator( File file, CustomizerFactory factory, boolean useMapped)
         throws ObjectStoreException
     {
         try
@@ -93,9 +93,10 @@ public class DirectoryAllocator implements IndexObjectStore
             if ( ! file.exists())
                 file.mkdirs();
             baseDirectory=file;
+            useMemoryMapped = useMapped;
             File allocatorFile=new File( file, "overhead");
             overhead=new DiskAllocator( allocatorFile, INITIAL_REGION_SIZE,
-            		FAVORED_CHUNK_SIZE, 204800, 0);
+            		FAVORED_CHUNK_SIZE, 204800, useMemoryMapped ? DiskAllocator.USE_MEMORY_MAPPED : 0);
 
             overheadStreams=new StreamPair( overhead,
                 factory.getCustomizer( EntryPage.class));
@@ -143,10 +144,7 @@ public class DirectoryAllocator implements IndexObjectStore
                 ClassEntry entry=(ClassEntry)i.next();
                 classList.classMap.put( Class.forName( entry.className),
                     entry);
-                DiskAllocator allocator=new DiskAllocator(
-                    new File( baseDirectory,
-                    entry.fileName), 4, 128, 102400,
-                    DiskAllocator.FORCE_EXIST);
+                DiskAllocator allocator=createDiskAllocator(entry.fileName,128,DiskAllocator.FORCE_EXIST);
                 ObjectStreamCustomizer customizer=factory.getCustomizer(
                     Class.forName( entry.className));
                 entry.objectStreams=new StreamPair( allocator,
@@ -154,9 +152,7 @@ public class DirectoryAllocator implements IndexObjectStore
                 if ( entry.indices.size()>0)
                 {
                     entry.indexStreams=new StreamPair(
-                        new DiskAllocator( new File( baseDirectory,
-                            entry.fileName+"i"), 4, FAVORED_CHUNK_SIZE, 102400,
-                            DiskAllocator.FORCE_EXIST), customizer);
+                        createDiskAllocator(entry.fileName + "i", FAVORED_CHUNK_SIZE,DiskAllocator.FORCE_EXIST), customizer);
                     for ( Iterator j=entry.indices.iterator(); j.hasNext();)
                     {
                         IndexEntry indexEntry=(IndexEntry)j.next();
@@ -189,6 +185,11 @@ ioe.printStackTrace();
         indexPageMap=new HashMap( INDEX_PAGE_CACHE_SIZE+1);
         indexPageLRU=new ArrayList( INDEX_PAGE_CACHE_SIZE+1);
     }
+    
+    public DirectoryAllocator(File file, CustomizerFactory customizer)
+    {
+    	this(file, customizer, false);
+    }
 
     public DirectoryAllocator( File file)
     {
@@ -213,7 +214,7 @@ ioe.printStackTrace();
     	}
         classList.defineIndex( indexName, indexedClass,
             keyGen, descending, unique, 
-            entriesPerPage, this, baseDirectory);
+            entriesPerPage, this);
     }
     
     public void logAllStatistics() throws ObjectStoreException
@@ -355,7 +356,7 @@ ioe.printStackTrace();
         try
         {
             ClassEntry classEntry=classList.getEntry( insertObject.getClass(),
-                baseDirectory);
+                this);
             result=entryList.getNewKey( overheadStreams,
                 classEntry.index, classEntry.reuseCount);
             int region;
@@ -575,6 +576,7 @@ ioe.printStackTrace();
     private boolean rootModified;
     private byte[] offsets;
     private StreamPair overheadStreams;
+    private boolean useMemoryMapped;
 
     /** Fields for index page cache management */
     private HashMap indexPageMap; // IndexPageKey, IndexPage
@@ -724,6 +726,22 @@ ioe.printStackTrace();
             throw new ObjectStoreException(
                 "DiskAllocator error paging index", dae);
         }
+    }
+
+    /**
+     * Utility function to create a new DiskAllocator with the correct parameters for the mapping
+     * type of this directory allocator
+     * @param chunkSize
+     * @param incrementSize
+     * @param forceExist
+     * @return
+     */
+    DiskAllocator createDiskAllocator( String fileName, int chunkSize, int createFlags)
+    	throws DiskAllocatorException, IOException
+    {
+    	if (useMemoryMapped)
+    		createFlags |= DiskAllocator.USE_MEMORY_MAPPED;
+    	return new DiskAllocator(new File(baseDirectory, fileName), 4, chunkSize, 102400, createFlags);
     }
     
     private void emergencyCleanup( ObjectStoreException underlying)

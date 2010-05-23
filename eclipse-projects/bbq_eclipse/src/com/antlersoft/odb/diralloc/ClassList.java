@@ -121,13 +121,13 @@ class ClassList implements Serializable
 
     public void defineIndex(String indexName, Class indexedClass,
         KeyGenerator keyGen, boolean descending, boolean unique, int entriesPerPage,
-        DirectoryAllocator manager, File baseDirectory)
+        DirectoryAllocator manager)
         throws ObjectStoreException
     {
         try
         {
             // Make sure class exists to us
-            getEntry( indexedClass, baseDirectory);
+            getEntry( indexedClass, manager);
         }
         finally
         {
@@ -147,8 +147,7 @@ class ClassList implements Serializable
             if ( entry.indexStreams==null)
             {
                 entry.indexStreams=new StreamPair(
-                    new DiskAllocator( new File( baseDirectory,
-                        entry.fileName+"i"), 4, DirectoryAllocator.FAVORED_CHUNK_SIZE, 102400, 0),
+                	manager.createDiskAllocator(entry.fileName + "i", DirectoryAllocator.FAVORED_CHUNK_SIZE, 0),
                         factory.getCustomizer( indexedClass));
             }
             IndexEntry indexEntry=Index.createIndexEntry( indexName,
@@ -259,7 +258,7 @@ class ClassList implements Serializable
      * 
      * Enters protected state in classChangeLock
      */
-    ClassEntry getEntry( Class toFind, File baseDirectory)
+    ClassEntry getEntry( Class toFind, DirectoryAllocator manager)
         throws ObjectStoreException
     {
         classChangeLock.enterProtected();
@@ -290,10 +289,7 @@ class ClassList implements Serializable
                     result.indices=new ArrayList();
                     try
                     {
-                        DiskAllocator allocator=new DiskAllocator(
-                            new File( baseDirectory,
-                            result.fileName), 4, 128, 102400,
-                            DiskAllocator.FORCE_CREATE);
+                        DiskAllocator allocator=manager.createDiskAllocator(result.fileName, 128, DiskAllocator.FORCE_CREATE);
                         result.objectStreams=new StreamPair( allocator,
                             factory.getCustomizer( toFind));
                     }
@@ -314,10 +310,7 @@ class ClassList implements Serializable
                     result.indices=new ArrayList();
                     try
                     {
-                        DiskAllocator allocator=new DiskAllocator(
-                            new File( baseDirectory,
-                            result.fileName), 4, 128, 102400,
-                            DiskAllocator.FORCE_CREATE);
+                        DiskAllocator allocator=manager.createDiskAllocator(result.fileName, 128, DiskAllocator.FORCE_CREATE);
                         result.objectStreams=new StreamPair( allocator,
                             factory.getCustomizer( toFind));
                     }
