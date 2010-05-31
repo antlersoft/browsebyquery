@@ -33,9 +33,9 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 	 * Create interface to ILDB stored in a directory
 	 * @param db_directory Directory that contains the DirAlloc files for the database
 	 */
-	public ILDB(File db_directory) {
+	public ILDB(File db_directory, boolean useMapped) {
 		super(new DirectoryAllocator(
-				  db_directory, new CFactory()));
+				  db_directory, new CFactory(), useMapped));
 		// Create indices for the classes
 		try
 		{

@@ -54,6 +54,7 @@ public class QueryFrame
 	JFileChooser chooser;
 	JFileChooser dbChooser;
     AnalyzerQuery qp;
+    JCheckBoxMenuItem useMappedCheckBox;
     protected JTextArea queryArea;
     protected JTextArea outputArea;
     protected HistoryList historyList;
@@ -64,6 +65,7 @@ public class QueryFrame
     Action openAction;
     Action clearAction;
     Action analyzeAction;
+    Action useMemoryMappedAction;
     
     /**
      * Get filter for open file dialog
@@ -167,6 +169,12 @@ public class QueryFrame
         outputArea=new JTextArea( 16, 80);
         JScrollPane lowerPane=new JScrollPane( outputArea);
         JSplitPane mainPane=new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, lowerPane);
+        
+        if (container instanceof AbstractDBContainer)
+        {
+        	useMemoryMappedAction = new UseMappedAction();
+        	useMappedCheckBox = new JCheckBoxMenuItem(useMemoryMappedAction);
+        }
 
         // Create actions
         outputArea.setEditable( false);
@@ -242,6 +250,8 @@ public class QueryFrame
         	fileMenu.addSeparator();
         	openAction=new OpenAction();
         	fileMenu.add( openAction);
+        	if (useMappedCheckBox != null)
+        		fileMenu.add(useMappedCheckBox);
         }
         
         // Create Exit action
@@ -281,6 +291,7 @@ t.printStackTrace();
 				FileReader reader=new FileReader( environmentFile);
 				qp.readEnvironment( reader);
 				reader.close();
+				container.updateDBParamsFromProperties(qp.getDBParamProperties());
 			}
 		}
 		catch ( Exception e)
@@ -361,6 +372,11 @@ t.printStackTrace();
     		sb.append( " - analyzing");
     	}
     	frameWindow.setTitle( sb.toString());
+    	
+    	if (container instanceof AbstractDBContainer && useMappedCheckBox != null)
+    	{
+    		useMappedCheckBox.setSelected(((AbstractDBContainer)container).isUseMapped());
+    	}
     }
 
     /**
@@ -371,6 +387,7 @@ t.printStackTrace();
 	void saveEnvironment() throws IOException, QueryException {
 		if ( container.getEnvironmentFile()!=null)
 		{
+			container.updatePropertiesWithDBParams(qp.getDBParamProperties());
 			FileWriter writer=new FileWriter( container.getEnvironmentFile());
 			qp.writeEnvironment( writer);
 			writer.close();
@@ -387,6 +404,8 @@ t.printStackTrace();
 		clearAction.setEnabled(!analyzing);
 		if ( analyzeAction!=null )
 			analyzeAction.setEnabled(!analyzing);
+		if (useMemoryMappedAction != null)
+			useMemoryMappedAction.setEnabled(! analyzing);
 		updateTitleBar();
 	}
 
@@ -545,6 +564,28 @@ t.printStackTrace();
                 displayException( "Open Database Error", ex);
                 exitAction.actionPerformed(e);
             }
+		}
+	}
+	
+	class UseMappedAction extends AbstractAction
+	{
+		/* (non-Javadoc)
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+		 */
+		public void actionPerformed(ActionEvent e) {
+			try
+			{
+				((AbstractDBContainer)container).setUseMapped( useMappedCheckBox.isSelected());
+			}
+			catch (Exception ex)
+			{
+				displayException("Exception setting Memory-maping", ex);
+			}
+		}
+
+		UseMappedAction()
+		{
+			super("Use memory-mapped files for database (experimental)");
 		}
 
 	}

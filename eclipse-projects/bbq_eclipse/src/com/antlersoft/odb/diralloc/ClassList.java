@@ -224,7 +224,7 @@ class ClassList implements Serializable
         {
             Semaphore temp = classChangeLock;
             classChangeLock = null;
-            temp.leaveProtected();
+            temp.leaveCritical();
         }
     }
 

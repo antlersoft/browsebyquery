@@ -166,6 +166,8 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 
 	private void openDBAtCurrentPath() throws Exception
 	{
+		m_db.setUseMapped(getPreferenceStore().getBoolean(PreferenceConstants.P_USE_MAPPED));
+		
         m_db.openDB( new File(getDBPath()));
         _pathChanged=false;
         if ( m_db.isCleared())

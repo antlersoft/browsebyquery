@@ -555,6 +555,7 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
 		    catch ( SecurityException se)
 		    {
 		    }
+		    db.commit();
 		    return;
 		}
 		// Check to see if it is a Zip file
@@ -599,6 +600,7 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
 		    }
 
 		    zip.close();
+		    db.commit();
 		    return;
 		}
 		// Not a zip file -- see if it is a class file

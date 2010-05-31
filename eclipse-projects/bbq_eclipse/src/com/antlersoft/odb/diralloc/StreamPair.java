@@ -27,10 +27,10 @@
 package com.antlersoft.odb.diralloc;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.antlersoft.odb.DiskAllocator;
 import com.antlersoft.odb.DiskAllocatorException;
@@ -38,7 +38,6 @@ import com.antlersoft.odb.ObjectStreamCustomizer;
 import com.antlersoft.util.NetByte;
 import com.antlersoft.util.RandomInputStream;
 import com.antlersoft.util.RandomOutputStream;
-import com.antlersoft.util.Semaphore;
 
 class StreamPair
 {
@@ -47,7 +46,7 @@ class StreamPair
     {
         super();
         allocator=a;
-        allocatorLock = new Semaphore();
+        allocatorLock = new ReentrantLock();
         chunkSize=allocator.getChunkSize();
         customizer=c;
         randomOutput=new RandomOutputStream();
@@ -294,28 +293,28 @@ class StreamPair
     
     final void enterProtected()
     {
-    	allocatorLock.enterProtected();
+    	allocatorLock.lock();
     }
     
     final void leaveProtected()
     {
-    	allocatorLock.leaveProtected();
+    	allocatorLock.unlock();
     }
     
     final void enterCritical()
     {
-    	allocatorLock.enterCritical();
+    	allocatorLock.lock();
     }
     
     final void leaveCritical()
     {
-    	allocatorLock.leaveCritical();
+    	allocatorLock.unlock();
     }
     
     int first;
     int second;
 
-    private Semaphore allocatorLock;
+    private ReentrantLock allocatorLock;
     DiskAllocator allocator;
     private ObjectStreamCustomizer customizer;
     private int chunkSize;

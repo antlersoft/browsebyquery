@@ -99,7 +99,7 @@ public class IndexAnalyzeDB extends AbstractDBContainer implements IDBSource
     {
         createCount=0;
         _session=new IndexObjectDB( new DirectoryAllocator( location,
-            new CFactory()));
+            new CFactory(), isUseMapped()));
         _session.redefineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
         		new DBArgument.ArgumentTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
         _session.redefineIndex( DBCall.CALL_TARGET, DBCall.class,

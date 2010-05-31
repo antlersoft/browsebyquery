@@ -125,7 +125,7 @@ ImportExpression : ImportExpression set "{
     return \"\";
 }" .
 ImportExpression : ImportExpression literalString "{
-    ((AnalyzerQuery)parser.getParserEnvironment()).getImported().add( valueStack.get( valueStack.size()-1));
+    ((AnalyzerQuery)parser.getParserEnvironment()).getImported().add( valueStack.s_0());
     return \"\";
 }" .
 

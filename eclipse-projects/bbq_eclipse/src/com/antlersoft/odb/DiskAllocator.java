@@ -697,6 +697,7 @@ public class DiskAllocator
 			try 
 			{
 				randomFile = new MappedAccess(underlying, 0L);
+				randomFile.extend(fileSize);
 			}
 			catch ( IOException ioe)
 			{

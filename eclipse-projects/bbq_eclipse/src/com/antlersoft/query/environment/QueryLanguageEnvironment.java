@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006 Michael A. MacDonald
+ * Copyright (c) 2006,2010 Michael A. MacDonald
  */
 package com.antlersoft.query.environment;
 
@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -54,9 +55,9 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		m_parser=parser;
 		m_lexer=new Lexer( parser);
 		parser.setParserEnvironment( this);
-		storedValues=new HashMap();
+		storedValues=new HashMap<String,TokenSequence>();
 		storedValuesSupport=new PropertyChangeSupport(this);
-		m_sequence_stack=new Stack();
+		m_sequence_stack=new Stack<TokenSequence>();
 	}
 	
     public SetExpression getExpression()
@@ -69,7 +70,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	    for (; ! errorOut && currentIndex<tokens.length; currentIndex++)
 	    {
 	    	Token token=tokens[currentIndex];
-	    	((TokenSequence)m_sequence_stack.peek()).addToken( token.symbol, token.value);
+	    	m_sequence_stack.peek().addToken( token.symbol, token.value);
 	    	m_parser.massageToken( token);
 	        errorOut=m_parser.parse( token.symbol, token.value);
 	    }
@@ -182,10 +183,10 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 			{
 				if ( m_previous_sequence != null)
 					restoreTokenSequenceResult( null, m_previous_sequence);
-				for ( Iterator i=storedValues.entrySet().iterator(); i.hasNext();)
+				for ( Iterator<Entry<String,TokenSequence>> i=storedValues.entrySet().iterator(); i.hasNext();)
 				{
-					Map.Entry entry=(Map.Entry)i.next();
-					restoreTokenSequenceResult( (String)entry.getKey(), (TokenSequence)entry.getValue());
+					Map.Entry<String,TokenSequence> entry=i.next();
+					restoreTokenSequenceResult( entry.getKey(), entry.getValue());
 				}
 			}
 			catch ( ClassNotFoundException cnfe)
@@ -239,7 +240,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	// Package interface
 	Token[] tokens;
 	int currentIndex;
-	HashMap storedValues; // String, TokenSequence
+	HashMap<String,TokenSequence> storedValues; // String, TokenSequence
 	PropertyChangeSupport storedValuesSupport;
 	TokenSequence m_previous_sequence;
 	
@@ -249,7 +250,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	}
 	
 	private BasicBase m_parser;
-	private Stack m_sequence_stack;
+	private Stack<TokenSequence> m_sequence_stack;
 	private Lexer m_lexer;
 	
 	
@@ -264,7 +265,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	private void restoreTokenSequenceResult( String name, TokenSequence to_restore)
 	throws ClassNotFoundException, ParseException
 	{
-		ArrayList restore_tokens=new ArrayList();
+		ArrayList<Token> restore_tokens=new ArrayList<Token>();
 		// If the token sequence represents a transform, use special code to restore it
 		String class_name=(String)to_restore.getResult();
 		boolean is_transform=false;
@@ -278,11 +279,11 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		to_restore.collectTokens( m_parser.getReservedScope(), restore_tokens);
 	    restore_tokens.add( new Token( Parser._end_, ""));
 		m_parser.reset();
-		tokens=(Token[])restore_tokens.toArray( new Token[restore_tokens.size()]);
+		tokens=restore_tokens.toArray( new Token[restore_tokens.size()]);
 		SetExpression exp=getExpression();
 		if ( is_transform)
 		{
-			to_restore.setResult( ((TokenSequence)storedValues.get( name)).getResult());
+			to_restore.setResult( storedValues.get( name).getResult());
 		}
 		else
 			to_restore.setResult( exp);
@@ -297,13 +298,13 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		{
 			result=(SetExpression)m_previous_sequence.getResult();
 			if ( m_sequence_stack.size()>0)
-				((TokenSequence)m_sequence_stack.peek()).replaceTokensBySequence( 1, m_previous_sequence);
+				m_sequence_stack.peek().replaceTokensBySequence( 1, m_previous_sequence);
 		}
 		return result;
 	}
 
 	public void setLastParsedExpression(SetExpression expr) {
-		m_previous_sequence=(TokenSequence)m_sequence_stack.pop();
+		m_previous_sequence=m_sequence_stack.pop();
 		m_previous_sequence.throwAwayClosingToken( m_parser.getReservedScope());
 		m_previous_sequence.setResult( expr);
 		m_sequence_stack.push( new TokenSequence());

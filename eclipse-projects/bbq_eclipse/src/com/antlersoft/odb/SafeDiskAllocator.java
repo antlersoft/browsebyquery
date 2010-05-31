@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Iterator;
 
-import com.antlersoft.util.Semaphore;
-
 
 /**
  * <p>Provides thread-safe implementations of most methods in DiskAllocator.
@@ -21,8 +19,6 @@ import com.antlersoft.util.Semaphore;
  *
  */
 public class SafeDiskAllocator extends DiskAllocator {
-	
-	private Semaphore fileLock = new Semaphore();
 
 	/**
 	 * @param file
@@ -53,147 +49,84 @@ public class SafeDiskAllocator extends DiskAllocator {
 	 * @see com.antlersoft.odb.DiskAllocator#allocate(int)
 	 */
 	@Override
-	public int allocate(int size) throws IOException, DiskAllocatorException {
-		fileLock.enterCritical();
-		try {
-			return super.allocate(size);
-		}
-		finally
-		{
-			fileLock.leaveCritical();
-		}
+	public synchronized int allocate(int size) throws IOException, DiskAllocatorException {
+		return super.allocate(size);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#close()
 	 */
 	@Override
-	public void close() throws IOException {
-		fileLock.enterCritical();
-		try {
-			super.close();
-		}
-		finally
-		{
-			fileLock.leaveCritical();
-		}
+	public synchronized void close() throws IOException {
+		super.close();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#free(int)
 	 */
 	@Override
-	public void free(int regionOffset) throws IOException,
+	public synchronized void free(int regionOffset) throws IOException,
 			DiskAllocatorException {
-		fileLock.enterCritical();
-		try {
-			super.free(regionOffset);
-		}
-		finally {
-			fileLock.leaveCritical();
-		}
+		super.free(regionOffset);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#getRegionSize(int)
 	 */
 	@Override
-	public int getRegionSize(int regionOffset) throws IOException,
+	public synchronized int getRegionSize(int regionOffset) throws IOException,
 			DiskAllocatorException {
-		fileLock.enterProtected();
-		try {
-			return super.getRegionSize(regionOffset);
-		}
-		finally {
-			fileLock.leaveProtected();
-		}
+		return super.getRegionSize(regionOffset);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#iterator()
 	 */
 	@Override
-	public Iterator<Integer> iterator() throws IOException {
-		fileLock.enterProtected();
-		try {
-			return super.iterator();
-		}
-		finally {
-			fileLock.leaveProtected();
-		}
+	public synchronized Iterator<Integer> iterator() throws IOException {
+		return super.iterator();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#read(int, int)
 	 */
 	@Override
-	public byte[] read(int offset, int size) throws IOException,
+	public synchronized byte[] read(int offset, int size) throws IOException,
 			DiskAllocatorException {
-		fileLock.enterProtected();
-		try {
-			return super.read(offset, size);			
-		}
-		finally {
-			fileLock.leaveProtected();
-		}
+		return super.read(offset, size);			
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#sync()
 	 */
 	@Override
-	public void sync() throws IOException {
-		fileLock.enterCritical();
-		try {
-			super.sync();
-		}
-		finally {
-			fileLock.leaveCritical();
-		}
+	public synchronized void sync() throws IOException {
+		super.sync();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#walkInternalFreeList(java.io.PrintStream)
 	 */
 	@Override
-	public void walkInternalFreeList(PrintStream ps) {
-		fileLock.enterProtected();
-		try {
-			super.walkInternalFreeList(ps);
-		}
-		finally {
-			fileLock.leaveProtected();
-		}
+	public synchronized void walkInternalFreeList(PrintStream ps) {
+		super.walkInternalFreeList(ps);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#walkRegions(java.io.PrintStream)
 	 */
 	@Override
-	public void walkRegions(PrintStream ps) throws IOException,
+	public synchronized void walkRegions(PrintStream ps) throws IOException,
 			DiskAllocatorException {
-		fileLock.enterProtected();
-		try
-		{
-			super.walkRegions(ps);
-		}
-		finally {
-			fileLock.leaveProtected();
-		}
+		super.walkRegions(ps);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.odb.DiskAllocator#write(int, byte[])
 	 */
 	@Override
-	public void write(int offset, byte[] toWrite) throws IOException,
+	public synchronized void write(int offset, byte[] toWrite) throws IOException,
 			DiskAllocatorException {
-		fileLock.enterCritical();
-		try {
-			super.write(offset, toWrite);
-		}
-		finally {
-			fileLock.leaveCritical();
-		}
+		super.write(offset, toWrite);
 	}
 }

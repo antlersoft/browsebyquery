@@ -30,7 +30,7 @@ public class ILDBContainer extends AbstractDBContainer {
 	 */
 	@Override
 	protected IDBSource internalOpen(File f) throws Exception {
-		analyzerDB=new ILDB(f);
+		analyzerDB=new ILDB(f, isUseMapped());
 		return analyzerDB;
 	}
 

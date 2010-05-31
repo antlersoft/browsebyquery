@@ -5,6 +5,8 @@ package com.antlersoft.query.environment.ui;
 
 import java.io.File;
 
+import java.util.Properties;
+
 import com.antlersoft.query.DataSource;
 
 /**
@@ -82,4 +84,18 @@ public interface DBContainer {
      * @param selected_files
      */
     abstract public void analyze( File[] selected_files) throws Exception;
+
+    /**
+     * Read implementation-defined database parameters from a Properties container
+     * @param p
+     * @throws Exception when updating the params causes some sort of error
+     */
+	abstract public void updateDBParamsFromProperties(Properties p)
+	throws Exception;
+
+	/**
+	 * Write implementation-defined database parameters into a Properties container
+	 * @param p
+	 */
+	abstract public void updatePropertiesWithDBParams(Properties p);
 }

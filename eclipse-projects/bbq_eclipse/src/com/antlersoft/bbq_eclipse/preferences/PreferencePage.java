@@ -1,6 +1,7 @@
 package com.antlersoft.bbq_eclipse.preferences;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.SWT;
@@ -51,6 +52,9 @@ public class PreferencePage extends FieldEditorPreferencePage implements IWorkbe
     addField(new DirectoryFieldEditor(PreferenceConstants.P_DB_PATH,
                                       "&Directory for object db:",
                                       getFieldEditorParent()));
+    addField(new BooleanFieldEditor(PreferenceConstants.P_USE_MAPPED,
+    		"&Use Memory-Mapped files for DB:",
+    		getFieldEditorParent()));
   }
 
   @Override protected Control createContents(Composite parent) {

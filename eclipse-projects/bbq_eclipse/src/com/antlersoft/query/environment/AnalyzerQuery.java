@@ -1,15 +1,17 @@
 /**
- * Copyright (c) 2006 Michael A. MacDonald
+ * Copyright (c) 2006, 2010 Michael A. MacDonald
  */
 package com.antlersoft.query.environment;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.TreeSet;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.antlersoft.query.BasicBase;
@@ -36,6 +38,9 @@ public class AnalyzerQuery extends QueryLanguageEnvironment {
 		IHandlerStack m_stack;
 		
 		private static final String ELEMENT_TAG="analyzer_query";
+		private static final String IMPORT_TAG="import";
+		private static final String DB_PARAM_TAG="db_param";
+		private static final String PARAM_PROPERTY_NAME="name";
 		
 		/**
 		 * 
@@ -58,9 +63,16 @@ public class AnalyzerQuery extends QueryLanguageEnvironment {
 		 */
 		public void writeToXML(ContentHandler xml_writer) throws SAXException {
 			xml_writer.startElement( "", "", ELEMENT_TAG, SimpleHandler.m_empty);
-			for ( Iterator i=importedPackages.iterator(); i.hasNext();)
+			for ( Iterator<String> i=importedPackages.iterator(); i.hasNext();)
 			{
-				SimpleHandler.writeElement( xml_writer, "import", (String)i.next());
+				SimpleHandler.writeElement( xml_writer, IMPORT_TAG, i.next());
+			}
+			AttributesImpl attributes = new AttributesImpl();
+			for (String name : dbParamProperties.stringPropertyNames())
+			{
+				attributes.addAttribute("", "", PARAM_PROPERTY_NAME, "CDATA", name);
+				SimpleHandler.writeElement(xml_writer, DB_PARAM_TAG, dbParamProperties.getProperty(name), attributes);
+				attributes.removeAttribute(0);
 			}
 			m_base.writeToXML( xml_writer);
 			xml_writer.endElement( "", "", ELEMENT_TAG);
@@ -80,7 +92,7 @@ public class AnalyzerQuery extends QueryLanguageEnvironment {
 		 * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
 		 */
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			if ( qName.equals( "import"))
+			if ( qName.equals( IMPORT_TAG) || qName.equals(DB_PARAM_TAG))
 			{
 				m_stack.startWithHandler( new SimpleHandler(m_stack, this), uri, localName, qName, attributes);
 			}
@@ -94,14 +106,22 @@ public class AnalyzerQuery extends QueryLanguageEnvironment {
 		 * @see com.antlersoft.util.xml.ISimpleElement#gotElement(java.lang.String, java.lang.String, org.xml.sax.Attributes)
 		 */
 		public void gotElement(String name, String contents, Attributes attributes) throws SAXException {
-			importedPackages.add( contents);
+			if (name.equals(IMPORT_TAG))
+			{
+				importedPackages.add( contents);
+			}
+			else if (name.equals(DB_PARAM_TAG))
+			{
+				dbParamProperties.setProperty(attributes.getValue(PARAM_PROPERTY_NAME), contents);
+			}
 		}
 	}
 
 	public AnalyzerQuery( BasicBase parser)
 	{
 		super( parser);
-        importedPackages=new TreeSet();
+        importedPackages=new TreeSet<String>();
+		dbParamProperties = new Properties();
 	}
 	
 	public IElement getElement()
@@ -109,12 +129,17 @@ public class AnalyzerQuery extends QueryLanguageEnvironment {
 		return new AnalyzerQueryElement( super.getElement());
 	}
 	
-	public Collection getImported()
+	public Collection<String> getImported()
 	{
 		return importedPackages;
 	}
 
+	public Properties getDBParamProperties()
+	{
+		return dbParamProperties;
+	}
+	
     // Package interface
-    private TreeSet importedPackages;
-    
+    private TreeSet<String> importedPackages;
+	Properties dbParamProperties;    
 }
