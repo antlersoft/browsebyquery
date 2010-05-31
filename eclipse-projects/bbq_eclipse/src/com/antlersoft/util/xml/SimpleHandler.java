@@ -81,9 +81,18 @@ public class SimpleHandler extends DefaultHandler {
 	public static void writeElement( ContentHandler handler, String name, String value)
 		throws SAXException
 	{
-		handler.startElement( "", "", name, m_empty);
+		writeElement(handler, name, value, m_empty);
+	}
+	
+	/**
+	 * Write an element with a qname and a value and some attributes
+	 */
+	public static void writeElement( ContentHandler handler, String name, String value, Attributes attributes)
+	throws SAXException
+	{
+		handler.startElement( "", "", name, attributes);
 		char[] buf=value.toCharArray();
 		handler.characters( buf, 0, buf.length);
-		handler.endElement( "", "", name);
+		handler.endElement( "", "", name);		
 	}
 }
