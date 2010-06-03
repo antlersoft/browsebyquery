@@ -20,6 +20,13 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +65,12 @@ public class IldasmReader {
 	private Pattern m_directory_match;
 	/** Oldest modification date to consider for file to add to database */
 	private TreeMap<String,Date> m_oldest;
+	
+	/** Thread pool for analyzing files concurrently */
+	private ThreadPoolExecutor m_thread_pool;
+	
+	/** Results of tasks submitted on the thread pool */
+	private ArrayList<Future<FileReadRunnable>> m_result_list;
 	
 	/**
 	 * Map of symbol name to symbol; cache of expected symbols so we can identify if multiple symbols
@@ -217,19 +230,162 @@ public class IldasmReader {
 		m_oldest=oldest;
 	}
 	
-	public void sendFileToDriver( File file, DBDriver driver) throws IOException, RuleActionException
+	public void sendFileToDriver( File file, DBDriver driver, int threads) throws IOException, RuleActionException
 	{
-		sendFileToDriver( file, driver, false);
+		sendFileToDriver( file, driver, threads, false);
 	}
 	
-	public void sendFileToDriver( File file, DBDriver driver, boolean filter) throws IOException, RuleActionException
+	void readIlFile(File file, DBDriver driver)
+		throws IOException, RuleActionException
+	{
+		logger.fine( "Reading .il file "+file.getAbsolutePath());
+		driver.startAnalyzedFile(file.getAbsolutePath());
+		Reader r = new BufferedReader(new FileReader(file));
+		try
+		{
+			Read( driver, r);
+		}
+		finally
+		{
+			r.close();
+		}
+		driver.endAnalyzedFile();		
+	}
+	
+	void readAssemblyFile(File file, DBDriver driver)
+		throws IOException, RuleActionException
+	{
+		logger.fine("Reading assembly file "+file.getAbsolutePath());
+		driver.startAnalyzedFile(file.getAbsolutePath());
+		// Tokenize the command format, substitute the file path as necessary
+		Object[] format_args=new Object[] { file.getAbsolutePath() };
+		Process process=Runtime.getRuntime().exec(formatCommandArgs(m_disassembly_command_format, format_args));
+		Reader reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
+		try
+		{
+			Read( driver, reader);
+			try
+			{
+				process.waitFor();
+			}
+			catch ( InterruptedException ie)
+			{
+				logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
+			}
+		}
+		finally
+		{
+			reader.close();
+		}
+		try
+		{
+			process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args), null, null);
+			reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
+			try
+			{
+				readResources( driver, reader);
+				try
+				{
+					process.waitFor();
+				}
+				catch ( InterruptedException ie)
+				{
+					logger.warning( "Interrupted waiting for resource reader process: " + ie.getMessage());
+				}
+			}
+			finally
+			{
+				reader.close();						
+			}
+		}
+		catch ( Exception e)
+		{
+			logger.log( Level.INFO, "Problem running ResourceLister on "+format_args[0], e);
+		}
+		driver.endAnalyzedFile();		
+	}
+	
+	abstract class FileReadRunnable implements Callable<FileReadRunnable>
+	{
+		private File m_file;
+		private DBDriver m_driver;
+		
+		IOException captureIOException;
+		RuleActionException captureRuleActionException;
+		
+		FileReadRunnable(File file, DBDriver driver)
+		{
+			m_file = file;
+			m_driver = driver;
+		}
+		
+		abstract void read(File file, DBDriver driver) throws IOException, RuleActionException;
+		
+		/* (non-Javadoc)
+		 * @see java.util.concurrent.Callable#call()
+		 */
+		@Override
+		public FileReadRunnable call() throws Exception {
+			try
+			{
+				read(m_file, m_driver);
+			}
+			catch (IOException ioe)
+			{
+				captureIOException = ioe;
+			}
+			catch (RuleActionException rae)
+			{
+				captureRuleActionException = rae;
+			}
+			return this;
+		}
+	}
+	
+	private synchronized void submitFileRead(int threads, FileReadRunnable fileRead)
+	{
+		if (m_thread_pool == null)
+		{
+			m_thread_pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(threads);
+			m_result_list = new ArrayList<Future<FileReadRunnable>>();
+		}
+		else
+		{
+			m_thread_pool.setMaximumPoolSize(threads);
+		}
+		m_result_list.add(m_thread_pool.submit(fileRead));
+	}
+	
+	public synchronized void waitForFileReads()
+		throws IOException, RuleActionException
+	{
+		while (m_result_list != null && m_result_list.size() > 0)
+		{
+			Future<FileReadRunnable> future = m_result_list.get(0);
+			m_result_list.remove(0);
+			FileReadRunnable r;
+			try {
+				r = future.get();
+			} catch (InterruptedException e) {
+				throw new RuleActionException("Interrupted waiting for analyzer thread", e);
+			} catch (ExecutionException e) {
+				throw new RuleActionException("Uncaught error in analyzer thread", e);
+			}
+			if (r.captureIOException != null)
+				throw r.captureIOException;
+			if (r.captureRuleActionException != null)
+				throw r.captureRuleActionException;
+		}
+	}
+	
+	public void sendFileToDriver( File file, DBDriver driver, int threads, boolean filter) throws IOException, RuleActionException
 	{
 		if ( file.isDirectory())
 		{
 			File[] files=file.listFiles();
 			for ( int i=0; i<files.length; ++i)
 			{
-				sendFileToDriver( files[i], driver, true);
+				sendFileToDriver( files[i], driver, threads, true);
 			}
 		}
 		else
@@ -237,18 +393,19 @@ public class IldasmReader {
 			String lower_file=file.getName().toLowerCase();
 			if ( lower_file.endsWith(".il"))
 			{
-				logger.fine( "Reading .il file "+file.getAbsolutePath());
-				driver.startAnalyzedFile(file.getAbsolutePath());
-				Reader r = new BufferedReader(new FileReader(file));
-				try
+				if (threads > 1)
 				{
-					Read( driver, r);
+					submitFileRead(threads, new FileReadRunnable(file, driver) {
+						void read(File file, DBDriver driver) throws IOException, RuleActionException
+						{
+							readIlFile(file, driver);
+						}
+					});
 				}
-				finally
+				else
 				{
-					r.close();
+					readIlFile(file, driver);
 				}
-				driver.endAnalyzedFile();
 			}
 			else if ( lower_file.endsWith(".dll") || lower_file.endsWith(".exe"))
 			{
@@ -275,54 +432,19 @@ public class IldasmReader {
 						m_oldest.put(file.getCanonicalPath(), new Date(file.lastModified()));
 					}
 				}
-				logger.fine("Reading assembly file "+file.getAbsolutePath());
-				driver.startAnalyzedFile(file.getAbsolutePath());
-				// Tokenize the command format, substitute the file path as necessary
-				Object[] format_args=new Object[] { file.getAbsolutePath() };
-				Process process=Runtime.getRuntime().exec(formatCommandArgs(m_disassembly_command_format, format_args));
-				Reader reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
-				try
+				if (threads > 1)
 				{
-					Read( driver, reader);
-					try
-					{
-						process.waitFor();
-					}
-					catch ( InterruptedException ie)
-					{
-						logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
-					}
-				}
-				finally
-				{
-					reader.close();
-				}
-				try
-				{
-					process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args), null, null);
-					reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
-					try
-					{
-						readResources( driver, reader);
-						try
-						{
-							process.waitFor();
+					submitFileRead(threads, new FileReadRunnable(file, driver) {
+
+						@Override
+						void read(File file, DBDriver driver)
+								throws IOException, RuleActionException {
+							readAssemblyFile(file, driver);
 						}
-						catch ( InterruptedException ie)
-						{
-							logger.warning( "Interrupted waiting for resource reader process: " + ie.getMessage());
-						}
-					}
-					finally
-					{
-						reader.close();						
-					}
+					});
 				}
-				catch ( Exception e)
-				{
-					logger.log( Level.INFO, "Problem running ResourceLister on "+format_args[0], e);
-				}
-				driver.endAnalyzedFile();
+				else
+					readAssemblyFile(file, driver);
 			}
 		}
 	}
@@ -343,7 +465,7 @@ public class IldasmReader {
 		com.antlersoft.ilanalyze.db.ILDB db=new com.antlersoft.ilanalyze.db.ILDB(new File(args[1]), false);
 		try
 		{
-			new IldasmReader().sendFileToDriver( new File(args[0]), new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db)));
+			new IldasmReader().sendFileToDriver( new File(args[0]), new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db)), 1);
 		}
 		finally
 		{

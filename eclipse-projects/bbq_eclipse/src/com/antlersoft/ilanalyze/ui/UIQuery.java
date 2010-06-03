@@ -30,6 +30,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 
+import com.antlersoft.appcontext.AppContext;
 import com.antlersoft.ilanalyze.db.*;
 
 import com.antlersoft.ilanalyze.parseildasm.IldasmReader;
@@ -163,8 +164,16 @@ public class UIQuery extends QueryFrame
     throws Exception
     {
     	ILDBContainer c=new ILDBContainer();
-    	c.initializeFromContext(c.createContextWithLegacyCommandLine(argv),
+    	AppContext ac = c.createContextWithLegacyCommandLine(argv);
+    	
+    	c.initializeFromContext( ac,
     			"test.bbq", "com.antlersoft.browsebyquery.il");
+    	String ts = ac.getParameter("threads");
+    	if (ts != null)
+    	{
+    		c.setAnalyzerThreadCount(Integer.valueOf(ts));
+    	}
+    	
         final UIQuery app = new UIQuery(c);
         
         app.showFrame("/icons/weber-small.gif");

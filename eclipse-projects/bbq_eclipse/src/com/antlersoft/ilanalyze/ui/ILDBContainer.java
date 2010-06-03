@@ -51,8 +51,11 @@ public class ILDBContainer extends AbstractDBContainer {
 
 		for ( int i=0; i<selectedFiles.length; i++)
 		{
-		   reader.sendFileToDriver(selectedFiles[i], driver);
+		   reader.sendFileToDriver(selectedFiles[i], driver, getAnalyzerThreadCount());
 		}
+		
+		if (getAnalyzerThreadCount() > 1)
+			reader.waitForFileReads();
        
 		analyzerDB.makeRootObject("LAST_SCANNED", oldest);
 		analyzerDB.commitAndRetain();
