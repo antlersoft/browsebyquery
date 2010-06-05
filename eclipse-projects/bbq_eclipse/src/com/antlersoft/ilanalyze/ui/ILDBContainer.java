@@ -39,7 +39,6 @@ public class ILDBContainer extends AbstractDBContainer {
 	 */
 	@Override
 	public void analyze(File[] selectedFiles) throws Exception {
-	   	ILDBDriver driver=new ILDBDriver(analyzerDB);
 	   	IldasmReader reader=new IldasmReader();
 	   	Object last_scanned=analyzerDB.getRootObject("LAST_SCANNED");
 	   	TreeMap<String,Date> oldest;
@@ -51,7 +50,7 @@ public class ILDBContainer extends AbstractDBContainer {
 
 		for ( int i=0; i<selectedFiles.length; i++)
 		{
-		   reader.sendFileToDriver(selectedFiles[i], driver, getAnalyzerThreadCount());
+		   reader.sendFileToDB(selectedFiles[i], analyzerDB, getAnalyzerThreadCount());
 		}
 		
 		if (getAnalyzerThreadCount() > 1)

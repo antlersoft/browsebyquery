@@ -35,6 +35,8 @@ import java.util.regex.PatternSyntaxException;
 
 import com.antlersoft.ilanalyze.DBDriver;
 import com.antlersoft.ilanalyze.LoggingDBDriver;
+import com.antlersoft.ilanalyze.db.ILDB;
+import com.antlersoft.ilanalyze.db.ILDBDriver;
 
 import com.antlersoft.parser.RuleActionException;
 import com.antlersoft.parser.Symbol;
@@ -230,9 +232,27 @@ public class IldasmReader {
 		m_oldest=oldest;
 	}
 	
-	public void sendFileToDriver( File file, DBDriver driver, int threads) throws IOException, RuleActionException
+	public void sendFileToDB( File file, final ILDB db, int threads) throws IOException, RuleActionException
 	{
-		sendFileToDriver( file, driver, threads, false);
+		DBDriverSource driverSource;
+		if (threads > 1)
+		{
+			driverSource = new DBDriverSource() {
+
+				/* (non-Javadoc)
+				 * @see com.antlersoft.ilanalyze.parseildasm.DBDriverSource#get()
+				 */
+				@Override
+				public DBDriver get() {
+					return new ILDBDriver(db);
+				}				
+			};
+		}
+		else
+		{
+			driverSource = new SimpleDBDriverSource(new ILDBDriver(db));
+		}
+		sendFileToDriver( file, driverSource, threads, false);
 	}
 	
 	void readIlFile(File file, DBDriver driver)
@@ -378,14 +398,14 @@ public class IldasmReader {
 		}
 	}
 	
-	public void sendFileToDriver( File file, DBDriver driver, int threads, boolean filter) throws IOException, RuleActionException
+	private void sendFileToDriver( File file, DBDriverSource driverSource, int threads, boolean filter) throws IOException, RuleActionException
 	{
 		if ( file.isDirectory())
 		{
 			File[] files=file.listFiles();
 			for ( int i=0; i<files.length; ++i)
 			{
-				sendFileToDriver( files[i], driver, threads, true);
+				sendFileToDriver( files[i], driverSource, threads, true);
 			}
 		}
 		else
@@ -395,7 +415,7 @@ public class IldasmReader {
 			{
 				if (threads > 1)
 				{
-					submitFileRead(threads, new FileReadRunnable(file, driver) {
+					submitFileRead(threads, new FileReadRunnable(file, driverSource.get()) {
 						void read(File file, DBDriver driver) throws IOException, RuleActionException
 						{
 							readIlFile(file, driver);
@@ -404,7 +424,7 @@ public class IldasmReader {
 				}
 				else
 				{
-					readIlFile(file, driver);
+					readIlFile(file, driverSource.get());
 				}
 			}
 			else if ( lower_file.endsWith(".dll") || lower_file.endsWith(".exe"))
@@ -434,7 +454,7 @@ public class IldasmReader {
 				}
 				if (threads > 1)
 				{
-					submitFileRead(threads, new FileReadRunnable(file, driver) {
+					submitFileRead(threads, new FileReadRunnable(file, driverSource.get()) {
 
 						@Override
 						void read(File file, DBDriver driver)
@@ -444,7 +464,7 @@ public class IldasmReader {
 					});
 				}
 				else
-					readAssemblyFile(file, driver);
+					readAssemblyFile(file, driverSource.get());
 			}
 		}
 	}
@@ -465,7 +485,8 @@ public class IldasmReader {
 		com.antlersoft.ilanalyze.db.ILDB db=new com.antlersoft.ilanalyze.db.ILDB(new File(args[1]), false);
 		try
 		{
-			new IldasmReader().sendFileToDriver( new File(args[0]), new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db)), 1);
+			new IldasmReader().sendFileToDriver( new File(args[0]), new SimpleDBDriverSource(
+					new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db))), 1, false);
 		}
 		finally
 		{

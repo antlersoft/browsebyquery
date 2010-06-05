@@ -168,11 +168,6 @@ public class UIQuery extends QueryFrame
     	
     	c.initializeFromContext( ac,
     			"test.bbq", "com.antlersoft.browsebyquery.il");
-    	String ts = ac.getParameter("threads");
-    	if (ts != null)
-    	{
-    		c.setAnalyzerThreadCount(Integer.valueOf(ts));
-    	}
     	
         final UIQuery app = new UIQuery(c);
         
