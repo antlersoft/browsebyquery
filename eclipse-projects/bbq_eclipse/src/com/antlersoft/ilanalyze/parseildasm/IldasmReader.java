@@ -46,7 +46,7 @@ import com.antlersoft.parser.lex.LexState;
 import com.antlersoft.query.environment.Lexer;
 
 /**
- * Manages reading an IL assembly-language file and putting the information in the BBQ database
+ * Manages reading a single IL assembly-language file and putting the information in the BBQ database
  * (via the DBDriver interface)
  * @author Michael A. MacDonald
  *
@@ -56,24 +56,10 @@ public class IldasmReader {
     static Logger logger=Logger.getLogger( IldasmReader.class.getName());
 	private IldasmParser m_parser;
 	private ResourceParser m_resource_parser;
-	private DBDriver m_driver;
-	/** A format string for forming the disassembly command for an assembly from the assembly's path */
-	private String m_disassembly_command_format;
 	/** Number of lines seen */
 	private int m_line_count;
 	/** Text of current line (for error messages) */
 	private StringBuilder m_line;
-	/** Pattern directory must match to pull .dll's and .exe's */
-	private Pattern m_directory_match;
-	/** Oldest modification date to consider for file to add to database */
-	private TreeMap<String,Date> m_oldest;
-	
-	/** Thread pool for analyzing files concurrently */
-	private ThreadPoolExecutor m_thread_pool;
-	
-	/** Results of tasks submitted on the thread pool */
-	private ArrayList<Future<FileReadRunnable>> m_result_list;
-	
 	/**
 	 * Map of symbol name to symbol; cache of expected symbols so we can identify if multiple symbols
 	 * are expected efficiently.
@@ -85,19 +71,6 @@ public class IldasmReader {
 		m_parser=new IldasmParser();
 		m_resource_parser=new ResourceParser();
 		m_line=new StringBuilder();
-		m_disassembly_command_format="monodis {0}";
-		if ( System.getProperty("os.name", "Finux").contains("Windows"))
-		{
-			m_disassembly_command_format="ildasm /text /nobar /linenumber \"{0}\"";
-			try
-			{
-				m_directory_match=Pattern.compile( "obj\\\\Debug\\z");
-			}
-			catch ( PatternSyntaxException pse)
-			{
-				logger.warning(pse.getLocalizedMessage());
-			}
-		}
 	}
 	
 	/**
@@ -156,15 +129,14 @@ public class IldasmReader {
 	public void Read( DBDriver driver, Reader reader) throws IOException, RuleActionException
 	{
 		LexState state=new InitialState( this);
-		m_driver=driver;
 		m_parser.reset();
-		m_parser.setDriver(m_driver);
+		m_parser.setDriver(driver);
 		m_parser.setReader(reader);
 		m_expected=null;
 		readToLexer(reader, state);
 	}
 	
-	private void readResources( DBDriver driver, Reader reader) throws IOException, RuleActionException
+	public void readResources( DBDriver driver, Reader reader) throws IOException, RuleActionException
 	{
 		m_resource_parser.setDriver(driver);
 		m_resource_parser.reset();
@@ -221,276 +193,4 @@ public class IldasmReader {
 		return m_parser.getReservedScope().getReservedStrings();
 	}
 	
-	/**
-	 * Set a map of canonical paths to dates;
-	 * won't add .exe or .dll files to the database older than the date in the map
-	 * for the canonical path for the file.
-	 * @param oldest 
-	 */
-	public void setOldestFileDate( TreeMap<String,Date> oldest)
-	{
-		m_oldest=oldest;
-	}
-	
-	public void sendFileToDB( File file, final ILDB db, int threads) throws IOException, RuleActionException
-	{
-		DBDriverSource driverSource;
-		if (threads > 1)
-		{
-			driverSource = new DBDriverSource() {
-
-				/* (non-Javadoc)
-				 * @see com.antlersoft.ilanalyze.parseildasm.DBDriverSource#get()
-				 */
-				@Override
-				public DBDriver get() {
-					return new ILDBDriver(db);
-				}				
-			};
-		}
-		else
-		{
-			driverSource = new SimpleDBDriverSource(new ILDBDriver(db));
-		}
-		sendFileToDriver( file, driverSource, threads, false);
-	}
-	
-	void readIlFile(File file, DBDriver driver)
-		throws IOException, RuleActionException
-	{
-		logger.fine( "Reading .il file "+file.getAbsolutePath());
-		driver.startAnalyzedFile(file.getAbsolutePath());
-		Reader r = new BufferedReader(new FileReader(file));
-		try
-		{
-			Read( driver, r);
-		}
-		finally
-		{
-			r.close();
-		}
-		driver.endAnalyzedFile();		
-	}
-	
-	void readAssemblyFile(File file, DBDriver driver)
-		throws IOException, RuleActionException
-	{
-		logger.fine("Reading assembly file "+file.getAbsolutePath());
-		driver.startAnalyzedFile(file.getAbsolutePath());
-		// Tokenize the command format, substitute the file path as necessary
-		Object[] format_args=new Object[] { file.getAbsolutePath() };
-		Process process=Runtime.getRuntime().exec(formatCommandArgs(m_disassembly_command_format, format_args));
-		Reader reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
-		try
-		{
-			Read( driver, reader);
-			try
-			{
-				process.waitFor();
-			}
-			catch ( InterruptedException ie)
-			{
-				logger.warning( "Interrupted waiting for reader process: " + ie.getMessage());
-			}
-		}
-		finally
-		{
-			reader.close();
-		}
-		try
-		{
-			process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args), null, null);
-			reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
-			try
-			{
-				readResources( driver, reader);
-				try
-				{
-					process.waitFor();
-				}
-				catch ( InterruptedException ie)
-				{
-					logger.warning( "Interrupted waiting for resource reader process: " + ie.getMessage());
-				}
-			}
-			finally
-			{
-				reader.close();						
-			}
-		}
-		catch ( Exception e)
-		{
-			logger.log( Level.INFO, "Problem running ResourceLister on "+format_args[0], e);
-		}
-		driver.endAnalyzedFile();		
-	}
-	
-	abstract class FileReadRunnable implements Callable<FileReadRunnable>
-	{
-		private File m_file;
-		private DBDriver m_driver;
-		
-		IOException captureIOException;
-		RuleActionException captureRuleActionException;
-		
-		FileReadRunnable(File file, DBDriver driver)
-		{
-			m_file = file;
-			m_driver = driver;
-		}
-		
-		abstract void read(File file, DBDriver driver) throws IOException, RuleActionException;
-		
-		/* (non-Javadoc)
-		 * @see java.util.concurrent.Callable#call()
-		 */
-		@Override
-		public FileReadRunnable call() throws Exception {
-			try
-			{
-				read(m_file, m_driver);
-			}
-			catch (IOException ioe)
-			{
-				captureIOException = ioe;
-			}
-			catch (RuleActionException rae)
-			{
-				captureRuleActionException = rae;
-			}
-			return this;
-		}
-	}
-	
-	private synchronized void submitFileRead(int threads, FileReadRunnable fileRead)
-	{
-		if (m_thread_pool == null)
-		{
-			m_thread_pool = (ThreadPoolExecutor)Executors.newFixedThreadPool(threads);
-			m_result_list = new ArrayList<Future<FileReadRunnable>>();
-		}
-		else
-		{
-			m_thread_pool.setMaximumPoolSize(threads);
-		}
-		m_result_list.add(m_thread_pool.submit(fileRead));
-	}
-	
-	public synchronized void waitForFileReads()
-		throws IOException, RuleActionException
-	{
-		while (m_result_list != null && m_result_list.size() > 0)
-		{
-			Future<FileReadRunnable> future = m_result_list.get(0);
-			m_result_list.remove(0);
-			FileReadRunnable r;
-			try {
-				r = future.get();
-			} catch (InterruptedException e) {
-				throw new RuleActionException("Interrupted waiting for analyzer thread", e);
-			} catch (ExecutionException e) {
-				throw new RuleActionException("Uncaught error in analyzer thread", e);
-			}
-			if (r.captureIOException != null)
-				throw r.captureIOException;
-			if (r.captureRuleActionException != null)
-				throw r.captureRuleActionException;
-		}
-	}
-	
-	private void sendFileToDriver( File file, DBDriverSource driverSource, int threads, boolean filter) throws IOException, RuleActionException
-	{
-		if ( file.isDirectory())
-		{
-			File[] files=file.listFiles();
-			for ( int i=0; i<files.length; ++i)
-			{
-				sendFileToDriver( files[i], driverSource, threads, true);
-			}
-		}
-		else
-		{
-			String lower_file=file.getName().toLowerCase();
-			if ( lower_file.endsWith(".il"))
-			{
-				if (threads > 1)
-				{
-					submitFileRead(threads, new FileReadRunnable(file, driverSource.get()) {
-						void read(File file, DBDriver driver) throws IOException, RuleActionException
-						{
-							readIlFile(file, driver);
-						}
-					});
-				}
-				else
-				{
-					readIlFile(file, driverSource.get());
-				}
-			}
-			else if ( lower_file.endsWith(".dll") || lower_file.endsWith(".exe"))
-			{
-				if ( filter)
-				{
-					if ( m_directory_match!=null)
-					{
-						if ( ! m_directory_match.matcher( file.getParentFile().getAbsolutePath()).find())
-						{
-							if ( logger.isLoggable(Level.FINER))
-								logger.finer( "Rejecting "+file.getAbsolutePath()+" because directory doesn't match "+m_directory_match.pattern());
-							return;
-						}
-					}
-					if ( m_oldest!=null )
-					{
-						Date d=m_oldest.get( file.getCanonicalPath());
-						if ( d!=null && file.lastModified()<=d.getTime())
-						{
-							if ( logger.isLoggable(Level.FINER))
-								logger.finer( "Rejecting "+file.getAbsolutePath()+" because it is older than "+m_oldest.toString() );
-							return;						
-						}
-						m_oldest.put(file.getCanonicalPath(), new Date(file.lastModified()));
-					}
-				}
-				if (threads > 1)
-				{
-					submitFileRead(threads, new FileReadRunnable(file, driverSource.get()) {
-
-						@Override
-						void read(File file, DBDriver driver)
-								throws IOException, RuleActionException {
-							readAssemblyFile(file, driver);
-						}
-					});
-				}
-				else
-					readAssemblyFile(file, driverSource.get());
-			}
-		}
-	}
-	
-	private static String[] formatCommandArgs( String commandFormat, Object[] format_args)
-	{
-		ArrayList<String> arg_list=new ArrayList<String>();
-		for ( Enumeration e=new StringTokenizer( commandFormat); e.hasMoreElements();)
-		{
-			arg_list.add( MessageFormat.format( (String)e.nextElement(), format_args));
-		}
-		String[] cmdargs=new String[arg_list.size()];
-		return arg_list.toArray(cmdargs);
-	}
-	
-	public static void main( String[] args) throws Exception
-	{
-		com.antlersoft.ilanalyze.db.ILDB db=new com.antlersoft.ilanalyze.db.ILDB(new File(args[1]), false);
-		try
-		{
-			new IldasmReader().sendFileToDriver( new File(args[0]), new SimpleDBDriverSource(
-					new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db))), 1, false);
-		}
-		finally
-		{
-			db.close();
-		}
-	}
 }
