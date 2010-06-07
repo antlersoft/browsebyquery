@@ -25,6 +25,8 @@ import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
 
+import com.antlersoft.util.Semaphore;
+
 /**
  * Adds data read from assembly files to the database
  * @author Michael A. MacDonald
@@ -51,6 +53,8 @@ public class ILDBDriver implements DBDriver {
 	
 	/** Custom attributes applicable to the next declaration */
 	private ArrayList<CustomAttributeSetting> m_custom_attributes;
+	
+	private static Semaphore m_commit_lock = new Semaphore();
 	
 	private final static String ATTRIBUTE_INITIALIZER=".attributeinitializer";
 	
@@ -139,9 +143,18 @@ public class ILDBDriver implements DBDriver {
 			updater.m_updater.methodDone();
 		}
 		m_class_stack.remove( m_class_stack.size()-1);
+		m_commit_lock.leaveProtected();
 		if ( ++m_class_count>1000)
 		{
-			m_db.commitAndRetain();
+			m_commit_lock.enterCritical();
+			try
+			{
+				m_db.commitAndRetain();
+			}
+			finally
+			{
+				m_commit_lock.leaveCritical();
+			}
 			m_class_count=0;
 		}
 	}
@@ -185,9 +198,17 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#startAssembly(java.lang.String)
 	 */
 	public void startAssembly(String name) {
-		m_current_assembly=DBAssembly.get( m_db, name);
-		m_current_source_file=null;
-		m_current_line=0;
+		m_commit_lock.enterProtected();
+		try
+		{
+			m_current_assembly=DBAssembly.get( m_db, name);
+			m_current_source_file=null;
+			m_current_line=0;
+		}
+		finally
+		{
+			m_commit_lock.leaveProtected();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -195,6 +216,7 @@ public class ILDBDriver implements DBDriver {
 	 */
 	public void startClass(String className, List genericParams,
 			int properties, ReadType extendsType, List implementsList) {
+		m_commit_lock.enterProtected();
 		DBClass read_class=DBClass.get(m_db, className);
 		read_class.setProperties(properties);
 		read_class.setVisited( true);
@@ -241,16 +263,32 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#startModule(java.lang.String)
 	 */
 	public void startModule(String name) {
-		m_current_module=DBModule.get(m_db, name);
-		m_current_module.setAssembly( m_current_assembly);
+		m_commit_lock.enterProtected();
+		try
+		{
+			m_current_module=DBModule.get(m_db, name);
+			m_current_module.setAssembly( m_current_assembly);
+		}
+		finally
+		{
+			m_commit_lock.leaveProtected();
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#startNamespace(java.lang.String)
 	 */
 	public void startNamespace(String name) {
-		DBPackage namespace=DBPackage.get( name, m_db);
-		m_namespace_stack.add( namespace);
+		m_commit_lock.enterProtected();
+		try
+		{
+			DBPackage namespace=DBPackage.get( name, m_db);
+			m_namespace_stack.add( namespace);
+		}
+		finally
+		{
+			m_commit_lock.leaveProtected();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -274,8 +312,16 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#endAnalyzedFile()
 	 */
 	public void endAnalyzedFile() {
-		m_db.commitAndRetain();
-		m_class_count=0;
+		m_commit_lock.enterCritical();
+		try
+		{
+			m_db.commitAndRetain();
+			m_class_count=0;
+		}
+		finally
+		{
+			m_commit_lock.leaveCritical();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -374,12 +420,14 @@ public class ILDBDriver implements DBDriver {
 	public void endBundle() {
 		m_bundle_updater.finishBundle( m_db);
 		m_bundle_updater=null;
+		m_commit_lock.leaveProtected();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#startBundle(java.lang.String)
 	 */
 	public void startBundle(String name) {
+		m_commit_lock.enterProtected();
 		m_bundle_updater=new DBBundleBase.BundleUpdater( DBBundle.get(m_db, m_current_assembly, name));
 	}
 
