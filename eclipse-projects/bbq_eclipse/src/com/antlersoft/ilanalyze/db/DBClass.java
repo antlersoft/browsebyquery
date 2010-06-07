@@ -407,7 +407,7 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 	 * @param f
 	 * @return
 	 */
-	static DBClass get( IndexObjectDB db, String f)
+	static synchronized DBClass get( IndexObjectDB db, String f)
 	{
 		DBClass result=(DBClass)db.findObject( CLASS_KEY_INDEX,
 			f);

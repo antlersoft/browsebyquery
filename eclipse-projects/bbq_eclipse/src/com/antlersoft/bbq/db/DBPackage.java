@@ -67,7 +67,7 @@ public class DBPackage implements Persistent, Cloneable {
 		}
 	}
 	
-	public static DBPackage get( String package_name, IndexObjectDB db) throws ObjectStoreException
+	public static synchronized DBPackage get( String package_name, IndexObjectDB db) throws ObjectStoreException
 	{
 		DBPackage result=(DBPackage)db.findObject(PACKAGE_NAME_INDEX, package_name);
 		if ( result==null)

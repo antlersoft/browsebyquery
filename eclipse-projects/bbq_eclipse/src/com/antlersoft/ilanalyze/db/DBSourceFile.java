@@ -37,7 +37,7 @@ public class DBSourceFile implements Persistent {
 		return _persistentImpl;
 	}
 	
-	static DBSourceFile get( IndexObjectDB db, String f)
+	static synchronized DBSourceFile get( IndexObjectDB db, String f)
 	{
 		DBSourceFile result=(DBSourceFile)db.findObject( SOURCE_FILE_NAME_INDEX,
 			f);
