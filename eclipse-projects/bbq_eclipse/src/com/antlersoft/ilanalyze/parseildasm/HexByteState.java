@@ -32,6 +32,9 @@ public class HexByteState extends LexStateBase {
 	 */
 	public LexState nextCharacter(char c) throws IOException,
 			RuleActionException, LexException {
+		if (c == 'x' && m_buf[0] == '0')
+			return new HexByte0xState(m_parent, m_reader);
+			
 		m_buf[1]=c;
 		String value=new String(m_buf);
 		if ( ! CharClass.isHexDigit(c))
