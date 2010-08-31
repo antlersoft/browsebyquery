@@ -137,7 +137,10 @@ public class ObjectDB
         impl.markDeleted( (Persistent)object);
         if ( ! wasDirty)
         {
-            dirtyObjects.add( object);
+        	synchronized ( this )
+        	{
+        		dirtyObjects.add( object);
+        	}
         }
     }
 
