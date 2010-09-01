@@ -54,8 +54,8 @@ public final class Semaphore
     {
         if ( protectedCount<=0 || inCritical)
             throw new IllegalStateException( "Not in protected state");
-        --protectedCount;
-        notify();
+        if (--protectedCount == 0)
+        	notify();
     }
 
     public synchronized void enterCritical()
