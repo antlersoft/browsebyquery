@@ -72,7 +72,7 @@ class PunctuationState extends LexWithSymbolTree {
 	/**
 	 * Generate list of strings to generate tree; this (like building the tree) is fairly expensive,
 	 * but we only do it once.
-	 * @param reader that has the parser with the reserved wordfs we are interested in
+	 * @param reader that has the parser with the reserved words we are interested in
 	 * @return SymbolFinderTree built from punctuation reserved words
 	 */
 	private static SymbolFinderTree getTree( IldasmReader reader)
@@ -96,7 +96,7 @@ class PunctuationState extends LexWithSymbolTree {
 					list.add(s);
 				}
 			}
-			return new SymbolFinderTree( (String[])list.toArray( new String[list.size()]));
+			m_tree=new SymbolFinderTree( (String[])list.toArray( new String[list.size()]));
 		}
 		return m_tree;
 	}
