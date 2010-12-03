@@ -46,7 +46,7 @@ public class TestQuery
 	    {
 		try
 		{
-		    System.out.print( ">");
+		    System.out.println( ">");
 		    line=in.readLine();
 		    if ( line==null || line.length()==0)
 			break;
