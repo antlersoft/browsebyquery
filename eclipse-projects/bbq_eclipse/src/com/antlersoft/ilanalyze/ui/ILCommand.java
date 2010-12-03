@@ -11,7 +11,7 @@ import com.antlersoft.appcontext.AppContext;
 import com.antlersoft.ilanalyze.query.ILQueryParser;
 import com.antlersoft.query.SetExpression;
 import com.antlersoft.query.environment.ParseException;
-import com.antlersoft.query.environment.QueryLanguageEnvironment;
+import com.antlersoft.query.environment.AnalyzerQuery;
 
 /**
  * @author Michael A. MacDonald
@@ -31,7 +31,7 @@ public class ILCommand {
     	
     	BufferedReader in=new BufferedReader( new InputStreamReader( System.in));
     	ILQueryParser parser = new ILQueryParser();
-    	QueryLanguageEnvironment env = new QueryLanguageEnvironment(parser);
+    	AnalyzerQuery env = new AnalyzerQuery(parser);
     	
 		try
 		{
