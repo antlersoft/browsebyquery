@@ -14,17 +14,20 @@ import com.antlersoft.query.environment.ParseException;
 import com.antlersoft.query.environment.AnalyzerQuery;
 
 /**
+ * main() function implements a command-line interface to the Browse-by-Query functionality.
+ * Prints a > on a line by itself as a prompt.  Enter a query on a single line.  Results are returned
+ * one per line. 
  * @author Michael A. MacDonald
  *
  */
 public class ILCommand {
 
 	/**
-	 * @param args
+	 * @param args Command-line arguments; database directory, other values in AppContext
 	 */
 	public static void main(String[] args) throws Exception {
     	ILDBContainer c=new ILDBContainer();
-    	AppContext ac = c.createContextWithLegacyCommandLine(args);
+    	AppContext ac = ILDBContainer.createContextWithLegacyCommandLine(args);
     	
     	c.initializeFromContext( ac,
     			"test.bbq", "com.antlersoft.browsebyquery.il");
@@ -46,10 +49,10 @@ public class ILCommand {
 				    	break;
 				    env.setLine(line);
 				    SetExpression se=env.getExpression();
-				    Enumeration e=se.evaluate( c.getDataSource());
+				    Enumeration<?> e=se.evaluate( c.getDataSource());
 				    while ( e.hasMoreElements())
 				    {
-					System.out.println( e.nextElement().toString());
+				    	System.out.println( e.nextElement().toString());
 				    }
 				}
 				catch ( ParseException pe)
