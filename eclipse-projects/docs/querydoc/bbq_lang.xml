@@ -3400,11 +3400,12 @@ an interface.
         </refentry>
 		<refentry id="r-is-reference-type">
 		  <refnamediv>
-			<refname>is reference type</refname>
+			<refname>is reference type (Java), is class type (C#/CIL)</refname>
 			<refpurpose>Checks whether a type is a reference type or a built-in type</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
-			<synopsis>is reference type</synopsis>
+			<synopsis>is reference type (Java)</synopsis>
+			<synopsis>is class type (C#/CIL)</synopsis>
 		  </refsynopsisdiv>
 		  <refsect1>
 			<title>Description</title>
@@ -3659,7 +3660,7 @@ if it updates the value of the field.
   				with a second string value interpreted as a Java regular expression.  The following set expression
   				looks for strings that match "select", regardless of case:
   				<informalexample>
-  					<programlisting>to string ~= //(?i)db/ all strings</programlisting>
+  					<programlisting>to string ~= //(?i)select/ all strings</programlisting>
   				</informalexample>
   				</para>
   			</sect3>
