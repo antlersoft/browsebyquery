@@ -40,7 +40,7 @@ public class DBBean {
 			{
 				m_logger.fine ( "Opening db");
 				m_db.setUseMapped(true);
-				m_db.openDB( new File("/mnt/external2/scratch/eclipse_eclipse.pj"));
+				m_db.openDB( new File("/mnt/external1/scratch/eclipse_eclipse.pj"));
 			}
 			catch ( Exception e)
 			{

@@ -34,7 +34,7 @@
 <jsp:useBean id="b_query" class="com.antlersoft.bbqweb.QueryBean" scope="session"/>
 <jsp:setProperty name="b_query" property="context" value="<%= config.getServletContext() %>"/>
 <jsp:setProperty name="b_query" property="DB" value="<%= b_db.getDB() %>"/>
-<jsp:setProperty name="b_query" property="queryText" value="<%= request.getParameter("query") %>"/>
+<jsp:setProperty name="b_query" property="queryText" value="<%= request.getParameter(\"query\") %>"/>
 <table cellpadding="2" cellspacing="2" border="0" width="100%" text="#000000" bgcolor="#c3cc77" link="#000099" vlink="#990099"
  alink="#000099">
               <tbody>
