@@ -551,9 +551,11 @@ class EntryPageList implements Serializable
      * @throws IOException
      */
     private EntryPage makePageCurrent( StreamPair streams, int pageIndex)
-        throws ClassNotFoundException, DiskAllocatorException, IOException
+        throws ClassNotFoundException, DiskAllocatorException, IOException, InvalidObjectKeyException
     {
     	pageFlushLock.enterProtected();
+    	if (pageIndex < 0 || pageIndex > pages.size())
+    		throw new InvalidObjectKeyException();
         EntryPageHeader header=(EntryPageHeader)pages.get( pageIndex);
         if ( header.page!=null)
         {
