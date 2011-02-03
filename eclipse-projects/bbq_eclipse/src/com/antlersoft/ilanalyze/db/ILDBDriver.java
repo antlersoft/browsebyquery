@@ -371,9 +371,9 @@ public class ILDBDriver implements DBDriver {
 					if ( called.updateArguments(m_db, custom.getSignature()))
 						ObjectDB.makeDirty( called);
 					attrUpdater.addCall( called, m_current_source_file, m_current_line);
-					for ( Iterator i=custom.getStringArguments().iterator(); i.hasNext();)
+					for (String i : custom.getStringArguments())
 					{
-						attrUpdater.addStringReference( DBString.get( m_db, (String)i.next()), m_current_source_file, m_current_line);
+						attrUpdater.addStringReference( DBString.get( m_db, i), m_current_source_file, m_current_line);
 					}
 					for ( Iterator<CustomAttributeSetting.NamedArgument> i=custom.getNamedArguments().iterator(); i.hasNext();)
 					{
@@ -404,6 +404,8 @@ public class ILDBDriver implements DBDriver {
 				LoggingDBDriver.logger.info(ti.getMessage());				
 			}
 		}
+		if (annotation_updater.cleanup(m_db))
+			ObjectDB.makeDirty(annotatable);
 		m_custom_attributes.clear();
 	}
 
