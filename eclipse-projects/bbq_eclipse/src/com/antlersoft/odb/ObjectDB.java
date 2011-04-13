@@ -244,4 +244,39 @@ e.printStackTrace();
         store=null;
         rootObjects=null;
     }
+
+    /**
+     * Return a string representation of the given key.  If the key was not
+     * created by the underlying object store, or is for a deleted object,
+     * the implementation may throw an exception or return a string that can not
+     * be converted back to an ObjectKey.  The implementation will not return
+     * a null string.
+     * <p>
+     * In general, the returned value would be used for communicating with an
+     * external system and not persisted in the database.  Persisting an actual
+     * ObjectRef will always be more efficient.
+     * @param key Key for an object in this database
+     * @return String representation of the key
+     * @throws ObjectStoreException When string representation could not be created, as if the
+     * key is not from the store or is for a deleted object. 
+     */
+    public String keyToString(ObjectKey key)
+    	throws ObjectStoreException
+    {
+    	return store.keyToString(key);
+    }
+    
+    /**
+     * Return a object key for an object in the database for a string that is the same as a string that would be
+     * produced by a call to keyToString for that object.  If the supplied string can not be mapped to key
+     * for a valid object, an exception is thrown.
+     * @param str
+     * @return Key for the object
+     * @throws ObjectStoreException
+     */
+    public ObjectKey stringToKey(String str)
+    	throws ObjectStoreException
+   	{
+    	return store.stringToKey(str);
+   	}
 }

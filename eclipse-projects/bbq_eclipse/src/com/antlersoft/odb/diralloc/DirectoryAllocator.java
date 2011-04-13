@@ -824,4 +824,15 @@ ioe.printStackTrace();
                 toDump.thisPage.offset);
         }
     }
+
+	@Override
+	public String keyToString(ObjectKey key) throws ObjectStoreException {
+		return ((DAKey)key).toString();
+	}
+
+	@Override
+	public ObjectKey stringToKey(String str) throws ObjectStoreException {
+		// TODO: Validate generated key
+		return DAKey.fromString(str);
+	}
 }

@@ -27,6 +27,7 @@
 package com.antlersoft.odb.diralloc;
 
 import com.antlersoft.odb.ObjectKey;
+import com.antlersoft.odb.ObjectStoreException;
 
 class DAKey implements ObjectKey, Comparable
 {
@@ -56,6 +57,26 @@ class DAKey implements ObjectKey, Comparable
 	{
 		return Integer.toString( index)+":"+Integer.toString( reuseCount);
 	}
+
+	static DAKey fromString(String keyString)
+		throws ObjectStoreException
+	{
+		int colonIndex = keyString.indexOf(':');
+		if (colonIndex <= 0)
+			throw new ObjectStoreException("Invalid key string: " + keyString);
+		String indexString = keyString.substring(0, colonIndex);
+		String reuseString = keyString.substring(colonIndex + 1);
+		try
+		{
+			return new DAKey(Integer.parseInt(indexString),
+					Integer.parseInt(reuseString));
+		}
+		catch (NumberFormatException nfe)
+		{
+			throw new ObjectStoreException("Invalid key string: " + keyString, nfe);
+		}
+	}
+	
 	public int hashCode()
 	{
 		return index;

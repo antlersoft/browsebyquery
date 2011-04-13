@@ -20,20 +20,16 @@
 package com.antlersoft.odb;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.ClassNotFoundException;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.HashMap;
 
 import com.antlersoft.util.RandomInputStream;
 import com.antlersoft.util.RandomOutputStream;
@@ -387,6 +383,29 @@ public class DiskAllocatorStore implements ObjectStore
 		public boolean equals( Object t)
 		{
 			return ( ( t instanceof DAKey) && ((DAKey)t).index==index && ((DAKey)t).reuseCount==reuseCount);
+		}
+	}
+
+	@Override
+	public String keyToString(ObjectKey key) throws ObjectStoreException {
+		return ((DAKey)key).toString();
+	}
+
+	@Override
+	public ObjectKey stringToKey(String str) throws ObjectStoreException {
+		int colonIndex = str.indexOf(':');
+		if (colonIndex <= 0)
+			throw new ObjectStoreException("Invalid key string: " + str);
+		String indexString = str.substring(0, colonIndex);
+		String reuseString = str.substring(colonIndex + 1);
+		try
+		{
+			return new DAKey(Integer.parseInt(indexString),
+					Integer.parseInt(reuseString));
+		}
+		catch (NumberFormatException nfe)
+		{
+			throw new ObjectStoreException("Invalid key string: " + str, nfe);
 		}
 	}
 }

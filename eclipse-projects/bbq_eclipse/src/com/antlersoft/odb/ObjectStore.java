@@ -47,4 +47,31 @@ public interface ObjectStore
         throws ObjectStoreException;
     public void close()
         throws ObjectStoreException;
+    /**
+     * Return a string representation of the given key.  If the key was not
+     * created by this object store, or is for a deleted object,
+     * the implementation may throw an exception or return a string that can not
+     * be converted back to an ObjectKey.  The implementation will not return
+     * a null string.
+     * <p>
+     * In general, the returned value would be used for communicating with an
+     * external system and not persisted in the database.  Persisting an actual
+     * ObjectRef will always be more efficient.
+     * @param key Key for an object in this object store
+     * @return String representation of the key
+     * @throws ObjectStoreException When string representation could not be created, as if the
+     * key is not from the store or is for a deleted object. 
+     */
+    public String keyToString(ObjectKey key)
+    	throws ObjectStoreException;
+    /**
+     * Return a object key for an object in the store for a string that is the same as a string that would be
+     * produced by a call to keyToString for that object.  If the supplied string can not be mapped to key
+     * for a valid object in the store, an exception is thrown.
+     * @param str
+     * @return Key for the object
+     * @throws ObjectStoreException
+     */
+    public ObjectKey stringToKey(String str)
+    	throws ObjectStoreException;
 }
