@@ -20,6 +20,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.antlersoft.analyzer.DBClass;
 import com.antlersoft.analyzer.SourceObject;
 import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
 
@@ -80,7 +81,12 @@ class QueryResultViewSelectAction extends Action {
   private IJavaElement findTypeInAllJavaProjects(SourceObject sourceToFind)
     throws JavaModelException {
 
-    String fullyQualifiedName = sourceToFind.getDBClass().getInternalName();
+	DBClass notContainedClass = sourceToFind.getDBClass();
+	while (notContainedClass.getContainingClass() != null)
+	{
+		notContainedClass = notContainedClass.getContainingClass();
+	}
+    String fullyQualifiedName = notContainedClass.getName();
 
     // for all projects
 
