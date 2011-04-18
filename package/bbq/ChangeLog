@@ -1,4 +1,4 @@
---bbq0.7.11
+--bbq0.7.12
   Add way to externalize object keys as strings
 
   Change how plugin resolves types enclosed in other types
