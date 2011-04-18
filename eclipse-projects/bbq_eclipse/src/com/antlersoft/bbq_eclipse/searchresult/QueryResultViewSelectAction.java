@@ -80,7 +80,7 @@ class QueryResultViewSelectAction extends Action {
   private IJavaElement findTypeInAllJavaProjects(SourceObject sourceToFind)
     throws JavaModelException {
 
-    String fullyQualifiedName = sourceToFind.getDBClass().getName();
+    String fullyQualifiedName = sourceToFind.getDBClass().getInternalName();
 
     // for all projects
 
