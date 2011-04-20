@@ -3,6 +3,9 @@
  */
 package com.antlersoft.query.environment.ui;
 
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -37,8 +40,26 @@ public class ResultList extends JList {
 		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-
+			
+			Clipboard clipboard;
+			
+			try {
+				clipboard = getToolkit().getSystemClipboard();
+			}
+			catch (Exception ex)
+			{
+				this.setEnabled(false);
+				return;
+			}
+            StringBuilder results=new StringBuilder();
+            String lineSep = System.getProperty("line.separator");
+            for (Object o : getSelectedValues())
+            {
+                results.append(o.toString());
+                results.append(lineSep);
+            }
+            StringSelection contents = new StringSelection(results.toString());
+            clipboard.setContents(contents, contents);
 		}
 
 	}
@@ -58,13 +79,16 @@ public class ResultList extends JList {
 		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-
+			int size = dlm.getSize();
+			if (size > 0)
+			{
+				getSelectionModel().addSelectionInterval(0, size - 1);
+			}
 		}
 
 	}
 
-	private DefaultListModel dlm;
+	DefaultListModel dlm;
 	private JPopupMenu popup_menu;
 	
 	public ResultList()
