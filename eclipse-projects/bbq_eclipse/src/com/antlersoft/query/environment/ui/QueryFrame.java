@@ -26,15 +26,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.ArrayList;
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
 
 import com.antlersoft.query.BasicBase;
+import com.antlersoft.query.SelectionSetExpression;
 import com.antlersoft.query.SetExpression;
 
 import com.antlersoft.query.environment.AnalyzerQuery;
@@ -56,7 +59,7 @@ public class QueryFrame
     AnalyzerQuery qp;
     JCheckBoxMenuItem useMappedCheckBox;
     protected JTextArea queryArea;
-    protected JTextArea outputArea;
+    protected ResultList resultList;
     protected HistoryList historyList;
     protected JFrame frameWindow;
     private DBContainer container;
@@ -166,8 +169,9 @@ public class QueryFrame
             new JSplitPane( JSplitPane.VERTICAL_SPLIT, queryScroll,
             historyScroll), storedArea));
         upperPane.add( textBox);
-        outputArea=new JTextArea( 16, 80);
-        JScrollPane lowerPane=new JScrollPane( outputArea);
+        resultList=new ResultList();
+		//resultList.setPreferredSize(new Dimension(800, 192));
+        JScrollPane lowerPane=new JScrollPane( resultList);
         JSplitPane mainPane=new JSplitPane( JSplitPane.VERTICAL_SPLIT, upperPane, lowerPane);
         
         if (container instanceof AbstractDBContainer)
@@ -177,8 +181,7 @@ public class QueryFrame
         }
 
         // Create actions
-        outputArea.setEditable( false);
-        queryButton.addActionListener( new ActionListener() {
+       queryButton.addActionListener( new ActionListener() {
                 public void actionPerformed( ActionEvent ae)
                 {
                     try
@@ -187,20 +190,27 @@ public class QueryFrame
                         if ( line==null || line.length()==0)
                             return;
                         qp.setLine( line);
+                        SelectionSetExpression querySelection = qp.getCurrentSelection();
+                        querySelection.clear();
+                        for (Object o : resultList.getSelectedValues())
+                        {
+                        	querySelection.add(o);
+                        }
                         SetExpression se=qp.getExpression();
                         historyList.addQuery( line);
-                        Enumeration e=se.evaluate( container.getDataSource());
-                        TreeSet resultSorter=new TreeSet();
+                        Enumeration<?> e=se.evaluate( container.getDataSource());
+                        ArrayList<Object> resultSorter = new ArrayList<Object>();
                         while ( e.hasMoreElements())
-                            resultSorter.add( e.nextElement().toString());
-                        Iterator iterator=resultSorter.iterator();
-                        StringBuilder results=new StringBuilder();
-                        while ( iterator.hasNext())
-                        {
-                            results.append( (String)iterator.next());
-                            results.append( '\n');
-                        }
-                        outputArea.setText( results.toString());
+                            resultSorter.add(e.nextElement());
+                        Collections.sort(resultSorter, new Comparator<Object>() {
+
+							@Override
+							public int compare(Object o1, Object o2) {
+								return o1.toString().compareTo(o2.toString());
+							}
+                        	
+                        });
+                        resultList.setContents(resultSorter);
                     }
                     catch ( ParseException pe)
                     {

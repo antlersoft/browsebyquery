@@ -26,7 +26,9 @@ public class QueryResponse {
 
 	private RequestException re;
 	
-	private ArrayList responseList;
+	private ArrayList<ResponseObject> responseList;
+	
+	private String resultClassName;
 
 	public RequestException getException()
 	{
@@ -38,21 +40,28 @@ public class QueryResponse {
 		return responseList.size();
 	}
 	
-	public List getResponses()
+	public String getResultClassName()
+	{
+		return resultClassName;
+	}
+	
+	public List<ResponseObject> getResponses()
 	{
 		return responseList;
 	}
 	
 	public QueryResponse( RequestException excep)
 	{
-		responseList=new ArrayList(0);
+		responseList=new ArrayList<ResponseObject>(0);
+		resultClassName = "";
 		re=excep;
 	}
 	
-	public QueryResponse( Enumeration e)
+	public QueryResponse( Class<?> resultClass, Enumeration<?> e)
 	{
+		resultClassName = resultClass.getName();
 		re=null;
-		responseList=new ArrayList();
+		responseList=new ArrayList<ResponseObject>();
 		for ( ; e.hasMoreElements(); )
 		{
 			responseList.add( new ResponseObject( e.nextElement()));
@@ -89,15 +98,16 @@ public class QueryResponse {
 		public void writeToXML(ContentHandler xml_writer) throws SAXException {
 			AttributesImpl impl=new AttributesImpl();
 			impl.addAttribute("", "", "ResponseCount", "CDATA", Integer.toString(qr.getResponseCount()));
+			impl.addAttribute("","", "ResultClassName", "CDATA", qr.getResultClassName());
 			xml_writer.startElement("", "", getElementTag(), impl);
 			if ( qr.getException()!=null)
 			{
 				new RequestException.Element( qr.getException()).writeToXML(xml_writer);
 			}
 			xml_writer.startElement( "", "", "Responses", SimpleHandler.m_empty);
-			for ( Iterator i=qr.getResponses().iterator(); i.hasNext();)
+			for ( Iterator<ResponseObject> i=qr.getResponses().iterator(); i.hasNext();)
 			{
-				new ResponseObject.Element( (ResponseObject)i.next()).writeToXML(xml_writer);
+				new ResponseObject.Element( i.next()).writeToXML(xml_writer);
 			}
 			xml_writer.endElement( "", "", "Responses");
 			xml_writer.endElement( "", "", getElementTag());

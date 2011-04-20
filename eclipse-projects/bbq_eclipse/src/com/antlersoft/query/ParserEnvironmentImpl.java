@@ -8,6 +8,14 @@ package com.antlersoft.query;
  */
 public class ParserEnvironmentImpl implements ParserEnvironment {
 
+	/* (non-Javadoc)
+	 * @see com.antlersoft.query.ParserEnvironment#getSelected()
+	 */
+	@Override
+	public SetExpression getSelection() {
+		return new EmptySetExpression();
+	}
+
 	private SetExpression m_expression;
 	
 	public SetExpression getLastParsedExpression() {

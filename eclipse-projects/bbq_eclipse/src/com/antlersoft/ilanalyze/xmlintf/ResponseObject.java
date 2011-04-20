@@ -11,6 +11,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.antlersoft.ilanalyze.db.DBSourceFile;
 import com.antlersoft.ilanalyze.db.DBSourceObject;
 
+import com.antlersoft.odb.ObjectDB;
+
 import com.antlersoft.util.xml.IElement;
 import com.antlersoft.util.xml.IHandlerStack;
 
@@ -36,6 +38,8 @@ public class ResponseObject {
 		}
 		type=o.getClass().getName();
 		description=o.toString();
+		ObjectDB db = ObjectDB.getObjectDB();
+		objectKey = db.keyToString(db.getObjectKey(o));
 	}
 	public String getObjectType()
 	{
@@ -48,10 +52,13 @@ public class ResponseObject {
 	
 	public int getLine() { return line; }
 	
+	public String getObjectKey() { return objectKey; }
+	
 	private String type;
 	private String description;
 	private String file;
 	private int line;
+	private String objectKey;
 	
 	static class Element implements IElement
 	{
@@ -85,6 +92,7 @@ public class ResponseObject {
 			impl.addAttribute("", "", "Description", "CDATA", ro.getDescription());
 			impl.addAttribute("", "", "FileName", "CDATA", ro.getFile());
 			impl.addAttribute("", "", "LineNumber", "CDATA", Integer.toString(ro.getLine()));
+			impl.addAttribute("", "", "ObjectKey", "CDATA", ro.getObjectKey());
 			xml_writer.startElement("", "", getElementTag(), impl);
 			xml_writer.endElement("", "", getElementTag());
 		}

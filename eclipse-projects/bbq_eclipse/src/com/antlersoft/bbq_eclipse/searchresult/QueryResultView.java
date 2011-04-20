@@ -66,7 +66,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
 
   public void createControl(Composite parent) {
 
-    _viewer = new TableViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+    _viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
     _viewer.setContentProvider(new QueryResultViewContentProvider(this));
     _viewer.setLabelProvider(new QueryResultViewViewLabelProvider(this));
     _viewer.setSorter(new QueryResultViewNameSorter(this));

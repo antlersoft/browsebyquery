@@ -19,8 +19,6 @@
  */
 package com.antlersoft.query.environment.ui;
 
-import java.awt.*;
-
 import java.awt.event.*;
 
 import java.util.Enumeration;

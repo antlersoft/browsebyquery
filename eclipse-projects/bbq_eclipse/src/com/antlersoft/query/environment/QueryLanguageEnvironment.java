@@ -32,7 +32,9 @@ import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.Token;
 
 import com.antlersoft.query.BasicBase;
+import com.antlersoft.query.EmptySetExpression;
 import com.antlersoft.query.ParserEnvironment;
+import com.antlersoft.query.SelectionSetExpression;
 import com.antlersoft.query.SetExpression;
 import com.antlersoft.query.Transform;
 
@@ -58,6 +60,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		storedValues=new HashMap<String,TokenSequence>();
 		storedValuesSupport=new PropertyChangeSupport(this);
 		m_sequence_stack=new Stack<TokenSequence>();
+		m_selection = new SelectionSetExpression();
 	}
 	
     public SetExpression getExpression()
@@ -236,6 +239,16 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	{
 		return new EnvironmentElement( this);
 	}
+	
+	/**
+	 * Gives access to the collection of selected objects that can be accessed
+	 * from the query parser as "selection"
+	 * @return SetExpression over collection
+	 */
+	public SelectionSetExpression getCurrentSelection()
+	{
+		return m_selection;
+	}
 
 	// Package interface
 	Token[] tokens;
@@ -252,6 +265,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	private BasicBase m_parser;
 	private Stack<TokenSequence> m_sequence_stack;
 	private Lexer m_lexer;
+	private SelectionSetExpression m_selection;
 	
 	
 	/**
@@ -308,5 +322,13 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		m_previous_sequence.throwAwayClosingToken( m_parser.getReservedScope());
 		m_previous_sequence.setResult( expr);
 		m_sequence_stack.push( new TokenSequence());
+	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.query.ParserEnvironment#getSelection()
+	 */
+	@Override
+	public SetExpression getSelection() {
+		return m_selection;
 	}
 }

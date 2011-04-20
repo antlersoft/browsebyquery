@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.SwingUtilities;
 
+import com.antlersoft.query.SetExpression;
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
 import com.antlersoft.query.environment.ui.DBContainer;
 
@@ -69,7 +70,8 @@ public class BrowseByQueryXml implements IBrowseByQuery {
 			try
 			{
 				env.setLine( request.getText());
-				response=new QueryResponse( env.getExpression().evaluate( source.getDataSource()));
+				SetExpression se = env.getExpression();
+				response=new QueryResponse(se.getResultClass(), se.evaluate( source.getDataSource()));
 			}
 			catch ( Exception e)
 			{
