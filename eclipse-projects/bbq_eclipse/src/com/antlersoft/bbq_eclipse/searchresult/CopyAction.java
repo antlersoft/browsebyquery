@@ -43,9 +43,15 @@ public class CopyAction extends Action {
 	    		sb.append(lineSep);
 	    	}
 	    	Clipboard clipboard = new Clipboard(_view.getControl().getDisplay());
-	    	Object[] clipObjects = new Object[] { sb.toString() };
-	    	Transfer[] clipTransfers = new Transfer[] { TextTransfer.getInstance() };
-	    	clipboard.setContents(clipObjects, clipTransfers);
+	    	try {
+		    	Object[] clipObjects = new Object[] { sb.toString() };
+		    	Transfer[] clipTransfers = new Transfer[] { TextTransfer.getInstance() };
+		    	clipboard.setContents(clipObjects, clipTransfers);
+	    	}
+	    	finally
+	    	{
+	    		clipboard.dispose();
+	    	}
 	    }
 	}
 

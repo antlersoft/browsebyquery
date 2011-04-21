@@ -4,6 +4,7 @@
 package com.antlersoft.ilanalyze.xmlintf;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -55,7 +56,7 @@ public class QueryRequest {
 		@Override
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
-			if (qName.equals("ObjectKey"))
+			if (qName.equals("string"))
 			{
 				stack.startWithHandler(new ObjectKeyElement(request).readFromXML(stack), uri, localName, qName, attributes);
 			}
@@ -64,7 +65,7 @@ public class QueryRequest {
 		public void endElement( String uri, String localname, String qname)
 	    throws SAXException
 		{
-	        if ( stack!=null)
+	        if (qname.equals(getElementTag()) && stack!=null)
 	            stack.popHandlerStack();
 	        request._text = sb.toString();
 		}
@@ -128,6 +129,11 @@ public class QueryRequest {
 	public void addObjectKey(String s)
 	{
 		_selectedObjectKeys.add(s);
+	}
+	
+	List<String> getObjectKeys()
+	{
+		return _selectedObjectKeys;
 	}
 	
 	public String getText() { return _text; }

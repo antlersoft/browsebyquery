@@ -7,6 +7,9 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.SwingUtilities;
 
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectStoreException;
+import com.antlersoft.query.SelectionSetExpression;
 import com.antlersoft.query.SetExpression;
 import com.antlersoft.query.environment.QueryLanguageEnvironment;
 import com.antlersoft.query.environment.ui.DBContainer;
@@ -70,6 +73,20 @@ public class BrowseByQueryXml implements IBrowseByQuery {
 			try
 			{
 				env.setLine( request.getText());
+				SelectionSetExpression selection = env.getCurrentSelection();
+				selection.clear();
+				ObjectDB db = ObjectDB.getObjectDB();
+				for (String s : request.getObjectKeys())
+				{
+					try {
+						Object o = db.get(db.stringToKey(s));
+						selection.add(o);
+					}
+					catch (ObjectStoreException ose)
+					{
+						// do nothing with bad selected value
+					}
+				}
 				SetExpression se = env.getExpression();
 				response=new QueryResponse(se.getResultClass(), se.evaluate( source.getDataSource()));
 			}
