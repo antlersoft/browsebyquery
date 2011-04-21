@@ -18,6 +18,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.Page;
 
+import com.antlersoft.bbq_eclipse.Bbq_eclipsePlugin;
+
 
 public class QueryResultView extends Page implements ISearchResultPage {
 
@@ -63,6 +65,10 @@ public class QueryResultView extends Page implements ISearchResultPage {
 
   public void setViewPart(ISearchResultViewPart part) {
   }
+  
+  public ISelection getSelection() {
+	  return _selection;
+  }
 
   public void createControl(Composite parent) {
 
@@ -78,6 +84,8 @@ public class QueryResultView extends Page implements ISearchResultPage {
     _selectAction = new QueryResultViewSelectAction(this);
     MenuManager manager = new MenuManager("#PopupResult");
     manager.add(_selectAction);
+    manager.add(new SelectAllAction(this));
+    manager.add(new CopyAction(this));
     _viewer.getTable().setMenu(manager.createContextMenu(_viewer.getTable()));
     _viewer.addDoubleClickListener(new IDoubleClickListener() {
       public void doubleClick(DoubleClickEvent evt) {
@@ -94,7 +102,7 @@ public class QueryResultView extends Page implements ISearchResultPage {
   }
 
   public void setFocus() {
-
+	Bbq_eclipsePlugin.getDefault().setCurrentResultView(this);
     _viewer.getControl().setFocus();
   }
 }

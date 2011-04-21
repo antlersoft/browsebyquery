@@ -254,6 +254,7 @@ public class QueryView extends ViewPart {
                 		_historyList.remove( i);
                 		break;
                 	}
+                Bbq_eclipsePlugin.getDefault().updateQueryParserWithSelection();
                 AnalyzerQuery qp=Bbq_eclipsePlugin.getDefault().getQueryParser();
                 qp.setLine( line);
                 try

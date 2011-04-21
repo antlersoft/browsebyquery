@@ -2,6 +2,7 @@ package com.antlersoft.bbq_eclipse;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.Iterator;
 
 import org.eclipse.core.resources.ISavedState;
 import org.eclipse.core.resources.ISaveParticipant;
@@ -17,6 +18,8 @@ import org.eclipse.ui.plugin.*;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 
 import org.eclipse.swt.widgets.Display;
 
@@ -27,9 +30,11 @@ import com.antlersoft.analyzer.IndexAnalyzeDB;
 import com.antlersoft.analyzer.query.QueryParser;
 
 import com.antlersoft.bbq_eclipse.preferences.PreferenceConstants;
+import com.antlersoft.bbq_eclipse.searchresult.QueryResultView;
 
 import com.antlersoft.odb.DiskAllocatorException;
 import com.antlersoft.odb.ObjectDBException;
+import com.antlersoft.query.SelectionSetExpression;
 import com.antlersoft.query.environment.AnalyzerQuery;
 
 /**
@@ -42,6 +47,7 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 	
 	private IndexAnalyzeDB m_db;
 	private AnalyzerQuery m_qp;
+	private QueryResultView _currentResultView;
 	boolean _pathChanged;
 	
 	static final String ENVIRONMENT_FILE_KEY = "environment";
@@ -121,6 +127,29 @@ public class Bbq_eclipsePlugin extends AbstractUIPlugin {
 		IStatus status=createStatus( message, ex, IStatus.ERROR, 0);
 		getLog().log( status);
 		return status;
+	}
+	
+	public synchronized void setCurrentResultView(QueryResultView view)
+	{
+		_currentResultView = view;
+	}
+	
+	public synchronized void updateQueryParserWithSelection()
+	{
+		if (_currentResultView != null)
+		{
+			ISelection viewSelection = _currentResultView.getSelection();
+		    if (viewSelection != null && !viewSelection.isEmpty()
+		            && viewSelection instanceof IStructuredSelection) {
+		    	IStructuredSelection selection = (IStructuredSelection)viewSelection;
+		    	SelectionSetExpression se = m_qp.getCurrentSelection();
+		    	se.clear();
+		    	for (Iterator<?> i = selection.iterator(); i.hasNext();)
+		    	{
+		    		se.add(i.next());
+		    	}
+		    }
+		}
 	}
 	
 	class LogRunner implements Runnable
