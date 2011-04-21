@@ -56,7 +56,7 @@ public class QueryRequest {
 		@Override
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
-			if (qName.equals("ObjectKey"))
+			if (qName.equals("string"))
 			{
 				stack.startWithHandler(new ObjectKeyElement(request).readFromXML(stack), uri, localName, qName, attributes);
 			}
@@ -65,7 +65,7 @@ public class QueryRequest {
 		public void endElement( String uri, String localname, String qname)
 	    throws SAXException
 		{
-	        if ( stack!=null)
+	        if (qname.equals(getElementTag()) && stack!=null)
 	            stack.popHandlerStack();
 	        request._text = sb.toString();
 		}
