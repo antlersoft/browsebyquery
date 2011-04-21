@@ -46,7 +46,9 @@ namespace com.antlersoft.BBQAddIn
         private void StartQuery(object sender, EventArgs e)
         {
             String text = QueryText.Text;
-            queryWorker.RunWorkerAsync(new QueryRequest(text));
+            QueryRequest request = new QueryRequest(text);
+            resultWindow.AddSelectedObjectKeys(request.ObjectKeys);
+            queryWorker.RunWorkerAsync(request);
             queryButton.Enabled=false;
         }
 

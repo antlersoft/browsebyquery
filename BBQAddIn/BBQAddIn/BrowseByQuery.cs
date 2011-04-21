@@ -13,11 +13,12 @@ namespace com.antlersoft.BBQAddIn
     public class QueryRequest
     {
         public QueryRequest()
-        { }
+        { ObjectKeys = new List<String>(); }
 
         public QueryRequest(String text)
         {
             queryText = text;
+            ObjectKeys = new List<String>();
         }
 
         [XmlText]
@@ -26,6 +27,9 @@ namespace com.antlersoft.BBQAddIn
             get { return queryText; }
             set { queryText=value; }
         }
+
+        [XmlArray]
+        public List<String> ObjectKeys { get; set; }
 
         private String queryText=String.Empty;
 
@@ -83,12 +87,22 @@ namespace com.antlersoft.BBQAddIn
     {
         private String objectType = String.Empty;
 
-		[XmlAttribute]
+        [XmlAttribute]
         public String ObjectType
         {
             get { return objectType; }
             set { objectType = value; }
         }
+
+        private String objectKey;
+
+        [XmlAttribute]
+        public String ObjectKey
+        {
+            get { return objectKey; }
+            set { objectKey = value; }
+        }
+
         private String description = String.Empty;
 
 		[XmlAttribute]

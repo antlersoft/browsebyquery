@@ -8,9 +8,16 @@ namespace com.antlersoft.BBQAddIn
 	{
 		public static void Main( String[] args)
 		{
-			Object o=new BrowseByQueryBySocket().PerformQuery(
-				new QueryRequest("methods in class \"System.Int32\""));
-			StringWriter sw=new StringWriter();
+            //QueryRequest request = new QueryRequest("methods in class \"System.Int32\"");
+            QueryRequest request = new QueryRequest("calls to selection");
+            StringWriter sw = new StringWriter();
+            request.ObjectKeys.Add("2306:0");
+            request.ObjectKeys.Add("3374:0");
+            new XmlSerializer(typeof(QueryRequest)).Serialize(sw, request);
+            Console.WriteLine(sw.ToString());
+            Object o = new BrowseByQueryBySocket().PerformQuery(
+				request);
+			sw=new StringWriter();
 			new XmlSerializer(typeof(QueryResponse)).Serialize( sw, o);
 			Console.WriteLine( sw.ToString());
 			Console.WriteLine( "Done!");

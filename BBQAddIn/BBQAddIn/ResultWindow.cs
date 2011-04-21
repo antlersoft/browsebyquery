@@ -43,9 +43,20 @@ namespace com.antlersoft.BBQAddIn
             get { return resultList; }
         }
 
+        public void AddSelectedObjectKeys(List<String> collection)
+        {
+            foreach (int i in resultList.SelectedIndices)
+            {
+                collection.Add(currentResponses[i].ObjectKey);
+            }
+        }
+
         private void JumpToSelected(object sender, EventArgs e)
         {
-            int index = resultList.SelectedIndex;
+            ListBox.SelectedIndexCollection indices = resultList.SelectedIndices;
+            int index = -1;
+            if (indices.Count > 0)
+                index = indices[0];
             if (index >= 0 && index < currentResponses.Length)
             {
                 ResponseObject obj = currentResponses[index];

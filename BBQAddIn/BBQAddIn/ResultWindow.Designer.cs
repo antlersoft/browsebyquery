@@ -44,6 +44,7 @@ namespace com.antlersoft.BBQAddIn
             this.resultList.Location = new System.Drawing.Point(0, 0);
             this.resultList.MinimumSize = new System.Drawing.Size(80, 30);
             this.resultList.Name = "resultList";
+            this.resultList.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.resultList.Size = new System.Drawing.Size(80, 30);
             this.resultList.TabIndex = 0;
             this.resultList.DoubleClick += new System.EventHandler(this.JumpToSelected);
@@ -53,12 +54,12 @@ namespace com.antlersoft.BBQAddIn
             this.resultMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.jumpToToolStripMenuItem});
             this.resultMenu.Name = "resultMenu";
-            this.resultMenu.Size = new System.Drawing.Size(153, 48);
+            this.resultMenu.Size = new System.Drawing.Size(139, 26);
             // 
             // jumpToToolStripMenuItem
             // 
             this.jumpToToolStripMenuItem.Name = "jumpToToolStripMenuItem";
-            this.jumpToToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.jumpToToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
             this.jumpToToolStripMenuItem.Text = "Jump To";
             this.jumpToToolStripMenuItem.Click += new System.EventHandler(this.JumpToSelected);
             // 
