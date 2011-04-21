@@ -4,6 +4,7 @@
 package com.antlersoft.ilanalyze.xmlintf;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -128,6 +129,11 @@ public class QueryRequest {
 	public void addObjectKey(String s)
 	{
 		_selectedObjectKeys.add(s);
+	}
+	
+	List<String> getObjectKeys()
+	{
+		return _selectedObjectKeys;
 	}
 	
 	public String getText() { return _text; }
