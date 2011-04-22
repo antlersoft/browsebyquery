@@ -1,13 +1,12 @@
-bbq0.7.10 --
+bbq0.8.0--
 
-  Add "each" value expression (value expression equivalent of "same"); also
-  make "same" work like value expression when necessary. (not in manual yet)
+  Add "selection" keyword to language; change all UI's
+  to populate "selection" based on selecting from previous result list.
 
-  Fix cause of database corruption where object index free list was
-  sometimes not written to the database correctly.  Updated allocator
-  version in order to force databases to be rebuilt so the problem gets
-  cleaned (even though there would otherwise be no problem opening
-  existing databases.)
+  Change Eclipse plugin and standalone to make result list multi-select,
+  and give select-all and copy options.  Copy copies selected items
+  as text to the clipboard.
 
-  Add "array of" value expression to return a type that represents
-  an array of a type. (not in manual yet)
+  Change how Eclipse plugin resolves types enclosed in other types
+
+  Add support for accessing database files as memory-mapped

@@ -1,3 +1,11 @@
+--bbq0.8.0
+  Add "selection" keyword to language; change all UI's
+  to populate "selection" based on selecting from previous result list.
+
+  Change Eclipse plugin and standalone to make result list multi-select,
+  and give select-all and copy options.  Copy copies selected items
+  as text to the clipboard.
+
 --bbq0.7.12
   Add way to externalize object keys as strings
 
