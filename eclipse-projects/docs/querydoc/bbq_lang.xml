@@ -1326,7 +1326,7 @@ for your convenience or for faster querying.  These
 special set expression commands let you work with the
 interpreter's state.
 </para>
-	<refentry>
+	<refentry id="r-execute">
 	  <refnamediv>
 	    <refname>execute</refname>
 	    <refpurpose>Convert a set expression to a set of objects</refpurpose>
@@ -1373,6 +1373,10 @@ later expressions.</para>
 	  </refsynopsisdiv>
 	  <refsect1>
 	    <title>Description</title>
+	    <para>Since the <link linkend="r-any-class"><userinput>any</userinput></link> operator
+	    has been added to the language, you will usually use that as an alternative to
+	    specifying the complete clasws name, rather than specifying a
+	    specific class search path with <userinput>import</userinput>.</para>
 	    <para>You will commonly use the <link linkend="r-class"><userinput>class</userinput></link>
 simple set expression as the foundation of your queries,
 and it can become tiresome to type the complete class name each time.
@@ -1397,7 +1401,7 @@ when looking for a class object with the class set expression.
 	    <para><link linkend="r-type-string">string</link></para>
 	  </refsect1>
 	</refentry>
-	<refentry>
+	<refentry id="r-previous">
 	  <refnamediv>
 	    <refname>previous</refname>
 	    <refpurpose>Access the last set expression evaluated by
@@ -1414,6 +1418,48 @@ reference the last set expression evaluated by the interpreter. If there has bee
 no previous expression evaluated, a set expression representing the empty set
 is substituted.
             </para>
+	  </refsect1>
+	</refentry>
+	<refentry id="r-selection">
+	  <refnamediv>
+	    <refname>selection</refname>
+	    <refpurpose>Set of objects selected in the user interface</refpurpose>
+	  </refnamediv>
+	  <refsynopsisdiv>
+	    <synopsis>selection</synopsis>
+	  </refsynopsisdiv>
+	  <refsect1>
+	    <title>Description</title>
+	    <para>
+<userinput>selection</userinput> is a set expression that returns a set of objects specified in
+the user interface.  Typically, these will be items selected from the result list of a
+previously evaluated expression.
+            </para>
+            <para>If you reuse a set expression (from the history list in the UI, or with
+            <link linkend="r-previous"><userinput>previous</userinput></link>
+            for example) please
+            note that <userinput>selection</userinput> is evaluated anew
+            with the current UI selection each time an expression is run, and the current
+            selection in the UI will be lost each time an expression is run.
+            If you want to preserve the result of <userinput>selection</userinput>
+            for use in future queries, you should save it by value using the
+            <link linkend="r-setcommand"><userinput>set</userinput></link>
+            and <link linkend="r-execute"><userinput>execute</userinput></link> operators.
+            </para>
+            <informalexample>
+            	<programlisting>
+            		set XS to execute selection
+            	</programlisting>
+            </informalexample>
+            <para>
+            Then <userinput>XS</userinput> will hold the same value until changed or removed.
+            </para>
+	  </refsect1>
+	  <refsect1>
+	  	<title>Type</title>
+	  	<para>The type of <userinput>selection</userinput> is compatible with the type of
+	  	the objects selected; if all of the selected objects have the same type, it will
+	  	be that type.</para>
 	  </refsect1>
 	</refentry>
 	<refentry id="r-setcommand">
@@ -2414,7 +2460,7 @@ with <userinput>( string references from foo ) intersection ( references to stri
 		<refentry id="r-uncorrelated">
 		  <refnamediv>
 			<refname>uncorrelated</refname>
-			<refpurpose>Change a set to another, specified set</refpurpose>
+			<refpurpose>Change members of a set to another, specified set</refpurpose>
 		  </refnamediv>
 		  <refsynopsisdiv>
 			<synopsis>uncorrelated ( <replaceable>set expression</replaceable> )</synopsis>
@@ -2422,19 +2468,46 @@ with <userinput>( string references from foo ) intersection ( references to stri
 		  <refsect1>
 			<title>Description</title>
 		  	<para>
-In special circumstances, you might wish to use a set expression
-where the language normally calls for a transform.
-This transform replaces any set with the result
+Sometimes, the language will call for a transform and you will
+want the output of the transform to be a known set of objects, regardless
+of the input of the transform; that's where <userinput>uncorrelated</userinput> is useful.
+This transform replaces each of the members of the input set with the result
 of the <replaceable>set expression</replaceable> argument provided.
 		  	</para>
+		  	<para>Because <replaceable>set expression</replaceable> is evaluated
+		  	for each member of the input set, you will often want to use uncorrelated
+		  	together with the <link linkend="r-execute"><userinput>execute</userinput></link>
+		  	operator for better performance.</para>
 		  	<refsect2>
 		  		<title>Example</title>
-		  		<para>In this (somewhat contrived) example,
-		  		the expression returns the methods in <userinput>ObjectDB</userinput>
-		  		only if the result of the previous set expression was not empty:
+		  		<para>This set expression finds all the methods in classes within the
+		  		<userinput>org.eclipse.ui</userinput> package that contain more than one
+		  		catch of the exception <userinput>ExecutionException</userinput>.
+		  		Note the intersection of a set resulting from a regular transform
+		  		with the uncorrelated set to check for membership in the uncorrelated set;
+		  		note also the use of <link linkend="r-execute"><userinput>execute</userinput></link>
+		  		with the uncorrelated set.
 		  		</para>
 		  		<informalexample>
-		  			<programlisting>exists ( uncorrelated ( previous ) ) methods in class "ObjectDB"</programlisting>
+		  			<programlisting>(
+    1 &lt; count of
+    (
+        uncorrelated
+        (
+            execute catches of any class "ExecutionException"
+        )
+      intersection
+        catches in
+    )
+)
+methods in
+classes in
+recursive
+(
+    packages in
+)
+package "org.eclipse.ui"
+</programlisting>
 		  		</informalexample>
 		  	</refsect2>
 		  </refsect1>
