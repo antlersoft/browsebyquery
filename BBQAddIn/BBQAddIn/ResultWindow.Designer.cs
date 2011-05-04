@@ -32,6 +32,8 @@ namespace com.antlersoft.BBQAddIn
             this.resultList = new System.Windows.Forms.ListBox();
             this.resultMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.jumpToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resultMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -52,16 +54,33 @@ namespace com.antlersoft.BBQAddIn
             // resultMenu
             // 
             this.resultMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.jumpToToolStripMenuItem});
+            this.jumpToToolStripMenuItem,
+            this.copyToolStripMenuItem,
+            this.selectAllToolStripMenuItem});
             this.resultMenu.Name = "resultMenu";
-            this.resultMenu.Size = new System.Drawing.Size(139, 26);
+            this.resultMenu.Size = new System.Drawing.Size(153, 92);
+            this.resultMenu.Opening += new System.ComponentModel.CancelEventHandler(this.resultMenu_Opening);
             // 
             // jumpToToolStripMenuItem
             // 
             this.jumpToToolStripMenuItem.Name = "jumpToToolStripMenuItem";
-            this.jumpToToolStripMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.jumpToToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.jumpToToolStripMenuItem.Text = "Jump To";
             this.jumpToToolStripMenuItem.Click += new System.EventHandler(this.JumpToSelected);
+            // 
+            // copyToolStripMenuItem
+            // 
+            this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyToolStripMenuItem.Text = "Copy";
+            this.copyToolStripMenuItem.Click += new System.EventHandler(this.Copy);
+            // 
+            // selectAllToolStripMenuItem
+            // 
+            this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
+            this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.selectAllToolStripMenuItem.Text = "Select All";
+            this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.SelectAll);
             // 
             // ResultWindow
             // 
@@ -83,5 +102,7 @@ namespace com.antlersoft.BBQAddIn
         private System.Windows.Forms.ListBox resultList;
         private System.Windows.Forms.ContextMenuStrip resultMenu;
         private System.Windows.Forms.ToolStripMenuItem jumpToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectAllToolStripMenuItem;
     }
 }

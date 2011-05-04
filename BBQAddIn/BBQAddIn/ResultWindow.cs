@@ -82,5 +82,28 @@ namespace com.antlersoft.BBQAddIn
                 }
             }
         }
+
+        private void Copy(object sender, EventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (String s in resultList.SelectedItems)
+            {
+                if (sb.Length > 0)
+                    sb.Append("\r\n");
+                sb.Append(s);
+            }
+            Clipboard.SetText(sb.ToString());
+        }
+
+        private void resultMenu_Opening(object sender, CancelEventArgs e)
+        {
+
+        }
+
+        private void SelectAll(object sender, EventArgs e)
+        {
+            for (int i = 0; i < currentResponses.Length; i++)
+                resultList.SetSelected(i, true);
+        }
     }
 }
