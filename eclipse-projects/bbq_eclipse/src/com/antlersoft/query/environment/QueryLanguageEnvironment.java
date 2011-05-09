@@ -159,6 +159,17 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		return sequence.getResult();
 	}
 	
+	/**
+	 * Replace the existing collection of automatic query templates (if any)
+	 * with a new collection
+	 * @param topNode Top node in the tree of AutoQueryNodes representing
+	 * hierarchical
+	 */
+	public void setAutoQueryNode(AutoQueryNode topNode)
+	{
+		m_topNode = topNode;
+	}
+	
 	public void readEnvironment( Reader is)
 	throws IOException, QueryException
 	{
@@ -266,6 +277,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	private Stack<TokenSequence> m_sequence_stack;
 	private Lexer m_lexer;
 	private SelectionSetExpression m_selection;
+	private AutoQueryNode  m_topNode;
 	
 	
 	/**

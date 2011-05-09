@@ -8,6 +8,8 @@ import com.antlersoft.parser.Token;
 import com.antlersoft.util.xml.IElement;
 
 /**
+ * Aid to serializing query history, stored as TokenSequence objects
+ * 
  * @author Michael A. MacDonald
  *
  */
