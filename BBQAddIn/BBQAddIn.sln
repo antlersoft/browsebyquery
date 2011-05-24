@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBQAddIn", "BBQAddIn\BBQAddIn.csproj", "{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}"
