@@ -1,10 +1,10 @@
 /**
- * Copyright (c) 2006 Michael A. MacDonald
+ * Copyright (c) 2006, 2011 Michael A. MacDonald
  */
 package com.antlersoft.query;
 
 /**
- * The base class for parser environments for parsers implementing
+ * The interface for parser environments for parsers implementing
  * the query language.  Parsers can reference these methods making very few
  * assumptions about the implementation.
  * 
