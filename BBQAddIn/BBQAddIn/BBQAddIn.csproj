@@ -105,7 +105,9 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BBQAddIn.AddIn" />
+    <Content Include="BBQAddIn.AddIn">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="C:\Documents and Settings\michaelma\My Documents\Visual Studio 2005\Addins\BBQAddIn - For Testing.AddIn">
       <Link>BBQAddIn - For Testing.AddIn</Link>
     </Content>
