@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Data;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
@@ -23,6 +24,12 @@ namespace com.antlersoft.BBQAddIn
             set { applicationObject = value; }
         }
 
+        public Window2 ContainingWindow
+        {
+            get;
+            set;
+        }
+
         internal void HandleResponses(ResponseObject[] results)
         {
             resultList.Items.Clear();
@@ -30,6 +37,10 @@ namespace com.antlersoft.BBQAddIn
             foreach (ResponseObject response in results)
             {
                 resultList.Items.Add(response.Description);
+            }
+            if (ContainingWindow != null)
+            {
+                ContainingWindow.Activate();
             }
         }
 
@@ -60,13 +71,19 @@ namespace com.antlersoft.BBQAddIn
             if (index >= 0 && index < currentResponses.Length)
             {
                 ResponseObject obj = currentResponses[index];
-                if (!String.IsNullOrEmpty(obj.FileName))
+                if (!String.IsNullOrEmpty(obj.FileName) && File.Exists(obj.FileName))
                 {
                     Window2 docWindow = (Window2)ApplicationObject.ItemOperations.OpenFile(obj.FileName, Constants.vsViewKindTextView);
                     if (docWindow != null)
                     {
                         docWindow.Activate();
-                        if (obj.LineNumber > 0)
+                        TextDocument td = ApplicationObject.ActiveDocument.Object("") as TextDocument;
+                        int maxLine = -1;
+                        if (td != null)
+                        {
+                            maxLine = td.EndPoint.Line;
+                        }
+                        if (obj.LineNumber > 0 && obj.LineNumber < maxLine)
                         {
                             TextSelection sel = (TextSelection)ApplicationObject.ActiveDocument.Selection;
                             if (sel != null)
