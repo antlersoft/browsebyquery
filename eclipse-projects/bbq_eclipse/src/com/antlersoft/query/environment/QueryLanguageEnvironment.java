@@ -13,6 +13,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Map.Entry;
@@ -170,6 +171,38 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		m_topNode = topNode;
 	}
 	
+	/**
+	 * Get the top node of the tree of automatic query templates (if any)
+	 * @return Top note in the tree of AutoQueryNodes
+	 */
+	public AutoQueryNode getAutoQueryNode()
+	{
+		return m_topNode;
+	}
+	
+	/**
+	 * Determine the automated queries for the type of the current selection, based
+	 * on the current AutoQueryNode tree.
+	 * @param type Key for the appropriate start node
+	 * @return List of appropriate automated queries; list may be empty
+	 * but won't be null
+	 */
+	public List<String> getAutoQueryList()
+	{
+		if (m_topNode == null || getCurrentSelection().getResultClass() == null)
+			return new ArrayList<String>();
+		List<String> result = m_topNode.getTemplatesForType(getCurrentSelection().getResultClass().toString());
+		if (result == null)
+			result = new ArrayList<String>();
+		return result;
+	}
+	
+	/**
+	 * Read the XML corresponding to a QueryLanguageEnvironment environment from the specified Reader
+	 * @param is Read over characters in XML file
+	 * @throws IOException
+	 * @throws QueryException
+	 */
 	public void readEnvironment( Reader is)
 	throws IOException, QueryException
 	{
