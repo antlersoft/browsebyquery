@@ -37,19 +37,26 @@ namespace ResourceLister
                 if (r.EndsWith(".resources"))
                 {
                     var basename = r.Substring(0, r.Length - (".resources").Length);
-                    ResourceManager rm = new ResourceManager(basename, assembly);
-                    ResourceSet rs = rm.GetResourceSet(System.Globalization.CultureInfo.InvariantCulture, true, true);
-                    if (rs != null)
+                    try
                     {
-                        Console.WriteLine("bundle " + escapeString(basename));
-                        Console.WriteLine("{");
-                        // Create an IDictionaryEnumerator to read the data in the ResourceSet.
-                        IDictionaryEnumerator id = rs.GetEnumerator();
+                        ResourceManager rm = new ResourceManager(basename, assembly);
+                        ResourceSet rs = rm.GetResourceSet(System.Globalization.CultureInfo.InvariantCulture, true, true);
+                        if (rs != null)
+                        {
+                            Console.WriteLine("bundle " + escapeString(basename));
+                            Console.WriteLine("{");
+                            // Create an IDictionaryEnumerator to read the data in the ResourceSet.
+                            IDictionaryEnumerator id = rs.GetEnumerator();
 
-                        // Iterate through the ResourceSet and display the contents to the console. 
-                        while (id.MoveNext())
-                            Console.WriteLine("{0} = {1}", escapeString(id.Key.ToString()), escapeString(id.Value.ToString()));
-                        Console.WriteLine("}");
+                            // Iterate through the ResourceSet and display the contents to the console. 
+                            while (id.MoveNext())
+                                Console.WriteLine("{0} = {1}", escapeString(id.Key.ToString()), escapeString(id.Value.ToString()));
+                            Console.WriteLine("}");
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Continue with next resource if possible
                     }
                 }
                 else
