@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006,2010 Michael A. MacDonald
+ * Copyright (c) 2006,2010-2011 Michael A. MacDonald
  */
 package com.antlersoft.query.environment;
 
@@ -33,7 +33,6 @@ import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.Token;
 
 import com.antlersoft.query.BasicBase;
-import com.antlersoft.query.EmptySetExpression;
 import com.antlersoft.query.ParserEnvironment;
 import com.antlersoft.query.SelectionSetExpression;
 import com.antlersoft.query.SetExpression;

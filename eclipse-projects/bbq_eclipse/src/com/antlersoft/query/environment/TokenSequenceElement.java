@@ -3,7 +3,6 @@
  */
 package com.antlersoft.query.environment;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.xml.sax.Attributes;
@@ -12,8 +11,6 @@ import org.xml.sax.SAXException;
 
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
-
-import com.antlersoft.parser.Token;
 
 import com.antlersoft.util.xml.IElement;
 import com.antlersoft.util.xml.IHandlerStack;
@@ -56,9 +53,9 @@ class TokenSequenceElement extends DefaultHandler implements IElement {
 		
 		xml_writer.startElement( "", "", ELEMENT_TAG, impl);
 		
-		for ( Iterator it=m_sequence.getContents().iterator(); it.hasNext();)
+		for ( Iterator<TokenSequence.Member> it=m_sequence.getContents().iterator(); it.hasNext();)
 		{
-			ElementFactory.getInstance().getElementForObject( it.next()).writeToXML( xml_writer);
+			ElementFactory.getInstance().getElementForMember( it.next()).writeToXML( xml_writer);
 		}
 		
 		xml_writer.endElement( "", "", ELEMENT_TAG);
@@ -84,20 +81,12 @@ class TokenSequenceElement extends DefaultHandler implements IElement {
 		{
 			m_sequence.setResult( attributes.getValue( "result_class"));
 		}
-		else if ( qName.equals( TokenElement.ELEMENT_TAG))
+		else
 		{
-			Token next=new Token( null, null);
-			m_sequence.add( next);
-			m_stack.startWithHandler( ElementFactory.getInstance().getElementForObject( next).
+			TokenSequence.Member m = ElementFactory.getInstance().getMemberForTag(qName);
+			m_sequence.add(m);
+			m_stack.startWithHandler( ElementFactory.getInstance().getElementForMember(m).
 					readFromXML(m_stack), uri, localName, qName, attributes);
-		}
-		else if ( qName.equals( TokenSequence.Replacement.ELEMENT_TAG))
-		{
-			TokenSequence.Replacement replacement=new TokenSequence.Replacement(new TokenSequence(),
-					new ArrayList(), 0);
-			m_sequence.add( replacement);
-			m_stack.startWithHandler( ElementFactory.getInstance().getElementForObject( replacement).
-					readFromXML( m_stack), uri, localName, qName, attributes);
 		}
 	}
 

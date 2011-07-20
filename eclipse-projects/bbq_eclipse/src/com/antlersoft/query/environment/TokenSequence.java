@@ -35,21 +35,61 @@ import com.antlersoft.util.xml.SimpleHandler;
  *
  */
 public class TokenSequence {
+	
+	/**
+	 * Interface indicating that the object is a constituent of a
+	 * token sequence
+	 * @author Michael A. MacDonald
+	 */
+	interface Member
+	{
+		/**
+		 * Add the token(s) represented by this member to the collection
+		 * @param scope Scope for reserved word tokens, used to retrieve parentheses used
+		 * to delimit replacing parts
+		 * @param tokens Collection of tokens in which to expand
+		 */
+		void collectTokens( ReservedScope scope, Collection<Token> tokens);		
+	}
+	
+	static class TokenHolder implements Member
+	{
+		Token m_token;
+		
+		TokenHolder(Token t)
+		{
+			m_token = t;
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.antlersoft.query.environment.TokenSequence.Member#collectTokens(com.antlersoft.parser.ReservedScope, java.util.Collection)
+		 */
+		public void collectTokens(ReservedScope scope, Collection<Token> tokens) {
+			tokens.add(m_token);
+		}
+
+		@Override
+		public String toString()
+		{
+			return m_token.toString();
+		}
+	}
+	
 	/**
 	 * Array of Token and Replacement objects that, when complete, is interpreted
 	 * as a unit.
 	 */
-	private ArrayList m_contents;
+	private ArrayList<Member> m_contents;
 	private Object m_result;
 
 	TokenSequence()
 	{
-		m_contents=new ArrayList();
+		m_contents=new ArrayList<Member>();
 	}
 	
 	void addToken( Symbol sym, String val)
 	{
-		m_contents.add( new Token( sym, val));
+		m_contents.add(new TokenHolder(new Token( sym, val)));
 	}
 	
 	/**
@@ -76,12 +116,12 @@ public class TokenSequence {
 		return m_result;
 	}
 	
-	void add( Object o)
+	void add(Member o)
 	{
 		m_contents.add( o);
 	}
 	
-	public List getContents()
+	public List<Member> getContents()
 	{
 		return Collections.unmodifiableList(m_contents);
 	}
@@ -110,7 +150,7 @@ public class TokenSequence {
 	{
 		StringBuilder sb=new StringBuilder();
 		
-		for ( Iterator i=m_contents.iterator(); i.hasNext();)
+		for ( Iterator<Member> i=m_contents.iterator(); i.hasNext();)
 		{
 			sb.append( i.next().toString());
 			if ( i.hasNext())
@@ -120,11 +160,18 @@ public class TokenSequence {
 		return sb.toString();
 	}
 	
-	void collectTokens( ReservedScope scope, Collection tokens)
+	/**
+	 * Recursively add the tokens in this sequence to the collection, expanding any Replacement
+	 * objects as you go
+	 * @param scope Scope for reserved word tokens, used to retrieve parentheses used
+	 * to delimit replacing parts
+	 * @param tokens Collection of tokens in which to expand
+	 */
+	void collectTokens( ReservedScope scope, Collection<Token> tokens)
 	{
-		for ( Iterator it=m_contents.iterator(); it.hasNext();)
+		for ( Iterator<Member> it=m_contents.iterator(); it.hasNext();)
 		{
-			Object o=it.next();
+			Member o=it.next();
 			if ( o instanceof Replacement)
 			{
 				tokens.add( new Token( scope.getReserved(  "("), "("));
@@ -132,7 +179,7 @@ public class TokenSequence {
 				tokens.add( new Token( scope.getReserved( ")"), ")"));
 			}
 			else
-				tokens.add( o);
+				tokens.add(((TokenHolder)o).m_token);
 		}
 	}
 	
@@ -142,10 +189,10 @@ public class TokenSequence {
 	 * @author Michael A. MacDonald
 	 *
 	 */
-	public static class Replacement extends DefaultHandler implements IElement
+	public static class Replacement extends DefaultHandler implements IElement, Member
 	{
 		private TokenSequence m_replacer;
-		private ArrayList m_replaced;
+		private ArrayList<Token> m_replaced;
 		
 		static final String ELEMENT_TAG="replacement";
 		
@@ -154,17 +201,17 @@ public class TokenSequence {
 		 */
 		private IHandlerStack m_stack;
 		
-		Replacement( TokenSequence replacer, ArrayList contents, int token_count)
+		Replacement( TokenSequence replacer, ArrayList<Member> contents, int token_count)
 		{
 			int size=contents.size();
 			if ( size<token_count)
 				throw new IllegalArgumentException( "Trying to replace "+token_count+" tokens when only "+size+" are in sequence.");
 			m_replacer=replacer;
-			m_replaced=new ArrayList( token_count);
+			m_replaced=new ArrayList<Token>( token_count);
 			for ( int i=token_count; i>0; --i)
 			{
-				assert( contents.get( size-i) instanceof Token);
-				m_replaced.add( contents.get( size-i));
+				assert( contents.get( size-i) instanceof TokenHolder);
+				m_replaced.add( ((TokenHolder)contents.get( size-i)).m_token);
 			}			
 		}
 		
@@ -183,6 +230,15 @@ public class TokenSequence {
 		}
 
 		/* (non-Javadoc)
+		 * @see com.antlersoft.query.environment.TokenSequence.Member#collectTokens(com.antlersoft.parser.ReservedScope, java.util.Collection)
+		 */
+		public void collectTokens(ReservedScope scope, Collection<Token> tokens) {
+			tokens.add( new Token( scope.getReserved(  "("), "("));
+			getReplacer().collectTokens( scope, tokens);
+			tokens.add( new Token( scope.getReserved( ")"), ")"));
+		}
+
+		/* (non-Javadoc)
 		 * @see com.antlersoft.util.xml.IElement#readFromXML(com.antlersoft.util.xml.IHandlerStack)
 		 */
 		public DefaultHandler readFromXML(IHandlerStack handler_stack) {
@@ -196,12 +252,12 @@ public class TokenSequence {
 		public void writeToXML(ContentHandler xml_writer) throws SAXException {
 			xml_writer.startElement( "", "", ELEMENT_TAG, SimpleHandler.m_empty);
 			xml_writer.startElement( "", "", "replaced", SimpleHandler.m_empty);
-			for ( Iterator it=m_replaced.iterator(); it.hasNext();)
+			for ( Iterator<Token> it=m_replaced.iterator(); it.hasNext();)
 			{
-				ElementFactory.getInstance().getElementForObject( it.next()).writeToXML( xml_writer);
+				ElementFactory.getInstance().getElementForToken( it.next()).writeToXML( xml_writer);
 			}
 			xml_writer.endElement( "", "", "replaced");
-			ElementFactory.getInstance().getElementForObject( m_replacer).writeToXML( xml_writer);
+			new TokenSequenceElement(m_replacer).writeToXML( xml_writer);
 			xml_writer.endElement( "", "", ELEMENT_TAG);
 		}
 
@@ -229,12 +285,15 @@ public class TokenSequence {
 				m_stack.startWithHandler( new TokenSequenceElement( m_replacer).readFromXML( m_stack),
 						uri, localName, qName, attributes);
 			}
-			else if ( qName.equals( TokenElement.ELEMENT_TAG))
+			else
 			{
-				Token replaced_token=new Token( null, null);
-				m_replaced.add( replaced_token);
-				m_stack.startWithHandler( ElementFactory.getInstance().getElementForObject( replaced_token).readFromXML( m_stack),
-						uri, localName, qName, attributes);
+				Token replaced_token=ElementFactory.getInstance().getTokenForTag(qName);
+				if (replaced_token != null)
+				{
+					m_replaced.add( replaced_token);
+					m_stack.startWithHandler( ElementFactory.getInstance().getElementForToken( replaced_token).readFromXML( m_stack),
+							uri, localName, qName, attributes);
+				}
 			}
 		}
 	}

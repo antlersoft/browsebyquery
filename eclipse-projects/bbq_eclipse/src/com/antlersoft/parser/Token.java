@@ -19,6 +19,14 @@
  */
 package com.antlersoft.parser;
 
+/**
+ * A token is a lexically-recognized atomic element of a statement in some language.
+ * A token combines a Symbol which represents the tokens semantic role in the language
+ * with a value which represents how the token appeared in the statement in string form.
+ * 
+ * @author Michael A. MacDonald
+ *
+ */
 public class Token implements Cloneable
 {
 	public Symbol symbol;
@@ -44,6 +52,14 @@ public class Token implements Cloneable
 			result=( t.symbol==symbol && t.value.equals( value));
 		}
 		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return symbol.hashCode() ^ value.hashCode();
 	}
 
 	public Object clone()

@@ -3,6 +3,8 @@
  */
 package com.antlersoft.query.environment;
 
+import java.util.ArrayList;
+
 import com.antlersoft.parser.Token;
 
 import com.antlersoft.util.xml.IElement;
@@ -20,13 +22,38 @@ class ElementFactory {
 	
 	static ElementFactory getInstance() { return m_instance; }
 	
-	IElement getElementForObject( Object o)
+	/**
+	 * Return an object of the type implied by the XML element name qname
+	 * @param qName Name of xml element
+	 * @return Token object with element tag qname, or if the element name
+	 * does not correspond to a token object, null
+	 */
+	Token getTokenForTag(String qName)
 	{
-		if ( o instanceof Token)
-			return new TokenElement( (Token)o);
-		else if ( o instanceof TokenSequence)
-			return new TokenSequenceElement( (TokenSequence)o);
+		if (qName.equals(TokenElement.ELEMENT_TAG))
+			return new Token(null, null);
+		return null;
+	}
+	
+	IElement getElementForToken(Token token)
+	{
+		return new TokenElement(token);
+	}
+	
+	IElement getElementForMember(TokenSequence.Member o)
+	{
+		if ( o instanceof TokenSequence.TokenHolder)
+			return getElementForToken(((TokenSequence.TokenHolder)o).m_token);
 		
 		return (IElement)o;
+	}
+	
+	TokenSequence.Member getMemberForTag(String qName)
+	{
+		Token t = getTokenForTag(qName);
+		if (t == null)
+			return new TokenSequence.Replacement(new TokenSequence(),
+					new ArrayList<TokenSequence.Member>(), 0);
+		return new TokenSequence.TokenHolder(t);
 	}
 }
