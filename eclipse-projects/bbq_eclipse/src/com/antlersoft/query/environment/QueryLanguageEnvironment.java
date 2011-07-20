@@ -30,8 +30,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.antlersoft.parser.Parser;
+import com.antlersoft.parser.Symbol;
 import com.antlersoft.parser.Token;
 
+import com.antlersoft.query.Basic;
 import com.antlersoft.query.BasicBase;
 import com.antlersoft.query.ParserEnvironment;
 import com.antlersoft.query.SelectionSetExpression;
@@ -73,7 +75,14 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 	    for (; ! errorOut && currentIndex<tokens.length; currentIndex++)
 	    {
 	    	Token token=tokens[currentIndex];
-	    	m_sequence_stack.peek().addToken( token.symbol, token.value);
+	    	if (token.symbol == SelectionToken.SELECTION_SYMBOL)
+	    	{
+	    		token = new SelectionToken(
+	    				getSelection() != null && getSelection().getResultClass() != null ?
+	    						getSelection().getResultClass().getName()
+	    						: null);
+	    	}
+	    	m_sequence_stack.peek().addToken(token);
 	    	m_parser.massageToken( token);
 	        errorOut=m_parser.parse( token.symbol, token.value);
 	    }
@@ -138,7 +147,7 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 		if ( value instanceof Transform)
 		{
 			seq=new TokenSequence();
-			seq.addToken( m_parser.getReservedScope().getReserved( "list"), "list");
+			seq.addToken( new Token(m_parser.getReservedScope().getReserved( "list"), "list"));
 		}
 		((TokenSequence)m_sequence_stack.peek()).replaceTokensBySequence( saved.m_token_count, seq);
 	}
@@ -335,6 +344,21 @@ public class QueryLanguageEnvironment implements ParserEnvironment {
 			restore_tokens.add( new Token( m_parser.getReservedScope().getReserved( "to"), "to"));
 		}
 		to_restore.collectTokens( m_parser.getReservedScope(), restore_tokens);
+		for (Token t : restore_tokens)
+		{
+			if (t instanceof SelectionToken)
+			{
+				SelectionToken slt = (SelectionToken)t;
+				if (slt.m_className != null)
+				{
+					Class<?> slc = Class.forName(slt.m_className);
+					if (m_selection.getResultClass() == null || ! m_selection.getResultClass().isAssignableFrom(slc))
+					{
+						m_selection = new SelectionSetExpression(slc);
+					}
+				}
+			}
+		}
 	    restore_tokens.add( new Token( Parser._end_, ""));
 		m_parser.reset();
 		tokens=restore_tokens.toArray( new Token[restore_tokens.size()]);

@@ -84,9 +84,12 @@ class TokenSequenceElement extends DefaultHandler implements IElement {
 		else
 		{
 			TokenSequence.Member m = ElementFactory.getInstance().getMemberForTag(qName);
-			m_sequence.add(m);
-			m_stack.startWithHandler( ElementFactory.getInstance().getElementForMember(m).
-					readFromXML(m_stack), uri, localName, qName, attributes);
+			if (m != null)
+			{
+				m_sequence.add(m);
+				m_stack.startWithHandler( ElementFactory.getInstance().getElementForMember(m).
+						readFromXML(m_stack), uri, localName, qName, attributes);
+			}
 		}
 	}
 

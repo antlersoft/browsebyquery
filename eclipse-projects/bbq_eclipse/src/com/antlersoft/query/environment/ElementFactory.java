@@ -18,6 +18,9 @@ import com.antlersoft.util.xml.IElement;
 class ElementFactory {
 	static ElementFactory m_instance=new ElementFactory();
 	
+	private static final String LITERAL_TOKEN_TAG = "literal_string_token";
+	private static final String TOKEN_TAG = "token";
+	
 	private ElementFactory() {}
 	
 	static ElementFactory getInstance() { return m_instance; }
@@ -30,14 +33,24 @@ class ElementFactory {
 	 */
 	Token getTokenForTag(String qName)
 	{
-		if (qName.equals(TokenElement.ELEMENT_TAG))
+		if (qName.equals(LITERAL_TOKEN_TAG))
+			return new LiteralToken(null);
+		else if (qName.equals(SelectionTokenElement.ELEMENT_TAG))
+			return new SelectionToken(null);
+		else if (qName.equals(TOKEN_TAG))
 			return new Token(null, null);
+		
 		return null;
 	}
 	
 	IElement getElementForToken(Token token)
 	{
-		return new TokenElement(token);
+		if (token instanceof SelectionToken)
+		{
+			return new SelectionTokenElement((SelectionToken)token);
+		}
+		return new TokenElement(token instanceof LiteralToken ? LITERAL_TOKEN_TAG : TOKEN_TAG,
+				token);
 	}
 	
 	IElement getElementForMember(TokenSequence.Member o)
@@ -50,10 +63,12 @@ class ElementFactory {
 	
 	TokenSequence.Member getMemberForTag(String qName)
 	{
+		if (qName.equals(TokenSequence.Replacement.ELEMENT_TAG))
+			return new TokenSequence.Replacement(new TokenSequence(),
+				new ArrayList<TokenSequence.Member>(), 0);
 		Token t = getTokenForTag(qName);
 		if (t == null)
-			return new TokenSequence.Replacement(new TokenSequence(),
-					new ArrayList<TokenSequence.Member>(), 0);
+			return null;
 		return new TokenSequence.TokenHolder(t);
 	}
 }

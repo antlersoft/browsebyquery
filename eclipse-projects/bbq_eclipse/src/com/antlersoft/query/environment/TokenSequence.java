@@ -87,9 +87,12 @@ public class TokenSequence {
 		m_contents=new ArrayList<Member>();
 	}
 	
-	void addToken( Symbol sym, String val)
+	void addToken(Token token)
 	{
-		m_contents.add(new TokenHolder(new Token( sym, val)));
+		try {
+			m_contents.add(new TokenHolder((Token)token.clone()));
+		} catch (CloneNotSupportedException e) {
+		}
 	}
 	
 	/**
@@ -136,10 +139,10 @@ public class TokenSequence {
 		int size=m_contents.size();
 		if ( size>0)
 		{
-			Object o=m_contents.get( size-1);
-			if ( o instanceof Token)
+			Member o=m_contents.get( size-1);
+			if ( o instanceof TokenHolder)
 			{
-				Token t=(Token)o;
+				Token t=((TokenHolder)o).m_token;
 				if ( t.symbol==Parser._end_ || t.symbol==scope.findReserved(";"))
 					m_contents.remove( size-1);
 			}
