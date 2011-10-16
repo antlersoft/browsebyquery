@@ -33,7 +33,6 @@ import com.antlersoft.parser.Parser;
 import com.antlersoft.parser.Symbol;
 import com.antlersoft.parser.Token;
 
-import com.antlersoft.query.Basic;
 import com.antlersoft.query.BasicBase;
 import com.antlersoft.query.ParserEnvironment;
 import com.antlersoft.query.SelectionSetExpression;
