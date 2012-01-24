@@ -17,7 +17,7 @@ namespace ResourceLister
             sb.Append('"');
             foreach (char ch in s)
             {
-                if ( ch=='\\' || ch=='"')
+                if ( ch=='\\' || ch=='"' || (ch>=0x2018 && ch<=0x201F))
                 {
                     sb.Append('\\');
                 }
@@ -29,7 +29,7 @@ namespace ResourceLister
 
         static void Main(string[] args)
         {
-            var assembly = Assembly.LoadFrom(args[0]);
+            var assembly = Assembly.ReflectionOnlyLoadFrom(args[0]);
             Console.WriteLine("assembly " + escapeString(assembly.FullName));
             Console.WriteLine("{");
             foreach (String r in assembly.GetManifestResourceNames())
