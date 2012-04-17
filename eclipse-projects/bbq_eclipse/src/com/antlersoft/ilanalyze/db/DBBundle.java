@@ -41,7 +41,7 @@ public class DBBundle extends DBBundleBase {
 		return "bundle "+_name+" in "+getAssembly().toString();
 	}
 
-	static synchronized DBBundle get( ILDB db, DBAssembly assembly, String name)
+	static DBBundle get( ILDB db, DBAssembly assembly, String name)
 	{
 		DBBundle result=(DBBundle)db.findObject(BUNDLE_KEY_INDEX, makeBundleKey( assembly, name));
 		

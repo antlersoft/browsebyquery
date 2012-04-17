@@ -51,7 +51,7 @@ public class DBAssembly implements Persistent {
 		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBClass.CLASS_ASSEMBLY_INDEX, new ObjectRefKey(this)));
 	}
 	
-	static synchronized DBAssembly get( IndexObjectDB db, String f)
+	static DBAssembly get( IndexObjectDB db, String f)
 	{
 		DBAssembly result=(DBAssembly)db.findObject( ASSEMBLY_NAME_INDEX,
 			f);

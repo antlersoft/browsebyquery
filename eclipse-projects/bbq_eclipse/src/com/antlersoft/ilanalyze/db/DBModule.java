@@ -54,7 +54,7 @@ public class DBModule implements Persistent {
 	}
 
 	
-	static synchronized DBModule get( IndexObjectDB db, String f)
+	static DBModule get( IndexObjectDB db, String f)
 	{
 		DBModule result=(DBModule)db.findObject( MODULE_NAME_INDEX,
 			f);

@@ -54,7 +54,7 @@ public class DBString implements Persistent {
 	 * @param f String to find
 	 * @return Existing or newly created DBString
 	 */
-	public static synchronized DBString get( IndexObjectDB db, String f)
+	public static DBString get( IndexObjectDB db, String f)
 	{
 		if ( f==null )
 			throw new IllegalArgumentException("Argument to DBString.get is null");
