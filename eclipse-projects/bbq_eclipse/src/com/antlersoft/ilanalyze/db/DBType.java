@@ -56,7 +56,7 @@ public class DBType implements Persistent {
 		ObjectDB.makePersistent( this);
 	}
 	
-	static DBType get( ILDB db, ReadType t) throws ITypeInterpreter.TIException
+	static synchronized DBType get( ILDB db, ReadType t) throws ITypeInterpreter.TIException
 	{
 		ITypeInterpreter ti=ITypeInterpreter.Factory.getInstance().getTI(t);
 		String key=ti.getTypeKey(t);
