@@ -58,7 +58,9 @@ namespace com.antlersoft.BBQAddIn
         {
             foreach (int i in resultList.SelectedIndices)
             {
-                collection.Add(currentResponses[i].ObjectKey);
+                var key = currentResponses[i].ObjectKey;
+                if (!String.IsNullOrEmpty(key))
+                    collection.Add(key);
             }
         }
 
