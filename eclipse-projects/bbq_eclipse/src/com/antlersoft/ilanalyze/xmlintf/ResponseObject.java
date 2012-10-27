@@ -12,6 +12,7 @@ import com.antlersoft.ilanalyze.db.DBSourceFile;
 import com.antlersoft.ilanalyze.db.DBSourceObject;
 
 import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.Persistent;
 
 import com.antlersoft.util.xml.IElement;
 import com.antlersoft.util.xml.IHandlerStack;
@@ -38,8 +39,13 @@ public class ResponseObject {
 		}
 		type=o.getClass().getName();
 		description=o.toString();
-		ObjectDB db = ObjectDB.getObjectDB();
-		objectKey = db.keyToString(db.getObjectKey(o));
+		if (o instanceof Persistent)
+		{
+			ObjectDB db = ObjectDB.getObjectDB();
+			objectKey = db.keyToString(db.getObjectKey(o));
+		}
+		else
+			objectKey = "";
 	}
 	public String getObjectType()
 	{
