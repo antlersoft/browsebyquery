@@ -153,15 +153,18 @@ public class DBAnnotationBase implements AnnotationBase, Serializable {
 			}
 			if ( changed )
 			{
-				if ( collection.annotations==null)
+				if ( collection.annotations==null && after != null)
 				{
 					collection.annotations=new ArrayList<ObjectRef<AnnotationBase>>(after.size());
 				}
 				else
 					collection.annotations.clear();
-				for ( AnnotationBase ann : after)
+				if (after != null)
 				{
-					collection.annotations.add(new ObjectRef<AnnotationBase>(ann));
+					for ( AnnotationBase ann : after)
+					{
+						collection.annotations.add(new ObjectRef<AnnotationBase>(ann));
+					}
 				}
 				ObjectDB.makeDirty(target);
 			}
