@@ -32,7 +32,7 @@ public class HistoryList extends JList
     JPopupMenu popup_menu;
     int popup_index;
 
-	public HistoryList( JTextArea toChange)
+	public HistoryList( JTextArea toChange, AbstractAction queryAction)
 	{
 		super( new DefaultListModel());
         popup_index= -1;
@@ -41,6 +41,8 @@ public class HistoryList extends JList
 		setVisibleRowCount(2);
         popup_menu=new JPopupMenu();
         popup_menu.add( new SelectAction());
+        popup_menu.add( new RunQueryAction(queryAction));
+        popup_menu.addSeparator();
         popup_menu.add( new RemoveAction());
 		addMouseListener( new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -100,6 +102,18 @@ public class HistoryList extends JList
 		dlm.insertElementAt( o, 0);
 		setSelectedIndex( 0);
 	}
+	
+	void selectFromHistory()
+	{
+        synchronized( dlm)
+        {
+            if (popup_index >= 0) {
+                text.setText( (String) dlm.elementAt(popup_index));
+                moveToTop(popup_index);
+                popup_index = 0;
+            }
+        }		
+	}
 
     class SelectAction extends AbstractAction
     {
@@ -109,15 +123,23 @@ public class HistoryList extends JList
         }
         public void actionPerformed( ActionEvent ae)
         {
-            synchronized( dlm)
-            {
-                if (popup_index >= 0) {
-                    text.setText( (String) dlm.elementAt(popup_index));
-                    moveToTop(popup_index);
-                    popup_index = 0;
-                }
-            }
+        	selectFromHistory();
         }
+    }
+    
+    class RunQueryAction extends AbstractAction
+    {
+    	private Action m_queryAction;
+    	RunQueryAction(Action queryAction)
+    	{
+    		super("Run Query");
+    		m_queryAction = queryAction;
+    	}
+    	public void actionPerformed(ActionEvent ae)
+    	{
+    		selectFromHistory();
+    		m_queryAction.actionPerformed(ae);
+    	}
     }
 
     class RemoveAction extends AbstractAction

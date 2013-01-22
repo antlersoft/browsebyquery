@@ -931,7 +931,7 @@ n_callKind : t_unmanaged t_cdecl .
 n_callKind : t_unmanaged t_stdcall .
 n_callKind : t_unmanaged t_thiscall .
 n_callKind : t_unmanaged t_fastcall .
-n_catchClause : t_catch n_className "{ Driver(parser).addCatch( new BasicType( valueStack.s_0())); return null; }" .
+n_catchClause : t_catch n_typeSpec "{ Driver(parser).addCatch( (ReadType)valueStack.o_0()); return null; }" .
 # n_classAttr is an int on the stack with bit flags or'd together
 n_classAttr : "m_EmptyAttribute" .
 n_classAttr : n_classAttr t_public "new AttribAddToStack( DBDriver.IS_PUBLIC)" .

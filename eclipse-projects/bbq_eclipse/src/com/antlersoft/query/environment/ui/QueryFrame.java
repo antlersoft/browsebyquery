@@ -150,13 +150,14 @@ public class QueryFrame
     protected Component createComponents()
     {
         // Create components
-        JButton queryButton=new JButton( "Query");
+    	QueryAction queryAction = new QueryAction();
+        JButton queryButton=new JButton( queryAction);
         Dimension buttonDimension=queryButton.getPreferredSize();
         queryButton.setMinimumSize( buttonDimension);
         queryButton.setMaximumSize( buttonDimension);
         queryArea=new JTextArea( 2, 60);
         JScrollPane queryScroll=new JScrollPane( queryArea);
-        historyList=new HistoryList( queryArea);
+        historyList=new HistoryList( queryArea, queryAction);
         JScrollPane historyScroll=new JScrollPane( historyList);
         JScrollPane storedArea=new JScrollPane( new StoredValuesList( qp));
         Box buttonBox=Box.createVerticalBox();
@@ -180,49 +181,7 @@ public class QueryFrame
         	useMappedCheckBox = new JCheckBoxMenuItem(useMemoryMappedAction);
         }
 
-        // Create actions
-       queryButton.addActionListener( new ActionListener() {
-                public void actionPerformed( ActionEvent ae)
-                {
-                    try
-                    {
-                        String line=queryArea.getText();
-                        if ( line==null || line.length()==0)
-                            return;
-                        qp.setLine( line);
-                        SelectionSetExpression querySelection = qp.getCurrentSelection();
-                        querySelection.clear();
-                        for (Object o : resultList.getSelectedValues())
-                        {
-                        	querySelection.add(o);
-                        }
-                        SetExpression se=qp.getExpression();
-                        historyList.addQuery( line);
-                        Enumeration<?> e=se.evaluate( container.getDataSource());
-                        ArrayList<Object> resultSorter = new ArrayList<Object>();
-                        while ( e.hasMoreElements())
-                            resultSorter.add(e.nextElement());
-                        Collections.sort(resultSorter, new Comparator<Object>() {
-
-							@Override
-							public int compare(Object o1, Object o2) {
-								return o1.toString().compareTo(o2.toString());
-							}
-                        	
-                        });
-                        resultList.setContents(resultSorter);
-                    }
-                    catch ( ParseException pe)
-                    {
-                        displayMessage( "Parse Error", pe.getMessage());
-                    }
-                    catch ( Exception unkn)
-                    {
-                        displayException( "Query Error", unkn);
-                    }
-                }
-            });
-
+ 
         return mainPane;
     }
 
@@ -598,5 +557,52 @@ t.printStackTrace();
 			super("Use memory-mapped files for database (experimental)");
 		}
 
+	}
+	
+	class QueryAction extends AbstractAction
+	{
+		QueryAction()
+		{
+			super("Query");
+		}
+        public void actionPerformed( ActionEvent ae)
+        {
+            try
+            {
+                String line=queryArea.getText();
+                if ( line==null || line.length()==0)
+                    return;
+                qp.setLine( line);
+                SelectionSetExpression querySelection = qp.getCurrentSelection();
+                querySelection.clear();
+                for (Object o : resultList.getSelectedValues())
+                {
+                	querySelection.add(o);
+                }
+                SetExpression se=qp.getExpression();
+                historyList.addQuery( line);
+                Enumeration<?> e=se.evaluate( container.getDataSource());
+                ArrayList<Object> resultSorter = new ArrayList<Object>();
+                while ( e.hasMoreElements())
+                    resultSorter.add(e.nextElement());
+                Collections.sort(resultSorter, new Comparator<Object>() {
+
+					@Override
+					public int compare(Object o1, Object o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+                	
+                });
+                resultList.setContents(resultSorter);
+            }
+            catch ( ParseException pe)
+            {
+                displayMessage( "Parse Error", pe.getMessage());
+            }
+            catch ( Exception unkn)
+            {
+                displayException( "Query Error", unkn);
+            }
+        }
 	}
 }

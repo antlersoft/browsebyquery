@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import com.antlersoft.odb.ExactMatchIndexEnumeration;
 import com.antlersoft.odb.IndexObjectDB;
 import com.antlersoft.odb.KeyGenerator;
+import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectKeyHashMap;
 import com.antlersoft.odb.ObjectRef;
 import com.antlersoft.odb.ObjectRefKey;
@@ -87,6 +88,7 @@ public class DBAnnotationBase implements AnnotationBase, Serializable {
 		private ArrayList<AnnotationBase> after;
 		boolean changed;
 		private AnnotationCollection collection;
+		private DBAnnotatable target;
 		
 		private ArrayList<AnnotationBase> getAfter()
 		{
@@ -99,6 +101,7 @@ public class DBAnnotationBase implements AnnotationBase, Serializable {
 		{
 			after=null;
 			changed=false;
+			this.target = target;
 			collection=target.getAnnotationCollection();
 			Enumeration e=collection.getAnnotations();
 			if ( e.hasMoreElements())
@@ -132,7 +135,7 @@ public class DBAnnotationBase implements AnnotationBase, Serializable {
 		 * Add a newly created annotation to the collection
 		 * @param newannotation
 		 */
-		public void addNew(DBAnnotationBase newannotation)
+		public void addNew(AnnotationBase newannotation)
 		{
 			changed=true;
 			getAfter().add( newannotation);
@@ -150,16 +153,20 @@ public class DBAnnotationBase implements AnnotationBase, Serializable {
 			}
 			if ( changed )
 			{
-				if ( collection.annotations==null)
+				if ( collection.annotations==null && after != null)
 				{
 					collection.annotations=new ArrayList<ObjectRef<AnnotationBase>>(after.size());
 				}
 				else
 					collection.annotations.clear();
-				for ( AnnotationBase ann : after)
+				if (after != null)
 				{
-					collection.annotations.add(new ObjectRef<AnnotationBase>(ann));
+					for ( AnnotationBase ann : after)
+					{
+						collection.annotations.add(new ObjectRef<AnnotationBase>(ann));
+					}
 				}
+				ObjectDB.makeDirty(target);
 			}
 				
 			return changed;

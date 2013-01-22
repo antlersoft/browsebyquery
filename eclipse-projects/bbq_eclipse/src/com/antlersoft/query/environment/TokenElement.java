@@ -24,12 +24,13 @@ import com.antlersoft.util.xml.SimpleHandler;
  */
 class TokenElement implements IElement, ISimpleElement {
 	private Token m_token;
-	final static String ELEMENT_TAG="token";
+	private String m_tag;
 	
 	/**
 	 * 
 	 */
-	public TokenElement( Token token) {
+	public TokenElement(String tag, Token token) {
+		m_tag = tag;
 		m_token=token;
 	}
 
@@ -49,11 +50,11 @@ class TokenElement implements IElement, ISimpleElement {
 		impl.addAttribute( "", "", "symbol", "CDATA", m_token.symbol.toString());
 		impl.addAttribute( "", "", "value", "CDATA", m_token.value);
 		
-		xml_writer.startElement( "", "", ELEMENT_TAG, impl);
-		xml_writer.endElement( "", "", ELEMENT_TAG);
+		xml_writer.startElement( "", "", getElementTag(), impl);
+		xml_writer.endElement( "", "", getElementTag());
 	}
 
-	public String getElementTag() { return ELEMENT_TAG; }
+	public String getElementTag() { return m_tag; }
 
 	/* (non-Javadoc)
 	 * @see com.antlersoft.util.xml.ISimpleElement#gotElement(java.lang.String, java.lang.String, org.xml.sax.Attributes)

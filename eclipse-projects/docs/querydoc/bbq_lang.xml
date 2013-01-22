@@ -616,6 +616,24 @@ to the same type resolution rules applicable to sets and transforms.
 	    	)
 	    	</programlisting>
 	    	</informalexample>
+	    	<programlisting>
+	    	not exists (
+	    	    (~ "(?i)settingId" or ~ "(?i)sessionTypeId")
+	    	    arguments of
+	    	    methods containing
+	    	)
+	    	recursive (
+	    	    calls to
+	    	    exists (
+	    	        (~ "(?i)settingId" or ~ "(?i)sessionTypeId")
+	    	        arguments of
+	    	    )
+	    	    methods containing
+	    	)
+	    	StringOrResRefs
+	    	~ "(?i)WEB_SESSION_SETTING"
+	    	all strings
+	    	</programlisting>
 	    </sect1>
     </chapter>
   <chapter>
@@ -1942,6 +1960,53 @@ where bar is called, you might use:
 		    <para><link linkend="r-type-class">class</link></para>
 		  </refsect1>
 		</refentry>
+		<refentry id="r-combine">
+		  <refnamediv>
+		    <refname>combine</refname>
+		    <refpurpose>Apply a transform to the elements of a set, combining the results with a set operator</refpurpose>	
+		  </refnamediv>
+		  <refsynopsisdiv>
+		  	<cmdsynopsis><command>combine</command>(<replaceable>set operator</replaceable>,<arg>transform</arg>)</cmdsynopsis>
+		  </refsynopsisdiv>
+		  <refsect1>
+		    <title>Description</title>
+		    <para>
+		    This operator specifies a transform where the resulting set is the result of applying the specified
+		    <replaceable>transform</replaceable> to each member of a set, and using <replaceable>set operator</replaceable>
+		    to combine the results into a single set.  This is apt to be most useful when the set operator is
+		    <link linkend="r-set-operators"><userinput>intersection</userinput></link>, since it will allow you
+		    to find some common aspect of members of a set.  You could also use it with <userinput>deintersection</userinput>,
+		    to find unique aspects.  Using it with <userinput>union</userinput> would normally be quite similar
+		    to applying the transform directly, without <userinput>combine</userinput>.
+		    </para>
+		    <refsect2>
+		      <title>Example</title>
+			  <para>This transform applies to a set of methods, finds the assemblies that contain them,
+			  and find any assembly that contains methods called by all those assemblies.</para>
+			  <informalexample>
+			  	<programlisting>
+			  	combine (intersection,
+			  	    assembly of
+			  	    classes containing
+			  	    methods called by
+			  	    calls from
+			  	    classes in
+			  	    assembly of
+			  	    classes containing
+			  	)
+			  	</programlisting>
+			  </informalexample>		      
+		    </refsect2>
+		  </refsect1>
+		  <refsect1>
+			<title>Applies to Type</title>
+		  	<para>Same as the applicable type of <replaceable>transform</replaceable></para>
+		  </refsect1>
+		  <refsect1>
+			<title>Results in Type</title>
+		  	<para>Same as the result type of <replaceable>transform</replaceable></para>
+		</refsect1>
+		</refentry>
 		<refentry id="r-derived-classes">
 		  <refnamediv>
 			<refname>derived classes of</refname>
@@ -1965,7 +2030,7 @@ where bar is called, you might use:
 		  <refsect1>
 			<title>Results in Type</title>
 		  	<para><link linkend="r-type-class">class</link></para>
-		  </refsect1>
+		</refsect1>
 		</refentry>
 		<refentry id="r-fields-in">
 		  <refnamediv>

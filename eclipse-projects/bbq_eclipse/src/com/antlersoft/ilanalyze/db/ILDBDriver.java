@@ -351,6 +351,7 @@ public class ILDBDriver implements DBDriver {
 				if (annotation==null)
 				{
 					annotation = new DBAnnotation(annotation_class, annotatable);
+					annotation_updater.addNew(annotation);
 				}
 				annotation.setFileAndLine(((DBSourceObject)annotatable).getSourceFile(), ((DBSourceObject)annotatable).getLineNumber());
 				if ( m_class_stack.size()>0)
