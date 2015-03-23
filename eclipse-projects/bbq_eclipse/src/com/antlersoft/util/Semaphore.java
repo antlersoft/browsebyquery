@@ -37,24 +37,29 @@ public final class Semaphore
 
     public synchronized void enterProtected()
     {
-        while ( inCritical)
-        {
-            try
-            {
-                wait();
-            }
-            catch ( InterruptedException ie)
-            {
-            }
-        }
-        protectedCount++;
+    	if (inCritical && criticalThread != Thread.currentThread())
+    	{
+	        while ( inCritical)
+	        {
+	            try
+	            {
+	                wait();
+	            }
+	            catch ( InterruptedException ie)
+	            {
+	            }
+	        }
+    	}
+        protectedCount++;    			
     }
 
     public synchronized void leaveProtected()
     {
-        if ( protectedCount<=0 || inCritical)
+    	if (inCritical && criticalThread != Thread.currentThread())
+    		throw new IllegalStateException("Other thread in critical state");
+        if ( protectedCount<=0)
             throw new IllegalStateException( "Not in protected state");
-        if (--protectedCount == 0)
+        if (--protectedCount == 0 && ! inCritical)
         	notify();
     }
 
