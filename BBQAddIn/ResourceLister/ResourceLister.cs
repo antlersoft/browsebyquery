@@ -59,7 +59,7 @@ namespace ResourceLister
                         // Continue with next resource if possible
                     }
                 }
-                else
+                else if (! r.EndsWith(".zip") && ! r.EndsWith(".gz") && ! r.EndsWith(".png") && ! r.EndsWith(".jpg") && ! r.EndsWith(".bmp"))
                 {
                     Stream strm = assembly.GetManifestResourceStream(r);
                     StreamReader sr = new StreamReader(strm);
