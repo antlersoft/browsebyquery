@@ -8,7 +8,7 @@ using System.Xml;
 
 using System.Xml.Serialization;
 
-namespace com.antlersoft.BBQAddIn
+namespace com.antlersoft.BBQClient
 {
     enum BBQSocketState
     {

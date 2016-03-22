@@ -11,6 +11,8 @@ using EnvDTE;
 using EnvDTE80;
 using EnvDTE90;
 
+using com.antlersoft.BBQClient;
+
 namespace com.antlersoft.BBQAddIn
 {
     public partial class ResultWindow : UserControl

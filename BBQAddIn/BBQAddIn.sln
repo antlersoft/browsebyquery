@@ -1,13 +1,17 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBQAddIn", "BBQAddIn\BBQAddIn.csproj", "{8BF416E6-2D5F-420C-9EDF-DC42509BDEE3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "BBQAddInSetup", "BBQAddInSetup\BBQAddInSetup.vdproj", "{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceLister", "ResourceLister\ResourceLister.csproj", "{5DC8882D-D783-4037-B3DB-1349AD4D36C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBQVSIX", "BBQVSIX\BBQVSIX.csproj", "{1451F3CD-217B-4BA3-8564-5DE241407ACC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBQClient", "BBQClient\BBQClient.csproj", "{DBFD2A4F-5834-4265-890F-ED8418A18CD7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,12 +43,6 @@ Global
 		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{87C926D5-1DAA-4BFE-A4B1-C5A68CAA0BF7}.Release|Win32.ActiveCfg = Release|Any CPU
-		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Debug|Any CPU.ActiveCfg = Debug
-		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Debug|Mixed Platforms.ActiveCfg = Debug
-		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Debug|Win32.ActiveCfg = Debug
-		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Release|Any CPU.ActiveCfg = Release
-		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Release|Mixed Platforms.ActiveCfg = Release
-		{D13F791E-A2F9-42B1-BCEF-CB937FD21DDD}.Release|Win32.ActiveCfg = Release
 		{5DC8882D-D783-4037-B3DB-1349AD4D36C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5DC8882D-D783-4037-B3DB-1349AD4D36C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DC8882D-D783-4037-B3DB-1349AD4D36C2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -55,6 +53,30 @@ Global
 		{5DC8882D-D783-4037-B3DB-1349AD4D36C2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{5DC8882D-D783-4037-B3DB-1349AD4D36C2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5DC8882D-D783-4037-B3DB-1349AD4D36C2}.Release|Win32.ActiveCfg = Release|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Debug|Win32.Build.0 = Debug|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Release|Win32.ActiveCfg = Release|Any CPU
+		{1451F3CD-217B-4BA3-8564-5DE241407ACC}.Release|Win32.Build.0 = Release|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Debug|Win32.Build.0 = Debug|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Release|Win32.ActiveCfg = Release|Any CPU
+		{DBFD2A4F-5834-4265-890F-ED8418A18CD7}.Release|Win32.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

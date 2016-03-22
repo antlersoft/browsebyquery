@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace com.antlersoft.BBQAddIn
+namespace com.antlersoft.BBQClient
 {
 	class Test
 	{

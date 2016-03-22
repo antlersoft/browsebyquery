@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace com.antlersoft.BBQAddIn
+namespace com.antlersoft.BBQClient
 {
     public interface IBrowseByQuery
     {
@@ -126,6 +126,11 @@ namespace com.antlersoft.BBQAddIn
         {
             get { return lineNumber; }
             set { lineNumber = value; }
+        }
+
+        public override string ToString()
+        {
+            return Description;
         }
     }
 }
