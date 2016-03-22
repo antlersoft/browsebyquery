@@ -2,3 +2,9 @@
 bin/
 obj/
 packages/
+*.class
+eclipse-projects/.metadata/
+eclipse-projects/bbq_eclipse/bin/
+classes/
+eclipse-projects/docs/querydoc/html/
+dist/
