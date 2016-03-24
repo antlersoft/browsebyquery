@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Windows.Input;
 using com.antlersoft.BBQClient;
 
 namespace BBQVSIX
@@ -30,6 +31,12 @@ namespace BBQVSIX
             queryWorker = new BackgroundWorker();
             queryWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.RunQuery);
             queryWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.PostQueryResults);
+            HistoryListBox.MouseDoubleClick += HistoryListBoxOnMouseDoubleClick;
+        }
+
+        private void HistoryListBoxOnMouseDoubleClick(object sender, MouseButtonEventArgs mouseButtonEventArgs)
+        {
+            QueryText.Text = HistoryListBox.SelectedItem.ToString();
         }
 
         internal IBrowseByQuery BrowseByQuery { get; set; }
