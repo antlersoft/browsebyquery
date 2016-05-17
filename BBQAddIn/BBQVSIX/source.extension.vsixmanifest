@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="BBQVSIX.Michael MacDonald.e022bd4d-6bca-4ebc-b4d0-10fef9195208" Version="1.0.2" Language="en-US" Publisher="Michael MacDonald" />
+    <Identity Id="BBQVSIX.Michael MacDonald.e022bd4d-6bca-4ebc-b4d0-10fef9195208" Version="1.0.3" Language="en-US" Publisher="Michael MacDonald" />
     <DisplayName>BBQVSIX</DisplayName>
     <Description>Empty VSIX Project.</Description>
   </Metadata>
