@@ -15,6 +15,6 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <ListBox Name="ResultList" Grid.Row="0" Grid.Column="0"></ListBox>
+        <ListBox Name="ResultList" Grid.Row="0" Grid.Column="0" SelectionMode="Extended"></ListBox>
     </Grid>
 </UserControl>
