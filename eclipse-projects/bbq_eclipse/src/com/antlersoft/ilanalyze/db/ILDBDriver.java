@@ -144,7 +144,7 @@ public class ILDBDriver implements DBDriver {
 		}
 		m_class_stack.remove( m_class_stack.size()-1);
 		m_commit_lock.leaveProtected();
-		if ( ++m_class_count>1000)
+		if ( ++m_class_count>1000 && m_class_stack.size() == 0)
 		{
 			m_commit_lock.enterCritical();
 			try
