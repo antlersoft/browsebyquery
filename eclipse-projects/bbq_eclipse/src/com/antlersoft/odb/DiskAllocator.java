@@ -39,7 +39,6 @@ import java.nio.channels.FileChannel.MapMode;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.PhantomReference;
-import java.lang.ref.WeakReference;
 
 /**
  * <p>
@@ -1032,8 +1031,6 @@ public class DiskAllocator
 			ReferenceQueue<MappedByteBuffer> queue = new ReferenceQueue<MappedByteBuffer>();
 			@SuppressWarnings("unused")
 			PhantomReference<MappedByteBuffer> phantom = new PhantomReference<MappedByteBuffer>(buffer,queue);
-			@SuppressWarnings("unused")
-			WeakReference<MappedByteBuffer> weak = new WeakReference<MappedByteBuffer>(buffer,null);
 			buffer = null;
 			if (newSize - currentMax < MAPPED_SIZE_INCREMENT)
 				currentMax += MAPPED_SIZE_INCREMENT;
@@ -1043,7 +1040,7 @@ public class DiskAllocator
 				System.gc();
 				try
 				{
-					queue.remove();
+					queue.remove(100);
 				}
 				catch (InterruptedException ie)
 				{
