@@ -552,6 +552,7 @@ reserved t_starg "starg"
 reserved t_starg_s "starg.s"
 reserved t_static "static"
 reserved t_stdcall "stdcall"
+reserved t_stelem "stelem"
 reserved t_stelem_any "stelem.any"
 reserved t_stelem_i "stelem.i"
 reserved t_stelem_i1 "stelem.i1"
@@ -862,6 +863,7 @@ n_INSTR_TYPE : t_refanyval .
 n_INSTR_TYPE : t_mkrefany .
 n_INSTR_TYPE : t_initobj .
 n_INSTR_TYPE : t_sizeof .
+n_INSTR_TYPE : t_stelem .
 n_INSTR_TYPE : t_stelem_any .
 n_INSTR_TYPE : t_unbox_any .
 n_INSTR_VAR : t_ldarg_s .

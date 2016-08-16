@@ -252,7 +252,7 @@ public class CustomAttributeBytes {
 		}
 		try
 		{
-			String s=new String( bytes, offset, length, "UTF-8");
+			String s=length <= 0 ? new String() : new String( bytes, offset, length, "UTF-8");
 			offset+=length;
 			if ( currentStringList!=null)
 				currentStringList.add( s);
