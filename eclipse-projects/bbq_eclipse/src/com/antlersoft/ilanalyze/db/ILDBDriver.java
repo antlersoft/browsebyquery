@@ -312,6 +312,12 @@ public class ILDBDriver implements DBDriver {
 	 * @see com.antlersoft.ilanalyze.DBDriver#endAnalyzedFile()
 	 */
 	public void endAnalyzedFile() {
+		if (m_bundle_updater != null)
+		{
+			// Clean up bundle updates that was aborted
+			m_bundle_updater=null;
+			m_commit_lock.leaveProtected();
+		}
 		m_commit_lock.enterCritical();
 		try
 		{
