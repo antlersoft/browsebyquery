@@ -98,17 +98,20 @@ class EntryPageList implements Serializable
         ClassList classList)
         throws ObjectStoreException
     {
+    	boolean pageFlushProtected = false;
+        int localOffset=key.index%ENTRY_PAGE_SIZE;
+        deleteLock.enterCritical();
         try
         {
-            int localOffset=key.index%ENTRY_PAGE_SIZE;
-            deleteLock.enterCritical();
             EntryPage page=makePageCurrent( streams, key.index/ENTRY_PAGE_SIZE);
+            pageFlushProtected = true;
             if ( key.reuseCount!=page.reuseCount[localOffset])
                 throw new InvalidObjectKeyException();
             int classIndex=page.classIndex[localOffset];
+            Object toDelete = null;
+            classList.classChangeLock.enterProtected();
             try
             {
-                classList.classChangeLock.enterProtected();
                 if ( classIndex>classList.classEntries.size() || classIndex<0)
                     throw new InvalidObjectKeyException();
                 ClassEntry classEntry=
@@ -120,13 +123,8 @@ class EntryPageList implements Serializable
                 {
 	                if ( classEntry.indices.size()!=0)
 	                {
-	                    Object toDelete=classEntry.objectStreams.readObjectWithPrefix(
+	                    toDelete=classEntry.objectStreams.readObjectWithPrefix(
 	                        page.offset[localOffset]);
-	                    for ( Iterator i=classEntry.indices.iterator();
-	                        i.hasNext();)
-	                    {
-	                        ((IndexEntry)i.next()).index.removeKey( key, toDelete);
-	                    }
 	                }
 	                classEntry.objectStreams.free( page.offset[localOffset]);
                 }
@@ -134,24 +132,33 @@ class EntryPageList implements Serializable
                 {
                 	classEntry.objectStreams.leaveCritical();
                 }
+                page.offset[localOffset]=0;
+                page.classIndex[localOffset]= -1;
+                page.modified=true;
+                if ( freePage==null || freePage.size==FreeEntryPage.FREE_PAGE_SIZE)
+                {
+                    modified=true;
+                    if ( freePage!=null)
+                        freePageOffset=freePage.sync( streams, freePageOffset);
+                    freePage=new FreeEntryPage( freePageOffset);
+                    freePageOffset=streams.writeObject( freePage, 0);
+                }
+                freePage.modified=true;
+                freePage.freeArray[freePage.size++]=key.index;
+                pageFlushLock.leaveProtected();
+                pageFlushProtected = false;
+                if (toDelete != null)
+                {
+	                for (Iterator ie = classEntry.indices.iterator(); ie.hasNext();)
+	                {
+	                	((IndexEntry)ie.next()).index.removeKey(key, toDelete);
+	                }
+                }
             }
             finally
             {
                 classList.classChangeLock.leaveProtected();
             }
-            page.offset[localOffset]=0;
-            page.classIndex[localOffset]= -1;
-            page.modified=true;
-            if ( freePage==null || freePage.size==FreeEntryPage.FREE_PAGE_SIZE)
-            {
-                modified=true;
-                if ( freePage!=null)
-                    freePageOffset=freePage.sync( streams, freePageOffset);
-                freePage=new FreeEntryPage( freePageOffset);
-                freePageOffset=streams.writeObject( freePage, 0);
-            }
-            freePage.modified=true;
-            freePage.freeArray[freePage.size++]=key.index;
         }
         catch ( ClassNotFoundException cnfe)
         {
@@ -168,7 +175,8 @@ class EntryPageList implements Serializable
         }
         finally
         {
-            pageFlushLock.leaveProtected();
+        	if (pageFlushProtected)
+        		pageFlushLock.leaveProtected();
             deleteLock.leaveCritical();
         }
     }
@@ -352,10 +360,12 @@ class EntryPageList implements Serializable
         StreamPair streams, ClassList classList)
         throws ObjectStoreException
     {
+    	boolean pageFlushProtected = false;
+        deleteLock.enterProtected();
         try
         {
-            deleteLock.enterProtected();
             EntryPage page=makePageCurrent( streams, key.index/ENTRY_PAGE_SIZE);
+            pageFlushProtected = true;
             int localOffset=key.index%ENTRY_PAGE_SIZE;
             if ( key.reuseCount!=page.reuseCount[localOffset])
                 throw new InvalidObjectKeyException();
@@ -370,19 +380,15 @@ class EntryPageList implements Serializable
                     (ClassEntry)classList.classEntries.get( classIndex);
                 if ( classEntry.reuseCount!=page.classReuse[localOffset])
                     throw new InvalidObjectKeyException();
+                ArrayList<IndexEntry> indexEntryList = null;
+                Object oldVersion = null;
                 classEntry.objectStreams.enterCritical();
                 try
                 {
 	                if ( classEntry.indices.size()!=0)
 	                {
-	                    Object oldVersion=classEntry.objectStreams.
+	                    oldVersion=classEntry.objectStreams.
 	                        readObjectWithPrefix( page.offset[localOffset]);
-	                    for ( Iterator i=classEntry.indices.iterator();
-	                        i.hasNext();)
-	                    {
-	                        ((IndexEntry)i.next()).index.updateKey( key, oldVersion,
-	                            toUpdate);
-	                    }
 	                }
 	                int newRegion=classEntry.objectStreams.
 	                    writeObjectWithPrefix( toUpdate,
@@ -396,6 +402,16 @@ class EntryPageList implements Serializable
                 finally
                 {
                 	classEntry.objectStreams.leaveCritical();
+                }
+                pageFlushLock.leaveProtected();
+                pageFlushProtected = false;
+                if (oldVersion != null)
+                {
+                	for (Iterator ie = classEntry.indices.iterator(); ie.hasNext();)
+                	{
+                        ((IndexEntry)ie.next()).index.updateKey( key, oldVersion,
+                            toUpdate);
+                	}
                 }
             }
             finally
@@ -418,7 +434,8 @@ class EntryPageList implements Serializable
         }
         finally
         {
-            pageFlushLock.leaveProtected();
+        	if (pageFlushProtected)
+        		pageFlushLock.leaveProtected();
             deleteLock.leaveProtected();
         }
     }
