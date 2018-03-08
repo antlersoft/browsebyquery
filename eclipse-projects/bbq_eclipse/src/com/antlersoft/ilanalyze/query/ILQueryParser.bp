@@ -451,3 +451,29 @@ Identity : is .
 Identity : are .
 
 #include ../../bbq/query/AnnotationModule.bp
+
+reserved optional
+
+TRANSFORM : cast in "{
+	return new TransformImpl( DBCast.class, DBMethod.class) {
+		public Enumeration transformObject( DataSource source, Object toTransform) {
+		  return ((DBMethod)toTransform).getCasts();
+		}
+	};
+	}" .
+	
+TRANSFORM : cast to "{
+	return new TransformImpl(DBCast.class, DBClass.class) {
+		public Enumeration transformObject(DataSource source, Object toTransform) {
+			return ((DBClass)toTransform).getCastsTo((ILDB)source);
+		}
+	};
+	}" .
+
+FILTER: optional "{
+	return new CountPreservingBoundFilter(DBCast.class) {
+		public boolean getCountPreservingFilterValue(DataSource source, Object toFilter) {
+			return ((DBCast)toFilter).isOptional();
+		}
+	};
+	}" .

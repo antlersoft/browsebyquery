@@ -1,4 +1,5 @@
 symbol n_INSTR_BRTARGET
+symbol n_INSTR_CAST
 symbol n_INSTR_FIELD
 symbol n_INSTR_I
 symbol n_INSTR_I8
@@ -673,6 +674,8 @@ n_INSTR_BRTARGET : t_brzero .
 n_INSTR_BRTARGET : t_brzero_s .
 n_INSTR_BRTARGET : t_brinst .
 n_INSTR_BRTARGET : t_brinst_s .
+n_INSTR_CAST : t_castclass "m_TopString" .
+n_INSTR_CAST : t_isinst "m_TopString" .
 n_INSTR_FIELD : t_ldfld "m_TopString" .
 n_INSTR_FIELD : t_ldflda "m_TopString" .
 n_INSTR_FIELD : t_stfld "m_TopString" .
@@ -850,8 +853,6 @@ n_INSTR_TOK : t_ldtoken .
 n_INSTR_TYPE : t_constrained_ .
 n_INSTR_TYPE : t_cpobj .
 n_INSTR_TYPE : t_ldobj .
-n_INSTR_TYPE : t_castclass .
-n_INSTR_TYPE : t_isinst .
 n_INSTR_TYPE : t_unbox .
 n_INSTR_TYPE : t_stobj .
 n_INSTR_TYPE : t_box .
@@ -1191,6 +1192,7 @@ n_instr : n_INSTR_R t_INT64 .
 n_instr : n_instr_r_head n_bytes t_right_paren .
 n_instr : n_INSTR_BRTARGET n_int32 .
 n_instr : n_INSTR_BRTARGET n_id .
+n_instr : n_INSTR_CAST n_typeSpec "{ Driver(parser).addCastTo( (ReadType)valueStack.o_0(), valueStack.s_1().equals(\"isinst\")); return null; }" .
 n_instr : n_INSTR_METHOD n_callConv n_type n_typeSpec t_member_op n_methodName n_genArgClause n_sigArgs0 "{ Signature sig=(Signature)valueStack.o_0(); sig.setReturnType( (ReadType)valueStack.o_n(5)); Driver(parser).addMethodCall( (ReadType)valueStack.o_n(4), valueStack.s_2(), (List)valueStack.o_1(), sig); return null; }" .
 n_instr : n_INSTR_METHOD n_callConv n_type n_methodName n_genArgClause n_sigArgs0 "{ Signature sig=(Signature)valueStack.o_0(); sig.setReturnType( (ReadType)valueStack.o_n(3)); Driver(parser).addMethodCall( null, valueStack.s_2(), (List)valueStack.o_1(), sig); return null; }" .
 n_instr : n_INSTR_FIELD n_type n_typeSpec t_member_op n_id "{ Driver(parser).addFieldReference( (ReadType)valueStack.o_2(), (ReadType)valueStack.o_n(3), valueStack.s_0(), valueStack.s_n(4).startsWith(\"st\")); return null; }" .

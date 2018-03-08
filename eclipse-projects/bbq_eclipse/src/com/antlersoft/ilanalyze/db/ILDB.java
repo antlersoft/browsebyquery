@@ -206,6 +206,7 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 				DBReference.ReferenceTargetGenerator.G,
 				false,false,null);
         redefineIndex( DBAnnotationBase.ANNOTATION_CLASS, DBAnnotation.class, new DBAnnotation.AnnotationClassKeyGenerator(), false, false, null);
+		redefineIndex(DBCast.CAST_TARGET, DBCast.class, DBReference.ReferenceTargetGenerator.G, false, false, null);
 	}
 	
 	public IndexObjectDB getSession()

@@ -133,6 +133,21 @@ public class ILDBDriver implements DBDriver {
 		}
 	}
 
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addCastTo(com.antlersoft.ilanalyze.ReadType,boolean)
+	 */
+	@Override
+	public void addCastTo(ReadType targetType, boolean isOptional)	{
+		if (m_method_updater != null) {
+			try {
+				m_method_updater.addCast(getCurrentClass(targetType), isOptional, m_current_source_file, m_current_line);
+			} catch (ITypeInterpreter.TIException tie) {
+				LoggingDBDriver.logger.info(tie.getMessage());
+			}
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see com.antlersoft.ilanalyze.DBDriver#endClass()
 	 */

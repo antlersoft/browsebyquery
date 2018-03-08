@@ -28,6 +28,13 @@ import com.antlersoft.util.IteratorEnumeration;
  */
 public class DBMethod extends DBMember {
 	
+	/**
+	 * Generated from the version before m_casts was added to the class.
+	 * 
+	 *
+	 */
+	private static final long serialVersionUID = -2499920887934480894L;
+
 	static final String METHOD_TYPE_INDEX="METHOD_TYPE_INDEX";
 	
 	/** DBArguments for this method */
@@ -45,6 +52,7 @@ public class DBMethod extends DBMember {
 	private boolean m_visited;
 	/** Signature key (signature as a single string) */
 	private String m_signature_key;
+	private ArrayList<ObjectRef<DBCast>> m_casts;
 
 	/**
 	 * @param container
@@ -104,6 +112,17 @@ public class DBMethod extends DBMember {
 	{
 		return new FromRefIteratorEnumeration<DBCatch>( m_catches.iterator());
 	}
+	
+	public Enumeration<DBCast> getCasts()
+	{
+		ArrayList<ObjectRef<DBCast>> c = m_casts;
+		if (c == null)
+		{
+			c = new ArrayList<ObjectRef<DBCast>>();
+		}
+		return new FromRefIteratorEnumeration<DBCast>(c.iterator());
+	}
+	
 	
 	/**
 	 * Return an enumeration over calls to this method
@@ -221,6 +240,7 @@ public class DBMethod extends DBMember {
 		ReferenceUpdater<DBStringReference> m_string_up;
 		ReferenceUpdater<DBFieldReference> m_field_up;
 		ReferenceUpdater<DBCatch> m_catch_up;
+		ReferenceUpdater<DBCast> m_cast_up;
 		
 		MethodUpdater( ILDB db, DBMethod method)
 		{
@@ -233,6 +253,11 @@ public class DBMethod extends DBMember {
 			m_string_up=new ReferenceUpdater<DBStringReference>( method.m_string_references);
 			m_field_up=new ReferenceUpdater<DBFieldReference>( method.m_field_references);
 			m_catch_up=new ReferenceUpdater<DBCatch>( method.m_catches);
+			if (method.m_casts == null)
+			{
+				method.m_casts = new ArrayList<ObjectRef<DBCast>>();
+			}
+			m_cast_up=new ReferenceUpdater<DBCast>( method.m_casts);
 		}
 		
 		void updateArguments( Signature sig) throws ITypeInterpreter.TIException
@@ -263,6 +288,29 @@ public class DBMethod extends DBMember {
 			if ( ! m_catch_up.existsReference( c, file, line))
 			{
 				m_catch_up.newReference(new DBCatch( m_method, c), file, line);
+			}
+		}
+		
+		void addCast( DBClass c, boolean isOptional, DBSourceFile file, int line)
+		{
+			boolean found = false;
+			for ( Iterator<ObjectRef<DBCast>> i=m_cast_up.m_before_list.iterator(); i.hasNext();)
+			{
+				ObjectRef<DBCast> o=i.next();
+				DBCast dbr=o.getReferenced();
+				if (dbr.getTarget().equals(c))
+				{
+					dbr.setFileAndLine(file, line);
+					dbr.setOptional(isOptional);
+					i.remove();
+					m_cast_up.m_after_list.add( o);
+					found = true;
+					break;
+				}
+			}
+			if (! found)
+			{
+				m_cast_up.newReference(new DBCast(m_method, c, isOptional), file, line);
 			}
 		}
 		
@@ -299,6 +347,11 @@ public class DBMethod extends DBMember {
 			{
 				m_updated=true;
 				m_method.m_catches=m_catch_up.m_after_list;
+			}
+			if ( m_cast_up.cleanup(m_db))
+			{
+				m_updated=true;
+				m_method.m_casts=m_cast_up.m_after_list;
 			}
 			if ( m_updated)
 			{

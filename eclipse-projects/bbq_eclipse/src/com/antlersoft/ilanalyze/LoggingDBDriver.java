@@ -280,4 +280,14 @@ public class LoggingDBDriver implements DBDriver {
 		}
 		
 	}
+
+	/* (non-Javadoc)
+	 * @see com.antlersoft.ilanalyze.DBDriver#addCatch(com.antlersoft.ilanalyze.ReadType)
+	 */
+	@Override
+	public void addCastTo(ReadType targetType, boolean isOptional) {
+		logger.fine("Cast to "+targetType.toString());
+		if (m_nested != null)
+			m_nested.addCastTo(targetType, isOptional);
+	}
 }

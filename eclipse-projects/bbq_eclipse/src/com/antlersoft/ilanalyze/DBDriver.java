@@ -126,6 +126,13 @@ public interface DBDriver {
 	public void addFieldReference( ReadType containing_type, ReadType field_type, String name, boolean is_write);
 	
 	/**
+	 * Add a cast of a value to a particular class type in the current method.
+	 * @param targetType Target type
+	 * @param isOptional False if the cast will throw an exception if it fails
+	 */
+	public void addCastTo(ReadType targetType, boolean isOptional);
+
+	/**
 	 * Add custom attribute data
 	 * @param setting Information from the custom attribute declaration
 	 */

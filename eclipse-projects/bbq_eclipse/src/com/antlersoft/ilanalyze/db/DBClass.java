@@ -37,6 +37,10 @@ import com.antlersoft.query.EmptyEnum;
  */
 public class DBClass extends DBSourceObject implements DBClassBase, HasProperties, HasDBType, DBAnnotatable {
 	
+	/**
+	 * serialVersionUID predates addition of getCastsTo
+	 */
+	private static final long serialVersionUID = 8069423789501019091L;
 	/** Primary key on class name in key form */
 	public static final String CLASS_KEY_INDEX="CLASS_KEY_INDEX";
 	/** Primary key on class name in key form */
@@ -342,6 +346,16 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 	public Enumeration getCatchesOf( ILDB db)
 	{
 		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBCatch.CATCH_TARGET, new ObjectRefKey(this)));		
+	}
+	
+	/**
+	 * casts to this class
+	 * @param db
+	 * @return Enumeration of DBCast objects that reference this DBClass
+	 */
+	public Enumeration getCastsTo( ILDB db)
+	{
+		return new ExactMatchIndexEnumeration( db.greaterThanOrEqualEntries(DBCast.CAST_TARGET, new ObjectRefKey(this)));		
 	}
 	
 	/**
