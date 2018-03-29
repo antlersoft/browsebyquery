@@ -277,6 +277,7 @@ public abstract class OpCode
 		    new SimpleOpCode( 104, 1, "imul", new Cat1Stack( 2, 1));
 		    new SimpleOpCode( 116, 1, "ineg");
 		    new SimpleOpCode( 193, 3, "instanceof");
+		    new InvokeOpCode( 186, 5, "invokedynamic");
 		    new InvokeOpCode( 185, 5, "invokeinterface");
 		    new InvokeOpCode( 183, 3, "invokespecial");
 		    new InvokeOpCode( 184, 3, "invokestatic");

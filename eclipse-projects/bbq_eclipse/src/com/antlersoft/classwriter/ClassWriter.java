@@ -61,6 +61,7 @@ public class ClassWriter
     public static final short CONSTANT_Methodref=10;
     public static final short CONSTANT_InterfaceMethodref=11;
     public static final short CONSTANT_NameAndType=12;
+    public static final short CONSTANT_InvokeDynamic=18;
 
     public static final int ACC_PUBLIC=0x0001;
     public static final int ACC_PRIVATE=0x0002;
@@ -294,6 +295,9 @@ public class ClassWriter
 		    case CONSTANT_NameAndType :
 				result=new CPNameAndType( classStream);
 				break;
+		    case CONSTANT_InvokeDynamic :
+		    	result=new CPInvokeDynamic(classStream);
+		    	break;
 		    default :
 				throw new CodeCheckException( "Unknown constant type "+(int)tag);
 		}
@@ -707,6 +711,19 @@ public class ClassWriter
        		super.write( classStream);
          	classStream.writeDouble( value);
         }
+    }
+    
+    static class CPInvokeDynamic extends CPInfo
+    {
+    	int bootstrapMethodIndex;
+    	int nameAndTypeIndex;
+    	CPInvokeDynamic(DataInputStream classStream)
+    		throws IOException
+    	{
+    		super(ClassWriter.CONSTANT_InvokeDynamic);
+    		bootstrapMethodIndex=classStream.readUnsignedShort();
+    		nameAndTypeIndex=classStream.readUnsignedShort();
+    	}
     }
 
     private FieldInfo readFieldInfo( DataInputStream classStream)
