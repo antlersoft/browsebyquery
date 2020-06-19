@@ -64,6 +64,20 @@ namespace ResourceLister
                     Stream strm = assembly.GetManifestResourceStream(r);
                     StreamReader sr = new StreamReader(strm);
                     String contents = sr.ReadToEnd();
+                    var lenToCheck = Math.Max(contents.Length, 256);
+                    bool badChars = false;
+                    for (int i=0; i<lenToCheck && ! badChars; i++)
+                    {
+                        var ch = contents[i];
+                        if (ch == 0 || ch > 127)
+                        {
+                            badChars = true;
+                        }
+                    }
+                    if (badChars)
+                    {
+                        continue;
+                    }
                     String basename = r;
                     int lastIndex = r.LastIndexOf('.');
                     if (lastIndex != -1)
