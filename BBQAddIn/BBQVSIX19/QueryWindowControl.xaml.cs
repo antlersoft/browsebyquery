@@ -69,15 +69,23 @@ namespace BBQVSIX19
         }
         private void RunQuery(object sender, DoWorkEventArgs e)
         {
+            if (e == null || e.Argument == null || BrowseByQuery == null)
+            {
+                return;
+            }
             e.Result = new KeyValuePair<QueryRequest, QueryResponse>((QueryRequest)e.Argument, BrowseByQuery.PerformQuery((QueryRequest)e.Argument));
         }
 
         private void PostQueryResults(object sender, RunWorkerCompletedEventArgs e)
         {
             QueryButton.IsEnabled = true;
-            if (e.Error != null)
+            if (e?.Error != null)
             {
                 MessageBox.Show(e.Error.Message + " " + e.Error.StackTrace, "Failed to Send Query");
+            }
+            else if (e == null || e.Result == null)
+            {
+                MessageBox.Show($"PostQueryResults args {(e == null ? "are null" : "Result null without error")}");
             }
             else
             {
