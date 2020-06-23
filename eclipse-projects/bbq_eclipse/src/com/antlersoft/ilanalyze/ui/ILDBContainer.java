@@ -368,15 +368,39 @@ public class ILDBContainer extends AbstractDBContainer {
 	
 	public static void main( String[] args) throws Exception
 	{
-		com.antlersoft.ilanalyze.db.ILDB db=new com.antlersoft.ilanalyze.db.ILDB(new File(args[1]), false);
-		try
+	    if (args.length == 2)
 		{
-			new ILDBContainer().sendFileToDriver( new File(args[0]), new SimpleDBDriverSource( 
-					new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db)), new IldasmReader()), 1, false);
+			com.antlersoft.ilanalyze.db.ILDB db=new com.antlersoft.ilanalyze.db.ILDB(new File(args[1]), false);
+			try
+			{
+				new ILDBContainer().sendFileToDriver( new File(args[0]), new SimpleDBDriverSource( 
+						new LoggingDBDriver( new com.antlersoft.ilanalyze.db.ILDBDriver( db)), new IldasmReader()), 1, false);
+			}
+			finally
+			{
+				db.close();
+			}
 		}
-		finally
+		else if (args.length == 1)
 		{
-			db.close();
+			com.antlersoft.ilanalyze.db.ILDB db=new com.antlersoft.ilanalyze.db.ILDB(new File(args[0]), false);
+			try
+			{
+				BufferedReader in=new BufferedReader( new InputStreamReader( System.in));
+				ILDBContainer dbContainer = new ILDBContainer();
+				SimpleDBDriverSource source = new SimpleDBDriverSource(
+					new LoggingDBDriver(
+						new com.antlersoft.ilanalyze.db.ILDBDriver( db)),
+					new IldasmReader());
+				for (String line=in.readLine(); line!=null && line.length() > 0; line=in.readLine())
+				{
+				    dbContainer.sendFileToDriver( new File(line), source, 1, false);
+			    }
+			}
+			finally
+			{
+				db.close();
+			}
 		}
 	}
 }
