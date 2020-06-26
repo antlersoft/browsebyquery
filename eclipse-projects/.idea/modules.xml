@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/bbq_eclipse/bbq_eclipse.iml" filepath="$PROJECT_DIR$/bbq_eclipse/bbq_eclipse.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bbq_web_demo/bbq_web_demo.iml" filepath="$PROJECT_DIR$/bbq_web_demo/bbq_web_demo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/docs/docs.iml" filepath="$PROJECT_DIR$/docs/docs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ilbpgen/ilbpgen.iml" filepath="$PROJECT_DIR$/ilbpgen/ilbpgen.iml" />
+    </modules>
+  </component>
+</project>

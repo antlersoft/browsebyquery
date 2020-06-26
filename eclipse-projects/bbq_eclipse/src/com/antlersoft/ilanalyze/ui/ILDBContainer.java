@@ -56,23 +56,54 @@ public class ILDBContainer extends AbstractDBContainer {
 	
 	/** Results of tasks submitted on the thread pool */
 	private ArrayList<Future<FileReadRunnable>> m_result_list;
+
+	private String m_path_to_ildasm;
+
+	private String m_path_to_resource_lister;
 	
-	ILDBContainer()
+	public ILDBContainer()
 	{
 		super("ILDB021");
 		m_disassembly_command_format="monodis {0}";
+		// Default to assuming it is in system path
+		m_path_to_ildasm = "ildasm";
+		m_path_to_resource_lister = "ResourceLister";
 		if ( System.getProperty("os.name", "Finux").contains("Windows"))
 		{
-			m_disassembly_command_format="ildasm /text /nobar /linenumber \"{0}\"";
+			m_disassembly_command_format="{1} /text /nobar /linenumber \"{0}\"";
 			try
 			{
-				m_directory_match=Pattern.compile( "obj\\\\Debug\\z");
+				m_directory_match=Pattern.compile( "obj\\\\Debug(\\\\[^\\\\]*)?\\z");
 			}
 			catch ( PatternSyntaxException pse)
 			{
 				logger.warning(pse.getLocalizedMessage());
 			}
 		}
+	}
+
+	public void setDisassemblyCommandFormat(String format) {
+		m_disassembly_command_format = format;
+	}
+
+	public String getDisassemblyCommandFormat() {
+		return m_disassembly_command_format;
+	}
+
+	public void setPathToIldasm(String path) {
+		m_path_to_ildasm = path;
+	}
+
+	public String getPathToIldasm() {
+		return m_path_to_ildasm;
+	}
+
+	public void setPathToResourceLister(String path) {
+		m_path_to_resource_lister = path;
+	}
+
+	public String getPathToResourceLister() {
+		return m_path_to_resource_lister;
 	}
 
 	/* (non-Javadoc)
@@ -162,7 +193,7 @@ public class ILDBContainer extends AbstractDBContainer {
 		logger.fine("Reading assembly file "+file.getAbsolutePath());
 		driver.startAnalyzedFile(file.getAbsolutePath());
 		// Tokenize the command format, substitute the file path as necessary
-		Object[] format_args=new Object[] { file.getAbsolutePath() };
+		Object[] format_args=new Object[] { file.getAbsolutePath(), m_path_to_ildasm, m_path_to_resource_lister };
 		Process process=Runtime.getRuntime().exec(formatCommandArgs(m_disassembly_command_format, format_args));
 		Reader reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
 		try
@@ -183,7 +214,7 @@ public class ILDBContainer extends AbstractDBContainer {
 		}
 		try
 		{
-			process=Runtime.getRuntime().exec(formatCommandArgs("ResourceLister {0}", format_args), null, null);
+			process=Runtime.getRuntime().exec(formatCommandArgs("{2} {0}", format_args), null, null);
 			reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
 			try
 			{

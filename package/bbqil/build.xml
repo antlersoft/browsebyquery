@@ -7,9 +7,26 @@ Requires ant 1.6+
 <project name="bbq" default="all">
 	<property file="bbq_ant.properties"/>
 	<target name="all" depends="bbqstandalone"/>
+	<target name="maven" depends="bbqstandalone.versioned">
+		<exec executable="/usr/bin/mvn">
+			<arg value="install:install-file"/>
+			<arg value="-Dfile=dist/bbqilstandalone-${bbq.version}.jar"/>
+			<arg value="-DgroupId=com.antlersoft"/>
+			<arg value="-DartifactId=bbqilstandalone"/>
+			<arg value="-Dversion=${bbq.version}"/>
+			<arg value="-Dpackaging=jar"/>
+			<arg value="-DgeneratePom=true"/>
+		</exec>
+	</target>
 	<target name="bbqstandalone" depends="buildcommon">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/bbqilstandalone.jar" basedir="classes" manifest="${bbq.project.path}/src/com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
+		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/appcontext/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
+		</jar>
+	</target>
+	<target name="bbqstandalone.versioned" depends="buildcommon">
+		<mkdir dir="dist"/>
+		<jar destfile="dist/bbqilstandalone-${bbq.version}.jar" basedir="classes" manifest="${bbq.project.path}/src/com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
 		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/appcontext/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
 		</jar>
 	</target>
