@@ -24,10 +24,10 @@ Requires ant 1.6+
 		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/appcontext/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
 		</jar>
 	</target>
-	<target name="bbqstandalone.versioned" depends="buildcommon">
+	<target name="bbqstandalone.versioned" depends="buildcommon,mavenonly">
 		<mkdir dir="dist"/>
 		<jar destfile="dist/bbqilstandalone-${bbq.version}.jar" basedir="classes" manifest="${bbq.project.path}/src/com/antlersoft/ilanalyze/ui/bbqilstandalone.txt"
-		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/appcontext/** com/antlersoft/parser/** com/antlersoft/ilanalyze/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
+		includes="com/antlersoft/odb/** com/antlersoft/util/** com/antlersoft/appcontext/** com/antlersoft/parser/** com/antlersoft/analyzer/** com/antlersoft/classwriter/** com/antlersoft/ilanalyze/** com/antlersoft/query/** com/antlersoft/bbq/** icons/**">
 		</jar>
 	</target>
 	<target name="buildcommon">
@@ -42,15 +42,24 @@ Requires ant 1.6+
 		<exec executable="${genparserpath}">
 			<arg file="${bbq.project.path}/src/com/antlersoft/ilanalyze/parseildasm/ResourceParser.pre"/>
 		</exec>
-		<delete dir="${bbq.project.path}/src/com/antlersoft/odb/transp"/>
-		<delete dir="${bbq.project.path}/src/com/antlersoft/odb/postproc"/>
-		<delete file="${bbq.project.path}/src/com/antlersoft/appcontext/WebStartContext.java"/>
 		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}/src" destdir="classes">
 			<src path="${bbq.project.path}/src/com/antlersoft/odb;${bbq.project.path}/src/com/antlersoft/ilanalyze;${bbq.project.path}/src/com/antlersoft/util;${bbq.project.path}/src/com/antlersoft/parser;${bbq.project.path}/src/com/antlersoft/query;${bbq.project.path}/src/com/antlersoft/bbq;${bbq.project.path}/src/com/antlersoft/appcontext"/>
 		</javac>
 		<copy todir="classes">
 			<fileset dir="${bbq.project.path}" includes="icons/*.gif"/>
 		</copy>
+	</target>
+	<target name="mavenonly">
+		<exec executable="${genparserpath}">
+			<arg value="-l"/>
+			<arg file="${bbq.project.path}/src/com/antlersoft/analyzer/query/QueryParser.pre"/>
+		</exec>
+		<javac source="${bbq.source}" target="${bbq.target}" sourcepath="${bbq.project.path}/src" destdir="classes">
+		    <src path="${bbq.project.path}/src" />
+			<include name="com/antlersoft/analyzer/**" />
+			<include name="com/antlersoft/classwriter/**" />
+			<exclude name="com/antlersoft/classwriter/test/**" />
+		</javac>
 	</target>
 	<target name="clean">
 		<delete dir="classes"/>

@@ -131,7 +131,7 @@ public class QueryRequest {
 		_selectedObjectKeys.add(s);
 	}
 	
-	List<String> getObjectKeys()
+	public List<String> getObjectKeys()
 	{
 		return _selectedObjectKeys;
 	}
