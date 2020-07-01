@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using com.antlersoft.BBQClient;
 using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
@@ -28,6 +29,7 @@ namespace BBQVSIX19
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [ProvideToolWindow(typeof(QueryWindow))]
     [ProvideToolWindow(typeof(ResultWindow))]
+    [ProvideOptionPage(typeof(BbqOptions), "BBQ Configuration", "BBQ Configuration", 0, 0, false, new string[0])]
     public sealed class QueryWindowPackage : AsyncPackage
     {
         /// <summary>
@@ -55,6 +57,8 @@ namespace BBQVSIX19
         }
 
         #endregion
+
+        internal BbqOptions BbqConfig => (BbqOptions)GetDialogPage(typeof(BbqOptions));
 
         internal ResultWindowControl ResultControl
         {

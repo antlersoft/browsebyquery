@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="BBQVSIX19.be3d51ce-7fe2-4324-86e5-5ad3d662ff33" Version="1.3.2" Language="en-US" Publisher="Michael MacDonald" />
+        <Identity Id="BBQVSIX19.be3d51ce-7fe2-4324-86e5-5ad3d662ff33" Version="1.3.3" Language="en-US" Publisher="Michael MacDonald" />
         <DisplayName>BBQVSIX19</DisplayName>
-        <Description xml:space="preserve">VSIX Project for BBQ Extension</Description>
+        <Description xml:space="preserve">BBQ Plugin for Visual Studio 19 - directs queries to BBQ server (Jenkins) or desktop (legacy interface)</Description>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0, 17.0)" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />

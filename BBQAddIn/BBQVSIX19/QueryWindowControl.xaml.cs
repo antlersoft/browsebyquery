@@ -21,6 +21,7 @@ namespace BBQVSIX19
     public partial class QueryWindowControl : UserControl
     {
         private BackgroundWorker queryWorker;
+        private IBbqConfig config;
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryWindowControl"/> class.
         /// </summary>
@@ -60,8 +61,35 @@ namespace BBQVSIX19
                 MessageBox.Show("Please open result window", "Result Window Missing");
                 return;
             }
+            var newConfig = QueryPackage.BbqConfig;
+            if (newConfig == null)
+            {
+                MessageBox.Show("Unable to retrieve configuration options for BBQ plugin");
+                return;
+            }
+            if (config == null)
+            {
+                DatabaseName.Text = newConfig.DefaultDatabase ?? string.Empty;
+            }
+            if (config == null || ! config.Equals(newConfig))
+            {
+                config = new BbqConfig(newConfig);
+                if (BrowseByQuery is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+                if (config.UseLegacyService)
+                {
+                    BrowseByQuery = new BrowseByQueryBySocket();
+                }
+                else
+                {
+                    BrowseByQuery = new BrowseByQueryByJsonWebService(config.WebServiceUrl, config.UserName, config.ApiKey);
+                }
+            }
             string text = QueryText.Text;
             QueryRequest request = new QueryRequest(text);
+            request.DatabaseName = DatabaseName.Text;
             ResultControl.AddSelectedObjectKeys(request.ObjectKeys);
             queryWorker.RunWorkerAsync(request);
             QueryButton.IsEnabled = false;

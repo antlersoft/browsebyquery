@@ -28,6 +28,12 @@ namespace com.antlersoft.BBQClient
             set { queryText=value; }
         }
 
+        [XmlAttribute]
+        public string DatabaseName
+        {
+            get; set;
+        }
+
         [XmlArray]
         public List<String> ObjectKeys { get; set; }
 
