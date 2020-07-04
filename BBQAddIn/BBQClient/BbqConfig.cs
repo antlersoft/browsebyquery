@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,11 @@ namespace com.antlersoft.BBQClient
             UserName = b.UserName;
             ApiKey = b.ApiKey;
             Substitutions = b.Substitutions?.ToList() ?? new List<Substitution>();
-            SourcelessSearchStartPoints = b.SourcelessSearchStartPoints?.ToList() ?? new List<string>();
+        }
+
+        public override int GetHashCode()
+        {
+            return JsonConvert.SerializeObject(this).GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -28,23 +33,13 @@ namespace com.antlersoft.BBQClient
                     && UserName == b.UserName
                     && ApiKey == b.ApiKey
                     && Substitutions != null && b.Substitutions != null
-                    && SourcelessSearchStartPoints != null && b.SourcelessSearchStartPoints != null
-                    && Substitutions.Count == b.Substitutions.Count
-                    && SourcelessSearchStartPoints.Count == b.SourcelessSearchStartPoints.Count)
+                    && Substitutions.Count == b.Substitutions.Count)
                 {
                     bool diff = false;
                     for (int i = Substitutions.Count - 1; i>=0; i--)
                     {
                         if (Substitutions[i].MatchExpression != b.Substitutions[i].MatchExpression
                             || Substitutions[i].ReplaceExpression != b.Substitutions[i].ReplaceExpression)
-                        {
-                            diff = true;
-                            break;
-                        }
-                    }
-                    for (int i = SourcelessSearchStartPoints.Count - 1; i>=0; i--)
-                    {
-                        if (SourcelessSearchStartPoints[i] != b.SourcelessSearchStartPoints[i])
                         {
                             diff = true;
                             break;
@@ -63,7 +58,5 @@ namespace com.antlersoft.BBQClient
         public string ApiKey { get; private set; }
 
         public List<Substitution> Substitutions { get; private set; } = new List<Substitution>();
-
-        public List<string> SourcelessSearchStartPoints { get; private set; } = new List<string>();
     }
 }

@@ -15,6 +15,5 @@ namespace com.antlersoft.BBQClient
         string ApiKey { get; }
 
         List<Substitution> Substitutions { get; }
-        List<string> SourcelessSearchStartPoints { get; }
     }
 }
