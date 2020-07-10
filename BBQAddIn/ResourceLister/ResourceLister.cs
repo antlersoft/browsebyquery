@@ -50,7 +50,14 @@ namespace ResourceLister
 
                             // Iterate through the ResourceSet and display the contents to the console. 
                             while (id.MoveNext())
+                            {
+                                string value = id.Value.ToString();
+                                if (value.Length > 8192)
+                                {
+                                    continue;
+                                }
                                 Console.WriteLine("{0} = {1}", escapeString(id.Key.ToString()), escapeString(id.Value.ToString()));
+                            }
                             Console.WriteLine("}");
                         }
                     }
@@ -59,11 +66,16 @@ namespace ResourceLister
                         // Continue with next resource if possible
                     }
                 }
-                else if (! r.EndsWith(".zip") && ! r.EndsWith(".gz") && ! r.EndsWith(".png") && ! r.EndsWith(".jpg") && ! r.EndsWith(".bmp"))
+                else if (! r.EndsWith(".zip") && ! r.EndsWith(".gz") && ! r.EndsWith(".png") && ! r.EndsWith(".jpg") && ! r.EndsWith(".bmp") && ! r.EndsWith(".js"))
                 {
                     Stream strm = assembly.GetManifestResourceStream(r);
                     StreamReader sr = new StreamReader(strm);
                     String contents = sr.ReadToEnd();
+                    // Arbitrary limit on length
+                    if (contents.Length > 8192)
+                    {
+                        continue;
+                    }
                     var lenToCheck = Math.Min(contents.Length, 256);
                     bool badChars = false;
                     for (int i=0; i<lenToCheck && ! badChars; i++)
