@@ -60,6 +60,10 @@ public class QueryRequest {
 			{
 				stack.startWithHandler(new ObjectKeyElement(request).readFromXML(stack), uri, localName, qName, attributes);
 			}
+			else
+			{
+				request._databaseName = attributes.getValue("DatabaseName");
+			}
 		}
 
 		public void endElement( String uri, String localname, String qname)
@@ -124,6 +128,7 @@ public class QueryRequest {
 
 
 	private String _text;
+	private String _databaseName;
 	private ArrayList<String> _selectedObjectKeys = new ArrayList<String>();
 	
 	public void addObjectKey(String s)
@@ -137,6 +142,8 @@ public class QueryRequest {
 	}
 	
 	public String getText() { return _text; }
+
+	public String getDatabaseName() { return _databaseName; }
 	
 	public void setText( String text) { _text = text; }
 

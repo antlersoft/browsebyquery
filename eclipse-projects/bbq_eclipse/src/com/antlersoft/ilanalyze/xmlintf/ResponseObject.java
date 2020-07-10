@@ -54,9 +54,9 @@ public class ResponseObject {
 	
 	public String getDescription() { return description; }
 	
-	public String getFile() { return file; }
+	public String getFileName() { return file; }
 	
-	public int getLine() { return line; }
+	public int getLineNumber() { return line; }
 	
 	public String getObjectKey() { return objectKey; }
 	
@@ -96,8 +96,8 @@ public class ResponseObject {
 			AttributesImpl impl=new AttributesImpl();
 			impl.addAttribute("", "", "Type", "CDATA", ro.getObjectType());
 			impl.addAttribute("", "", "Description", "CDATA", ro.getDescription());
-			impl.addAttribute("", "", "FileName", "CDATA", ro.getFile());
-			impl.addAttribute("", "", "LineNumber", "CDATA", Integer.toString(ro.getLine()));
+			impl.addAttribute("", "", "FileName", "CDATA", ro.getFileName());
+			impl.addAttribute("", "", "LineNumber", "CDATA", Integer.toString(ro.getLineNumber()));
 			impl.addAttribute("", "", "ObjectKey", "CDATA", ro.getObjectKey());
 			xml_writer.startElement("", "", getElementTag(), impl);
 			xml_writer.endElement("", "", getElementTag());

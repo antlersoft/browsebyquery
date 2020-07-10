@@ -30,7 +30,7 @@ public class QueryResponse {
 	
 	private String resultClassName;
 
-	public RequestException getException()
+	public RequestException getRequestException()
 	{
 		return re;
 	}
@@ -100,9 +100,9 @@ public class QueryResponse {
 			impl.addAttribute("", "", "ResponseCount", "CDATA", Integer.toString(qr.getResponseCount()));
 			impl.addAttribute("","", "ResultClassName", "CDATA", qr.getResultClassName());
 			xml_writer.startElement("", "", getElementTag(), impl);
-			if ( qr.getException()!=null)
+			if ( qr.getRequestException()!=null)
 			{
-				new RequestException.Element( qr.getException()).writeToXML(xml_writer);
+				new RequestException.Element( qr.getRequestException()).writeToXML(xml_writer);
 			}
 			xml_writer.startElement( "", "", "Responses", SimpleHandler.m_empty);
 			for ( Iterator<ResponseObject> i=qr.getResponses().iterator(); i.hasNext();)

@@ -48,6 +48,9 @@ public class ILDBContainer extends AbstractDBContainer {
 	
 	/** Pattern directory must match to pull .dll's and .exe's */
 	private Pattern m_directory_match;
+	/** Pattern directory might match if there is a Release build but no debug build */
+	private Pattern m_release_directory_match;
+
 	/** Oldest modification date to consider for file to add to database */
 	private TreeMap<String,Date> m_oldest;
 	
@@ -74,6 +77,7 @@ public class ILDBContainer extends AbstractDBContainer {
 			try
 			{
 				m_directory_match=Pattern.compile( "obj\\\\Debug(\\\\[^\\\\]*)?\\z");
+				m_release_directory_match=Pattern.compile( "obj\\\\Release(\\\\[^\\\\]*)?\\z");
 			}
 			catch ( PatternSyntaxException pse)
 			{
@@ -348,13 +352,28 @@ public class ILDBContainer extends AbstractDBContainer {
 			{
 				if ( filter)
 				{
-					if ( m_directory_match!=null)
+					if ( m_directory_match!=null && m_release_directory_match!=null)
 					{
-						if ( ! m_directory_match.matcher( file.getParentFile().getAbsolutePath()).find())
+						String dirName = file.getParentFile().getAbsolutePath();
+						if ( ! m_directory_match.matcher(dirName).find())
 						{
-							if ( logger.isLoggable(Level.FINER))
-								logger.finer( "Rejecting "+file.getAbsolutePath()+" because directory doesn't match "+m_directory_match.pattern());
-							return;
+							boolean useableRelease = false;
+							if (m_release_directory_match.matcher(dirName).find()) {
+								String filePath = file.getAbsolutePath();
+								int releaseIndex = filePath.lastIndexOf("Release");
+								if (releaseIndex > 0) {
+									String debugPath = filePath.substring(0, releaseIndex) + "Debug" + filePath.substring(releaseIndex+7);
+									File debugFile = new File(debugPath);
+									if (! debugFile.exists() || debugFile.lastModified() < file.lastModified()) {
+										useableRelease = true;
+									}
+								}
+							}
+							if (! useableRelease) {
+								if (logger.isLoggable(Level.FINER))
+									logger.finer("Rejecting " + file.getAbsolutePath() + " because directory doesn't match " + m_directory_match.pattern());
+								return;
+							}
 						}
 					}
 					if ( m_oldest!=null )
