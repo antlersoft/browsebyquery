@@ -67,7 +67,7 @@ public class DBMethod extends DBMember
 		this.signature=signature;
 		resolved=false;
 		createArguments( db);
-		ObjectDB.makePersistent( this);
+		db.getSession().makePersistent( this);
     }
 
     public String toString()
@@ -199,9 +199,11 @@ public class DBMethod extends DBMember
     	ArrayList<ObjectRef<E>> beforeList;
     	ArrayList<ObjectRef<E>> afterList;
     	boolean updated;
+    	ObjectDB m_db;
     	
-    	ReferenceUpdater( ArrayList<ObjectRef<E>> original)
+    	ReferenceUpdater(ObjectDB db, ArrayList<ObjectRef<E>> original)
     	{
+    		m_db = db;
     		if ( original!=null)
     			beforeList=(ArrayList<ObjectRef<E>>)original.clone();
     		else
@@ -221,7 +223,7 @@ public class DBMethod extends DBMember
     			{
     				i.remove();
     				afterList.add( targetRef);
-    				dbref.setLineNumber(lineNumber);
+    				dbref.setLineNumber( m_db, lineNumber);
     				result=true;
     				break;
     			}
@@ -250,9 +252,9 @@ public class DBMethod extends DBMember
     
     static class FieldReferenceUpdater extends ReferenceUpdater<DBFieldReference>
     {
-    	FieldReferenceUpdater(ArrayList<ObjectRef<DBFieldReference>> orig)
+     	FieldReferenceUpdater(ObjectDB db, ArrayList<ObjectRef<DBFieldReference>> orig)
     	{
-    		super(orig);
+    		super(db, orig);
     	}
     	boolean existsReference( DBField t, int lineNumber, boolean write)
     	{
@@ -265,7 +267,7 @@ public class DBMethod extends DBMember
     			{
     				i.remove();
     				afterList.add( targetRef);
-    				dbref.setLineNumber(lineNumber);
+    				dbref.setLineNumber(m_db, lineNumber);
     				result=true;
     				break;
     			}
@@ -278,7 +280,8 @@ public class DBMethod extends DBMember
 		final IndexAnalyzeDB db)
 		throws CodeCheckException
     {
-    	ObjectDB.makeDirty( this);
+    	ObjectDB session = db.getSession();
+    	session.makeDirty( this);
         accessFlags=mi.getFlags();
         setDeprecated( mi.isDeprecated());
 		CodeAttribute codeAttribute=mi.getCodeAttribute();
@@ -297,14 +300,14 @@ public class DBMethod extends DBMember
 				String entry=locals.getLocalVariable( ac, 1, arg.getOrdinal()+variableOffset);
 				if ( entry!=null)
 				{
-					arg.setName( entry.substring( 0, entry.indexOf( '(')));
+					arg.setName( session, entry.substring( 0, entry.indexOf( '(')));
 				}
 			}
 		}
-		ReferenceUpdater<DBCall> callUpdater = new ReferenceUpdater<DBCall>(calls);
-		FieldReferenceUpdater fieldRefUpdater=new FieldReferenceUpdater(fieldReferences);
-		ReferenceUpdater<DBStringReference> stringRefUpdater=new ReferenceUpdater<DBStringReference>(stringReferences);
-		ReferenceUpdater<DBCatch> catchUpdater=new ReferenceUpdater<DBCatch>( catches);
+		ReferenceUpdater<DBCall> callUpdater = new ReferenceUpdater<DBCall>(session, calls);
+		FieldReferenceUpdater fieldRefUpdater=new FieldReferenceUpdater(session, fieldReferences);
+		ReferenceUpdater<DBStringReference> stringRefUpdater=new ReferenceUpdater<DBStringReference>(session, stringReferences);
+		ReferenceUpdater<DBCatch> catchUpdater=new ReferenceUpdater<DBCatch>( session, catches);
 		lineNumber=codeAttribute.getLineNumber( 0);
 		// Class linenumber = minimum linenumber of any method in the class
 		if ( lineNumber>0)
@@ -328,7 +331,7 @@ public class DBMethod extends DBMember
 					int lineNumber=codeAttribute.getLineNumber( instruction.getInstructionStart());
 					if ( ! callUpdater.existsReference( target, lineNumber))
 					{
-						DBCall call=new DBCall( DBMethod.this, target, lineNumber);
+						DBCall call=new DBCall( session,DBMethod.this, target, lineNumber);
 						callUpdater.addReference( call);
 					}
 					if ( opcode.getMnemonic().equals("invokestatic"))
@@ -336,7 +339,7 @@ public class DBMethod extends DBMember
 						if ( ( target.accessFlags & ClassWriter.ACC_STATIC)==0)
 						{
 							target.accessFlags|=ClassWriter.ACC_STATIC;
-							ObjectDB.makeDirty(target);
+							session.makeDirty(target);
 						}
 					}
 				}
@@ -355,7 +358,7 @@ public class DBMethod extends DBMember
 					boolean write=opcode.getMnemonic().startsWith("put");
 					if ( ! fieldRefUpdater.existsReference(target,lineNumber,write))
 					{
-						DBFieldReference ref=new DBFieldReference(this,target,lineNumber,write);
+						DBFieldReference ref=new DBFieldReference( session,this,target,lineNumber,write);
 						fieldRefUpdater.addReference(ref);
 					}
 				}
@@ -380,7 +383,7 @@ public class DBMethod extends DBMember
 							DBString target=DBString.get(db.getSession(),constant);
 							if ( ! stringRefUpdater.existsReference(target, lineNumber))
 							{
-								stringRefUpdater.addReference( new DBStringReference(DBMethod.this, target, lineNumber));
+								stringRefUpdater.addReference( new DBStringReference(session, DBMethod.this, target, lineNumber));
 							}
 						}
 						catch ( Exception e)
@@ -401,7 +404,7 @@ public class DBMethod extends DBMember
 					int lineNumber=codeAttribute.getLineNumber( i.getEndIndex());
 					if ( ! catchUpdater.existsReference( caught, lineNumber))
 					{
-						DBCatch c=new DBCatch( this, caught, lineNumber);
+						DBCatch c=new DBCatch( session,this, caught, lineNumber);
 						catchUpdater.addReference( c);
 					}
 				}
@@ -415,22 +418,22 @@ public class DBMethod extends DBMember
 		if ( callUpdater.cleanup(db))
 		{
 			calls=callUpdater.afterList;
-			ObjectDB.makeDirty(this);
+			session.makeDirty(this);
 		}
 		if ( fieldRefUpdater.cleanup(db))
 		{
 			fieldReferences=fieldRefUpdater.afterList;
-			ObjectDB.makeDirty(this);
+			session.makeDirty(this);
 		}
 		if ( stringRefUpdater.cleanup(db))
 		{
 			stringReferences=stringRefUpdater.afterList;
-			ObjectDB.makeDirty(this);
+			session.makeDirty(this);
 		}
 		if ( catchUpdater.cleanup(db))
 		{
 			catches=catchUpdater.afterList;
-			ObjectDB.makeDirty(this);
+			session.makeDirty(this);
 		}
     }
     
@@ -463,7 +466,7 @@ public class DBMethod extends DBMember
 	    	    		default :
 	    	    			break;
 	    	    		}
-	    	    		arguments.add( new ObjectRef<DBArgument>( new DBArgument( this, argument_count++,
+	    	    		arguments.add( new ObjectRef<DBArgument>( new DBArgument( db.getSession(),this, argument_count++,
 	    	    				DBType.getWithTypeKey(
 	    	    						signature.substring( start_offset, current_offset+1), db))));
 	    	    		start_offset=current_offset+1;

@@ -67,7 +67,7 @@ class AnnotationInitializerHolder {
 			if ( stringList.cleanup(db))
 			{
 				initializer.stringReferences=stringList.afterList;
-				ObjectDB.makeDirty(initializer);
+				db.getSession().makeDirty(initializer);
 			}
 		}
 	}

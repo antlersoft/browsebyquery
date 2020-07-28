@@ -60,7 +60,7 @@ public class DBType implements Persistent, Cloneable {
 		}
 		_builtInType=t;
 		_persistentImpl=new PersistentImpl();
-		ObjectDB.makePersistent( this);
+		db.getSession().makePersistent( this);
 	}
 	
 	public static DBType getWithTypeKey( String typeKey, IndexAnalyzeDB db)

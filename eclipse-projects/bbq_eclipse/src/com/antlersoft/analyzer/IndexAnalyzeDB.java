@@ -178,11 +178,6 @@ public class IndexAnalyzeDB extends AbstractDBContainer implements IDBSource
         return result;
     }
     
-    public synchronized void makeCurrent()
-    {
-        _session.makeCurrent();
-    }
-    
     public void deleteObject( Object o)
     {
     	_session.deleteObject(o);

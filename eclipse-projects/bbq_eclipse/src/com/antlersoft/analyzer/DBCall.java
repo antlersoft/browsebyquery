@@ -25,10 +25,10 @@ public class DBCall extends DBReference
 {
 	final static String CALL_TARGET="CALL_TARGET";
 	
-    DBCall( DBMethod s, DBMethod t, int l)
+    DBCall( ObjectDB db, DBMethod s, DBMethod t, int l)
     {
         super( s, t, l);
-        ObjectDB.makePersistent( this);
+        db.makePersistent( this);
     }
 
 	public DBMethod getTarget()

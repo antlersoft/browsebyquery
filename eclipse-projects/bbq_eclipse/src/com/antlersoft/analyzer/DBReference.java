@@ -57,11 +57,11 @@ public abstract class DBReference implements java.io.Serializable, Cloneable,
         return lineNumber;
     }
     
-    public void setLineNumber( int ln)
+    public void setLineNumber( ObjectDB db, int ln)
     {
     	if ( lineNumber!=ln)
     	{
-    		ObjectDB.makeDirty(this);
+    		db.makeDirty(this);
     		lineNumber=ln;
     	}
     }

@@ -30,8 +30,6 @@ import java.util.Iterator;
  */
 public class ObjectDB
 {
-    // Support only one instance per process for now
-    private static ObjectDB current=null;
     private ObjectCache cachedObjects;
     private ObjectStore store;
 	private ObjectRef rootObjects;
@@ -43,7 +41,6 @@ public class ObjectDB
 		store=objectStore;
 		cachedObjects=new ObjectCache();
         dirtyObjects=new ArrayList();
-		current=this;
 		ObjectKey rootKey=(ObjectKey)store.getRootObject();
 		if ( rootKey==null)
 		{
@@ -58,17 +55,12 @@ public class ObjectDB
 		}
     }
 
-    public static ObjectDB getObjectDB()
-    {
-		return current;
-    }
-
-	public static void makeDirty( Persistent toDirty)
+	public void makeDirty( Persistent toDirty)
 	{
         PersistentImpl impl=toDirty._getPersistentImpl();
         if ( ! impl.isDirty())
         {
-            ObjectDB db=getObjectDB();
+            ObjectDB db=this;
             synchronized(db)
             {
                 impl.makeDirty( toDirty);
@@ -76,11 +68,6 @@ public class ObjectDB
             }
         }
 	}
-
-    public void makeCurrent()
-    {
-        current=this;
-    }
 
 	public synchronized void setPersistent( Object toStore)
 		throws ObjectStoreException
@@ -99,9 +86,9 @@ public class ObjectDB
     	cachedObjects.put( impl.objectKey, toStore);
 	}
 
-	public static void makePersistent( Object toStore)
+	public void makePersistent( Object toStore)
 	{
-		getObjectDB().setPersistent( toStore);
+		setPersistent( toStore);
 	}
 
     protected final synchronized Persistent getObjectByKey( ObjectKey key)
@@ -240,7 +227,6 @@ e.printStackTrace();
         store.close();
         cachedObjects=null;
         dirtyObjects=null;
-        current=null;
         store=null;
         rootObjects=null;
     }

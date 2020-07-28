@@ -19,9 +19,9 @@ public class DBCatch extends DBReference {
 	 * @param caught Exception class caught
 	 * @param l line number
 	 */
-	public DBCatch(DBMethod s, DBClass caught, int l) {
+	public DBCatch(ObjectDB db, DBMethod s, DBClass caught, int l) {
 		super(s, caught, l);
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 
     public DBClass getCaught()

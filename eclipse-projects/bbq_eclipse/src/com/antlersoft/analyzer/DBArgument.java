@@ -65,20 +65,20 @@ public class DBArgument implements Persistent, SourceObject, HasDBType, DBAnnota
 		return getMethod().getLineNumber();
 	}
 	
-	DBArgument( DBMethod method, int ordinal, DBType type)
+	DBArgument( ObjectDB db, DBMethod method, int ordinal, DBType type)
 	{
 		_dbmethod=new ObjectRef( method);
 		_ordinal=ordinal;
 		_dbtype=new ObjectRef( type);
 		_name="";
 		_annotationCollection=new AnnotationCollection();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 	
-	void setName( String name)
+	void setName( ObjectDB db, String name)
 	{
 		_name=name;
-		ObjectDB.makeDirty( this);
+		db.makeDirty( this);
 	}
 	
 	public String getName()

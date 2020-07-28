@@ -40,14 +40,14 @@ public class DBBundle extends DBBundleBase {
 		DBBundle result=(DBBundle)db.findObject(DBBundleBase.BUNDLE_KEY_INDEX, name);
 		
 		if ( result==null)
-			result=new DBBundle(name);
+			result=new DBBundle(db, name);
 		
 		return result;
 	}
 
-	DBBundle( String name)
+	DBBundle( ObjectDB db, String name)
 	{
 		super(name);
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 }

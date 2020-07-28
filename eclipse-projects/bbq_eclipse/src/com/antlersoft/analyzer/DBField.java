@@ -31,11 +31,11 @@ public class DBField extends DBMember
 	
     private transient PersistentImpl _persistentImpl;
 
-    DBField( DBClass cl, String name, DBType ty)
+    DBField( ObjectDB db, DBClass cl, String name, DBType ty)
     {
     	super( name, cl, ty);
 		_persistentImpl=new PersistentImpl();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
     }
 
     public PersistentImpl _getPersistentImpl()

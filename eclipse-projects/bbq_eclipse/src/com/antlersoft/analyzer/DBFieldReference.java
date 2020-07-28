@@ -25,11 +25,11 @@ public class DBFieldReference extends DBReference
 {
 	static final String FRTARGET="FRTARGET";
 	
-    DBFieldReference( DBMethod s, DBField t, int l, boolean write)
+    DBFieldReference( ObjectDB db, DBMethod s, DBField t, int l, boolean write)
     {
 		super( s, t, l);
 		writeReference=write;
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
     }
 
     boolean writeReference;

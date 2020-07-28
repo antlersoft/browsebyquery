@@ -132,7 +132,7 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
 		annotations=new AnnotationCollection();
 		lineNumber= -1;
 		name=TypeParse.convertFromInternalClassName( internalName);
-		ObjectDB.makePersistent( this);
+		db.getSession().makePersistent( this);
 		if ( internalName.charAt(0)!='[')
 		{
 			DBPackage my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db.getSession());
@@ -143,8 +143,8 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
 			{
 				DBClass containing=getByInternalName( containing_name, db);
 				containingClass=new ObjectRef<DBClass>( containing);
-				containing.setContainedClass( this);
-				ObjectDB.makeDirty( this);
+				containing.setContainedClass( db.getSession(), this);
+				db.getSession().makeDirty( this);
 			}
 		}
     }
@@ -234,23 +234,23 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
     	}
     }
 
-    private void addMethod( DBMethod toAdd)
+    private void addMethod(ObjectDB db, DBMethod toAdd)
     {
         String key=toAdd.getName()+toAdd.getSignature();
         if ( methods.get( key)==null)
         {
             methods.put( key, new ObjectRef<DBMethod>( toAdd));
-            ObjectDB.makeDirty( this);
+            db.makeDirty( this);
         }
     }
 
-    private void addField( DBField toAdd)
+    private void addField(ObjectDB db, DBField toAdd)
     {
         String key=toAdd.getName();
         if ( fields.get( key)==null)
         {
             fields.put( key, new ObjectRef<DBField>( toAdd));
-            ObjectDB.makeDirty( this);
+            db.makeDirty( this);
         }
     }
 
@@ -333,16 +333,18 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
     	ObjectRef<DBField> f=fields.get(name);
     	
     	DBField result;
+
+    	ObjectDB session = db.getSession();
     	
     	if ( f==null)
     	{
-    		result=new DBField( this, name, t);
-    		addField( result);
+    		result=new DBField( session,this, name, t);
+    		addField(session, result);
     	}
     	else
     	{
     		result=f.getReferenced();
-    		result.setDBType(t);
+    		result.setDBType(session, t);
     	}
     	
     	return result;
@@ -379,13 +381,13 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
     	if ( result==null)
     	{
     		result=new DBMethod(db,this,name,signature);
-    		addMethod( result);
+    		addMethod( db.getSession(), result);
     	}
     	
     	return result;
     }
     
-    private synchronized void setContainedClass( DBClass toAdd)
+    private synchronized void setContainedClass(ObjectDB db, DBClass toAdd)
     {
     	if ( containedClasses==null)
     	{
@@ -394,22 +396,22 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
     	if ( ! containedClasses.contains( toAdd))
     	{
     		containedClasses.add( new ObjectRef<DBClass>( toAdd));
-    		ObjectDB.makeDirty( this);
+    		db.makeDirty( this);
     	}
     }
 
-    private void addSuperClass( DBClass toAdd)
+    private void addSuperClass(ObjectDB db, DBClass toAdd)
     {
 		superClasses.add( new ObjectRef<DBClass>( toAdd));
 		toAdd.derivedClasses.add( new ObjectRef<DBClass>( this));
-		ObjectDB.makeDirty( this);
-		ObjectDB.makeDirty( toAdd);
+		db.makeDirty( this);
+		db.makeDirty( toAdd);
     }
 
-    private void clearSuperClasses()
+    private void clearSuperClasses(ObjectDB db)
     {
 		superClasses.clear();
-		ObjectDB.makeDirty( this);
+		db.makeDirty( this);
     }
     
     /**
@@ -480,7 +482,7 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
 		throws Exception
     {
 		DBClass dbc=getByInternalName( ac.getInternalClassName(ac.getCurrentClassIndex()), db);
-		dbc.clearSuperClasses();
+		dbc.clearSuperClasses(db.getSession());
 		dbc.resolved=true;
         dbc.accessFlags=ac.getFlags();
         dbc.deprecated=ac.isDeprecated();
@@ -491,11 +493,11 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
 		int superClassIndex=ac.getSuperClassIndex();
 		if ( superClassIndex!=0)
 		{
-		    dbc.addSuperClass( getByInternalName( ac.getInternalClassName(superClassIndex), db));
+		    dbc.addSuperClass( db.getSession(), getByInternalName( ac.getInternalClassName(superClassIndex), db));
 		}
 		for ( Iterator<Integer> i=ac.getInterfaces().iterator(); i.hasNext();)
 		{
-		    dbc.addSuperClass( getByInternalName( ac.getInternalClassName(i.next()), db));
+		    dbc.addSuperClass( db.getSession(), getByInternalName( ac.getInternalClassName(i.next()), db));
 		}
 		AnnotationInitializerHolder initializerHolder=new AnnotationInitializerHolder(db,dbc,foundMethods);
 		new AnnotationProcessor<DBClass>(ac,db,dbc,initializerHolder).processAttributeList(ac.getAttributeList());

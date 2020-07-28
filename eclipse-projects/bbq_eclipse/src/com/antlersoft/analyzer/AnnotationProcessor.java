@@ -70,7 +70,7 @@ class AnnotationProcessor<A extends DBAnnotatable & SourceObject> {
 	{
 		if ( updater!=null && updater.cleanup(db.getSession()))
 		{
-			ObjectDB.makeDirty(target);
+			db.getSession().makeDirty(target);
 		}
 	}
 	

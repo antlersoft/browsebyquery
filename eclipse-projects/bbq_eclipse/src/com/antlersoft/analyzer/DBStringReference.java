@@ -32,10 +32,10 @@ import com.antlersoft.odb.ObjectDB;
 
 public class DBStringReference extends DBReference
 {
-    DBStringReference( DBMethod method, DBString constant, int l)
+    DBStringReference( ObjectDB db, DBMethod method, DBString constant, int l)
     {
         super( method, constant, l);
-        ObjectDB.makePersistent( this);
+        db.makePersistent( this);
      }
 
     public DBString getTarget()

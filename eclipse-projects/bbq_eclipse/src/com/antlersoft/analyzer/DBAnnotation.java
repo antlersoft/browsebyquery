@@ -23,21 +23,21 @@ public class DBAnnotation<A extends DBAnnotatable & SourceObject> extends DBAnno
 	
 	private boolean hiddenAtRuntime;
 	
-	protected DBAnnotation( DBClassBase annotationClass, A annotated, boolean hidden)
+	protected DBAnnotation( ObjectDB db, DBClassBase annotationClass, A annotated, boolean hidden)
 	{
 		super( annotationClass, annotated);
 		hiddenAtRuntime=hidden;
 		
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 	
 	public boolean isHiddenAtRuntime() { return hiddenAtRuntime; }
 	
-	public void setIsHiddenAtRuntime(boolean hidden) {
+	public void setIsHiddenAtRuntime(ObjectDB db, boolean hidden) {
 		if ( hiddenAtRuntime!=hidden)
 		{
 			hiddenAtRuntime=hidden;
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	

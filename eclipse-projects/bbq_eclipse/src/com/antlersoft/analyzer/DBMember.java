@@ -101,12 +101,12 @@ public abstract class DBMember implements Persistent, Cloneable, SourceObject,
     	deprecated=dep;
     }
     
-    void setDBType( DBType new_type)
+    void setDBType( ObjectDB db, DBType new_type)
     {
     	if ( ! new_type.equals( getDBType( null)))
     	{
     		dbtype.setReferenced(new_type);
-    		ObjectDB.makeDirty(this);
+    		db.makeDirty(this);
     	}
     }
 	static class MemberTypeKeyGenerator implements KeyGenerator

@@ -39,12 +39,12 @@ public class ObjectRef<E> implements Serializable
 		setReferenced( toReference);
 	}
 
-    public E getReferenced()
+    public E getReferenced(ObjectDB db)
     {
         PersistentImpl currentImpl=impl;
 		if ( currentImpl==null)
 			return null;
-        return (E)currentImpl.getCanonical( this);
+        return (E)currentImpl.getCanonical( db,this);
     }
 
     public synchronized void setReferenced( E newValue)

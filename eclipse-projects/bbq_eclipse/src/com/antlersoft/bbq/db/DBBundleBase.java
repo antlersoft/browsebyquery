@@ -87,7 +87,7 @@ public class DBBundleBase implements Persistent {
 			if ( refresource==null)
 			{
 				refresource=new ObjectRef<DBStringResource>( new DBStringResource(_bundle,dbname,dbvalue));
-				ObjectDB.makeDirty(_bundle);
+				db.makeDirty(_bundle);
 			}
 			else
 				refresource.getReferenced().setValue(DBString.get(db, value));
@@ -113,7 +113,7 @@ public class DBBundleBase implements Persistent {
 				db.deleteObject(r);
 			}
 			if ( makedirty)
-				ObjectDB.makeDirty(_bundle);
+				db.makeDirty(_bundle);
 		}
 	}
 }

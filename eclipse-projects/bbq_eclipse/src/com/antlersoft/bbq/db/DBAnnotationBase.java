@@ -27,9 +27,7 @@ import com.antlersoft.query.SingleEnum;
  * 
  * An annotation is a relationship between the annotated element and the
  * class of the annotation type in the analyzed system.
- * 
- * @param C Type of object representing a class in the analyzed system
- * 
+ *
  * @author Michael A. MacDonald
  *
  */
@@ -166,7 +164,7 @@ public class DBAnnotationBase implements AnnotationBase, Serializable {
 						collection.annotations.add(new ObjectRef<AnnotationBase>(ann));
 					}
 				}
-				ObjectDB.makeDirty(target);
+				db.makeDirty(target);
 			}
 				
 			return changed;
