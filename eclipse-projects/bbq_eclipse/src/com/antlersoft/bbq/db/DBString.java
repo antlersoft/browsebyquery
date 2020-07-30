@@ -33,10 +33,10 @@ public class DBString implements Persistent {
 	
 	private String m_string_name;
 	
-	private DBString( String string_name)
+	private DBString(ObjectDB db, String string_name)
 	{
 		m_string_name=string_name;
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	/* (non-Javadoc)
@@ -60,7 +60,7 @@ public class DBString implements Persistent {
 			throw new IllegalArgumentException("Argument to DBString.get is null");
 		DBString result=find( db, f);
 		if ( result==null)
-			result=new DBString( f);
+			result=new DBString(db, f);
 		return result;
 	}
 	

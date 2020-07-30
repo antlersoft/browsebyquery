@@ -16,9 +16,9 @@ public class DBCall extends DBReference {
 	 * @param source
 	 * @param target The referenced DBString
 	 */
-	public DBCall(DBMethod source, DBMethod target) {
+	public DBCall(ObjectDB db, DBMethod source, DBMethod target) {
 		super(source, target);
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 	
 	public DBMethod getCalled()

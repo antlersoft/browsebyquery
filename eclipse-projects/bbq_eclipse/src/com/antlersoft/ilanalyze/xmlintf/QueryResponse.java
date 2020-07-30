@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import com.antlersoft.odb.ObjectDB;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -57,14 +58,14 @@ public class QueryResponse {
 		re=excep;
 	}
 	
-	public QueryResponse( Class<?> resultClass, Enumeration<?> e)
+	public QueryResponse(ObjectDB db, Class<?> resultClass, Enumeration<?> e)
 	{
 		resultClassName = resultClass.getName();
 		re=null;
 		responseList=new ArrayList<ResponseObject>();
 		for ( ; e.hasMoreElements(); )
 		{
-			responseList.add( new ResponseObject( e.nextElement()));
+			responseList.add( new ResponseObject(db, e.nextElement()));
 		}
 	}
 	

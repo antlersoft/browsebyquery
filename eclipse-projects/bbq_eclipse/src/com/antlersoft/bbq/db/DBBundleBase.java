@@ -86,11 +86,11 @@ public class DBBundleBase implements Persistent {
 			DBString dbvalue=DBString.get(db,value);
 			if ( refresource==null)
 			{
-				refresource=new ObjectRef<DBStringResource>( new DBStringResource(_bundle,dbname,dbvalue));
+				refresource=new ObjectRef<DBStringResource>( new DBStringResource(db, _bundle,dbname,dbvalue));
 				db.makeDirty(_bundle);
 			}
 			else
-				refresource.getReferenced().setValue(DBString.get(db, value));
+				refresource.getReferenced().setValue(db, DBString.get(db, value));
 			_setValues.put( refdbname, refresource);			
 		}
 		

@@ -42,7 +42,7 @@ import java.io.OutputStream;
  */
 public interface ObjectStreamCustomizer
 {
-    public abstract ObjectInputStream createObjectInputStream( InputStream is)
+    public abstract ObjectDBInputStream createObjectInputStream( InputStream is)
         throws IOException;
 
     public abstract ObjectOutputStream createObjectOutputStream(
@@ -55,14 +55,27 @@ public interface ObjectStreamCustomizer
     public abstract void resetObjectOutputStream( ObjectOutputStream oos)
         throws IOException;
 
-    public static BaseCustomizer BASE_CUSTOMIZER=new BaseCustomizer();
-
     static class BaseCustomizer implements ObjectStreamCustomizer
     {
-        public ObjectInputStream createObjectInputStream( InputStream is)
+        private ObjectDBInputStream.DBHolder _holder;
+        public void setObjectDB(ObjectDB db) {
+            _holder.setObjectDB(db);
+        }
+
+        public BaseCustomizer()
+        {
+            _holder = new ObjectDBInputStream.DBHolder();
+        }
+
+        public BaseCustomizer(ObjectDB db) {
+            this();
+            _holder.setObjectDB(db);
+        }
+
+        public ObjectDBInputStream createObjectInputStream( InputStream is)
             throws IOException
         {
-            return new ObjectInputStream( is);
+            return new ObjectDBInputStream(_holder, is);
         }
 
         public ObjectOutputStream createObjectOutputStream(

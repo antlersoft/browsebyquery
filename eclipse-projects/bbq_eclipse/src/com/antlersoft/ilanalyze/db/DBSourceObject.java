@@ -48,7 +48,7 @@ public class DBSourceObject implements Persistent {
 	 * @param file
 	 * @param line
 	 */
-	void setFileAndLine( DBSourceFile file, int line)
+	void setFileAndLine( ObjectDB db, DBSourceFile file, int line)
 	{
 		if ( file!=null && ( m_tainted || m_source_file==null))
 		{
@@ -64,7 +64,7 @@ public class DBSourceObject implements Persistent {
 			else
 				m_source_file=new ObjectRef<DBSourceFile>( file);
 			m_line=line;
-			ObjectDB.makeDirty( this);
+			db.makeDirty( this);
 		}
 	}
 	
@@ -110,7 +110,7 @@ public class DBSourceObject implements Persistent {
 		return result;
 	}
 	
-	static <T extends Persistent> void OptionalRefSet( Persistent container, IRefSetter setter, ObjectRef<T> ref, T to_set)
+	static <T extends Persistent> void OptionalRefSet( ObjectDB db, Persistent container, IRefSetter setter, ObjectRef<T> ref, T to_set)
 	{
 		if ( to_set!=null)
 		{
@@ -125,7 +125,7 @@ public class DBSourceObject implements Persistent {
 					return;
 				ref.setReferenced(to_set);
 			}
-			ObjectDB.makeDirty(container);
+			db.makeDirty(container);
 		}
 	}
 }

@@ -26,6 +26,9 @@
  */
 package com.antlersoft.odb.schemastream;
 
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectDBInputStream;
+
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
@@ -34,12 +37,12 @@ import java.io.ObjectStreamClass;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
-class SchemaInputStream extends ObjectInputStream
+class SchemaInputStream extends ObjectDBInputStream
 {
-    SchemaInputStream( InputStream os, ArrayList classDescs)
+    SchemaInputStream(ObjectDBInputStream.DBHolder holder, InputStream os, ArrayList classDescs)
         throws IOException
     {
-        super( os);
+        super( holder, os);
         m_class_descs=classDescs;
     }
 

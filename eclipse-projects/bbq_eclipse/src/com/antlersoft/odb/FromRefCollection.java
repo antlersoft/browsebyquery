@@ -27,15 +27,17 @@ class FromRefCollection implements java.util.Collection
 {
     private Collection _base;
 	private ObjectRef _containing;
-    FromRefCollection( Persistent containing, Collection base)
+	private ObjectDB _db;
+    FromRefCollection( ObjectDB db, Persistent containing, Collection base)
     {
+		_db = db;
 		_containing=new ObjectRef( containing);
 		_base=base;
     }
 
     public boolean add( Object o)
     {
-		ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+		_db.makeDirty( (Persistent)_containing.getReferenced());
 		return _base.add( new DualRef( o));
     }
 
@@ -54,7 +56,7 @@ class FromRefCollection implements java.util.Collection
 
     public void clear()
     {
-		ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+		_db.makeDirty( (Persistent)_containing.getReferenced());
 		_base.clear();
     }
 
@@ -72,20 +74,20 @@ class FromRefCollection implements java.util.Collection
     public boolean isEmpty()
     { return _base.isEmpty(); }
     public java.util.Iterator iterator()
-    { return new FromRefIterator( _base.iterator(), _containing); }
+    { return new FromRefIterator( _db, _base.iterator(), _containing); }
     public boolean remove(java.lang.Object o)
     {
-		ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+		_db.makeDirty( (Persistent)_containing.getReferenced());
 		return _base.remove( o);
 	}
     public boolean removeAll(java.util.Collection c)
 	{
-		ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+		_db.makeDirty( (Persistent)_containing.getReferenced());
 		return _base.removeAll( c);
 	}
     public boolean retainAll(java.util.Collection c)
     {
-		ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+		_db.makeDirty( (Persistent)_containing.getReferenced());
 		return _base.retainAll( c);
     }
 
@@ -122,9 +124,11 @@ class FromRefCollection implements java.util.Collection
     {
 		private Iterator _base;
 		private ObjectRef _containing;
+		private ObjectDB _db;
 
-		FromRefIterator( Iterator base, ObjectRef containing)
+		FromRefIterator( ObjectDB db, Iterator base, ObjectRef containing)
 		{
+			_db = db;
 			_base=base;
 			_containing=containing;
 		}
@@ -134,7 +138,7 @@ class FromRefCollection implements java.util.Collection
 		{ return ((ObjectRef)_base.next()).getReferenced(); }
 		public void remove()
 		{
-			ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+			_db.makeDirty( (Persistent)_containing.getReferenced());
 			_base.remove();
 		}
     }

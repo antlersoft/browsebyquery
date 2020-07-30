@@ -27,23 +27,23 @@ public class UnitEntry implements Persistent {
 	private ObjectRef m_unit, m_entry;
 	private Date m_update_date;
 
-	private UnitEntry( TranslationUnit unit, Persistent entry)
+	private UnitEntry(ObjectDB db, TranslationUnit unit, Persistent entry)
 	{
 		m_unit=new ObjectRef();
 		m_entry=new ObjectRef();
 		m_unit.setReferenced( unit);
 		m_entry.setReferenced( entry);
 		m_update_date=unit.getTranslationDate();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
-	void clearIfObsolete( HashSet potentially_obsolete)
+	void clearIfObsolete(ObjectDB db, HashSet potentially_obsolete)
 	{
 		if ( ((TranslationUnit)m_unit.getReferenced()).getTranslationDate().
 			compareTo( m_update_date)>0)
 	    {
 		    potentially_obsolete.add( m_entry);
-		    ObjectDB.getObjectDB().deleteObject(this);
+		    db.deleteObject(this);
 	    }
 	}
 
@@ -63,11 +63,11 @@ public class UnitEntry implements Persistent {
 									CompoundKey( new ObjectRefKey( unit),
 												 new ObjectRefKey( entry)));
 		if ( ue==null)
-			ue=new UnitEntry( unit, entry);
+			ue=new UnitEntry(db, unit, entry);
 		else
 		{
 			ue.m_update_date=unit.getTranslationDate();
-			ObjectDB.makeDirty( ue);
+			db.makeDirty( ue);
 		}
 	}
 

@@ -13,10 +13,7 @@ import com.antlersoft.bbq.db.DBStringResource;
 
 import com.antlersoft.bbq.query.IDBSource;
 
-import com.antlersoft.odb.IndexExistsException;
-import com.antlersoft.odb.IndexObjectDB;
-import com.antlersoft.odb.ObjectStoreException;
-import com.antlersoft.odb.ObjectStreamCustomizer;
+import com.antlersoft.odb.*;
 import com.antlersoft.odb.diralloc.CustomizerFactory;
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
 import com.antlersoft.odb.diralloc.IndexStatistics;
@@ -34,8 +31,14 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 	 * @param db_directory Directory that contains the DirAlloc files for the database
 	 */
 	public ILDB(File db_directory, boolean useMapped) {
-		super(new DirectoryAllocator(
-				  db_directory, new CFactory(), useMapped));
+		this(new ConstructorArgHolder(db_directory, useMapped));
+	}
+
+	private ILDB(ConstructorArgHolder argHolder) {
+		super(argHolder.allocator);
+
+		argHolder.factory.setObjectDB(this);
+
 		// Create indices for the classes
 		try
 		{
@@ -238,6 +241,8 @@ public class ILDB extends IndexObjectDB implements IDBSource {
      }
 	static class CFactory extends CustomizerFactory
 	{
+		private ObjectDBInputStream.DBHolder _holder = new ObjectDBInputStream.DBHolder();
+
 		public ObjectStreamCustomizer getCustomizer( Class toStore)
 		{
 			ArrayList nameList=new ArrayList();
@@ -253,7 +258,22 @@ public class ILDB extends IndexObjectDB implements IDBSource {
 			nameList.add( "com.antlersoft.ilanalyze.db.DBMember");
 			nameList.add( "com.antlersoft.ilanalyze.db.DBReference");
 			nameList.add( toStore.getName());
-			return new SchemaCustomizer( nameList);
+			return new SchemaCustomizer( _holder, nameList);
+		}
+		public void setObjectDB(ObjectDB db) {
+			_holder.setObjectDB(db);
+		}
+	}
+
+	static class ConstructorArgHolder
+	{
+		DirectoryAllocator allocator;
+		CFactory factory;
+
+		ConstructorArgHolder(File db_directory, boolean useMapped)
+		{
+			factory = new CFactory();
+			allocator = new DirectoryAllocator(db_directory, factory, useMapped);
 		}
 	}
 }

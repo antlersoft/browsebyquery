@@ -23,7 +23,7 @@ import com.antlersoft.util.xml.IHandlerStack;
  */
 public class ResponseObject {
 	
-	ResponseObject( Object o)
+	ResponseObject( ObjectDB db, Object o)
 	{
 		file="";
 		line= -1;
@@ -41,7 +41,6 @@ public class ResponseObject {
 		description=o.toString();
 		if (o instanceof Persistent)
 		{
-			ObjectDB db = ObjectDB.getObjectDB();
 			objectKey = db.keyToString(db.getObjectKey(o));
 		}
 		else

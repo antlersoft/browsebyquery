@@ -19,10 +19,10 @@ public class DBFieldReference extends DBReference {
 	 * @param source
 	 * @param target
 	 */
-	public DBFieldReference(DBMethod source, DBField target, boolean isWrite) {
+	public DBFieldReference(ObjectDB db, DBMethod source, DBField target, boolean isWrite) {
 		super(source, target);
 		m_write=isWrite;
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 
 	public boolean isWrite()
@@ -46,12 +46,12 @@ public class DBFieldReference extends DBReference {
 		return sb.toString();
 	}
 
-	synchronized void setWrite( boolean isWrite)
+	synchronized void setWrite( ObjectDB db, boolean isWrite)
 	{
 		if ( isWrite!=m_write)
 		{
 			m_write=isWrite;
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 }

@@ -22,15 +22,16 @@ package com.antlersoft.analyzecxx.db;
 import java.util.Date;
 
 import com.antlersoft.odb.IndexObjectDB;
+import com.antlersoft.odb.ObjectDB;
 
 public class TranslationUnit extends SourceFile {
 	static final String TRANSLATION_UNIT_NAME_INDEX="TranslationUnit.m_file_name";
 
 	private Date m_translation_date;
 
-	private TranslationUnit( String name)
+	private TranslationUnit(ObjectDB db, String name)
 	{
-		super( name);
+		super(db, name);
 	}
 
 	public Date getTranslationDate()
@@ -38,17 +39,17 @@ public class TranslationUnit extends SourceFile {
 		return m_translation_date;
 	}
 
-	public void translate()
+	public void translate(ObjectDB db)
 	{
 		m_translation_date=new Date();
-		IndexObjectDB.makeDirty( this);
+		db.makeDirty( this);
 	}
 
 	static TranslationUnit get( String file_name, IndexObjectDB db)
 	{
 		TranslationUnit result=(TranslationUnit)db.findObject( TRANSLATION_UNIT_NAME_INDEX, file_name);
 		if ( result==null)
-			result=new TranslationUnit( file_name);
+			result=new TranslationUnit(db, file_name);
 		return result;
 	}
 }

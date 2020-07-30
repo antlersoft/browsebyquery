@@ -58,9 +58,9 @@ public class DBMethod extends DBMember {
 	 * @param container
 	 * @param name
 	 * @param type
-	 * @param sig_string String representing argument signature
+	 * @param signature_key String representing argument signature
 	 */
-	DBMethod(DBClass container, String name, DBType type, String signature_key) {
+	DBMethod(ObjectDB db, DBClass container, String name, DBType type, String signature_key) {
 		super(container, name, type);
 		m_arguments=new ArrayList();
 		m_calls=new ArrayList();
@@ -68,7 +68,7 @@ public class DBMethod extends DBMember {
 		m_string_references=new ArrayList();
 		m_catches=new ArrayList<ObjectRef<DBCatch>>();
 		m_signature_key=signature_key;
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	/**
@@ -177,12 +177,12 @@ public class DBMethod extends DBMember {
 		return sb.toString();
 	}
 	
-	void setVisited( boolean visited)
+	void setVisited( ObjectDB db, boolean visited)
 	{
 		if ( visited!=m_visited)
 		{
 			m_visited=visited;
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	
@@ -196,7 +196,7 @@ public class DBMethod extends DBMember {
 			ReadArg arg=(ReadArg)arg_list.get(i);
 			if ( i>=m_arguments.size())
 			{
-				m_arguments.add( new ObjectRef( new DBArgument( this, getArgType( db, arg), arg.getName(), i)));
+				m_arguments.add( new ObjectRef( new DBArgument( db,this, getArgType( db, arg), arg.getName(), i)));
 				updated=true;
 			}
 			else
@@ -204,8 +204,8 @@ public class DBMethod extends DBMember {
 				if ( arg.getName()!=null)
 				{
 					DBArgument dbarg=(DBArgument)((ObjectRef)m_arguments.get(i)).getReferenced();
-					dbarg.setName( arg.getName());
-					dbarg.setDBType( getArgType(db, arg));
+					dbarg.setName( db, arg.getName());
+					dbarg.setDBType( db, getArgType(db, arg));
 				}
 			}
 		}
@@ -247,17 +247,17 @@ public class DBMethod extends DBMember {
 			m_db=db;
 			m_method=method;
 			method.taintFileAndLine();
-			method.setVisited(true);
+			method.setVisited( db,true);
 			m_updated=false;
-			m_call_up=new ReferenceUpdater<DBCall>( method.m_calls);
-			m_string_up=new ReferenceUpdater<DBStringReference>( method.m_string_references);
-			m_field_up=new ReferenceUpdater<DBFieldReference>( method.m_field_references);
-			m_catch_up=new ReferenceUpdater<DBCatch>( method.m_catches);
+			m_call_up=new ReferenceUpdater<DBCall>(db, method.m_calls);
+			m_string_up=new ReferenceUpdater<DBStringReference>( db, method.m_string_references);
+			m_field_up=new ReferenceUpdater<DBFieldReference>( db, method.m_field_references);
+			m_catch_up=new ReferenceUpdater<DBCatch>( db, method.m_catches);
 			if (method.m_casts == null)
 			{
 				method.m_casts = new ArrayList<ObjectRef<DBCast>>();
 			}
-			m_cast_up=new ReferenceUpdater<DBCast>( method.m_casts);
+			m_cast_up=new ReferenceUpdater<DBCast>( db, method.m_casts);
 		}
 		
 		void updateArguments( Signature sig) throws ITypeInterpreter.TIException
@@ -270,7 +270,7 @@ public class DBMethod extends DBMember {
 		{
 			if ( ! m_call_up.existsReference( called, file, line))
 			{
-				m_call_up.newReference(new DBCall(m_method, called), file, line);
+				m_call_up.newReference(new DBCall(m_db, m_method, called), file, line);
 			}
 		}
 		
@@ -279,7 +279,7 @@ public class DBMethod extends DBMember {
 		{
 			if ( ! m_string_up.existsReference( str, file, line))
 			{
-				m_string_up.newReference(new DBStringReference(m_method, str), file, line);
+				m_string_up.newReference(new DBStringReference(m_db, m_method, str), file, line);
 			}
 		}
 		
@@ -287,7 +287,7 @@ public class DBMethod extends DBMember {
 		{
 			if ( ! m_catch_up.existsReference( c, file, line))
 			{
-				m_catch_up.newReference(new DBCatch( m_method, c), file, line);
+				m_catch_up.newReference(new DBCatch( m_db, m_method, c), file, line);
 			}
 		}
 		
@@ -300,7 +300,7 @@ public class DBMethod extends DBMember {
 				DBCast dbr=o.getReferenced();
 				if (dbr.getTarget().equals(c))
 				{
-					dbr.setFileAndLine(file, line);
+					dbr.setFileAndLine(m_db, file, line);
 					dbr.setOptional(isOptional);
 					i.remove();
 					m_cast_up.m_after_list.add( o);
@@ -310,7 +310,7 @@ public class DBMethod extends DBMember {
 			}
 			if (! found)
 			{
-				m_cast_up.newReference(new DBCast(m_method, c, isOptional), file, line);
+				m_cast_up.newReference(new DBCast(m_db, m_method, c, isOptional), file, line);
 			}
 		}
 		
@@ -318,44 +318,44 @@ public class DBMethod extends DBMember {
 		{
 			if ( ! m_field_up.existsReference(field, file, line))
 			{
-				m_field_up.newReference(new DBFieldReference( m_method, field, isWrite), file, line);
+				m_field_up.newReference(new DBFieldReference( m_db, m_method, field, isWrite), file, line);
 			}
 			else
 			{
-				((DBFieldReference)((ObjectRef)m_field_up.m_after_list.get(m_field_up.m_after_list.size()-1)).getReferenced()).setWrite( isWrite);
+				((DBFieldReference)((ObjectRef)m_field_up.m_after_list.get(m_field_up.m_after_list.size()-1)).getReferenced()).setWrite( m_db, isWrite);
 			}
 		}
 		
 		void methodDone()
 		{
-			if ( m_string_up.cleanup(m_db))
+			if ( m_string_up.cleanup())
 			{
 				m_updated=true;
 				m_method.m_string_references=m_string_up.m_after_list;
 			}
-			if ( m_field_up.cleanup(m_db))
+			if ( m_field_up.cleanup())
 			{
 				m_updated=true;
 				m_method.m_field_references=m_field_up.m_after_list;
 			}
-			if ( m_call_up.cleanup(m_db))
+			if ( m_call_up.cleanup())
 			{
 				m_updated=true;
 				m_method.m_calls=m_call_up.m_after_list;
 			}
-			if ( m_catch_up.cleanup(m_db))
+			if ( m_catch_up.cleanup())
 			{
 				m_updated=true;
 				m_method.m_catches=m_catch_up.m_after_list;
 			}
-			if ( m_cast_up.cleanup(m_db))
+			if ( m_cast_up.cleanup())
 			{
 				m_updated=true;
 				m_method.m_casts=m_cast_up.m_after_list;
 			}
 			if ( m_updated)
 			{
-				ObjectDB.makeDirty(m_method);
+				m_db.makeDirty(m_method);
 			}
 		}
 		
@@ -364,16 +364,17 @@ public class DBMethod extends DBMember {
 			private ArrayList<ObjectRef<T>> m_before_list;
 			ArrayList<ObjectRef<T>> m_after_list;
 			private boolean m_updated;
+			private ObjectDB db;
 			
-			ReferenceUpdater(  ArrayList<ObjectRef<T>> orig)
+			ReferenceUpdater( ObjectDB database, ArrayList<ObjectRef<T>> orig)
 			{
-				
+				db=database;
 				m_before_list=(ArrayList<ObjectRef<T>>)orig.clone();
 				m_after_list=new ArrayList<ObjectRef<T>>( orig.size());
 				m_updated=false;
 			}
 			
-			boolean existsReference( Object target, DBSourceFile file, int line)
+			boolean existsReference(Object target, DBSourceFile file, int line)
 			{
 				for ( Iterator<ObjectRef<T>> i=m_before_list.iterator(); i.hasNext();)
 				{
@@ -381,7 +382,7 @@ public class DBMethod extends DBMember {
 					T dbr=o.getReferenced();
 					if ( o.getReferenced().equals( target))
 					{
-						dbr.setFileAndLine(file, line);
+						dbr.setFileAndLine(db, file, line);
 						i.remove();
 						m_after_list.add( o);
 						return true;
@@ -391,14 +392,14 @@ public class DBMethod extends DBMember {
 				return false;
 			}
 			
-			void newReference( T r, DBSourceFile file, int line)
+			void newReference(T r, DBSourceFile file, int line)
 			{
-				r.setFileAndLine(file, line);
+				r.setFileAndLine(db, file, line);
 				m_after_list.add( new ObjectRef<T>(r));
 				m_updated=true;
 			}
 			
-			boolean cleanup(ILDB db)
+			boolean cleanup()
 			{
 				for ( Iterator<ObjectRef<T>> i=m_before_list.iterator(); i.hasNext();)
 				{

@@ -27,13 +27,7 @@ import java.util.Iterator;
 
 import com.antlersoft.analyzecxx.DBDriver;
 
-import com.antlersoft.odb.IndexExistsException;
-import com.antlersoft.odb.IndexIterator;
-import com.antlersoft.odb.IndexObjectDB;
-import com.antlersoft.odb.ObjectRef;
-import com.antlersoft.odb.ObjectRefKey;
-import com.antlersoft.odb.ObjectStreamCustomizer;
-import com.antlersoft.odb.Persistent;
+import com.antlersoft.odb.*;
 
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
 import com.antlersoft.odb.diralloc.CustomizerFactory;
@@ -48,8 +42,10 @@ public class CxxIndexObjectDB implements DBDriver {
 
 	public CxxIndexObjectDB( String directory_name)
 	{
+		CFactory cFactory = new CFactory();
 		m_session=new IndexObjectDB( new DirectoryAllocator(
-				  new File( directory_name), new CFactory()));
+				  new File( directory_name), cFactory));
+		cFactory.setObjectDB(m_session);
 		try
 		{
 			m_session.defineIndex( TranslationUnit.TRANSLATION_UNIT_NAME_INDEX,
@@ -118,7 +114,7 @@ public class CxxIndexObjectDB implements DBDriver {
 
     public void startTranslationUnit(String file_name) {
 		m_unit=TranslationUnit.get( file_name, m_session);
-		m_unit.translate();
+		m_unit.translate(m_session);
 		m_current_file=m_unit;
 		m_line=1;
     }
@@ -135,7 +131,7 @@ public class CxxIndexObjectDB implements DBDriver {
 		}
 		HashSet possible_clear=new HashSet();
 		for ( Iterator i=entries.iterator(); i.hasNext();)
-			((UnitEntry)i.next()).clearIfObsolete( possible_clear);
+			((UnitEntry)i.next()).clearIfObsolete(m_session, possible_clear);
 		entries=null;
 		for ( Iterator i=possible_clear.iterator(); i.hasNext();)
 		{
@@ -200,6 +196,7 @@ public class CxxIndexObjectDB implements DBDriver {
 
 	static class CFactory extends CustomizerFactory
 	{
+		private ObjectDBInputStream.DBHolder _holder = new ObjectDBInputStream.DBHolder();
 		public ObjectStreamCustomizer getCustomizer( Class toStore)
 		{
 			ArrayList nameList=new ArrayList();
@@ -211,7 +208,11 @@ public class CxxIndexObjectDB implements DBDriver {
 			nameList.add( "com.antlersoft.analyzecxx.db.SourceFile");
 			nameList.add( "com.antlersoft.analyzecxx.db.SourceObject");
 			nameList.add( toStore.getName());
-			return new SchemaCustomizer( nameList);
+			return new SchemaCustomizer(_holder, nameList);
+		}
+
+		public void setObjectDB(ObjectDB db) {
+			_holder.setObjectDB(db);
 		}
 	}
 }

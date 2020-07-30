@@ -76,7 +76,7 @@ public class ILDBDriver implements DBDriver {
 		{
 			try
 			{
-				m_method_updater.addFieldReference(getCurrentClass(containing_type).getField(name, DBType.get(m_db, field_type)), is_write, m_current_source_file, m_current_line);
+				m_method_updater.addFieldReference(getCurrentClass(containing_type).getField(m_db, name, DBType.get(m_db, field_type)), is_write, m_current_source_file, m_current_line);
 			}
 			catch ( ITypeInterpreter.TIException ti)
 			{
@@ -94,9 +94,9 @@ public class ILDBDriver implements DBDriver {
 		{
 			try
 			{
-				DBMethod called=getCurrentClass(containing_type).getMethod(method_name, DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig));
+				DBMethod called=getCurrentClass(containing_type).getMethod(m_db, method_name, DBType.get(m_db, sig.getReturnType()), getSignatureKey( sig));
 				if ( called.updateArguments(m_db, sig))
-					ObjectDB.makeDirty( called);
+					m_db.makeDirty( called);
 				m_method_updater.addCall(called, m_current_source_file, m_current_line);
 			}
 			catch ( ITypeInterpreter.TIException ti)
@@ -203,10 +203,10 @@ public class ILDBDriver implements DBDriver {
 		m_current_line=line;
 		if ( m_class_stack.size()>0)
 		{
-			((ClassUpdater)m_class_stack.get(m_class_stack.size()-1)).m_class.setFileAndLine(m_current_source_file, line);
+			((ClassUpdater)m_class_stack.get(m_class_stack.size()-1)).m_class.setFileAndLine(m_db, m_current_source_file, line);
 		}
 		if ( m_method_updater!=null)
-			m_method_updater.m_method.setFileAndLine(m_current_source_file, line);
+			m_method_updater.m_method.setFileAndLine(m_db, m_current_source_file, line);
 	}
 
 	/* (non-Javadoc)
@@ -233,8 +233,8 @@ public class ILDBDriver implements DBDriver {
 			int properties, ReadType extendsType, List implementsList) {
 		m_commit_lock.enterProtected();
 		DBClass read_class=DBClass.get(m_db, className);
-		read_class.setProperties(properties);
-		read_class.setVisited( true);
+		read_class.setProperties(m_db, properties);
+		read_class.setVisited(m_db, true);
 		applyCurrentAttributes(read_class);
 		ObjectKeyHashSet base=new ObjectKeyHashSet();
 		try
@@ -249,9 +249,9 @@ public class ILDBDriver implements DBDriver {
 		{
 			LoggingDBDriver.logger.info( ti.getMessage());
 		}
-		read_class.updateBaseClasses(base);
-		read_class.setAssembly(m_current_assembly);
-		read_class.setModule(m_current_module);
+		read_class.updateBaseClasses(m_db, base);
+		read_class.setAssembly(m_db, m_current_assembly);
+		read_class.setModule(m_db, m_current_module);
 		m_class_stack.add( new ClassUpdater( read_class));
 	}
 
@@ -263,9 +263,9 @@ public class ILDBDriver implements DBDriver {
 		assert( m_method_updater==null);
 		try
 		{
-			m_method_updater=new DBMethod.MethodUpdater( m_db, getCurrentClass( null).getMethod( name, DBType.get( m_db, signature.getReturnType()), getSignatureKey( signature)));
+			m_method_updater=new DBMethod.MethodUpdater( m_db, getCurrentClass( null).getMethod(m_db, name, DBType.get( m_db, signature.getReturnType()), getSignatureKey( signature)));
 			m_method_updater.updateArguments(signature);
-			m_method_updater.m_method.setProperties(properties);
+			m_method_updater.m_method.setProperties(m_db, properties);
 			applyCurrentAttributes(m_method_updater.m_method);
 		}
 		catch ( ITypeInterpreter.TIException ti)
@@ -282,7 +282,7 @@ public class ILDBDriver implements DBDriver {
 		try
 		{
 			m_current_module=DBModule.get(m_db, name);
-			m_current_module.setAssembly( m_current_assembly);
+			m_current_module.setAssembly(m_db, m_current_assembly);
 		}
 		finally
 		{
@@ -312,9 +312,9 @@ public class ILDBDriver implements DBDriver {
 	public void addField(String name, ReadType type, int properties) {
 		try
 		{
-			DBField field=getCurrentClass(null).getField( name, DBType.get( m_db, type));
-			field.setProperties( properties);
-			field.setFileAndLine(m_current_source_file, m_current_line);
+			DBField field=getCurrentClass(null).getField(m_db, name, DBType.get( m_db, type));
+			field.setProperties(m_db, properties);
+			field.setFileAndLine(m_db, m_current_source_file, m_current_line);
 			applyCurrentAttributes(field);
 		}
 		catch ( ITypeInterpreter.TIException ti)
@@ -371,10 +371,10 @@ public class ILDBDriver implements DBDriver {
 				DBAnnotation annotation = (DBAnnotation)annotation_updater.getExisting(annotation_class);
 				if (annotation==null)
 				{
-					annotation = new DBAnnotation(annotation_class, annotatable);
+					annotation = new DBAnnotation(m_db, annotation_class, annotatable);
 					annotation_updater.addNew(annotation);
 				}
-				annotation.setFileAndLine(((DBSourceObject)annotatable).getSourceFile(), ((DBSourceObject)annotatable).getLineNumber());
+				annotation.setFileAndLine(m_db, ((DBSourceObject)annotatable).getSourceFile(), ((DBSourceObject)annotatable).getLineNumber());
 				if ( m_class_stack.size()>0)
 				{
 					ReadType void_read_type=new BuiltinType("void");
@@ -385,13 +385,13 @@ public class ILDBDriver implements DBDriver {
 						ClassUpdater u=(ClassUpdater)m_class_stack.get( m_class_stack.size()-1);
 						if ( u.m_updater==null)
 						{
-							u.m_updater=new DBMethod.MethodUpdater( m_db, u.m_class.getMethod(ATTRIBUTE_INITIALIZER, void_type, getSignatureKey( new Signature())));
+							u.m_updater=new DBMethod.MethodUpdater( m_db, u.m_class.getMethod(m_db, ATTRIBUTE_INITIALIZER, void_type, getSignatureKey( new Signature())));
 						}
 						attrUpdater=u.m_updater;
 					}
-					DBMethod called=getCurrentClass(custom.getContainingType()).getMethod(".ctor", DBType.get(m_db, custom.getSignature().getReturnType()), getSignatureKey( custom.getSignature()));
+					DBMethod called=getCurrentClass(custom.getContainingType()).getMethod(m_db,".ctor", DBType.get(m_db, custom.getSignature().getReturnType()), getSignatureKey( custom.getSignature()));
 					if ( called.updateArguments(m_db, custom.getSignature()))
-						ObjectDB.makeDirty( called);
+						m_db.makeDirty( called);
 					attrUpdater.addCall( called, m_current_source_file, m_current_line);
 					for (String i : custom.getStringArguments())
 					{
@@ -405,14 +405,14 @@ public class ILDBDriver implements DBDriver {
 							Signature s=new Signature();
 							s.addArgument( new ReadArg(named.getType()));
 							s.setReturnType( void_read_type);
-							DBMethod propertySetter=getCurrentClass(custom.getContainingType()).getMethod("set_"+named.getName(), void_type, getSignatureKey( s));
+							DBMethod propertySetter=getCurrentClass(custom.getContainingType()).getMethod(m_db,"set_"+named.getName(), void_type, getSignatureKey( s));
 							if ( propertySetter.updateArguments(m_db, s))
-								ObjectDB.makeDirty( propertySetter);
+								m_db.makeDirty( propertySetter);
 							attrUpdater.addCall(propertySetter, m_current_source_file, m_current_line);
 						}
 						else
 						{
-							attrUpdater.addFieldReference( getCurrentClass(custom.getContainingType()).getField(named.getName(), DBType.get( m_db, named.getType())), true, m_current_source_file, m_current_line);
+							attrUpdater.addFieldReference( getCurrentClass(custom.getContainingType()).getField(m_db, named.getName(), DBType.get( m_db, named.getType())), true, m_current_source_file, m_current_line);
 						}
 						for ( Iterator<String> si=named.getStringArguments().iterator(); si.hasNext();)
 						{
@@ -427,7 +427,7 @@ public class ILDBDriver implements DBDriver {
 			}
 		}
 		if (annotation_updater.cleanup(m_db))
-			ObjectDB.makeDirty(annotatable);
+			m_db.makeDirty(annotatable);
 		m_custom_attributes.clear();
 	}
 

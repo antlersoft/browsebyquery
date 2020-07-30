@@ -122,8 +122,8 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 		m_methods=new TreeMap<String,ObjectRef<DBMethod>>();
 		m_annotations=new AnnotationCollection();
 		
-		ObjectDB.makePersistent( this);
-		namespace.setContainedClass( this);
+		db.makePersistent( this);
+		namespace.setContainedClass( db,this);
 		// Assume class is public unless we get concrete evidence otherwise
 		m_properties=DBDriver.IS_PUBLIC;
 		// Find containing class, if any
@@ -133,7 +133,7 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 			String containing_key=class_key.substring( 0, slash_pos);
 			DBClass containing=DBClass.get(db, containing_key);
 			m_containing=new ObjectRef<DBClass>( containing);
-			containing.addContained( this);
+			containing.addContained( db,this);
 		}
 	}
 
@@ -162,12 +162,12 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 		return m_visited;
 	}
 	
-	void setVisited( boolean visited)
+	void setVisited( ObjectDB db, boolean visited)
 	{
 		if ( visited!=m_visited)
 		{
 			m_visited=visited;
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	
@@ -176,12 +176,12 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 		return m_properties;
 	}
 	
-	void setProperties( int properties)
+	void setProperties( ObjectDB db, int properties)
 	{
 		if ( m_properties!=properties)
 		{
 			m_properties=properties;
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	
@@ -196,9 +196,9 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 			((DBClass)container).m_assembly=ref;
 		}
 	};
-	void setAssembly( DBAssembly assembly)
+	void setAssembly( ObjectDB db, DBAssembly assembly)
 	{
-		OptionalRefSet(this, m_AssemblySetter, m_assembly, assembly);
+		OptionalRefSet(db,this, m_AssemblySetter, m_assembly, assembly);
 	}
 	
 	public DBModule getModule()
@@ -212,9 +212,9 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 			((DBClass)container).m_module=ref;
 		}
 	};
-	void setModule( DBModule module)
+	void setModule(ObjectDB db, DBModule module)
 	{
-		OptionalRefSet( this, m_ModuleSetter, m_module, module);
+		OptionalRefSet( db,this, m_ModuleSetter, m_module, module);
 	}
 	
 	/**
@@ -248,20 +248,20 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 	 * @param type
 	 * @return Field with that name
 	 */
-	DBField getField( String name, DBType type)
+	DBField getField( ObjectDB db, String name, DBType type)
 	{
 		DBField result;
 		ObjectRef ref=(ObjectRef)m_fields.get( name);
 		if ( ref==null)
 		{
-			result=new DBField( this, name, type);
+			result=new DBField( db,this, name, type);
 			m_fields.put(name, new ObjectRef( result));
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 		else
 		{
 			result=(DBField)ref.getReferenced();
-			result.setDBType(type);
+			result.setDBType(db, type);
 		}
 		return result;
 	}
@@ -275,21 +275,21 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 		return new FromRefEnumeration( new IteratorEnumeration( m_methods.values().iterator()));
 	}
 	
-	DBMethod getMethod( String name, DBType type, String signature_key)
+	DBMethod getMethod( ObjectDB db, String name, DBType type, String signature_key)
 	{
 		DBMethod result;
 		String method_key=name+signature_key;
 		ObjectRef ref=(ObjectRef)m_methods.get( method_key);
 		if ( ref==null)
 		{
-			result=new DBMethod( this, name, type, signature_key);
+			result=new DBMethod( db,this, name, type, signature_key);
 			m_methods.put( method_key, new ObjectRef(result));
-			ObjectDB.makeDirty( this);
+			db.makeDirty( this);
 		}
 		else
 		{
 			result=(DBMethod)ref.getReferenced();
-			result.setDBType( type);
+			result.setDBType( db, type);
 		}
 		
 		return result;
@@ -310,12 +310,12 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 	 * Add a class to the set of classes this class directly contains
 	 * @param to_add
 	 */
-	void addContained( DBClass to_add)
+	void addContained( ObjectDB db, DBClass to_add)
 	{
 		if ( m_contained==null)
 			m_contained=new ObjectKeyHashSet();
 		if ( m_contained.add( new ObjectRef(to_add)))
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 	}
 	
 	
@@ -362,24 +362,24 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 	 * Add a class to the set of classes derived from this class
 	 * @param to_add
 	 */
-	void addDerived( DBClass to_add)
+	void addDerived( ObjectDB db, DBClass to_add)
 	{
 		if ( m_derived==null)
 			m_derived=new ObjectKeyHashSet();
 		if ( m_derived.add( new ObjectRef(to_add)))
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 	}
 	
 	/**
 	 * Remove a class that is no longer derived from this one
 	 * @param to_remove
 	 */
-	private void removeDerived( ObjectRef to_remove)
+	private void removeDerived( ObjectDB db, ObjectRef to_remove)
 	{
 		if ( m_derived!=null)
 		{
 			if ( m_derived.remove( to_remove))
-				ObjectDB.makeDirty( this);
+				db.makeDirty( this);
 		}
 	}
 	
@@ -389,7 +389,7 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 	 * from the derived set of the parent classes.
 	 * @param base_classes
 	 */
-	void updateBaseClasses( ObjectKeyHashSet base_classes)
+	void updateBaseClasses( ObjectDB db, ObjectKeyHashSet base_classes)
 	{
 		boolean changed=false;
 		for ( Iterator i=base_classes.iterator(); i.hasNext();)
@@ -398,7 +398,7 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 			if ( m_base.add( ref))
 			{
 				changed=true;
-				((DBClass)ref.getReferenced()).addDerived(this);
+				((DBClass)ref.getReferenced()).addDerived( db,this);
 			}
 		}
 		Collection c=m_base.retainMembers(base_classes);
@@ -408,11 +408,11 @@ public class DBClass extends DBSourceObject implements DBClassBase, HasPropertie
 			changed=true;
 			for ( Iterator i=c.iterator(); i.hasNext();)
 			{
-				((DBClass)((ObjectRef)i.next()).getReferenced()).removeDerived( to_remove);
+				((DBClass)((ObjectRef)i.next()).getReferenced()).removeDerived( db, to_remove);
 			}
 		}
 		if ( changed)
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 	}
 	
 	/**

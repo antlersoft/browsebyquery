@@ -39,12 +39,12 @@ public class ObjectRef<E> implements Serializable
 		setReferenced( toReference);
 	}
 
-    public E getReferenced(ObjectDB db)
+    public E getReferenced()
     {
         PersistentImpl currentImpl=impl;
 		if ( currentImpl==null)
 			return null;
-        return (E)currentImpl.getCanonical( db,this);
+        return (E)currentImpl.getCanonical(this);
     }
 
     public synchronized void setReferenced( E newValue)
@@ -98,6 +98,12 @@ public class ObjectRef<E> implements Serializable
         {
             impl=new PersistentImpl();
             impl.objectKey=key;
+            if (in instanceof ObjectDBInputStream) {
+                impl.db = ((ObjectDBInputStream)in).getObjectDB();
+                if (impl.db == null) {
+                    throw new ObjectDBException("Reading ObjectRef without db available from ObjectDBInputStream");
+                }
+            }
         }
     }
 

@@ -55,12 +55,12 @@ public abstract class DBMember extends DBSourceObject implements HasProperties, 
 		return m_class.getReferenced();
 	}
 	
-	void setDBType( DBType new_type)
+	void setDBType( ObjectDB db, DBType new_type)
 	{
 		if ( ! new_type.equals( getDBType()))
 		{
 			m_type.setReferenced(new_type);
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	
@@ -69,12 +69,12 @@ public abstract class DBMember extends DBSourceObject implements HasProperties, 
 		return m_properties;
 	}
 	
-	void setProperties( int properties)
+	void setProperties( ObjectDB db, int properties)
 	{
 		if ( m_properties!=properties)
 		{
 			m_properties=properties;
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	

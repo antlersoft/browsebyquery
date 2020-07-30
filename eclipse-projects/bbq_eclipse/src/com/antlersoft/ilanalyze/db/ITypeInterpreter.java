@@ -92,7 +92,7 @@ interface ITypeInterpreter {
 			 */
 			public DBType createType(ILDB db, String key, ReadType type) throws TIException {
 				DBClass c=DBClass.get( db, key);
-				return new DBType( key, c, null, c.toString());
+				return new DBType( db, key, c, null, c.toString());
 			}
 			
 		}
@@ -139,7 +139,7 @@ interface ITypeInterpreter {
 			 * @see com.antlersoft.ilanalyze.db.ITypeInterpreter#createType(com.antlersoft.ilanalyze.db.ILDB, java.lang.String, com.antlersoft.ilanalyze.ReadType)
 			 */
 			public DBType createType(ILDB db, String key, ReadType type) throws TIException {
-				return new DBType( key, null, null, type.toString());
+				return new DBType( db, key, null, null, type.toString());
 			}
 			
 		}
@@ -164,7 +164,7 @@ interface ITypeInterpreter {
 			 * @see com.antlersoft.ilanalyze.db.ITypeInterpreter#createType(com.antlersoft.ilanalyze.db.ILDB, java.lang.String, com.antlersoft.ilanalyze.ReadType)
 			 */
 			public DBType createType(ILDB db, String key, ReadType type) throws TIException {
-				return new DBType( key, null, null, key);
+				return new DBType( db, key, null, null, key);
 			}
 			
 		}
@@ -191,7 +191,7 @@ interface ITypeInterpreter {
 			 */
 			public DBType createType(ILDB db, String key, ReadType type) throws TIException {
 				DBType underlying=DBType.get( db, ((ReadArray)type).getUnderlying());
-				return new DBType( key, null, underlying, underlying+"[]"); 
+				return new DBType( db, key, null, underlying, underlying+"[]");
 			}
 			
 		}
@@ -217,7 +217,7 @@ interface ITypeInterpreter {
 			 */
 			public DBType createType(ILDB db, String key, ReadType type) throws TIException {
 				DBClass c=DBClass.get( db, key);
-				return new DBType( key, c, null, c.toString());
+				return new DBType( db, key, c, null, c.toString());
 			}
 		}
 	}

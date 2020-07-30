@@ -136,7 +136,7 @@ public class DBClass implements DBClassBase, Cloneable, SourceObject, AccessFlag
 		if ( internalName.charAt(0)!='[')
 		{
 			DBPackage my_package=DBPackage.get( TypeParse.packageFromInternalClassName( internalName), db.getSession());
-			my_package.setContainedClass( this);
+			my_package.setContainedClass( db.getSession(), this);
 			myPackage=new ObjectRef<DBPackage>( my_package);
 			String containing_name=containingClassName( internalName);
 			if ( containing_name!=null)

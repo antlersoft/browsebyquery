@@ -16,9 +16,9 @@ public class DBStringReference extends DBReference {
 	 * @param source
 	 * @param target The referenced DBString
 	 */
-	public DBStringReference(DBMethod source, DBString target) {
+	public DBStringReference(ObjectDB db, DBMethod source, DBString target) {
 		super(source, target);
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	public DBString getDBString()

@@ -36,19 +36,19 @@ public class DBStringResource implements Persistent {
 		return _persistentImpl;
 	}
 	
-	public DBStringResource( DBBundleBase bundle, DBString name, DBString value){
+	public DBStringResource( ObjectDB db, DBBundleBase bundle, DBString name, DBString value){
 		_bundle=new ObjectRef<DBBundleBase>( bundle);
 		_name=new ObjectRef<DBString>( name);
 		_value=new ObjectRef<DBString>( value);
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 	
-	void setValue( DBString v)
+	void setValue(ObjectDB db, DBString v)
 	{
 		if ( ! _value.getReferenced().equals(v))
 		{
 			_value=new ObjectRef<DBString>(v);
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	

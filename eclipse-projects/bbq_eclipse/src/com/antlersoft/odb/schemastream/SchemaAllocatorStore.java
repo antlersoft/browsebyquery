@@ -38,7 +38,7 @@ public class SchemaAllocatorStore extends DiskAllocatorStore
     public SchemaAllocatorStore( File file, Collection classNames)
     {
         super( file, 4, 120, 102400, 0,
-            new SchemaCustomizer( addName( classNames)));
+            new SchemaCustomizer(null, addName( classNames)));
     }
 
     public static synchronized SchemaAllocatorStore getSchemaStore( File file,

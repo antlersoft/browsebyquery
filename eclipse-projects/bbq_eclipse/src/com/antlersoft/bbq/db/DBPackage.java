@@ -20,7 +20,6 @@ import com.antlersoft.odb.PersistentImpl;
  * sub-packages.
  * <p>
  * Note that there is currently no way to remove a package element after it has been created.
- * @param C Class representing a class in the analyzed system.
  * @author Michael A. MacDonald
  *
  */
@@ -57,13 +56,13 @@ public class DBPackage implements Persistent, Cloneable {
 		_classes=new ObjectKeyHashSet<DBClassBase>();
 		_subpackages=new ObjectKeyHashSet<DBPackage>();
 		_persistentImpl=new PersistentImpl();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 		if ( _name.length()>0)
 		{
 			DBPackage containing=get( namespacePart( key ), db);
 			_containingPackage=new ObjectRef<DBPackage>( containing);
-			containing.setSubPackage( this);
-			ObjectDB.makeDirty( this);
+			containing.setSubPackage( db,this);
+			db.makeDirty( this);
 		}
 	}
 	
@@ -84,13 +83,13 @@ public class DBPackage implements Persistent, Cloneable {
 		return _containingPackage.getReferenced();
 	}
 	
-	public synchronized void setSubPackage( DBPackage new_sub)
+	public synchronized void setSubPackage( ObjectDB db, DBPackage new_sub)
 	{
 		ObjectRef<DBPackage> new_sub_ref=new ObjectRef<DBPackage>( new_sub);
 		if ( ! _subpackages.contains( new_sub_ref))
 		{
 			_subpackages.add( new_sub_ref);
-			ObjectDB.makeDirty( this);
+			db.makeDirty( this);
 		}
 	}
 	
@@ -99,13 +98,13 @@ public class DBPackage implements Persistent, Cloneable {
 		return new FromRefIteratorEnumeration<DBPackage>( _subpackages.iterator());
 	}
 	
-	public synchronized void setContainedClass( DBClassBase new_class)
+	public synchronized void setContainedClass( ObjectDB db, DBClassBase new_class)
 	{
 		ObjectRef<DBClassBase> new_class_ref=new ObjectRef<DBClassBase>( new_class);
 		if ( ! _classes.contains( new_class_ref))
 		{
 			_classes.add( new_class_ref);
-			ObjectDB.makeDirty( this);
+			db.makeDirty( this);
 		}
 	}
 	

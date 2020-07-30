@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.antlersoft.odb.DiskAllocator;
 import com.antlersoft.odb.DiskAllocatorException;
+import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectStreamCustomizer;
 import com.antlersoft.util.NetByte;
 import com.antlersoft.util.RandomInputStream;
@@ -59,10 +60,10 @@ class StreamPair
         objectInput.readObject();
     }
 
-    StreamPair( DiskAllocator a)
+    StreamPair( DiskAllocator a, ObjectDB db)
         throws IOException, ClassNotFoundException
     {
-        this( a, ObjectStreamCustomizer.BASE_CUSTOMIZER);
+        this( a, new ObjectStreamCustomizer.BaseCustomizer(db));
     }
 
     int read2Ints( int offset)

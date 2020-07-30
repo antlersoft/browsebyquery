@@ -43,10 +43,7 @@ import com.antlersoft.bbq.db.DBStringResource;
 
 import com.antlersoft.bbq.query.IDBSource;
 
-import com.antlersoft.odb.ExactMatchIndexEnumeration;
-import com.antlersoft.odb.IndexIterator;
-import com.antlersoft.odb.IndexObjectDB;
-import com.antlersoft.odb.ObjectStreamCustomizer;
+import com.antlersoft.odb.*;
 
 import com.antlersoft.odb.diralloc.CustomizerFactory;
 import com.antlersoft.odb.diralloc.DirectoryAllocator;
@@ -98,8 +95,10 @@ public class IndexAnalyzeDB extends AbstractDBContainer implements IDBSource
     protected IDBSource internalOpen(File location) throws Exception
     {
         createCount=0;
+        CFactory cFactory = new CFactory();
         _session=new IndexObjectDB( new DirectoryAllocator( location,
-            new CFactory(), isUseMapped()));
+            cFactory, isUseMapped()));
+        cFactory.setObjectDB(_session);
         _session.redefineIndex( DBArgument.ARGUMENT_TYPE_INDEX, DBArgument.class,
         		new DBArgument.ArgumentTypeKeyGenerator(), false, false, TYPEKEY_INDEX_PROPS);
         _session.redefineIndex( DBCall.CALL_TARGET, DBCall.class,
@@ -203,6 +202,7 @@ public class IndexAnalyzeDB extends AbstractDBContainer implements IDBSource
 	
     static class CFactory extends CustomizerFactory
     {
+        private ObjectDBInputStream.DBHolder _holder = new ObjectDBInputStream.DBHolder();
         public ObjectStreamCustomizer getCustomizer( Class toStore)
         {
             ArrayList<String> nameList=new ArrayList<String>();
@@ -221,7 +221,10 @@ public class IndexAnalyzeDB extends AbstractDBContainer implements IDBSource
             nameList.add( "com.antlersoft.analyzer.DBReference");
             nameList.add( "com.antlersoft.bbq.db.AnnotationCollection");
             nameList.add( toStore.getName());
-            return new SchemaCustomizer( nameList);
+            return new SchemaCustomizer( _holder, nameList);
+        }
+        public void setObjectDB(ObjectDB db) {
+            _holder.setObjectDB(db);
         }
     }
 

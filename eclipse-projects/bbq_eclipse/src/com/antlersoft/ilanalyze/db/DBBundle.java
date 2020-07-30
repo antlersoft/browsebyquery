@@ -21,11 +21,11 @@ public class DBBundle extends DBBundleBase {
 
 	ObjectRef<DBAssembly> _assembly;
 
-	private DBBundle( DBAssembly assembly, String name)
+	private DBBundle( ObjectDB db, DBAssembly assembly, String name)
 	{
 		super(name);
 		_assembly=new ObjectRef<DBAssembly>(assembly);
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 	
 	public DBAssembly getAssembly()
@@ -46,7 +46,7 @@ public class DBBundle extends DBBundleBase {
 		DBBundle result=(DBBundle)db.findObject(BUNDLE_KEY_INDEX, makeBundleKey( assembly, name));
 		
 		if ( result==null)
-			result=new DBBundle( assembly, name);
+			result=new DBBundle( db, assembly, name);
 		
 		return result;
 	}

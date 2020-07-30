@@ -20,19 +20,20 @@
 package com.antlersoft.analyzecxx.db;
 
 import com.antlersoft.odb.IndexObjectDB;
+import com.antlersoft.odb.ObjectDB;
 
 public class IncludeFile extends SourceFile {
 	static final String INCLUDE_FILE_INDEX="IncludeFile.m_name";
-	private IncludeFile( String f)
+	private IncludeFile(ObjectDB db, String f)
 	{
-		super(f);
+		super(db, f);
 	}
 	static IncludeFile get( IndexObjectDB db, String f)
 	{
 		IncludeFile result=(IncludeFile)db.findObject( INCLUDE_FILE_INDEX,
 			f);
 		if ( result==null)
-			result=new IncludeFile( f);
+			result=new IncludeFile(db, f);
 		return result;
 	}
 }

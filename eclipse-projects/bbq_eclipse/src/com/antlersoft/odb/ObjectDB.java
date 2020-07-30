@@ -44,7 +44,7 @@ public class ObjectDB
 		ObjectKey rootKey=(ObjectKey)store.getRootObject();
 		if ( rootKey==null)
 		{
-			rootObjects=new ObjectRef( new PersistentHashtable());
+			rootObjects=new ObjectRef( new PersistentHashtable(this));
 			rootKey=getObjectKey( rootObjects.getReferenced());
 			store.updateRootObject( rootKey);
 			commit();
@@ -73,6 +73,7 @@ public class ObjectDB
 		throws ObjectStoreException
 	{
 		PersistentImpl impl=((Persistent)toStore)._getPersistentImpl();
+		impl.db = this;
 		if ( impl.objectKey==null)
 		{
 			impl.objectKey=store.insert( (Persistent)toStore);
@@ -99,6 +100,7 @@ public class ObjectDB
 		{
 			retVal=(Persistent)store.retrieve( key);
 			PersistentImpl impl=retVal._getPersistentImpl();
+			impl.db = this;
             impl.objectKey=key;
             impl.setCached( retVal);
 			cachedObjects.put( key, retVal);

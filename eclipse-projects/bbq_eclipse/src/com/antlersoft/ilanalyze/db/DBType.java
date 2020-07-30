@@ -46,14 +46,14 @@ public class DBType implements Persistent {
 	 * @param array_referenced_type Type that this type is an array of; null if this is not an array type
 	 * @param user_name User-visible name for the type 
 	 */
-	DBType( String key, DBClass type_class, DBType array_referenced_type, String user_name) {
+	DBType( ObjectDB db, String key, DBClass type_class, DBType array_referenced_type, String user_name) {
 		m_type_key=key;
 		if ( type_class!=null)
 			m_class=new ObjectRef<DBClass>( type_class);
 		if ( array_referenced_type!=null)
 			m_referenced=new ObjectRef<DBType>(array_referenced_type);
 		m_type_user_name=user_name;
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 	
 	static synchronized DBType get( ILDB db, ReadType t) throws ITypeInterpreter.TIException
@@ -94,7 +94,7 @@ public class DBType implements Persistent {
 		DBType result = (DBType)db.findObject(TYPE_KEY_INDEX,arrayTypeKey);
 		if (result == null)
 		{
-			result = new DBType(arrayTypeKey, null, this, m_type_user_name + "[]");
+			result = new DBType(db, arrayTypeKey, null, this, m_type_user_name + "[]");
 		}
 		return result;
 	}

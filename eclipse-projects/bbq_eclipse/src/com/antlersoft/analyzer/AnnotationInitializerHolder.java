@@ -42,7 +42,7 @@ class AnnotationInitializerHolder {
 			foundMethods.add(initializer);
 		}
 		if ( stringList==null)
-			stringList=new DBMethod.ReferenceUpdater<DBStringReference>(initializer.stringReferences);
+			stringList=new DBMethod.ReferenceUpdater<DBStringReference>(db.getSession(), initializer.stringReferences);
 		return stringList;
 	}
 	
@@ -52,7 +52,7 @@ class AnnotationInitializerHolder {
 		DBString dbs=DBString.get(db.getSession(), s);
 		if ( ! getStringList().existsReference( dbs, lineNumber))
 		{
-			getStringList().addReference( new DBStringReference(initializer,dbs,lineNumber));
+			getStringList().addReference( new DBStringReference(db.getSession(), initializer,dbs,lineNumber));
 		}
 	}
 	

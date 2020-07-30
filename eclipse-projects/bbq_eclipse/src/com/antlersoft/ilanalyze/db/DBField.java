@@ -17,11 +17,11 @@ import com.antlersoft.odb.ObjectRefKey;
 public class DBField extends DBMember {
 	static final String FIELD_TYPE_INDEX="FIELD_TYPE_INDEX";
 	
-	DBField( DBClass container, String name, DBType type)
+	DBField( ObjectDB db, DBClass container, String name, DBType type)
 	{
 		super( container, name, type);
 		
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 	
 	/**

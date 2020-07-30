@@ -24,9 +24,9 @@ public class DBAnnotation extends DBSourceObject implements AnnotationBase {
 	 * @param annotationClass
 	 * @param annotated
 	 */
-	public DBAnnotation(DBClassBase annotationClass, DBAnnotatable annotated) {
+	public DBAnnotation(ObjectDB db, DBClassBase annotationClass, DBAnnotatable annotated) {
 		m_base = new DBAnnotationBase(annotationClass, annotated);
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 
 	/**

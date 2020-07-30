@@ -52,11 +52,11 @@ class AnnotationProcessor<A extends DBAnnotatable & SourceObject> {
 			DBAnnotation annotation=(DBAnnotation)updater.getExisting(annotationClass);
 			if ( annotation==null )
 			{
-				updater.addNew(new DBAnnotation<A>(annotationClass,target,hidden));
+				updater.addNew(new DBAnnotation<A>(db.getSession(), annotationClass,target,hidden));
 			}
 			else
 			{
-				annotation.setIsHiddenAtRuntime(hidden);
+				annotation.setIsHiddenAtRuntime(db.getSession(), hidden);
 			}
 		}
 		

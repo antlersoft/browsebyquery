@@ -38,12 +38,18 @@ import java.io.ObjectStreamClass;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.antlersoft.odb.ObjectDB;
+import com.antlersoft.odb.ObjectDBInputStream;
+import com.antlersoft.odb.ObjectStoreException;
 import com.antlersoft.odb.ObjectStreamCustomizer;
 
 public class SchemaCustomizer implements ObjectStreamCustomizer
 {
-    public SchemaCustomizer( Collection classNames)
+    private ObjectDBInputStream.DBHolder _holder;
+
+    public SchemaCustomizer( ObjectDBInputStream.DBHolder holder, Collection classNames)
     {
+        _holder = holder;
         HashSet fullNames=new HashSet();
         fullNames.addAll( Arrays.asList( baseClasses));
         fullNames.addAll( classNames);
@@ -62,10 +68,14 @@ System.out.println( "Failed to find "+cnfe.getMessage());
         }
     }
 
-    public ObjectInputStream createObjectInputStream( InputStream is)
+    public void setObjectDB(ObjectDB db) {
+        _holder.setObjectDB(db);
+    }
+
+    public ObjectDBInputStream createObjectInputStream(InputStream is)
         throws IOException
     {
-        return new SchemaInputStream( is, schema);
+        return new SchemaInputStream(_holder, is, schema);
     }
 
     public ObjectOutputStream createObjectOutputStream(

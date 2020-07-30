@@ -16,9 +16,9 @@ public class DBCast extends DBReference<DBClass> {
 	static final String CAST_TARGET = "CAST_TARGET";
 	private boolean m_isOptional;
 
-	public DBCast(DBMethod source, DBClass target, boolean isOptional) {
+	public DBCast(ObjectDB db, DBMethod source, DBClass target, boolean isOptional) {
 		super(source, target);
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 
 	/**

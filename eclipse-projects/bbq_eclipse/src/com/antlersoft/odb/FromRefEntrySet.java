@@ -25,11 +25,13 @@ import java.util.Iterator;
 
 class FromRefEntrySet implements java.util.Set
 {
+	private ObjectDB _db;
     private Set _fromMap;
     private ObjectRef _containing;
 
-    FromRefEntrySet( Persistent containing, Set fromMap)
+    FromRefEntrySet( ObjectDB db, Persistent containing, Set fromMap)
     {
+    	_db = db;
 	_fromMap=fromMap;
 	_containing=new ObjectRef( containing);
     }
@@ -48,7 +50,7 @@ class FromRefEntrySet implements java.util.Set
 
     public void clear()
     {
-	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+	_db.makeDirty( (Persistent)_containing.getReferenced());
 	_fromMap.clear();
     }
 
@@ -79,24 +81,24 @@ class FromRefEntrySet implements java.util.Set
 
     public java.util.Iterator iterator()
     {
-	return new EntrySetIterator( _containing, _fromMap.iterator());
+	return new EntrySetIterator( _db, _containing, _fromMap.iterator());
     }
 
     public boolean remove(java.lang.Object o)
     {
-	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+	_db.makeDirty( (Persistent)_containing.getReferenced());
 	return _fromMap.remove( o);
     }
 
     public boolean removeAll(java.util.Collection c)
     {
-	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+	_db.makeDirty( (Persistent)_containing.getReferenced());
 	return _fromMap.removeAll( c);
     }
 
     public boolean retainAll(java.util.Collection c)
     {
-	ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+	_db.makeDirty( (Persistent)_containing.getReferenced());
 	return _fromMap.retainAll( c);
     }
 
@@ -122,7 +124,7 @@ class FromRefEntrySet implements java.util.Set
 	    int j=0;
 	    for ( Iterator i=_fromMap.iterator(); i.hasNext(); j++)
 	    {
-		o[j]=new Entry( (java.util.Map.Entry)i.next());
+		o[j]=new Entry( _db, (java.util.Map.Entry)i.next());
 	    }
 	    if ( j<o.length)
 	        o[j]=null;
@@ -132,9 +134,13 @@ class FromRefEntrySet implements java.util.Set
 
     static class Entry implements java.util.Map.Entry
     {
+    	private ObjectDB _db;
 	private java.util.Map.Entry _base;
-	Entry( java.util.Map.Entry base)
-	{ _base=base; }
+	Entry( ObjectDB db, java.util.Map.Entry base)
+	{
+		_db = db;
+		_base=base;
+	}
 	public boolean equals(java.lang.Object o)
 	{ return _base.equals( o); }
 	public java.lang.Object getKey()
@@ -148,21 +154,23 @@ class FromRefEntrySet implements java.util.Set
     }
     static class EntrySetIterator implements java.util.Iterator
     {
+    	private ObjectDB _db;
 	private Iterator _base;
 	private ObjectRef _containing;
 
-	EntrySetIterator( ObjectRef containing, Iterator base)
+	EntrySetIterator( ObjectDB db, ObjectRef containing, Iterator base)
 	{
+		_db = db;
 	    _base=base;
 	    _containing=containing;
 	}
 	public boolean hasNext()
 	{ return _base.hasNext(); }
 	public java.lang.Object next()
-	{ return new Entry( (java.util.Map.Entry)_base.next()); }
+	{ return new Entry( _db, (java.util.Map.Entry)_base.next()); }
 	public void remove()
 	{
-	    ObjectDB.makeDirty( (Persistent)_containing.getReferenced());
+	    _db.makeDirty( (Persistent)_containing.getReferenced());
 	    _base.remove();
 	}
     }

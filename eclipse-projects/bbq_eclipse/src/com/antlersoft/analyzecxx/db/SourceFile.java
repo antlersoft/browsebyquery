@@ -28,10 +28,10 @@ public class SourceFile implements Persistent {
 	private transient PersistentImpl _persistentImpl;
 	private String m_file_name;
 
-	SourceFile( String file_name)
+	SourceFile( ObjectDB db, String file_name)
 	{
 		m_file_name=file_name;
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	public PersistentImpl _getPersistentImpl()

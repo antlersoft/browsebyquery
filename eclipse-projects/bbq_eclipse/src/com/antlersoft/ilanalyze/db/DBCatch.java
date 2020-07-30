@@ -11,10 +11,10 @@ import com.antlersoft.odb.ObjectDB;
  */
 public class DBCatch extends DBReference<DBClass> {
 	final static String CATCH_TARGET="CATCH_TARGET";
-	DBCatch( DBMethod source, DBClass target)
+	DBCatch( ObjectDB db, DBMethod source, DBClass target)
 	{
 		super(source,target);
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 	
 	public DBClass getCaught()

@@ -24,8 +24,8 @@ import java.util.Set;
 
 class FromRefSet extends FromRefCollection implements Set
 {
-    FromRefSet( Persistent containing, Set s)
+    FromRefSet(ObjectDB db, Persistent containing, Set s)
     {
-        super( containing, s);
+        super(db, containing, s);
     }
 }

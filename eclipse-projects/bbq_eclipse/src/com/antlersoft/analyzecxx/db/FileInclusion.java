@@ -30,11 +30,11 @@ public class FileInclusion extends SourceObject {
 	private ObjectRef m_included_file;
 	static final String UNIQUE_KEY="FileInclusion.uk";
 
-	private FileInclusion( IncludeFile included, SourceFile from, int line)
+	private FileInclusion(ObjectDB db, IncludeFile included, SourceFile from, int line)
 	{
-		super( from, line);
+		super(from, line);
 		m_included_file=new ObjectRef( included);
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	public IncludeFile getIncluded()
@@ -49,13 +49,13 @@ public class FileInclusion extends SourceObject {
 			new CompoundKey( new ObjectRefKey( included),
 							 new ObjectRefKey( from)));
 		if ( fi==null)
-			fi=new FileInclusion( included, from, line);
+			fi=new FileInclusion(db, included, from, line);
 		else
 		{
 			if ( fi.m_line!=line)
 			{
 				fi.m_line = line;
-				ObjectDB.makeDirty(fi);
+				db.makeDirty(fi);
 			}
 		}
 		return fi;

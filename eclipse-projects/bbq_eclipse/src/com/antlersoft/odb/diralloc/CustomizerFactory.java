@@ -41,6 +41,6 @@ public class CustomizerFactory
      */
     public ObjectStreamCustomizer getCustomizer( Class toStore)
     {
-        return ObjectStreamCustomizer.BASE_CUSTOMIZER;
+        return new ObjectStreamCustomizer.BaseCustomizer();
     }
 }

@@ -22,10 +22,10 @@ public class DBSourceFile implements Persistent {
 	
 	private String m_source_file_name;
 	
-	private DBSourceFile( String source_file_name)
+	private DBSourceFile( ObjectDB db, String source_file_name)
 	{
 		m_source_file_name=source_file_name;
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	/* (non-Javadoc)
@@ -42,7 +42,7 @@ public class DBSourceFile implements Persistent {
 		DBSourceFile result=(DBSourceFile)db.findObject( SOURCE_FILE_NAME_INDEX,
 			f);
 		if ( result==null)
-			result=new DBSourceFile( f);
+			result=new DBSourceFile( db, f);
 		return result;
 	}
 	

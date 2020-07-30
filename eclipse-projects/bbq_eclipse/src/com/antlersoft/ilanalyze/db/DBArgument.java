@@ -26,14 +26,14 @@ public class DBArgument implements Persistent, HasDBType {
 	
 	private transient PersistentImpl _persistentImpl;
 	
-	DBArgument( DBMethod method, DBType type, String name, int index)
+	DBArgument( ObjectDB db, DBMethod method, DBType type, String name, int index)
 	{
 		m_type=new ObjectRef( type);
 		m_method=new ObjectRef( method);
 		m_name=( name==null ? "" : name);
 		m_index=index;
 		
-		ObjectDB.makePersistent(this);
+		db.makePersistent(this);
 	}
 
 	public String getName()
@@ -41,14 +41,14 @@ public class DBArgument implements Persistent, HasDBType {
 		return m_name;
 	}
 	
-	void setName( String name)
+	void setName( ObjectDB db, String name)
 	{
 		if ( name!=null && name.length()>0)
 		{
 			if ( ! m_name.equals(name))
 			{
 				m_name=name;
-				ObjectDB.makeDirty(this);
+				db.makeDirty(this);
 			}
 		}
 	}
@@ -68,7 +68,7 @@ public class DBArgument implements Persistent, HasDBType {
 		return (DBMethod)m_method.getReferenced();
 	}
 	
-	synchronized void setDBType( DBType t)
+	synchronized void setDBType( ObjectDB db, DBType t)
 	{
 		boolean changed;
 		DBType old_type=getDBType();
@@ -79,7 +79,7 @@ public class DBArgument implements Persistent, HasDBType {
 		if ( changed)
 		{
 			m_type.setReferenced(t);
-			ObjectDB.makeDirty(this);
+			db.makeDirty(this);
 		}
 	}
 	

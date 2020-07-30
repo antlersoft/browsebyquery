@@ -45,8 +45,9 @@ public class PersistentImpl
 	ObjectKey objectKey;
     private boolean deleted;
     private SoftReference cachedReference;
+    ObjectDB db;
 
-    final Object getCanonical(ObjectDB db, ObjectRef toUpdate)
+    final Object getCanonical(ObjectRef toUpdate)
     {
     	Persistent result=dirtyReference;
     	if ( result==null)
@@ -59,13 +60,17 @@ public class PersistentImpl
         {
             if ( objectKey==null)
                 throw new ObjectDBException( "Internal: obsolete with no object key");
+            if (db==null)
+                throw new ObjectDBException( "Internal: obsolete with no ObjectDB reference");
             result=db.
                 getObjectByKey( objectKey);
             PersistentImpl newImpl=result._getPersistentImpl();
             synchronized( toUpdate)
             {
-                if ( toUpdate.impl==this)
-                    toUpdate.impl=newImpl;
+                if ( toUpdate.impl==this) {
+                    toUpdate.impl = newImpl;
+                    newImpl.db = db;
+                }
             }
         }
         return result;

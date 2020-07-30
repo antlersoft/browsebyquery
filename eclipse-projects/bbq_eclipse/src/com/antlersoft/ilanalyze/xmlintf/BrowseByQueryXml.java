@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.SwingUtilities;
 
+import com.antlersoft.bbq.query.IDBSource;
 import com.antlersoft.odb.ObjectDB;
 import com.antlersoft.odb.ObjectStoreException;
 import com.antlersoft.query.SelectionSetExpression;
@@ -34,7 +35,7 @@ public class BrowseByQueryXml implements IBrowseByQuery {
 	 * @see com.antlersoft.ilanalyze.xmlintf.IBrowseByQuery#PerformQuery(com.antlersoft.ilanalyze.xmlintf.QueryRequest)
 	 */
 	public QueryResponse PerformQuery(QueryRequest qr) {
-		QueryRunner runner=new QueryRunner( qr);
+		QueryRunner runner=new QueryRunner(((IDBSource)source.getDataSource()).getSession(), qr);
 		try
 		{
 			SwingUtilities.invokeAndWait(runner);
@@ -60,9 +61,11 @@ public class BrowseByQueryXml implements IBrowseByQuery {
 	{
 		QueryRequest request;
 		QueryResponse response;
+		ObjectDB db;
 		
-		QueryRunner( QueryRequest qr)
+		QueryRunner( ObjectDB database, QueryRequest qr)
 		{
+			db = database;
 			request=qr;
 			response=null;
 		}
@@ -75,7 +78,6 @@ public class BrowseByQueryXml implements IBrowseByQuery {
 				env.setLine( request.getText());
 				SelectionSetExpression selection = env.getCurrentSelection();
 				selection.clear();
-				ObjectDB db = ObjectDB.getObjectDB();
 				for (String s : request.getObjectKeys())
 				{
 					try {
@@ -88,7 +90,7 @@ public class BrowseByQueryXml implements IBrowseByQuery {
 					}
 				}
 				SetExpression se = env.getExpression();
-				response=new QueryResponse(se.getResultClass(), se.evaluate( source.getDataSource()));
+				response=new QueryResponse(db, se.getResultClass(), se.evaluate( source.getDataSource()));
 			}
 			catch ( Exception e)
 			{

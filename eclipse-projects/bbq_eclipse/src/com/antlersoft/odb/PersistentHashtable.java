@@ -27,33 +27,33 @@ public class PersistentHashtable extends Hashtable implements Persistent
 {
 	private transient PersistentImpl persistentImpl;
 
-	public PersistentHashtable()
+	public PersistentHashtable(ObjectDB db)
 	{
 		super();
 		persistentImpl=new PersistentImpl();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
-	public PersistentHashtable( int s)
+	public PersistentHashtable(ObjectDB db, int s)
 	{
 		super( s);
 		persistentImpl=new PersistentImpl();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
-	public PersistentHashtable( int s, float f)
+	public PersistentHashtable( ObjectDB db, int s, float f)
 	{
 		super( s, f);
 		persistentImpl=new PersistentImpl();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
-	public PersistentHashtable( java.util.Map m)
+	public PersistentHashtable( ObjectDB db, java.util.Map m)
 	{
 		super( m.size());
 		persistentImpl=new PersistentImpl();
 		putAll( m);
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	public synchronized PersistentImpl _getPersistentImpl()
@@ -65,13 +65,13 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
 	public synchronized void clear()
 	{
-		ObjectDB.makeDirty( this);
-		clear();
+		_getPersistentImpl().db.makeDirty(this);
+		super.clear();
 	}
 
     public synchronized java.lang.Object clone()
 	{
-		return new PersistentHashtable( this);
+		return new PersistentHashtable( _getPersistentImpl().db, this);
 	}
     //public synchronized boolean contains(java.lang.Object);
     //public synchronized boolean containsKey(java.lang.Object);
@@ -83,7 +83,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
     public java.util.Set entrySet()
 	{
-		return new FromRefEntrySet( this, super.entrySet());
+		return new FromRefEntrySet( _getPersistentImpl().db,this, super.entrySet());
 	}
 
     //public synchronized boolean equals(java.lang.Object);
@@ -99,7 +99,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
     //public boolean isEmpty();
     public java.util.Set keySet()
 	{
-		return new FromRefSet( this, super.keySet());
+		return new FromRefSet( _getPersistentImpl().db, this, super.keySet());
 	}
 
     public synchronized java.util.Enumeration keys()
@@ -109,7 +109,7 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
     public synchronized java.lang.Object put( Object key, Object value)
     {
-		ObjectDB.makeDirty( this);
+		_getPersistentImpl().db.makeDirty( this);
 		if ( ! ( key instanceof ObjectRef))
 		    key=new DualRef( key);
 		if ( ! ( value instanceof ObjectRef))
@@ -134,13 +134,13 @@ public class PersistentHashtable extends Hashtable implements Persistent
 
     public synchronized java.lang.Object remove( Object key)
 	{
-		ObjectDB.makeDirty( this);
+		_getPersistentImpl().db.makeDirty( this);
 		return ((ObjectRef)super.get( key)).getReferenced();
 	}
 
     //public int size();
     public java.util.Collection values()
 	{
-		return new FromRefCollection( this, super.values());
+		return new FromRefCollection( _getPersistentImpl().db, this, super.values());
 	}
 }

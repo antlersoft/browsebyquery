@@ -26,10 +26,10 @@ public class DBAssembly implements Persistent {
 	
 	private String m_assembly_name;
 	
-	private DBAssembly( String assembly_name)
+	private DBAssembly( ObjectDB db, String assembly_name)
 	{
 		m_assembly_name=assembly_name;
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 
 	/* (non-Javadoc)
@@ -56,7 +56,7 @@ public class DBAssembly implements Persistent {
 		DBAssembly result=(DBAssembly)db.findObject( ASSEMBLY_NAME_INDEX,
 			f);
 		if ( result==null)
-			result=new DBAssembly( f);
+			result=new DBAssembly( db, f);
 		return result;
 	}
 	

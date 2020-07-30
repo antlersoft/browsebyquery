@@ -26,11 +26,11 @@ public class DBModule implements Persistent {
 	/** DBAssembly-valued */
 	ObjectRef m_assembly_ref;
 	
-	private DBModule( String name)
+	private DBModule( ObjectDB db, String name)
 	{
 		m_module_name=name;
 		m_assembly_ref=new ObjectRef();
-		ObjectDB.makePersistent( this);
+		db.makePersistent( this);
 	}
 	
 	DBAssembly getAssembly()
@@ -38,10 +38,10 @@ public class DBModule implements Persistent {
 		return (DBAssembly)m_assembly_ref.getReferenced();
 	}
 	
-	void setAssembly( DBAssembly assembly)
+	void setAssembly( ObjectDB db, DBAssembly assembly)
 	{
 		m_assembly_ref.setReferenced( assembly);
-		ObjectDB.makeDirty(this);
+		db.makeDirty(this);
 	}
 
 	/* (non-Javadoc)
@@ -59,7 +59,7 @@ public class DBModule implements Persistent {
 		DBModule result=(DBModule)db.findObject( MODULE_NAME_INDEX,
 			f);
 		if ( result==null)
-			result=new DBModule( f);
+			result=new DBModule( db, f);
 		return result;
 	}
 	
