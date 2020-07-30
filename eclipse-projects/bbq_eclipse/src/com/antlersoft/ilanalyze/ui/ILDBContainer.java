@@ -76,8 +76,8 @@ public class ILDBContainer extends AbstractDBContainer {
 			m_disassembly_command_format="{1} /text /nobar /linenumber \"{0}\"";
 			try
 			{
-				m_directory_match=Pattern.compile( "obj\\\\Debug(\\\\[^\\\\]*)?\\z");
-				m_release_directory_match=Pattern.compile( "obj\\\\Release(\\\\[^\\\\]*)?\\z");
+				m_directory_match=Pattern.compile( "obj(\\\\[^\\\\]*)?\\\\Debug(\\\\[^\\\\]*)?\\z");
+				m_release_directory_match=Pattern.compile( "obj(\\\\[^\\\\]*)?\\\\Release(\\\\[^\\\\]*)?\\z");
 			}
 			catch ( PatternSyntaxException pse)
 			{
