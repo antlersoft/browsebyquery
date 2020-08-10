@@ -952,12 +952,12 @@ n_classAttr : n_classAttr t_unicode "m_AddIgnoredAttrib" .
 n_classAttr : n_classAttr t_autochar "m_AddIgnoredAttrib" .
 n_classAttr : n_classAttr t_import "m_AddIgnoredAttrib" .
 n_classAttr : n_classAttr t_serializable "new AttribAddToStack( DBDriver.IS_SERIALIZABLE)" .
-n_classAttr : n_classAttr t_nested t_public "new AttribAddToStack2( DBDriver.IS_PUBLIC)" .
-n_classAttr : n_classAttr t_nested t_private "new AttribAddToStack2(DBDriver.IS_PUBLIC)" .
-n_classAttr : n_classAttr t_nested t_family "new AttribAddToStack2(DBDriver.IS_FAMILY)" .
-n_classAttr : n_classAttr t_nested t_assembly "new AttribAddToStack2( DBDriver.IS_ASSEMBLY)" .
-n_classAttr : n_classAttr t_nested t_famandassem "new AttribAddToStack2(DBDriver.IS_FAMANDASSEM)" .
-n_classAttr : n_classAttr t_nested t_famorassem "new AttribAddToStack2(DBDriver.IS_FAMORASSEM)" .
+n_classAttr : n_classAttr t_nested t_public "new AttribAddToStack2( DBDriver.IS_PUBLIC | DBDriver.IS_NESTED)" .
+n_classAttr : n_classAttr t_nested t_private "new AttribAddToStack2(DBDriver.IS_PUBLIC | DBDriver.IS_NESTED)" .
+n_classAttr : n_classAttr t_nested t_family "new AttribAddToStack2(DBDriver.IS_FAMILY | DBDriver.IS_NESTED)" .
+n_classAttr : n_classAttr t_nested t_assembly "new AttribAddToStack2( DBDriver.IS_ASSEMBLY | DBDriver.IS_NESTED)" .
+n_classAttr : n_classAttr t_nested t_famandassem "new AttribAddToStack2(DBDriver.IS_FAMANDASSEM | DBDriver.IS_NESTED)" .
+n_classAttr : n_classAttr t_nested t_famorassem "new AttribAddToStack2(DBDriver.IS_FAMORASSEM | DBDriver.IS_NESTED)" .
 # might need this later
 n_classAttr : n_classAttr t_beforefieldinit "m_AddIgnoredAttrib" .
 n_classAttr : n_classAttr t_specialname "m_AddIgnoredAttrib" .

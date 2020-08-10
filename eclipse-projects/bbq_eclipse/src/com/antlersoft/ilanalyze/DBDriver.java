@@ -22,6 +22,7 @@ public interface DBDriver {
 	public final static int IS_FAMANDASSEM=256;
 	public final static int IS_FAMORASSEM=512;
 	public final static int IS_STATIC=1024;
+	public final static int IS_NESTED=2048;
 	
 	/**
 	 * Introducing an assembly that is being read (not referenced)

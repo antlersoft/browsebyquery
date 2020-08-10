@@ -26,6 +26,7 @@ import com.antlersoft.odb.ObjectKeyHashSet;
 import com.antlersoft.odb.ObjectRef;
 
 import com.antlersoft.util.Semaphore;
+import sun.util.logging.PlatformLogger;
 
 /**
  * Adds data read from assembly files to the database
@@ -232,6 +233,14 @@ public class ILDBDriver implements DBDriver {
 	public void startClass(String className, List genericParams,
 			int properties, ReadType extendsType, List implementsList) {
 		m_commit_lock.enterProtected();
+		if ((properties & DBDriver.IS_NESTED)!=0 && className.indexOf('/')<0) {
+			int stackSize = m_class_stack.size();
+			if (stackSize > 0) {
+				className = m_class_stack.get(stackSize - 1).m_class.m_class_key+"/"+className;
+			} else {
+				LoggingDBDriver.logger.info("Nested class found with empty class stack");
+			}
+		}
 		DBClass read_class=DBClass.get(m_db, className);
 		read_class.setProperties(m_db, properties);
 		read_class.setVisited(m_db, true);
