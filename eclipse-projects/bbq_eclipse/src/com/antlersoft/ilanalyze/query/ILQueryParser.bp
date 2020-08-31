@@ -149,7 +149,7 @@ ImportExpression : ImportExpression literalString "{
 
 SET_EXPRESSION : TRANSFORM SET_EXPRESSION
 "{ return new TransformSet( (Transform)valueStack.get( valueStack.size()-2),
-(SetExpression)valueStack.get( valueStack.size()-1)); }" .
+(SetExpression)valueStack.get( valueStack.size()-1)); }" 4 .
 
 TRANSFORM : VALUE_EXPRESSION TRANSFORM "
 	{
