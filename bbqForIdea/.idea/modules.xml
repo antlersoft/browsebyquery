@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/jps-plugin/bbq-jps-plugin.iml" filepath="$PROJECT_DIR$/jps-plugin/bbq-jps-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bbqForIdea.iml" filepath="$PROJECT_DIR$/bbqForIdea.iml" />
+    </modules>
+  </component>
+</project>

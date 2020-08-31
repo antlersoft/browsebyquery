@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="src">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../eclipse-projects/bbq_eclipse/bin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../eclipse-projects/bbq_eclipse/src" />
+    </SOURCES>
+  </library>
+</component>
